@@ -22,38 +22,13 @@ class OCRTimetableParser {
 
     const mimeType = file.type || 'image/jpeg';
 
-    // Retrieve active API Key from all possible sources (including embedded default)
-    let effectiveApiKey = (
-      apiKey ||
-      localStorage.getItem('schedully_gemini_api_key') ||
-      localStorage.getItem('schedully_api_key') ||
-      localStorage.getItem('gemini_api_key') ||
-      (typeof DEFAULT_FIREBASE_CONFIG !== 'undefined' ? DEFAULT_FIREBASE_CONFIG.geminiApiKey : '') ||
-      document.getElementById('input-gemini-api-key')?.value ||
-      document.getElementById('fb-api-key')?.value ||
-      'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q'
-    ).trim().replace(/^["']|["']$/g, '');
-
-    // 1. Direct Client-Side Gemini Vision Call (Fastest & direct)
-    if (effectiveApiKey) {
-      onProgress("Running Gemini Vision AI Scanner...");
-      try {
-        const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
-        if (directResult && directResult.courses && directResult.courses.length > 0) {
-          return directResult;
-        }
-      } catch (directErr) {
-        console.warn("Direct Gemini Vision scan failed:", directErr);
-      }
-    }
-
-    // 2. Try Vercel Serverless Function (/api/scan)
-    onProgress("Connecting to AI Vision Service...");
+    // 1. Try Vercel Serverless Function First (/api/scan with secure process.env.GEMINI_API_KEY)
+    onProgress("Analyzing timetable with AI Vision Scanner...");
     try {
       const response = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Data, mimeType, apiKey: effectiveApiKey })
+        body: JSON.stringify({ base64Data, mimeType })
       });
 
       if (response.ok) {
@@ -70,18 +45,32 @@ class OCRTimetableParser {
         }
       }
     } catch (apiErr) {
-      console.warn("/api/scan unavailable:", apiErr);
+      console.warn("/api/scan endpoint unavailable, checking client key...", apiErr);
     }
 
-    // 3. If no key, prompt user via Gemini Key Modal
-    if (!effectiveApiKey && window.schedullyApp && typeof window.schedullyApp.openGeminiKeyModal === 'function') {
-      window.schedullyApp.openGeminiKeyModal(file);
-      throw new Error("Please enter your Google Gemini API Key to scan this timetable.");
+    // 2. Direct Client-Side Gemini Vision Call (if key is in localStorage)
+    let effectiveApiKey = (
+      apiKey ||
+      localStorage.getItem('schedully_gemini_api_key') ||
+      localStorage.getItem('schedully_api_key') ||
+      localStorage.getItem('gemini_api_key') ||
+      ''
+    ).trim().replace(/^["']|["']$/g, '');
+
+    if (effectiveApiKey) {
+      onProgress("Running Gemini Vision AI Scanner...");
+      try {
+        const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
+        if (directResult && directResult.courses && directResult.courses.length > 0) {
+          return directResult;
+        }
+      } catch (directErr) {
+        console.warn("Direct Gemini Vision scan failed:", directErr);
+      }
     }
 
-    // 4. Fallback: Intelligent Preset Extractor
-    onProgress("Recognizing timetable structure...");
-    return this.parseJapaneseTimetableFallback(file);
+    // 3. Fallback: If no serverless response and direct scan failed
+    throw new Error("Unable to analyze timetable image with AI. Please ensure the image is clear and try again.");
   }
 
   /**
@@ -249,47 +238,6 @@ OUTPUT JSON FORMAT ONLY:
     }
 
     throw new Error("Unable to extract timetable with available Gemini models. Please verify your image.");
-  }
-
-  /**
-   * Built-in Japanese University Timetable Parser
-   */
-  parseJapaneseTimetableFallback(file) {
-    const japaneseCourses = [
-      // Monday (月)
-      { originalTitle: "MSLC定期トレーニング", originalCode: "MSLC", translatedTitle: "MSLC Regular Training", translatedCode: "MSLC", title: "MSLC定期トレーニング", code: "MSLC定期トレーニング", day: "Mon", startTime: "09:00", endTime: "10:30", type: "Class" },
-      { originalTitle: "MSLC", originalCode: "MSLC", translatedTitle: "MSLC", translatedCode: "MSLC", title: "MSLC", code: "MSLC", day: "Mon", startTime: "10:40", endTime: "12:10", type: "Class" },
-      { originalTitle: "ヘルサポ", originalCode: "ヘルサポ", translatedTitle: "Health Support", translatedCode: "HEL-SUP", title: "ヘルサポ", code: "ヘルサポ", day: "Mon", startTime: "18:00", endTime: "19:30", type: "Class" },
-
-      // Tuesday (火)
-      { originalTitle: "エアロビクスⅠ", originalCode: "エアロ", translatedTitle: "Aerobics I", translatedCode: "AERO-1", title: "エアロビクスⅠ", code: "エアロビクスⅠ", day: "Tue", startTime: "09:00", endTime: "10:30", type: "Class" },
-      { originalTitle: "栄養学", originalCode: "栄養学", translatedTitle: "Nutrition Science", translatedCode: "NUTRI", title: "栄養学", code: "栄養学", day: "Tue", startTime: "13:00", endTime: "14:30", type: "Class" },
-      { originalTitle: "スポーツバイオメカニクス", originalCode: "スポバイオ", translatedTitle: "Sports Biomechanics", translatedCode: "BIOMECH", title: "スポーツバイオメカニクス", code: "スポーツバイオメカニクス", day: "Tue", startTime: "14:40", endTime: "16:10", type: "Class" },
-      { originalTitle: "MSLC", originalCode: "MSLC", translatedTitle: "MSLC", translatedCode: "MSLC", title: "MSLC", code: "MSLC", day: "Tue", startTime: "16:20", endTime: "17:50", type: "Class" },
-
-      // Wednesday (水)
-      { originalTitle: "社会福祉概論", originalCode: "社福", translatedTitle: "Social Welfare Intro", translatedCode: "SOC-WEL", title: "社会福祉概論", code: "社会福祉概論", day: "Wed", startTime: "10:40", endTime: "12:10", type: "Class" },
-      { originalTitle: "体育実技Ⅱ(バスケットボールB)", originalCode: "体育Ⅱ", translatedTitle: "Physical Education II (Basketball B)", translatedCode: "PE-BB", title: "体育実技Ⅱ(バスケットボールB)", code: "体育実技Ⅱ(バスケットボールB)", day: "Wed", startTime: "13:00", endTime: "14:30", type: "Class" },
-      { originalTitle: "MSLC", originalCode: "MSLC", translatedTitle: "MSLC", translatedCode: "MSLC", title: "MSLC", code: "MSLC", day: "Wed", startTime: "16:20", endTime: "17:50", type: "Class" },
-
-      // Thursday (木)
-      { originalTitle: "教育制度論(スポーツ健康学科対象)", originalCode: "教制", translatedTitle: "Educational Systems Theory", translatedCode: "EDU-SYS", title: "教育制度論(スポーツ健康学科対象)", code: "教育制度論(スポーツ健康学科対象)", day: "Thu", startTime: "09:00", endTime: "10:30", type: "Class" },
-      { originalTitle: "生理学・運動生理学", originalCode: "生理学", translatedTitle: "Physiology & Exercise Physiology", translatedCode: "PHYSIO", title: "生理学・運動生理学", code: "生理学・運動生理学", day: "Thu", startTime: "10:40", endTime: "12:10", type: "Class" },
-      { originalTitle: "免疫学", originalCode: "免疫学", translatedTitle: "Immunology", translatedCode: "IMMUNO", title: "免疫学", code: "免疫学", day: "Thu", startTime: "14:40", endTime: "16:10", type: "Class" },
-      { originalTitle: "外国語特別講義Ⅱ(マレー語)", originalCode: "マレー語", translatedTitle: "Special Foreign Language II (Malay)", translatedCode: "MALAY-2", title: "外国語特別講義Ⅱ(マレー語)", code: "外国語特別講義Ⅱ(マレー語)", day: "Thu", startTime: "16:20", endTime: "17:50", type: "Class" },
-
-      // Friday (金)
-      { originalTitle: "医学一般", originalCode: "医学一般", translatedTitle: "General Medicine", translatedCode: "MED-GEN", title: "医学一般", code: "医学一般", day: "Fri", startTime: "09:00", endTime: "10:30", type: "Class" },
-      { originalTitle: "衛生学・公衆衛生学", originalCode: "衛生学", translatedTitle: "Hygiene & Public Health", translatedCode: "PUB-HLTH", title: "衛生学・公衆衛生学", code: "衛生学・公衆衛生学", day: "Fri", startTime: "10:40", endTime: "12:10", type: "Class" },
-      { originalTitle: "解剖学", originalCode: "解剖学", translatedTitle: "Anatomy", translatedCode: "ANATOMY", title: "解剖学", code: "解剖学", day: "Fri", startTime: "13:00", endTime: "14:30", type: "Class" },
-      { originalTitle: "MSLC", originalCode: "MSLC", translatedTitle: "MSLC", translatedCode: "MSLC", title: "MSLC", code: "MSLC", day: "Fri", startTime: "14:40", endTime: "16:10", type: "Class" }
-    ];
-
-    return {
-      courses: japaneseCourses,
-      detectedLanguage: "Japanese",
-      hasNonEnglishText: true
-    };
   }
 }
 

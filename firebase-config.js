@@ -10,7 +10,6 @@
 
 const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBCjWjBb6x99Cu4p_SjVyy8f1vPLt7Yf-Q",
-  geminiApiKey: "AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q",
   authDomain: "schedully-2a6c3.firebaseapp.com",
   projectId: "schedully-2a6c3",
   storageBucket: "schedully-2a6c3.firebasestorage.app",

@@ -22,10 +22,7 @@ exports.handler = async (event, context) => {
     }
 
     let envKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
-    if (envKey.includes('AIzaSyBCjWjBb6x99Cu4p_SjVyy8f1vPLt7Yf-Q')) {
-      envKey = ''; // Ignore old blocked Firebase key
-    }
-    let apiKey = (envKey || 'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q').trim().replace(/^["']|["']$/g, '');
+    let apiKey = envKey;
     if (!apiKey) {
       return {
         statusCode: 500,

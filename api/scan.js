@@ -24,12 +24,9 @@ export default async function handler(req, res) {
     }
 
     let envKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
-    if (envKey.includes('AIzaSyBCjWjBb6x99Cu4p_SjVyy8f1vPLt7Yf-Q')) {
-      envKey = ''; // Ignore old blocked Firebase key
-    }
-    const apiKey = (clientApiKey || envKey || 'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q').trim().replace(/^["']|["']$/g, '');
+    const apiKey = (clientApiKey || envKey).trim().replace(/^["']|["']$/g, '');
     if (!apiKey) {
-      return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEY in Vercel Environment Variables or enter your API key in settings.' });
+      return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEY in Vercel Environment Variables.' });
     }
 
     // 1. DYNAMICALLY DISCOVER SUPPORTED MODELS
