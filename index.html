@@ -267,207 +267,289 @@
 <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </a>
 <div class="expandable-content hidden" id="content-theme">
-          <div class="theme-card-inner">
-            <!-- Theme Mode -->
-            <div class="theme-picker-section">
-              <label class="picker-label">Theme Mode</label>
-              <div class="theme-mode-row">
-                <button class="theme-mode-dot active" data-mode="auto" title="Auto System Theme (Default)">
-                  <span class="material-symbols-outlined icon-sm">sync</span>
+          <div class="layout-card-inner margin-top-sm">
+            <!-- ═══ THEME CIRCLE ICON DOCK ═══ -->
+            <div class="mobile-icon-dock-wrapper" id="theme-icon-dock-wrapper">
+              <!-- Back row (shown when a section is focused) -->
+              <div class="dock-back-row" id="theme-dock-back-row">
+                <button class="dock-back-btn" id="theme-dock-back-btn" type="button">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                  <span data-i18n="back">Back</span>
                 </button>
-                <div class="v-divider"></div>
-                <button class="theme-mode-dot mode-white" data-mode="light" title="Light Mode"></button>
-                <button class="theme-mode-dot mode-dark" data-mode="dark" title="Midnight Dark Mode"></button>
+                <span class="dock-section-title" id="theme-dock-section-title"></span>
               </div>
-            </div>
 
-            <!-- Color Palette Row (Including Matcha Green & Mocha Brown) -->
-            <div id="palette-picker-section" class="theme-picker-section margin-top-md transition-all duration-300">
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="picker-label mb-0">Color Palette</label>
-              </div>
-              <div class="palette-row">
-                <button class="palette-dot dot-palette active" data-palette="indigo" title="Electric Indigo">
-                  <span class="material-symbols-outlined icon-sm">palette</span>
-                </button>
-                
-                <button class="palette-dot dual-tone tone-coral" data-palette="coral" title="Warm Coral & Sunset">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                
-                <button class="palette-dot dual-tone tone-lavender" data-palette="lavender" title="Pastel Lavender & Pink">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-blush" data-palette="blush" title="Rose Blush">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-sky" data-palette="sky" title="Midnight Sky">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-matcha" data-palette="matcha" title="Matcha Green">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-mocha" data-palette="mocha" title="Mocha Brown">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-sage" data-palette="sage" title="Sage Green">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-slate" data-palette="slate" title="Navy Slate">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-
-                <button class="palette-dot dual-tone tone-sunset" data-palette="sunset" title="Golden Sunset">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-ocean" data-palette="ocean" title="Deep Ocean">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-forest" data-palette="forest" title="Pine Forest">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-sand" data-palette="sand" title="Desert Sand">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-plum" data-palette="plum" title="Muted Plum">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-cherry" data-palette="cherry" title="Dark Cherry">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-mint" data-palette="mint" title="Fresh Mint">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-rust" data-palette="rust" title="Burnt Rust">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-ash" data-palette="ash" title="Cool Ash">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-violet" data-palette="violet" title="Electric Violet">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-teal" data-palette="teal" title="Cyber Teal">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-amber" data-palette="amber" title="Honey Amber">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-rose" data-palette="rose" title="Peony Rose">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-midnight" data-palette="midnight" title="Neon Midnight">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-espresso" data-palette="espresso" title="Dark Espresso">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-                <button class="palette-dot dual-tone tone-cyan" data-palette="cyan" title="Ice Cyan">
-                  <span class="tone-top"></span><span class="tone-bottom"></span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Photo Wallpaper -->
-            <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60">
-              <div class="flex items-center justify-between mb-2">
-                <label class="picker-label mb-0 text-xs font-bold text-gray-800">Photo Wallpaper</label>
-              </div>
-              
-              <div class="flex flex-col gap-2">
-                <!-- Upload Dropzone Button (Shown when no wallpaper is set) -->
-                <div id="wallpaper-upload-container">
-                  <label for="wallpaper-image-input" class="cursor-pointer flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-blue-500 bg-white/70 hover:bg-blue-50/50 transition-all text-xs font-bold text-gray-700">
-                    <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span id="wallpaper-upload-label">Import Wallpaper</span>
-                    <input type="file" id="wallpaper-image-input" accept="image/*" class="hidden">
-                  </label>
-                </div>
-
-                <!-- Wallpaper Active Bar (Shown when photo uploaded) -->
-                <div id="wallpaper-controls-bar" class="hidden flex flex-col gap-2 p-2.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                      <img id="wallpaper-thumb-preview" class="w-9 h-9 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0" src="" alt="Wallpaper">
-                      <div class="truncate">
-                        <p class="text-[11.5px] font-bold text-slate-800 dark:text-slate-100 truncate">Wallpaper Active</p>
-                        <p id="wallpaper-extracted-status" class="text-[9.5px] font-semibold text-emerald-600 dark:text-emerald-400">Theme Colors Synced</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                      <label for="wallpaper-image-input" class="btn-wallpaper-action" title="Change Wallpaper">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      </label>
-                      <button id="btn-remove-wallpaper" type="button" title="Remove Wallpaper" class="btn-wallpaper-delete">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                      </button>
-                    </div>
+              <!-- Icon row: 4 category circles -->
+              <div class="mobile-icon-dock" id="theme-mobile-icon-dock">
+                <!-- 1. Mode & Palette -->
+                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-palette" data-dock-key="paletteAndMode" data-dock-label="Palette & Mode">
+                  <div class="dock-icon-circle">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12c0 3.69 2.47 6.8 6 7.73.5.11.83-.34.83-.8v-1.12c0-1.24 1.01-2.25 2.25-2.25h1.84c3.91 0 7.08-3.17 7.08-7.06C20 6.01 16.41 2 12 2z"/>
+                      <circle cx="7" cy="9" r="1.5" fill="currentColor"/>
+                      <circle cx="11" cy="6.5" r="1.5" fill="currentColor"/>
+                      <circle cx="16" cy="9" r="1.5" fill="currentColor"/>
+                    </svg>
                   </div>
-                  <!-- Resync Colors button (only exists and shows when wallpaper is active) -->
-                  <button id="btn-resync-wallpaper-colors" type="button" class="btn-resync-wallpaper">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span>Colors Resync</span>
+                  <span class="dock-icon-label" data-i18n="paletteAndMode">Palette &amp; Mode</span>
+                </button>
+
+                <!-- 2. Photo Wallpaper -->
+                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-wallpaper" data-dock-key="wallpaper" data-dock-label="Wallpaper">
+                  <div class="dock-icon-circle">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="18" height="18" rx="3" stroke-width="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15l-5-5L5 21"/>
+                    </svg>
+                  </div>
+                  <span class="dock-icon-label" data-i18n="wallpaper">Wallpaper</span>
+                </button>
+
+                <!-- 3. Blur & Opacity -->
+                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-effects" data-dock-key="blurAndOpacity" data-dock-label="Effects & Blur">
+                  <div class="dock-icon-circle">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                  </div>
+                  <span class="dock-icon-label" data-i18n="blurAndOpacity">Effects &amp; Blur</span>
+                </button>
+
+                <!-- 4. Typography & Fonts -->
+                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-fonts" data-dock-key="fontsAndStyle" data-dock-label="Font & Style">
+                  <div class="dock-icon-circle">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 18L7.5 6h1L13 18M4.8 14h6.4"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12v6m0-3a3 3 0 10-6 0 3 3 0 006 0z"/>
+                    </svg>
+                  </div>
+                  <span class="dock-icon-label" data-i18n="fontsAndStyle">Font &amp; Style</span>
+                </button>
+              </div>
+
+              <!-- Panel content target where sub-content is injected -->
+              <div class="dock-panel-content" id="theme-dock-panel"></div>
+            </div>
+            <!-- ═══ END THEME CIRCLE ICON DOCK ═══ -->
+
+            <!-- 1. Mode & Palette Sub-Content -->
+            <div class="sub-accordion-content hidden" id="sub-content-theme-palette">
+              <!-- Theme Mode -->
+              <div class="theme-picker-section">
+                <label class="picker-label">Theme Mode</label>
+                <div class="theme-mode-row">
+                  <button class="theme-mode-dot active" data-mode="auto" title="Auto System Theme (Default)">
+                    <span class="material-symbols-outlined icon-sm">sync</span>
+                  </button>
+                  <div class="v-divider"></div>
+                  <button class="theme-mode-dot mode-white" data-mode="light" title="Light Mode"></button>
+                  <button class="theme-mode-dot mode-dark" data-mode="dark" title="Midnight Dark Mode"></button>
+                </div>
+              </div>
+
+              <!-- Color Palette Row (Including Matcha Green & Mocha Brown) -->
+              <div id="palette-picker-section" class="theme-picker-section margin-top-md transition-all duration-300">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="picker-label mb-0">Color Palette</label>
+                </div>
+                <div class="palette-row">
+                  <button class="palette-dot dot-palette active" data-palette="indigo" title="Electric Indigo">
+                    <span class="material-symbols-outlined icon-sm">palette</span>
+                  </button>
+                  
+                  <button class="palette-dot dual-tone tone-coral" data-palette="coral" title="Warm Coral & Sunset">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  
+                  <button class="palette-dot dual-tone tone-lavender" data-palette="lavender" title="Pastel Lavender & Pink">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-blush" data-palette="blush" title="Rose Blush">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-sky" data-palette="sky" title="Midnight Sky">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-matcha" data-palette="matcha" title="Matcha Green">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-mocha" data-palette="mocha" title="Mocha Brown">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-sage" data-palette="sage" title="Sage Green">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-slate" data-palette="slate" title="Navy Slate">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+
+                  <button class="palette-dot dual-tone tone-sunset" data-palette="sunset" title="Golden Sunset">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-ocean" data-palette="ocean" title="Deep Ocean">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-forest" data-palette="forest" title="Pine Forest">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-sand" data-palette="sand" title="Desert Sand">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-plum" data-palette="plum" title="Muted Plum">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-cherry" data-palette="cherry" title="Dark Cherry">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-mint" data-palette="mint" title="Fresh Mint">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-rust" data-palette="rust" title="Burnt Rust">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-ash" data-palette="ash" title="Cool Ash">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-violet" data-palette="violet" title="Electric Violet">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-teal" data-palette="teal" title="Cyber Teal">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-amber" data-palette="amber" title="Honey Amber">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-rose" data-palette="rose" title="Peony Rose">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-midnight" data-palette="midnight" title="Neon Midnight">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-espresso" data-palette="espresso" title="Dark Espresso">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
+                  </button>
+                  <button class="palette-dot dual-tone tone-cyan" data-palette="cyan" title="Ice Cyan">
+                    <span class="tone-top"></span><span class="tone-bottom"></span>
                   </button>
                 </div>
               </div>
             </div>
+
+            <!-- 2. Photo Wallpaper Sub-Content -->
+            <div class="sub-accordion-content hidden" id="sub-content-theme-wallpaper">
+              <!-- Photo Wallpaper -->
+              <div class="theme-picker-section">
+                <div class="flex items-center justify-between mb-2">
+                  <label class="picker-label mb-0 text-xs font-bold text-gray-800">Photo Wallpaper</label>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                  <!-- Upload Dropzone Button (Shown when no wallpaper is set) -->
+                  <div id="wallpaper-upload-container">
+                    <label for="wallpaper-image-input" class="cursor-pointer flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-blue-500 bg-white/70 hover:bg-blue-50/50 transition-all text-xs font-bold text-gray-700">
+                      <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      <span id="wallpaper-upload-label">Import Wallpaper</span>
+                      <input type="file" id="wallpaper-image-input" accept="image/*" class="hidden">
+                    </label>
+                  </div>
+
+                  <!-- Wallpaper Active Bar (Shown when photo uploaded) -->
+                  <div id="wallpaper-controls-bar" class="hidden flex flex-col gap-2 p-2.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <img id="wallpaper-thumb-preview" class="w-9 h-9 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0" src="" alt="Wallpaper">
+                        <div class="truncate">
+                          <p class="text-[11.5px] font-bold text-slate-800 dark:text-slate-100 truncate">Wallpaper Active</p>
+                          <p id="wallpaper-extracted-status" class="text-[9.5px] font-semibold text-emerald-600 dark:text-emerald-400">Theme Colors Synced</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-1 shrink-0">
+                        <label for="wallpaper-image-input" class="btn-wallpaper-action" title="Change Wallpaper">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </label>
+                        <button id="btn-remove-wallpaper" type="button" title="Remove Wallpaper" class="btn-wallpaper-delete">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <!-- Resync Colors button (only exists and shows when wallpaper is active) -->
+                    <button id="btn-resync-wallpaper-colors" type="button" class="btn-resync-wallpaper">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                      <span>Colors Resync</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             
-            <!-- Background Blur Toggle & Intensity Slider -->
-            <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60">
-              <div class="opt-row mb-1 flex items-center justify-between">
-                <span class="opt-label text-xs font-bold text-gray-800">Background Blur</span>
-                <div class="pill-toggle-group" id="toggle-bg-blur">
-                  <button type="button" class="pill-btn active" data-val="no">OFF</button>
-                  <button type="button" class="pill-btn" data-val="yes">ON</button>
+            <!-- 3. Blur & Opacity Sub-Content -->
+            <div class="sub-accordion-content hidden" id="sub-content-theme-effects">
+              <!-- Background Blur Toggle & Intensity Slider -->
+              <div class="theme-picker-section">
+                <div class="opt-row mb-1 flex items-center justify-between">
+                  <span class="opt-label text-xs font-bold text-gray-800">Background Blur</span>
+                  <div class="pill-toggle-group" id="toggle-bg-blur">
+                    <button type="button" class="pill-btn active" data-val="no">OFF</button>
+                    <button type="button" class="pill-btn" data-val="yes">ON</button>
+                  </div>
+                </div>
+
+                <!-- Blur Intensity Slider (Appears when toggled ON) -->
+                <div id="blur-intensity-control" class="hidden flex flex-col gap-1 pt-1.5">
+                  <div class="flex items-center justify-between text-[11px] font-bold text-gray-600">
+                    <span>Blur Intensity</span>
+                    <span id="blur-intensity-val" class="text-blue-600 font-extrabold">10px</span>
+                  </div>
+                  <input type="range" id="slider-bg-blur" min="2" max="30" value="10" step="1" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
               </div>
 
-              <!-- Blur Intensity Slider (Appears when toggled ON) -->
-              <div id="blur-intensity-control" class="hidden flex flex-col gap-1 pt-1.5">
-                <div class="flex items-center justify-between text-[11px] font-bold text-gray-600">
-                  <span>Blur Intensity</span>
-                  <span id="blur-intensity-val" class="text-blue-600 font-extrabold">10px</span>
+              <!-- Timetable Opacity / Transparency Slider -->
+              <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60">
+                <div class="flex items-center justify-between text-[11px] font-bold text-gray-800">
+                  <span class="opt-label text-xs font-bold text-gray-800">Timetable Opacity</span>
+                  <span id="timetable-opacity-val" class="text-blue-600 font-extrabold">100%</span>
                 </div>
-                <input type="range" id="slider-bg-blur" min="2" max="30" value="10" step="1" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer">
+                <input type="range" id="slider-timetable-opacity" min="20" max="100" value="100" step="5" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer mt-1.5">
               </div>
             </div>
 
-            <!-- Timetable Opacity / Transparency Slider -->
-            <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60">
-              <div class="flex items-center justify-between text-[11px] font-bold text-gray-800">
-                <span class="opt-label text-xs font-bold text-gray-800">Timetable Opacity</span>
-                <span id="timetable-opacity-val" class="text-blue-600 font-extrabold">100%</span>
+            <!-- 4. Typography & Fonts Sub-Content -->
+            <div class="sub-accordion-content hidden" id="sub-content-theme-fonts">
+              <!-- Font Family & Custom Font Import -->
+              <div class="theme-picker-section">
+                <div class="flex items-center justify-between">
+                  <span class="opt-label text-xs font-bold text-gray-800">Font Family</span>
+                  <label for="custom-font-upload" class="cursor-pointer text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span>Import Font</span>
+                    <input type="file" id="custom-font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
+                  </label>
+                </div>
+                <select id="select-font-family" class="m3-input opt-input text-xs font-bold mt-1.5 cursor-pointer">
+                  <option value="default" selected>Google Sans (Default)</option>
+                  <option value="plus-jakarta">Plus Jakarta Sans (iOS Aesthetic)</option>
+                  <option value="outfit">Outfit (Geometric & Clean)</option>
+                  <option value="jetbrains">JetBrains Mono (Code / Minimal)</option>
+                  <option value="lexend">Lexend (Ultra Readable)</option>
+                  <option value="space-grotesk">Space Grotesk (Modernist Display)</option>
+                  <option value="playfair">Playfair Display (Classy Serif)</option>
+                  <option value="inter">Inter (Neutral Clean)</option>
+                </select>
               </div>
-              <input type="range" id="slider-timetable-opacity" min="20" max="100" value="100" step="5" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer mt-1.5">
             </div>
 
-            <!-- Font Family & Custom Font Import (Bottom-most in Theme section) -->
-            <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60">
-              <div class="flex items-center justify-between">
-                <span class="opt-label text-xs font-bold text-gray-800">Font Family</span>
-                <label for="custom-font-upload" class="cursor-pointer text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                  <span>Import Font</span>
-                  <input type="file" id="custom-font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
-                </label>
-              </div>
-              <select id="select-font-family" class="m3-input opt-input text-xs font-bold mt-1.5 cursor-pointer">
-                <option value="default" selected>Google Sans (Default)</option>
-                <option value="plus-jakarta">Plus Jakarta Sans (iOS Aesthetic)</option>
-                <option value="outfit">Outfit (Geometric & Clean)</option>
-                <option value="jetbrains">JetBrains Mono (Code / Minimal)</option>
-                <option value="lexend">Lexend (Ultra Readable)</option>
-                <option value="space-grotesk">Space Grotesk (Modernist Display)</option>
-                <option value="playfair">Playfair Display (Classy Serif)</option>
-                <option value="inter">Inter (Neutral Clean)</option>
-              </select>
-            </div>
+            <!-- Reset Button matching Image 2 -->
+            <button type="button" id="btn-reset-theme" class="m3-button m3-button-tonal full-width margin-top-sm" data-i18n="resetToDefault">
+              RESET TO DEFAULT
+            </button>
           </div>
         </div>
       
@@ -513,7 +595,9 @@
                 </button>
                 <button class="dock-icon-btn" type="button" data-dock-target="sub-content-colors" data-dock-key="colorsAndTheme">
                   <div class="dock-icon-circle">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 5 5 0 013-4.5V11a7 7 0 0114 0v1.5a5 5 0 013 4.5 4 4 0 01-4 4H7z"/></svg>
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.4 4.6a2 2 0 00-2.8 0L14 7.2l2.8 2.8 2.6-2.6a2 2 0 000-2.8zM12.6 8.6L6 15.2V18h2.8l6.6-6.6-2.8-2.8zM4 20h.01"/>
+                    </svg>
                   </div>
                   <span class="dock-icon-label" data-i18n="colorsAndTheme">Colors &amp; Theme</span>
                 </button>
@@ -1444,15 +1528,15 @@
     </div>
 
     <!-- Sub-menu for Display Time: Start Time, Start & End, End Time -->
-    <div id="quick-time-submenu" class="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex flex-col gap-2 transition-all">
+    <div id="quick-time-submenu" class="quick-time-submenu-box flex flex-col gap-2 transition-all">
       <div class="flex items-center justify-between">
-        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Card Time Format</span>
-        <span id="quick-time-preview-badge" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-md">Start Only</span>
+        <span class="submenu-header-label">Card Time Format</span>
+        <span id="quick-time-preview-badge" class="quick-time-badge">Start Only</span>
       </div>
-      <div class="grid grid-cols-3 gap-1 p-0.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" id="time-display-mode-group">
-        <button type="button" class="time-mode-btn active py-1.5 px-1 rounded-lg text-[10px] font-extrabold text-center transition-all" data-timemode="start">Start Only</button>
-        <button type="button" class="time-mode-btn py-1.5 px-1 rounded-lg text-[10px] font-extrabold text-center transition-all" data-timemode="both">Start & End</button>
-        <button type="button" class="time-mode-btn py-1.5 px-1 rounded-lg text-[10px] font-extrabold text-center transition-all" data-timemode="end">End Only</button>
+      <div class="time-display-mode-container" id="time-display-mode-group">
+        <button type="button" class="time-mode-btn active" data-timemode="start">Start Only</button>
+        <button type="button" class="time-mode-btn" data-timemode="both">Start &amp; End</button>
+        <button type="button" class="time-mode-btn" data-timemode="end">End Only</button>
       </div>
     </div>
   </div>

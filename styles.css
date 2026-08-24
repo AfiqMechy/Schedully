@@ -1063,9 +1063,11 @@ body.dark-mode .btn-coffee-support:hover {
   background-color: rgba(245, 158, 11, 0.18) !important;
 }
 
-/* Modal Overlays: Ensure Globe Language and Coffee Modals are always on top on Mobile and Desktop */
+/* Modal Overlays: Ensure Globe Language, OCR Choice, and Coffee Modals are always on top on Mobile, Tablet, and Desktop */
 #language-modal,
-#coffee-modal {
+#coffee-modal,
+#ocr-language-choice-modal,
+#custom-color-modal {
   z-index: 99999 !important;
   position: fixed !important;
   inset: 0 !important;
@@ -1075,6 +1077,7 @@ body.dark-mode .btn-coffee-support:hover {
   background-color: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
+  touch-action: manipulation;
 }
 
 /* Coffee Modal Card */
@@ -1148,31 +1151,98 @@ body.dark-mode .support-tab-btn.active {
   user-select: none;
 }
 
-/* Time Display Submenu Mode Buttons */
+/* Time Display Submenu Box & Controls */
+.quick-time-submenu-box {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.035);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+body.dark-mode .quick-time-submenu-box {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+}
+
+.submenu-header-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+}
+
+body.dark-mode .submenu-header-label {
+  color: #94A3B8 !important;
+}
+
+.quick-time-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+body.dark-mode .quick-time-badge {
+  color: #60A5FA !important;
+  background: rgba(37, 99, 235, 0.22) !important;
+}
+
+.time-display-mode-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+}
+
+body.dark-mode .time-display-mode-container {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
 .time-mode-btn {
+  padding: 6px 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
   color: #64748B;
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
+
 .time-mode-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1E293B;
 }
+
 .time-mode-btn.active {
   background-color: var(--m3-sys-color-primary, #2563EB) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
 }
+
 body.dark-mode .time-mode-btn {
   color: #94A3B8;
 }
+
 body.dark-mode .time-mode-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #E2E8F0;
 }
+
 body.dark-mode .time-mode-btn.active {
-  background-color: var(--m3-sys-color-primary, #3B82F6) !important;
+  background-color: #2563EB !important;
   color: #FFFFFF !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* OCR Language Card */
@@ -4055,6 +4125,8 @@ body.dark-mode .m3-slider {
   transition: background 0.15s ease, transform 0.13s ease;
   will-change: transform;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .dock-back-btn:active {
@@ -4129,6 +4201,8 @@ body.dark-mode .dock-section-title {
   min-width: 0;
   overflow: visible;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1),
               opacity 0.26s cubic-bezier(0.2, 0.9, 0.3, 1),
               width 0.3s cubic-bezier(0.2, 0.9, 0.3, 1),
@@ -4229,26 +4303,30 @@ body.dark-mode .dock-icon-btn:hover .dock-icon-label {
 
 /* ACTIVE → Solid filled circle with white icon */
 .dock-icon-btn.dock-active[data-dock-target="sub-content-corners"] .dock-icon-circle,
-.dock-icon-btn.dock-active[data-dock-target="sub-content-course-info"] .dock-icon-circle {
+.dock-icon-btn.dock-active[data-dock-target="sub-content-course-info"] .dock-icon-circle,
+.dock-icon-btn.dock-active[data-dock-target="sub-content-theme-fonts"] .dock-icon-circle {
   background: #2563EB !important;
   border-color: #2563EB !important;
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
 }
 
-.dock-icon-btn.dock-active[data-dock-target="sub-content-dimensions"] .dock-icon-circle {
+.dock-icon-btn.dock-active[data-dock-target="sub-content-dimensions"] .dock-icon-circle,
+.dock-icon-btn.dock-active[data-dock-target="sub-content-theme-wallpaper"] .dock-icon-circle {
   background: #059669 !important;
   border-color: #059669 !important;
   box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45) !important;
 }
 
-.dock-icon-btn.dock-active[data-dock-target="sub-content-colors"] .dock-icon-circle {
+.dock-icon-btn.dock-active[data-dock-target="sub-content-colors"] .dock-icon-circle,
+.dock-icon-btn.dock-active[data-dock-target="sub-content-theme-palette"] .dock-icon-circle {
   background: #7C3AED !important;
   border-color: #7C3AED !important;
   box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45) !important;
 }
 
 .dock-icon-btn.dock-active[data-dock-target="sub-content-days"] .dock-icon-circle,
-.dock-icon-btn.dock-active[data-dock-target="sub-content-course-schedule"] .dock-icon-circle {
+.dock-icon-btn.dock-active[data-dock-target="sub-content-course-schedule"] .dock-icon-circle,
+.dock-icon-btn.dock-active[data-dock-target="sub-content-theme-effects"] .dock-icon-circle {
   background: #D97706 !important;
   border-color: #D97706 !important;
   box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45) !important;

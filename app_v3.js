@@ -2319,6 +2319,13 @@ class SchedullyApp {
     };
 
     initIconDock(
+      'theme-mobile-icon-dock',
+      'theme-dock-panel',
+      'theme-dock-back-row',
+      'theme-dock-back-btn',
+      'theme-dock-section-title'
+    );
+    initIconDock(
       'layout-mobile-icon-dock',
       'layout-dock-panel',
       'layout-dock-back-row',
@@ -2529,6 +2536,18 @@ class SchedullyApp {
         document.querySelectorAll('#time-display-mode-group .time-mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.cardTimeDisplayType = btn.getAttribute('data-timemode') || 'start';
+        this.globalCardTimes = true;
+        this.classes.forEach(c => c.displayTime = true);
+
+        // Ensure Display Time YES toggle is actively selected
+        const yesBtn = document.querySelector('#toggle-quick-time .pill-btn[data-val="yes"]');
+        const noBtn = document.querySelector('#toggle-quick-time .pill-btn[data-val="no"]');
+        if (yesBtn && noBtn) {
+          yesBtn.classList.add('active');
+          noBtn.classList.remove('active');
+        }
+        if (this.quickTimeSubmenu) this.quickTimeSubmenu.classList.remove('hidden');
+
         if (this.quickTimePreviewBadge) {
           if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = 'Start & End';
           else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = 'End Only';
@@ -3081,6 +3100,38 @@ class SchedullyApp {
       this.renderAll();
     });
 
+    const btnResetTheme = document.getElementById('btn-reset-theme');
+    if (btnResetTheme) {
+      btnResetTheme.addEventListener('click', () => {
+        // 1. Reset theme mode to auto
+        document.querySelector('.theme-mode-dot[data-mode="auto"]')?.click();
+        
+        // 2. Remove wallpaper if active
+        document.getElementById('btn-remove-wallpaper')?.click();
+        
+        // 3. Reset palette to default (indigo)
+        document.querySelector('.palette-dot[data-palette="indigo"]')?.click();
+        
+        // 4. Reset background blur to OFF
+        const blurNoBtn = document.querySelector('#toggle-bg-blur .pill-btn[data-val="no"]');
+        if (blurNoBtn) blurNoBtn.click();
+        
+        // 5. Reset Timetable Opacity to 100%
+        const opacitySlider = document.getElementById('slider-timetable-opacity');
+        if (opacitySlider) {
+          opacitySlider.value = 100;
+          opacitySlider.dispatchEvent(new Event('input'));
+        }
+        
+        // 6. Reset Font Family to default
+        const fontSelect = document.getElementById('select-font-family');
+        if (fontSelect) {
+          fontSelect.value = 'default';
+          fontSelect.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+
 
 
     // Theme Mode Dots
@@ -3599,7 +3650,12 @@ class SchedullyApp {
             let extracted = [];
             try {
               const provider = document.getElementById('select-api-provider')?.value || 'gemini';
-              const apiKey = document.getElementById('input-api-key')?.value.trim() || '';
+              const apiKey = (
+                document.getElementById('fb-api-key')?.value ||
+                document.getElementById('input-api-key')?.value ||
+                localStorage.getItem('schedully_api_key') ||
+                ''
+              ).trim();
               
               if (apiKey) {
                 localStorage.setItem('schedully_api_key', apiKey);
@@ -4982,6 +5038,33 @@ class SchedullyApp {
     });
 
     this.classes.push(...mapped);
+
+    // Auto-adjust grid start & end times so all imported courses are visible
+    mapped.forEach(c => {
+      if (c.startTime) {
+        const [sh] = c.startTime.split(':').map(Number);
+        if (!isNaN(sh) && sh < this.gridStartHour) this.gridStartHour = sh;
+      }
+      if (c.endTime) {
+        const [eh, em] = c.endTime.split(':').map(Number);
+        const endCeil = (em > 0) ? eh + 1 : eh;
+        if (!isNaN(endCeil) && endCeil > this.gridEndHour) this.gridEndHour = Math.min(24, endCeil);
+      }
+      if (c.day && !this.activeDays.includes(c.day)) {
+        this.activeDays.push(c.day);
+      }
+    });
+
+    if (this.gridStartTimeSelect) {
+      this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;
+    }
+    if (this.gridEndTimeSelect) {
+      this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+    }
+    document.querySelectorAll('.day-toggle').forEach(chk => {
+      chk.checked = this.activeDays.includes(chk.value);
+    });
+
     this._stagePending();
     this.renderAll();
   }
@@ -5135,13 +5218,22 @@ class SchedullyApp {
       'japanese': '🇯🇵',
       'korean': '🇰🇷',
       'chinese': '🇨🇳',
+      'mandarin': '🇨🇳',
       'arabic': '🇸🇦',
+      'malay': '🇲🇾',
+      'bahasa melayu': '🇲🇾',
+      'indonesian': '🇮🇩',
+      'bahasa indonesia': '🇮🇩',
       'french': '🇫🇷',
       'german': '🇩🇪',
       'spanish': '🇪🇸',
-      'malay': '🇲🇾',
-      'indonesian': '🇮🇩',
-      'russian': '🇷🇺'
+      'portuguese': '🇵🇹',
+      'italian': '🇮🇹',
+      'russian': '🇷🇺',
+      'thai': '🇹🇭',
+      'vietnamese': '🇻🇳',
+      'hindi': '🇮🇳',
+      'turkish': '🇹🇷'
     };
     const flag = flagMap[langLower] || '🌐';
 
@@ -5380,7 +5472,7 @@ class SchedullyApp {
           const fontFactor = isPhone ? (widthScale < 0.8 ? 38 : 46) : 60;
           const maxAdaptiveFont = Math.min(16, Math.max(5.5, Math.round(fontFactor / numDays)));
           
-          const isShortCard = (cardHeightPx < 28);
+          const isShortCard = (cardHeightPx < 22);
           
           // Count active text lines per card
           let lineCount = 1;
@@ -5389,7 +5481,7 @@ class SchedullyApp {
             if (this.globalCourseRoom && matched.room) lineCount++;
             if (this.globalCourseLecturer && matched.lecturer) lineCount++;
             if (this.globalCourseGroup && matched.group) lineCount++;
-            if (this.globalCardTimes && matched.displayTime !== false) lineCount += 2;
+            if (this.globalCardTimes) lineCount += (this.cardTimeDisplayType === 'both' ? 2 : 1);
           }
 
           const heightAdaptiveFont = Math.min(16, Math.max(6, Math.floor(cardHeightPx / (lineCount * 1.3))));
@@ -5413,7 +5505,7 @@ class SchedullyApp {
             ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
             ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
             ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
-            ${this.globalCardTimes && matched.displayTime !== false ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
+            ${this.globalCardTimes ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
           `;
 
           const cardElement = document.createElement('div');
