@@ -54,6 +54,10 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    FULL GPU COMPOSITOR LAYER PROMOTION
    Moves ALL animations onto the device GPU thread (Adreno/Mali/PowerVR).

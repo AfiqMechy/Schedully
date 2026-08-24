@@ -58,7 +58,7 @@ class OCRTimetableParser {
       console.warn("Vercel /api/scan endpoint unavailable, falling back to direct client-side vision...", apiErr);
     }
 
-    // 2. Direct Client-Side Gemini Vision Call
+    // 2. Direct Client-Side Gemini Vision Call (if API key available)
     if (effectiveApiKey) {
       onProgress("Running Direct Gemini Vision AI Scanner...");
       try {
@@ -68,21 +68,6 @@ class OCRTimetableParser {
         }
       } catch (directErr) {
         console.warn("Direct Gemini Vision scan failed:", directErr);
-      }
-    } else {
-      // If no API key is provided, prompt user for a free Gemini API Key
-      const userKey = prompt("Please enter your Google Gemini API Key for AI Timetable Scanning (Free at aistudio.google.com):", "");
-      if (userKey && userKey.trim()) {
-        effectiveApiKey = userKey.trim();
-        localStorage.setItem('schedully_api_key', effectiveApiKey);
-        const fbKeyInput = document.getElementById('fb-api-key');
-        if (fbKeyInput) fbKeyInput.value = effectiveApiKey;
-
-        try {
-          return await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
-        } catch (promptErr) {
-          console.warn("Direct scan with entered key failed:", promptErr);
-        }
       }
     }
 

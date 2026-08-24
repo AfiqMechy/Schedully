@@ -3665,9 +3665,9 @@ class SchedullyApp {
                 this.ocrLoadingText.innerText = msg;
               });
               
-              const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
-              const detectedLang = scanResult.detectedLanguage || 'English';
-              const hasNonEnglish = !!scanResult.hasNonEnglishText;
+              extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
+              const detectedLang = scanResult.detectedLanguage || 'Japanese';
+              const hasNonEnglish = (scanResult.hasNonEnglishText !== undefined) ? scanResult.hasNonEnglishText : true;
 
               if (!extracted || extracted.length === 0) {
                 const scanErrorAlert = document.getElementById('scan-error-alert');
@@ -3783,7 +3783,10 @@ class SchedullyApp {
     // OCR Language Choice Modal Events
     if (this.btnCloseOcrLangModal) {
       this.btnCloseOcrLangModal.addEventListener('click', () => {
-        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.ocrLangModal) {
+          this.ocrLangModal.classList.add('hidden');
+          this.ocrLangModal.style.display = 'none';
+        }
         if (this.pendingOcrResult) {
           this.importClassesDirectly(this.pendingOcrResult.courses);
           this.pendingOcrResult = null;
@@ -3793,7 +3796,10 @@ class SchedullyApp {
 
     if (this.btnOcrKeepOriginal) {
       this.btnOcrKeepOriginal.addEventListener('click', () => {
-        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.ocrLangModal) {
+          this.ocrLangModal.classList.add('hidden');
+          this.ocrLangModal.style.display = 'none';
+        }
         if (this.pendingOcrResult) {
           const courses = this.pendingOcrResult.courses.map(c => ({
             ...c,
@@ -3808,7 +3814,10 @@ class SchedullyApp {
 
     if (this.btnOcrTranslateEnglish) {
       this.btnOcrTranslateEnglish.addEventListener('click', () => {
-        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.ocrLangModal) {
+          this.ocrLangModal.classList.add('hidden');
+          this.ocrLangModal.style.display = 'none';
+        }
         if (this.pendingOcrResult) {
           const courses = this.pendingOcrResult.courses.map(c => ({
             ...c,
@@ -5258,6 +5267,7 @@ class SchedullyApp {
     if (typeof this.toggleRightSidebar === 'function') this.toggleRightSidebar(true);
 
     this.ocrLangModal.classList.remove('hidden');
+    this.ocrLangModal.style.display = 'flex';
   }
 
   updateClock() {
