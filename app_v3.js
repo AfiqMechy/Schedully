@@ -311,6 +311,19 @@ class SchedullyApp {
     this.btnOcrKeepOriginal = document.getElementById('btn-ocr-keep-original');
     this.btnOcrTranslateEnglish = document.getElementById('btn-ocr-translate-english');
     this.btnCloseOcrLangModal = document.getElementById('btn-close-ocr-lang-modal');
+
+    // Gemini AI API Key Modal
+    this.geminiApiKeyModal = document.getElementById('gemini-api-key-modal');
+    this.btnOpenGeminiKeyModal = document.getElementById('btn-open-gemini-key-modal');
+    this.btnCloseGeminiKeyModal = document.getElementById('btn-close-gemini-key-modal');
+    this.btnCancelGeminiKey = document.getElementById('btn-cancel-gemini-key');
+    this.btnSaveGeminiKey = document.getElementById('btn-save-gemini-key');
+    this.inputGeminiApiKey = document.getElementById('input-gemini-api-key');
+    this.btnToggleGeminiKeyVis = document.getElementById('btn-toggle-gemini-key-vis');
+    this.geminiKeyStatusLabel = document.getElementById('gemini-key-status-label');
+    this.pendingScanFile = null;
+    window.schedullyApp = this;
+    this.updateGeminiKeyStatusBadge();
   }
 
   getContrastColor(hexColor) {
@@ -3646,21 +3659,22 @@ class SchedullyApp {
 
           if (isImage) {
             // Run AI Screenshot Scanner
+            const scanErrorAlert = document.getElementById('scan-error-alert');
+            if (scanErrorAlert) scanErrorAlert.classList.add('hidden');
+
             this.ocrLoadingBar.classList.remove('hidden');
             let extracted = [];
             try {
-              const provider = document.getElementById('select-api-provider')?.value || 'gemini';
+              const provider = 'gemini';
               const apiKey = (
-                document.getElementById('fb-api-key')?.value ||
-                document.getElementById('input-api-key')?.value ||
+                localStorage.getItem('schedully_gemini_api_key') ||
                 localStorage.getItem('schedully_api_key') ||
+                localStorage.getItem('gemini_api_key') ||
+                document.getElementById('input-gemini-api-key')?.value ||
+                document.getElementById('fb-api-key')?.value ||
                 ''
               ).trim();
               
-              if (apiKey) {
-                localStorage.setItem('schedully_api_key', apiKey);
-              }
-
               const scanResult = await window.ocrParser.scanWithCloudAPI(file, provider, apiKey, (msg) => {
                 this.ocrLoadingText.innerText = msg;
               });
@@ -3826,6 +3840,75 @@ class SchedullyApp {
           }));
           this.importClassesDirectly(courses);
           this.pendingOcrResult = null;
+        }
+      });
+    }
+
+    // Gemini API Key Modal Listeners
+    if (this.btnOpenGeminiKeyModal) {
+      this.btnOpenGeminiKeyModal.addEventListener('click', () => {
+        this.openGeminiKeyModal();
+      });
+    }
+
+    if (this.btnCloseGeminiKeyModal) {
+      this.btnCloseGeminiKeyModal.addEventListener('click', () => {
+        this.closeGeminiKeyModal();
+      });
+    }
+
+    if (this.btnCancelGeminiKey) {
+      this.btnCancelGeminiKey.addEventListener('click', () => {
+        this.closeGeminiKeyModal();
+      });
+    }
+
+    if (this.btnToggleGeminiKeyVis) {
+      this.btnToggleGeminiKeyVis.addEventListener('click', () => {
+        if (this.inputGeminiApiKey) {
+          this.inputGeminiApiKey.type = this.inputGeminiApiKey.type === 'password' ? 'text' : 'password';
+        }
+      });
+    }
+
+    if (this.btnSaveGeminiKey) {
+      this.btnSaveGeminiKey.addEventListener('click', async () => {
+        const rawKey = (this.inputGeminiApiKey?.value || '').trim();
+        if (!rawKey) {
+          alert("Please enter a valid Google Gemini API Key.");
+          return;
+        }
+        localStorage.setItem('schedully_gemini_api_key', rawKey);
+        localStorage.setItem('schedully_api_key', rawKey);
+        this.updateGeminiKeyStatusBadge();
+        this.closeGeminiKeyModal();
+
+        // If there was a pending file waiting to be scanned, scan it now!
+        if (this.pendingScanFile) {
+          const fileToScan = this.pendingScanFile;
+          this.pendingScanFile = null;
+          if (this.ocrLoadingBar) this.ocrLoadingBar.classList.remove('hidden');
+          if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Analyzing timetable with Gemini Vision...";
+          try {
+            const scanResult = await window.ocrParser.scanWithCloudAPI(fileToScan, 'gemini', rawKey, (msg) => {
+              if (this.ocrLoadingText) this.ocrLoadingText.innerText = msg;
+            });
+            const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
+            const detectedLang = scanResult.detectedLanguage || 'English';
+            const hasNonEnglish = (scanResult.hasNonEnglishText !== undefined) ? scanResult.hasNonEnglishText : false;
+
+            if (extracted && extracted.length > 0) {
+              if (hasNonEnglish || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
+                this.showOcrLanguageModal(extracted, detectedLang);
+              } else {
+                this.importClassesDirectly(extracted);
+              }
+            }
+          } catch (err) {
+            console.error("Scan error after key save:", err);
+          } finally {
+            if (this.ocrLoadingBar) this.ocrLoadingBar.classList.add('hidden');
+          }
         }
       });
     }
@@ -5268,6 +5351,43 @@ class SchedullyApp {
 
     this.ocrLangModal.classList.remove('hidden');
     this.ocrLangModal.style.display = 'flex';
+  }
+
+  openGeminiKeyModal(pendingFile = null) {
+    this.pendingScanFile = pendingFile;
+    if (this.inputGeminiApiKey) {
+      this.inputGeminiApiKey.value = localStorage.getItem('schedully_gemini_api_key') || localStorage.getItem('schedully_api_key') || '';
+    }
+    if (this.geminiApiKeyModal) {
+      this.geminiApiKeyModal.classList.remove('hidden');
+      this.geminiApiKeyModal.style.display = 'flex';
+    }
+    if (typeof this.toggleLeftSidebar === 'function') this.toggleLeftSidebar(true);
+    if (typeof this.toggleRightSidebar === 'function') this.toggleRightSidebar(true);
+  }
+
+  closeGeminiKeyModal() {
+    if (this.geminiApiKeyModal) {
+      this.geminiApiKeyModal.classList.add('hidden');
+      this.geminiApiKeyModal.style.display = 'none';
+    }
+  }
+
+  updateGeminiKeyStatusBadge() {
+    const key = (
+      localStorage.getItem('schedully_gemini_api_key') ||
+      localStorage.getItem('schedully_api_key') ||
+      ''
+    ).trim();
+    if (this.geminiKeyStatusLabel) {
+      if (key) {
+        this.geminiKeyStatusLabel.innerText = "✨ Gemini Connected";
+        this.geminiKeyStatusLabel.className = "text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 truncate";
+      } else {
+        this.geminiKeyStatusLabel.innerText = "Gemini 2.0/2.5 Ready";
+        this.geminiKeyStatusLabel.className = "text-[9.5px] font-semibold text-blue-700 dark:text-blue-300 truncate";
+      }
+    }
   }
 
   updateClock() {

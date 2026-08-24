@@ -10,7 +10,7 @@ class OCRTimetableParser {
   }
 
   /**
-   * Universal Cloud Vision API Scanning (Supports Gemini 2.5 Flash, 1.5 Flash Vision & Fallbacks)
+   * Universal Cloud Vision API Scanning (Supports Gemini 2.0/2.5/3.7 Flash & Fallbacks)
    */
   async scanWithCloudAPI(file, provider, apiKey, onProgress = () => {}) {
     onProgress("Encoding image for AI Vision Analysis...");
@@ -22,18 +22,33 @@ class OCRTimetableParser {
 
     const mimeType = file.type || 'image/jpeg';
 
-    // Retrieve active API Key from all possible sources
+    // Retrieve active API Key from all possible sources (including embedded default)
     let effectiveApiKey = (
       apiKey ||
-      document.getElementById('fb-api-key')?.value ||
-      document.getElementById('input-api-key')?.value ||
+      localStorage.getItem('schedully_gemini_api_key') ||
       localStorage.getItem('schedully_api_key') ||
       localStorage.getItem('gemini_api_key') ||
-      ''
+      (typeof DEFAULT_FIREBASE_CONFIG !== 'undefined' ? DEFAULT_FIREBASE_CONFIG.geminiApiKey : '') ||
+      document.getElementById('input-gemini-api-key')?.value ||
+      document.getElementById('fb-api-key')?.value ||
+      'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q'
     ).trim().replace(/^["']|["']$/g, '');
 
-    // 1. Try Vercel Serverless Function First
-    onProgress("Analyzing timetable with AI Vision Scanner...");
+    // 1. Direct Client-Side Gemini Vision Call (Fastest & direct)
+    if (effectiveApiKey) {
+      onProgress("Running Gemini Vision AI Scanner...");
+      try {
+        const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
+        if (directResult && directResult.courses && directResult.courses.length > 0) {
+          return directResult;
+        }
+      } catch (directErr) {
+        console.warn("Direct Gemini Vision scan failed:", directErr);
+      }
+    }
+
+    // 2. Try Vercel Serverless Function (/api/scan)
+    onProgress("Connecting to AI Vision Service...");
     try {
       const response = await fetch('/api/scan', {
         method: 'POST',
@@ -48,97 +63,136 @@ class OCRTimetableParser {
           if (courses.length > 0) {
             return {
               courses: courses,
-              detectedLanguage: resData.detectedLanguage || 'Japanese',
-              hasNonEnglishText: resData.hasNonEnglishText !== undefined ? resData.hasNonEnglishText : true
+              detectedLanguage: resData.detectedLanguage || 'English',
+              hasNonEnglishText: resData.hasNonEnglishText !== undefined ? resData.hasNonEnglishText : false
             };
           }
         }
       }
     } catch (apiErr) {
-      console.warn("Vercel /api/scan endpoint unavailable, falling back to direct client-side vision...", apiErr);
+      console.warn("/api/scan unavailable:", apiErr);
     }
 
-    // 2. Direct Client-Side Gemini Vision Call (if API key available)
-    if (effectiveApiKey) {
-      onProgress("Running Direct Gemini Vision AI Scanner...");
-      try {
-        const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
-        if (directResult && directResult.courses && directResult.courses.length > 0) {
-          return directResult;
-        }
-      } catch (directErr) {
-        console.warn("Direct Gemini Vision scan failed:", directErr);
-      }
+    // 3. If no key, prompt user via Gemini Key Modal
+    if (!effectiveApiKey && window.schedullyApp && typeof window.schedullyApp.openGeminiKeyModal === 'function') {
+      window.schedullyApp.openGeminiKeyModal(file);
+      throw new Error("Please enter your Google Gemini API Key to scan this timetable.");
     }
 
-    // 3. Fallback: Intelligent Japanese / Academic Grid Preset Extractor
+    // 4. Fallback: Intelligent Preset Extractor
     onProgress("Recognizing timetable structure...");
     return this.parseJapaneseTimetableFallback(file);
   }
 
   /**
-   * Direct Browser-to-Google Gemini Vision Call
+   * Direct Browser-to-Google Gemini Vision Call with Gemini 3.6 Flash Priority
    */
   async scanDirectGemini(base64Data, mimeType, apiKey, onProgress) {
-    onProgress("Scanning with Gemini Vision AI...");
+    // Exact priority order based on active Google AI models
+    let candidateModels = [
+      'gemini-3.6-flash',
+      'gemini-3.7-flash',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ];
+
+    try {
+      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+        headers: { 'x-goog-api-key': apiKey }
+      });
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        if (listData && listData.models) {
+          const apiModels = listData.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => m.name.replace('models/', ''));
+          
+          const sorted = [];
+          const pushIf = (filterFn) => {
+            apiModels.filter(filterFn).forEach(m => { if (!sorted.includes(m)) sorted.push(m); });
+          };
+          pushIf(m => m === 'gemini-3.6-flash' || m.includes('3.6-flash'));
+          pushIf(m => m.includes('3.7-flash'));
+          pushIf(m => m.includes('2.5-flash') || m.includes('2.0-flash'));
+          pushIf(m => m.includes('1.5-flash'));
+          pushIf(m => m.includes('flash'));
+          pushIf(m => m.includes('gemini'));
+
+          if (sorted.length > 0) candidateModels = sorted;
+        }
+      }
+    } catch (discoveryErr) {
+      console.warn("Model discovery skipped, using default candidate list:", discoveryErr);
+    }
+
     const promptText = `CRITICAL SYSTEM COMMAND:
-You are an expert multilingual academic timetable vision parser.
-Your task is to analyze the uploaded timetable image, detect the language, and extract all scheduled course/class slots.
+You are an expert universal academic timetable vision parser.
+Analyze this timetable image and extract ALL scheduled classes/courses into clean structured JSON.
 
-1. LANGUAGE DETECTION:
-- Detect the primary language (e.g. "Japanese", "Korean", "Chinese", "Arabic", "French", "German", "Spanish", "English", etc.).
-- Set "detectedLanguage" to the language name (e.g. "Japanese").
-- Set "hasNonEnglishText" to true if characters/words from Japanese, Chinese, Korean, Arabic, Cyrillic, or other non-English languages are present.
+1. MULTILINGUAL & SCRIPT SUPPORT:
+- Support ANY language: English, Malay/Bahasa Melayu, Japanese, Chinese, Korean, Arabic, French, German, Spanish, Indonesian, Russian, etc.
+- Detect "detectedLanguage" (e.g. "Malay", "Japanese", "English", "Chinese", "Arabic", "French").
+- Set "hasNonEnglishText": true if non-English characters or non-English course names are present.
 
-2. DAYS AND PERIOD CALCULATION:
-- Japanese days: 月/月曜 -> Mon, 火/火曜 -> Tue, 水/水曜 -> Wed, 木/木曜 -> Thu, 金/金曜 -> Fri, 土/土曜 -> Sat, 日/日曜 -> Sun
-- Period slot hours (if numbered 1, 2, 3, 4, 5, 6):
-  - Period 1: 09:00 - 10:30
-  - Period 2: 10:40 - 12:10
-  - Period 3: 13:00 - 14:30
-  - Period 4: 14:40 - 16:10
-  - Period 5: 16:20 - 17:50
-  - Period 6: 18:00 - 19:30
-- If explicit times are printed, use those exact times.
+2. DAYS PARSING:
+- Normalize days to standard 3-letter English: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
+- Day translations:
+  * Malay/Indonesian: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun
+  * Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun
+  * Chinese: 星期一/周一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun
+  * Arabic: الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat
 
-3. DUAL-LANGUAGE EXTRACTION:
-For each class, extract:
-- "originalTitle": Full original name in native script (e.g. "エアロビクスⅠ", "社会福祉概論", "解剖学", "教育制度論(スポーツ健康学科対象)", "MSLC定期トレーニング", "ヘルサポ")
-- "originalCode": Native shorthand or code (e.g. "エアロ", "社福", "解剖", "MSLC")
-- "translatedTitle": English translation (e.g. "Aerobics I", "Introduction to Social Welfare", "Anatomy", "Educational Systems Theory", "MSLC Regular Training", "Health Support")
-- "translatedCode": Clean Latin code (e.g. "AERO-1", "SOC-WEL", "ANAT", "EDU-SYS", "MSLC", "HEL-SUP")
-- "title": Default to originalTitle
-- "code": Default to originalTitle or originalCode
-- "day": "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", or "Sun"
-- "startTime": 24h format "HH:MM"
-- "endTime": 24h format "HH:MM"
-- "type": "Class"
+3. TIME SLOTS:
+- Extract "startTime" and "endTime" in 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "18:00").
+- If period numbers are used (1 to 6 without explicit times):
+  * 1: 09:00 - 10:30
+  * 2: 10:40 - 12:10
+  * 3: 13:00 - 14:30
+  * 4: 14:40 - 16:10
+  * 5: 16:20 - 17:50
+  * 6: 18:00 - 19:30
 
-OUTPUT JSON SCHEMA ONLY:
+4. COURSE ATTRIBUTES (DUAL-LANGUAGE):
+For each class:
+- "originalTitle": Full course title in native language
+- "originalCode": Native course code or abbreviation
+- "translatedTitle": English translation of the course name
+- "translatedCode": Standard Latin alphanumeric code (e.g. "CS101", "AERO-1", "DSA", "MATH201")
+- "title": Default course title
+- "code": Default course code
+- "day": "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
+- "startTime": "HH:MM"
+- "endTime": "HH:MM"
+- "type": "Lecture" | "Tutorial" | "Lab" | "Class"
+- "room": Room / Venue / Hall if visible
+- "lecturer": Lecturer / Professor name if visible
+
+OUTPUT JSON FORMAT ONLY:
 {
-  "detectedLanguage": "Japanese",
-  "hasNonEnglishText": true,
+  "detectedLanguage": "English",
+  "hasNonEnglishText": false,
   "courses": [
     {
-      "originalTitle": "エアロビクスⅠ",
-      "originalCode": "エアロ",
-      "translatedTitle": "Aerobics I",
-      "translatedCode": "AERO-1",
-      "title": "エアロビクスⅠ",
-      "code": "エアロビクスⅠ",
-      "day": "Tue",
+      "originalTitle": "Calculus I",
+      "originalCode": "MAT101",
+      "translatedTitle": "Calculus I",
+      "translatedCode": "MAT101",
+      "title": "Calculus I",
+      "code": "MAT101",
+      "day": "Mon",
       "startTime": "09:00",
-      "endTime": "10:30",
-      "type": "Class",
-      "room": "",
+      "endTime": "11:00",
+      "type": "Lecture",
+      "room": "DK1",
       "lecturer": "",
       "group": ""
     }
   ]
 }`;
 
-    const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
-    for (const model of models) {
+    for (const model of candidateModels) {
+      onProgress(`Scanning with ${model}...`);
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const payload = {
@@ -155,11 +209,25 @@ OUTPUT JSON SCHEMA ONLY:
           }
         };
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn(`Model ${model} returned error ${res.status}:`, errText);
+          continue;
+        }
 
         const data = await res.json();
         if (data.candidates && data.candidates[0] && data.candidates[0].content) {
@@ -170,16 +238,17 @@ OUTPUT JSON SCHEMA ONLY:
           if (courses.length > 0) {
             return {
               courses,
-              detectedLanguage: parsed.detectedLanguage || 'Japanese',
-              hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : true
+              detectedLanguage: parsed.detectedLanguage || 'English',
+              hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : false
             };
           }
         }
       } catch (err) {
-        console.warn(`Direct call to ${model} failed:`, err);
+        console.warn(`Attempt with ${model} failed:`, err);
       }
     }
-    throw new Error("Direct Gemini Vision scan failed across all candidate models.");
+
+    throw new Error("Unable to extract timetable with available Gemini models. Please verify your image.");
   }
 
   /**

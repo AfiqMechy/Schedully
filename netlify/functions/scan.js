@@ -21,7 +21,11 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing image data' }) };
     }
 
-    let apiKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+    let envKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+    if (envKey.includes('AIzaSyBCjWjBb6x99Cu4p_SjVyy8f1vPLt7Yf-Q')) {
+      envKey = ''; // Ignore old blocked Firebase key
+    }
+    let apiKey = (envKey || 'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q').trim().replace(/^["']|["']$/g, '');
     if (!apiKey) {
       return {
         statusCode: 500,
@@ -37,7 +41,7 @@ exports.handler = async (event, context) => {
     };
 
     // 1. DYNAMICALLY FIND A SUPPORTED MODEL to prevent "model not found" errors
-    let targetModelName = 'gemini-1.5-flash'; // fallback default
+    let targetModelName = 'gemini-3.6-flash'; // fallback default
     try {
       const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
         method: 'GET',

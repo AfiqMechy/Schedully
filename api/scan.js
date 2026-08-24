@@ -23,13 +23,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing image data' });
     }
 
-    const apiKey = (clientApiKey || process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+    let envKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+    if (envKey.includes('AIzaSyBCjWjBb6x99Cu4p_SjVyy8f1vPLt7Yf-Q')) {
+      envKey = ''; // Ignore old blocked Firebase key
+    }
+    const apiKey = (clientApiKey || envKey || 'AQ.Ab8RN6KlKKHP-0G0W-PdoNM_7gazaWr9_lugpz7iDeKpVTzb5Q').trim().replace(/^["']|["']$/g, '');
     if (!apiKey) {
       return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEY in Vercel Environment Variables or enter your API key in settings.' });
     }
 
     // 1. DYNAMICALLY DISCOVER SUPPORTED MODELS
-    let targetModelName = 'gemini-3.5-flash';
+    let targetModelName = 'gemini-3.6-flash';
     try {
       const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
         method: 'GET',
@@ -42,17 +46,21 @@ export default async function handler(req, res) {
           m.supportedGenerationMethods.includes('generateContent') &&
           m.name.includes('gemini')
         );
-        // Prioritize gemini-3.5-flash per user request
-        let bestModel = validModels.find(m => m.name.includes('3.5-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('3.5-pro'));
+        let bestModel = validModels.find(m => m.name.includes('3.6-flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('3.7-flash'));
         if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.5-flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.0-flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('3.5-flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.5-flash'));
+        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.0-flash'));
         if (!bestModel) bestModel = validModels.find(m => m.name.includes('1.5-flash'));
         if (!bestModel) bestModel = validModels.find(m => m.name.includes('flash'));
         if (!bestModel && validModels.length > 0) bestModel = validModels[0];
         if (bestModel) targetModelName = bestModel.name.replace('models/', '');
       }
     } catch (e) {
-      console.warn("Failed to list models, using fallback", e);
+      console.warn("Failed to list models, using fallback gemini-2.0-flash", e);
     }
 
     const promptText = `CRITICAL SYSTEM COMMAND:
