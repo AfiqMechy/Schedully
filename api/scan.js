@@ -56,16 +56,22 @@ export default async function handler(req, res) {
     }
 
     const promptText = `CRITICAL SYSTEM COMMAND:
-First, translate the image text into English if needed ("translate the image"), and then extract the timetable into a clean structured table ("can you extract this out the timetable into table"). Finally, convert all class slots into a valid JSON list of course objects.
+You are an expert multilingual academic timetable vision parser.
+Your task is to analyze the uploaded timetable image, detect the language, and extract all scheduled course/class slots.
 
 UNIVERSAL GLOBAL TIMETABLE ENGINE RULES:
 
-1. RTL & SCRIPT DIRECTION HANDLING (Arabic, Hebrew, Persian):
+1. LANGUAGE DETECTION:
+   - Identify the primary language used in the timetable (e.g. "Japanese", "Korean", "Chinese", "Arabic", "French", "German", "Spanish", "Malay", "Indonesian", "Russian", "English", etc.).
+   - Set "detectedLanguage" to the language name (or "English" if purely English).
+   - Set "hasNonEnglishText" to true if characters/words from Japanese, Chinese, Korean, Arabic, Cyrillic, or other non-English languages are present.
+
+2. RTL & SCRIPT DIRECTION HANDLING (Arabic, Hebrew, Persian):
    - In Arabic/RTL timetables, the columns often read Right-to-Left (RTL). Recognize that the first day column (e.g. الأحد / Sunday or الإثنين / Monday) may be on the far RIGHT side.
    - Translate Arabic days: الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat.
    - Translate Arabic periods: الحصة الأولى -> 08:00-08:45, الحصة الثانية -> 08:45-09:30, etc.
 
-2. EAST ASIAN & INTERNATIONAL LANGUAGES (Japanese, Chinese, Korean, German, Spanish, French, Russian, etc.):
+3. EAST ASIAN & INTERNATIONAL LANGUAGES (Japanese, Chinese, Korean, German, Spanish, French, Russian, etc.):
    - Japanese days: 月/月曜 -> Mon, 火/火曜 -> Tue, 水/水曜 -> Wed, 木/木曜 -> Thu, 金/金曜 -> Fri, 土/土曜 -> Sat, 日/日曜 -> Sun
    - Chinese days: 星期一/周一/週一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun
    - Korean days: 월/월요일 -> Mon, 화/화요일 -> Tue, 수/수요일 -> Wed, 목/목요일 -> Thu, 금/금요일 -> Fri, 토/토요일 -> Sat, 일/일요일 -> Sun
@@ -73,23 +79,57 @@ UNIVERSAL GLOBAL TIMETABLE ENGINE RULES:
    - Spanish/French/Italian days: Lunes/Lundi -> Mon, Martes/Mardi -> Tue, Miércoles/Mercredi -> Wed, Jueves/Jeudi -> Thu, Viernes/Vendredi -> Fri, Sábado/Samedi -> Sat, Domingo/Dimanche -> Sun
    - Malay/Indonesian days: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun
 
-3. TIME CALCULATION:
+4. TIME & PERIOD CALCULATION:
    - Convert all times to 24-hour HH:MM strings (e.g. 08:45, 13:25).
-   - If a row lists only a start time (e.g., 08:45), its "endTime" is the start time of the next row (e.g., 09:35).
+   - If a timetable uses period numbers (1, 2, 3, 4, 5, 6, etc.):
+     - Period 1: 09:00 - 10:30
+     - Period 2: 10:40 - 12:10
+     - Period 3: 13:00 - 14:30
+     - Period 4: 14:40 - 16:10
+     - Period 5: 16:20 - 17:50
+     - Period 6: 18:00 - 19:30
+   - If explicit start/end times are printed on the image, use those exact times!
 
-4. FIELD EXTRACTION FOR JSON:
-   - "title": Include subject name in full. (e.g., "الرياضيات", "算数", "日本語", "Mathematik", "ELA", "Math", "PE / Dance").
-   - "code": Clean 2-8 uppercase Latin shorthand code (e.g. "الرياضيات" -> "MATH", "算数" -> "MATH", "日本語" -> "JAP-101", "Mathematik" -> "MATH").
+5. DUAL-LANGUAGE FIELD EXTRACTION:
+   For each class slot, extract BOTH the original language text AND the English translation:
+   - "originalTitle": The exact text in the original language (e.g. "エアロビクス I", "教育制度論", "社会福祉概論", "解剖学", "体育実技II", "MSLC").
+   - "originalCode": Native shorthand or code (e.g. "エアロ", "教制", "社福", "解剖", "MSLC").
+   - "translatedTitle": English translation (e.g. "Aerobics I", "Educational Systems", "Social Welfare Introduction", "Anatomy", "PE II", "MSLC").
+   - "translatedCode": Clean 2-8 uppercase Latin shorthand code (e.g. "AERO", "EDUC", "WEL", "ANAT", "PE", "MSLC").
+   - "title": Default to originalTitle.
+   - "code": Default to originalTitle or originalCode.
    - "day": 3-letter English day ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").
-   - "startTime": 24h format HH:MM (e.g. "08:45").
-   - "endTime": 24h format HH:MM (e.g. "09:35").
+   - "startTime": 24h format HH:MM (e.g. "09:00").
+   - "endTime": 24h format HH:MM (e.g. "10:30").
    - "type": "Class", "Lecture", "Lab", "Tutorial", "Activity", "Recess", or "Lunch".
    - "room": Room / Venue if stated (or "").
    - "lecturer": Instructor / Teacher if stated (or "").
    - "group": Class section / group if stated (or "").
 
-OUTPUT REQUIREMENTS:
-Output ONLY a valid JSON array of objects. Do NOT wrap in markdown or include conversational text.`;
+OUTPUT JSON SCHEMA:
+{
+  "detectedLanguage": "Japanese",
+  "hasNonEnglishText": true,
+  "courses": [
+    {
+      "originalTitle": "エアロビクス I",
+      "originalCode": "エアロ",
+      "translatedTitle": "Aerobics I",
+      "translatedCode": "AERO",
+      "title": "エアロビクス I",
+      "code": "エアロビクス I",
+      "day": "Tue",
+      "startTime": "09:00",
+      "endTime": "10:30",
+      "type": "Class",
+      "room": "",
+      "lecturer": "",
+      "group": ""
+    }
+  ]
+}
+
+Output ONLY valid JSON matching this schema. Do NOT wrap in markdown explanations.`;
 
     const payload = {
       contents: [{
@@ -143,9 +183,32 @@ Output ONLY a valid JSON array of objects. Do NOT wrap in markdown or include co
       parsed = JSON.parse(fixedJSON);
     }
 
-    const result = Array.isArray(parsed) ? parsed : (parsed.courses || parsed.slots || Object.values(parsed)[0] || []);
+    let courses = [];
+    let detectedLanguage = "English";
+    let hasNonEnglishText = false;
 
-    return res.status(200).json({ success: true, data: result });
+    if (Array.isArray(parsed)) {
+      courses = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      courses = parsed.courses || parsed.slots || parsed.data || [];
+      detectedLanguage = parsed.detectedLanguage || "English";
+      hasNonEnglishText = !!parsed.hasNonEnglishText;
+    }
+
+    // Auto-detect if courses contain non-Latin characters if flag wasn't explicitly set
+    if (!hasNonEnglishText && courses.some(c => /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7af\u0600-\u06ff\u0400-\u04ff]/.test((c.title || '') + (c.code || '') + (c.originalTitle || '')))) {
+      hasNonEnglishText = true;
+      if (detectedLanguage === "English") {
+        detectedLanguage = "Foreign Language";
+      }
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data: courses, 
+      detectedLanguage: detectedLanguage,
+      hasNonEnglishText: hasNonEnglishText
+    });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

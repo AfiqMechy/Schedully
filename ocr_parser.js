@@ -46,11 +46,16 @@ class OCRTimetableParser {
       }
 
       if (resData.error) throw new Error(resData.error);
-      return resData.data || [];
+      const courses = Array.isArray(resData.data) ? resData.data : (Array.isArray(resData) ? resData : []);
+      return {
+        courses: courses,
+        detectedLanguage: resData.detectedLanguage || 'English',
+        hasNonEnglishText: !!resData.hasNonEnglishText
+      };
     } catch (proxyErr) {
       console.error("Vercel Scan Error:", proxyErr);
       alert("AI Scanner Error: " + proxyErr.message);
-      return [];
+      return { courses: [], detectedLanguage: 'English', hasNonEnglishText: false };
     }
   }
 }

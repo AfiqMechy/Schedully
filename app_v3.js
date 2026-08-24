@@ -170,6 +170,8 @@ class SchedullyApp {
     this.timetableTitleText = 'Untitled';
     this.newCourseDisplayTime = true;
     this.globalCardTimes = true;
+    this.cardTimeDisplayType = 'start'; // 'start', 'both', 'end'
+    this.pendingOcrResult = null;
     this.globalCourseType = true;
     this.globalCourseRoom = true;
     this.globalCourseLecturer = true;
@@ -246,7 +248,7 @@ class SchedullyApp {
     this.inputLecturer = document.getElementById('input-lecturer');
     this.inputGroup = document.getElementById('input-group');
 
-    this.btnExportICal = document.getElementById('btn-export-ical');
+    this.btnExportICAL = document.getElementById('btn-export-ical');
     this.btnExportCSV = document.getElementById('btn-export-csv');
     this.btnDownloadHD = document.getElementById('btn-download-hd');
     this.btnSavePdf   = document.getElementById('btn-save-pdf');
@@ -288,12 +290,27 @@ class SchedullyApp {
     // Universal Importer
     this.universalFileInput = document.getElementById('universal-file-input');
     
+    // Quick Time Submenu
+    this.quickTimeSubmenu = document.getElementById('quick-time-submenu');
+    this.quickTimePreviewBadge = document.getElementById('quick-time-preview-badge');
+
     // OCC Modal
     this.occModal = document.getElementById('occ-modal');
     this.occModalBody = document.getElementById('occ-modal-body');
     this.btnOccCancel = document.getElementById('btn-occ-cancel');
     this.btnOccConfirm = document.getElementById('btn-occ-confirm');
     this.pendingCsvClasses = [];
+
+    // OCR Language Choice Modal
+    this.ocrLangModal = document.getElementById('ocr-language-choice-modal');
+    this.ocrDetectedLangBadge = document.getElementById('ocr-detected-lang-badge');
+    this.ocrDetectedLangTitle = document.getElementById('ocr-detected-lang-title');
+    this.ocrLangFlagIcon = document.getElementById('ocr-lang-flag-icon');
+    this.ocrKeepLangLabel = document.getElementById('ocr-keep-lang-label');
+    this.ocrKeepLangDesc = document.getElementById('ocr-keep-lang-desc');
+    this.btnOcrKeepOriginal = document.getElementById('btn-ocr-keep-original');
+    this.btnOcrTranslateEnglish = document.getElementById('btn-ocr-translate-english');
+    this.btnCloseOcrLangModal = document.getElementById('btn-close-ocr-lang-modal');
   }
 
   getContrastColor(hexColor) {
@@ -2494,7 +2511,29 @@ class SchedullyApp {
         btn.classList.add('active');
         const show = (btn.getAttribute('data-val') === 'yes');
         this.globalCardTimes = show;
+        if (this.quickTimeSubmenu) {
+          if (show) {
+            this.quickTimeSubmenu.classList.remove('hidden');
+          } else {
+            this.quickTimeSubmenu.classList.add('hidden');
+          }
+        }
         this.classes.forEach(c => c.displayTime = show);
+        this.renderTimetableGrid();
+      });
+    });
+
+    // Quick Setting: Time Display Mode Submenu (Start Only, Start & End, End Only)
+    document.querySelectorAll('#time-display-mode-group .time-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#time-display-mode-group .time-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.cardTimeDisplayType = btn.getAttribute('data-timemode') || 'start';
+        if (this.quickTimePreviewBadge) {
+          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = 'Start & End';
+          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = 'End Only';
+          else this.quickTimePreviewBadge.innerText = 'Start Only';
+        }
         this.renderTimetableGrid();
       });
     });
@@ -3566,10 +3605,14 @@ class SchedullyApp {
                 localStorage.setItem('schedully_api_key', apiKey);
               }
 
-              extracted = await window.ocrParser.scanWithCloudAPI(file, provider, apiKey, (msg) => {
+              const scanResult = await window.ocrParser.scanWithCloudAPI(file, provider, apiKey, (msg) => {
                 this.ocrLoadingText.innerText = msg;
               });
               
+              const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
+              const detectedLang = scanResult.detectedLanguage || 'English';
+              const hasNonEnglish = !!scanResult.hasNonEnglishText;
+
               if (!extracted || extracted.length === 0) {
                 const scanErrorAlert = document.getElementById('scan-error-alert');
                 const scanErrorTitle = document.getElementById('scan-error-title');
@@ -3582,7 +3625,11 @@ class SchedullyApp {
                 return;
               }
 
-              this.importClassesDirectly(extracted);
+              if (hasNonEnglish || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
+                this.showOcrLanguageModal(extracted, detectedLang);
+              } else {
+                this.importClassesDirectly(extracted);
+              }
             } catch (err) {
               console.error("Scanner Error:", err);
               const scanErrorAlert = document.getElementById('scan-error-alert');
@@ -3674,6 +3721,47 @@ class SchedullyApp {
 
         this.importClassesDirectly(filteredEvents);
         this.pendingCsvClasses = [];
+      });
+    }
+
+    // OCR Language Choice Modal Events
+    if (this.btnCloseOcrLangModal) {
+      this.btnCloseOcrLangModal.addEventListener('click', () => {
+        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.pendingOcrResult) {
+          this.importClassesDirectly(this.pendingOcrResult.courses);
+          this.pendingOcrResult = null;
+        }
+      });
+    }
+
+    if (this.btnOcrKeepOriginal) {
+      this.btnOcrKeepOriginal.addEventListener('click', () => {
+        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.pendingOcrResult) {
+          const courses = this.pendingOcrResult.courses.map(c => ({
+            ...c,
+            code: c.originalTitle || c.originalCode || c.code,
+            title: c.originalTitle || c.title
+          }));
+          this.importClassesDirectly(courses);
+          this.pendingOcrResult = null;
+        }
+      });
+    }
+
+    if (this.btnOcrTranslateEnglish) {
+      this.btnOcrTranslateEnglish.addEventListener('click', () => {
+        if (this.ocrLangModal) this.ocrLangModal.classList.add('hidden');
+        if (this.pendingOcrResult) {
+          const courses = this.pendingOcrResult.courses.map(c => ({
+            ...c,
+            code: c.translatedCode || c.code,
+            title: c.translatedTitle || c.title
+          }));
+          this.importClassesDirectly(courses);
+          this.pendingOcrResult = null;
+        }
       });
     }
 
@@ -5034,6 +5122,52 @@ class SchedullyApp {
     }
   }
 
+  showOcrLanguageModal(courses, detectedLang) {
+    if (!this.ocrLangModal) {
+      this.importClassesDirectly(courses);
+      return;
+    }
+
+    this.pendingOcrResult = { courses, detectedLang };
+
+    const langLower = (detectedLang || '').toLowerCase();
+    const flagMap = {
+      'japanese': '🇯🇵',
+      'korean': '🇰🇷',
+      'chinese': '🇨🇳',
+      'arabic': '🇸🇦',
+      'french': '🇫🇷',
+      'german': '🇩🇪',
+      'spanish': '🇪🇸',
+      'malay': '🇲🇾',
+      'indonesian': '🇮🇩',
+      'russian': '🇷🇺'
+    };
+    const flag = flagMap[langLower] || '🌐';
+
+    if (this.ocrDetectedLangBadge) {
+      this.ocrDetectedLangBadge.innerText = `${flag} ${detectedLang} Detected`;
+    }
+    if (this.ocrDetectedLangTitle) {
+      this.ocrDetectedLangTitle.innerText = `${detectedLang} Timetable Detected`;
+    }
+    if (this.ocrLangFlagIcon) {
+      this.ocrLangFlagIcon.innerText = flag;
+    }
+    if (this.ocrKeepLangLabel) {
+      this.ocrKeepLangLabel.innerText = `Keep ${detectedLang} (Original)`;
+    }
+    if (this.ocrKeepLangDesc) {
+      this.ocrKeepLangDesc.innerText = `Display original ${detectedLang} course names & characters`;
+    }
+
+    // Collapse sidebars for full focus
+    if (typeof this.toggleLeftSidebar === 'function') this.toggleLeftSidebar(true);
+    if (typeof this.toggleRightSidebar === 'function') this.toggleRightSidebar(true);
+
+    this.ocrLangModal.classList.remove('hidden');
+  }
+
   updateClock() {
     const now = new Date();
     let hours = now.getHours();
@@ -5093,31 +5227,15 @@ class SchedullyApp {
     // and pure 1fr allows grid tracks to grow beyond container bounds if inner text is too long.
     this.universalTimetableGrid.style.gridTemplateColumns = `${timeColWidth} repeat(${days.length}, calc((100% - ${timeColWidth}) / ${days.length}))`;
 
-    // Smart Auto-Crop Grid Hours based on actual classes
+    // Master Start Time & End Time (Strictly obeys and overwrites timetable layout settings)
     let effectiveStartHour = parseInt(this.gridStartHour, 10);
     if (isNaN(effectiveStartHour) || effectiveStartHour < 0 || effectiveStartHour > 23) effectiveStartHour = 8;
 
     let effectiveEndHour = parseInt(this.gridEndHour, 10);
     if (isNaN(effectiveEndHour) || effectiveEndHour < 0 || effectiveEndHour > 23) effectiveEndHour = 20;
 
-    if (this.classes && this.classes.length > 0) {
-      let minH = 24;
-      let maxH = 0;
-      this.classes.forEach(c => {
-        if (c.startTime) {
-          const sh = parseInt(c.startTime.split(':')[0], 10);
-          if (!isNaN(sh) && sh < minH) minH = sh;
-        }
-        if (c.endTime) {
-          const [eh, em] = c.endTime.split(':').map(Number);
-          if (!isNaN(eh)) {
-            const trueEndH = (em || 0) > 0 ? eh + 1 : eh;
-            if (trueEndH > maxH) maxH = trueEndH;
-          }
-        }
-      });
-      if (minH < 24) effectiveStartHour = minH;
-      if (maxH > 0) effectiveEndHour = Math.max(minH + 2, maxH);
+    if (effectiveEndHour <= effectiveStartHour) {
+      effectiveEndHour = Math.min(23, effectiveStartHour + 4);
     }
 
     const timetableContainer = document.getElementById('lock-timetable-container');
@@ -5280,6 +5398,13 @@ class SchedullyApp {
           const codeFontSize = Math.max(8.0, Math.min(this.gridFontSizeVal || 9, effectiveMaxFont));
           const detailFontSize = Math.max(7.0, codeFontSize - 1.0);
 
+          let timeDisplayText = formatStart;
+          if (this.cardTimeDisplayType === 'both') {
+            timeDisplayText = `${formatStart} - ${formatEnd}`;
+          } else if (this.cardTimeDisplayType === 'end') {
+            timeDisplayText = formatEnd;
+          }
+
           const cardContentHTML = isShortCard ? `
             <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.1; color: inherit;">${matched.code}</div>
           ` : `
@@ -5288,7 +5413,7 @@ class SchedullyApp {
             ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
             ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
             ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
-            ${this.globalCardTimes && matched.displayTime !== false ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${formatStart}</div>` : ''}
+            ${this.globalCardTimes && matched.displayTime !== false ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
           `;
 
           const cardElement = document.createElement('div');
