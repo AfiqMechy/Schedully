@@ -779,17 +779,16 @@ body.dark-mode #left-sidebar,
 body.dark-mode #right-sidebar,
 .theme-dark #left-sidebar,
 .theme-dark #right-sidebar {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.18)) 0%, rgba(15, 23, 42, 0.22) 45%, rgba(15, 23, 42, 0.42) 100%) !important;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.82) 100%) !important;
   backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) brightness(1.1) contrast(1.08) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) brightness(1.1) contrast(1.08) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #F8FAFC !important;
   box-shadow: 
-    0 24px 60px -10px rgba(0, 0, 0, 0.65),
-    0 4px 16px rgba(0, 0, 0, 0.35),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.8)),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3),
-    inset calc(var(--glass-dispersion, 7) * 0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-cyan, rgba(147, 197, 253, 0.45)),
-    inset calc(var(--glass-dispersion, 7) * -0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+    0 24px 60px -10px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 #left-sidebar {
@@ -994,13 +993,14 @@ body.dark-mode .sub-accordion-header.active {
 
 body.dark-mode .card-expand-header,
 .theme-dark .card-expand-header {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
-  backdrop-filter: blur(14px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  backdrop-filter: blur(18px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.18),
-    0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+    0 6px 18px -2px rgba(0, 0, 0, 0.45) !important;
 }
 
 .card-expand-header:hover {
@@ -1012,12 +1012,13 @@ body.dark-mode .card-expand-header,
     0 12px 28px -4px rgba(15, 23, 42, 0.14) !important;
 }
 
-body.dark-mode .card-expand-header:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
+body.dark-mode .card-expand-header:hover,
+.theme-dark .card-expand-header:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.09) 100%) !important;
+  border-color: rgba(147, 197, 253, 0.5) !important;
   box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25),
-    0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.35),
+    0 10px 24px rgba(0, 0, 0, 0.6) !important;
 }
 
 .card-expand-header > div {
@@ -1035,8 +1036,10 @@ body.dark-mode .card-expand-header:hover {
   color: #0F172A !important;
 }
 
-body.dark-mode .card-expand-header p:first-child {
-  color: #F8FAFC !important;
+body.dark-mode .card-expand-header p:first-child,
+.theme-dark .card-expand-header p:first-child {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
 }
 
 .card-expand-header p.text-xs,
@@ -1052,8 +1055,37 @@ body.dark-mode .card-expand-header p:first-child {
 }
 
 body.dark-mode .card-expand-header p.text-xs,
-body.dark-mode .card-expand-header p:last-child {
-  color: #94A3B8 !important;
+body.dark-mode .card-expand-header p:last-child,
+.theme-dark .card-expand-header p.text-xs,
+.theme-dark .card-expand-header p:last-child {
+  color: #CBD5E1 !important;
+  opacity: 0.9 !important;
+}
+
+body.dark-mode .card-expand-header svg,
+.theme-dark .card-expand-header svg {
+  color: #CBD5E1 !important;
+}
+
+/* Category SVG Accent Icons in Dark Mode (Vivid & Crisp) */
+body.dark-mode #header-theme svg:first-child,
+.theme-dark #header-theme svg:first-child {
+  color: #C084FC !important;
+}
+
+body.dark-mode #header-layout svg:first-child,
+.theme-dark #header-layout svg:first-child {
+  color: #60A5FA !important;
+}
+
+body.dark-mode #header-add-course svg:first-child,
+.theme-dark #header-add-course svg:first-child {
+  color: #34D399 !important;
+}
+
+body.dark-mode #header-file-import svg:first-child,
+.theme-dark #header-file-import svg:first-child {
+  color: #FB923C !important;
 }
 
 .card-expand-header.active {
@@ -3807,6 +3839,17 @@ input:focus, select:focus, textarea:focus {
     z-index: 10001 !important;
   }
 
+  body.dark-mode #left-sidebar:not(.sidebar-collapsed-left),
+  body.dark-mode #right-sidebar:not(.sidebar-collapsed-right),
+  .theme-dark #left-sidebar:not(.sidebar-collapsed-left),
+  .theme-dark #right-sidebar:not(.sidebar-collapsed-right) {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.86) 100%) !important;
+    backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    color: #F8FAFC !important;
+  }
+
 
 
   /* Bottom floating pill bar: natural standard pill styling */
@@ -4102,16 +4145,19 @@ body.dark-mode #btn-google-logout:hover {
 
 /* ── GLOBAL Dark mode sidebar overlay & floating elements (Desktop + Mobile synchronized) ── */
 body.dark-mode #left-sidebar,
-body.dark-mode #right-sidebar {
-  background: rgba(15, 23, 42, 0.18) !important;
-  backdrop-filter: blur(14px) saturate(200%) brightness(1.15) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(200%) brightness(1.15) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+body.dark-mode #right-sidebar,
+.theme-dark #left-sidebar,
+.theme-dark #right-sidebar {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.84) 100%) !important;
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   color: var(--m3-sys-text-primary) !important;
   box-shadow: 
-    0 20px 50px -10px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.15),
-    inset 0 0 24px 0 rgba(255, 255, 255, 0.02) !important;
+    0 24px 60px -10px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 body.dark-mode #btn-expand-left-floating,
@@ -6661,40 +6707,267 @@ html, body {
   }
 }
 
-/* ═══ LIQUID GLASS STUDIO MODAL & SLIDER CONTROLS ═══ */
-.liquid-glass-studio-card {
-  background: rgba(15, 23, 42, 0.92) !important;
-  backdrop-filter: blur(36px) saturate(210%) contrast(108%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(210%) !important;
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIC LIQUID GLASS MOBILE PROFILE & ACTION CONTROLS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Main Profile Card Capsule (User Pill & Login Pill) */
+.user-profile-card,
+#btn-google-login-drawer {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
+  backdrop-filter: blur(16px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.88) !important;
+  color: #0F172A !important;
+  padding: 6px 12px !important;
+  border-radius: 18px !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02),
+    0 4px 14px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+.user-profile-card:hover,
+#btn-google-login-drawer:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+    0 8px 20px -4px rgba(37, 99, 235, 0.12) !important;
+}
+
+.user-profile-card:active,
+#btn-google-login-drawer:active {
+  transform: scale(0.97);
+}
+
+/* User Avatar Disc Inside Pill */
+#user-avatar-badge {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  color: #2563EB !important;
+  box-shadow: 
+    inset 0 1px 1px #fff,
+    0 2px 6px rgba(37, 99, 235, 0.15) !important;
+}
+
+#user-display-name {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+#user-status-text {
+  color: #64748B !important;
+}
+
+#profile-chevron,
+#profile-login-chevron {
+  color: #64748B !important;
+}
+
+/* 2. Language Globe & Coffee Support Rounded Square Buttons */
+.btn-globe-language,
+.btn-coffee-support {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
+  backdrop-filter: blur(16px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.88) !important;
+  color: #0F172A !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02),
+    0 4px 14px rgba(15, 23, 42, 0.04) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  touch-action: manipulation !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  padding: 0 !important;
+}
+
+.btn-globe-language svg,
+.btn-coffee-support svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+  transition: transform 0.2s ease !important;
+}
+
+.btn-globe-language:hover,
+.btn-coffee-support:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
+  transform: translateY(-1px) scale(1.05) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+    0 8px 20px -4px rgba(37, 99, 235, 0.15) !important;
+}
+
+.btn-globe-language:hover svg,
+.btn-coffee-support:hover svg {
+  transform: scale(1.1);
+}
+
+.btn-globe-language:active,
+.btn-coffee-support:active {
+  transform: scale(0.93) !important;
+}
+
+/* 3. Popover Account Menus (Expand Upward) */
+#profile-settings-menu,
+#login-providers-menu {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.75)) 0%, rgba(255, 255, 255, 0.4) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.5)) 100%) !important;
+  backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 
+    0 20px 50px -10px rgba(15, 23, 42, 0.2),
+    0 4px 16px -2px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1) !important;
+  border-radius: 24px !important;
+}
+
+.popover-item-title {
+  color: #0F172A !important;
+}
+
+.popover-item-desc {
+  color: #64748B !important;
+}
+
+.popover-divider {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 4. DARK MODE MOBILE CONTROLS GLASS */
+body.dark-mode .user-profile-card,
+body.dark-mode #btn-google-login-drawer,
+body.dark-mode .btn-globe-language,
+body.dark-mode .btn-coffee-support,
+.theme-dark .user-profile-card,
+.theme-dark #btn-google-login-drawer,
+.theme-dark .btn-globe-language,
+.theme-dark .btn-coffee-support {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
+  backdrop-filter: blur(18px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
+    0 6px 16px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .user-profile-card:hover,
+body.dark-mode #btn-google-login-drawer:hover,
+body.dark-mode .btn-globe-language:hover,
+body.dark-mode .btn-coffee-support:hover,
+.theme-dark .user-profile-card:hover,
+.theme-dark #btn-google-login-drawer:hover,
+.theme-dark .btn-globe-language:hover,
+.theme-dark .btn-coffee-support:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+  border-color: rgba(147, 197, 253, 0.55) !important;
+  box-shadow: 
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+body.dark-mode .btn-globe-language svg,
+body.dark-mode .btn-coffee-support svg,
+.theme-dark .btn-globe-language svg,
+.theme-dark .btn-coffee-support svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+body.dark-mode #user-avatar-badge,
+.theme-dark #user-avatar-badge {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #38BDF8 !important;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
+}
+
+body.dark-mode #user-display-name,
+.theme-dark #user-display-name {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+body.dark-mode #user-status-text,
+.theme-dark #user-status-text {
+  color: #CBD5E1 !important;
+  opacity: 0.9 !important;
+}
+
+body.dark-mode #profile-chevron,
+body.dark-mode #profile-login-chevron,
+.theme-dark #profile-chevron,
+.theme-dark #profile-login-chevron {
+  color: #CBD5E1 !important;
+}
+
+/* App Branding & Footer in Dark Mode */
+body.dark-mode #left-sidebar h1,
+.theme-dark #left-sidebar h1 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #left-sidebar p[data-i18n="makeSchedule"],
+.theme-dark #left-sidebar p[data-i18n="makeSchedule"] {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode .creator-footer p,
+.theme-dark .creator-footer p {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode .creator-footer span,
+.theme-dark .creator-footer span {
+  color: #60A5FA !important;
+}
+
+body.dark-mode #profile-settings-menu,
+body.dark-mode #login-providers-menu,
+.theme-dark #profile-settings-menu,
+.theme-dark #login-providers-menu {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.6) 45%, rgba(15, 23, 42, 0.8) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
-    0 32px 80px -10px rgba(0, 0, 0, 0.85),
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.35) !important;
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Custom Glass Scrollbar for Studio Inspector */
-.custom-glass-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+body.dark-mode .popover-item-title,
+.theme-dark .popover-item-title {
+  color: #F8FAFC !important;
 }
 
-.custom-glass-scrollbar::-webkit-scrollbar {
-  width: 5px;
+body.dark-mode .popover-item-desc,
+.theme-dark .popover-item-desc {
+  color: #94A3B8 !important;
 }
 
-.custom-glass-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-glass-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.custom-glass-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.45);
+body.dark-mode .popover-divider,
+.theme-dark .popover-divider {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -6759,117 +7032,4 @@ body.dark-mode .sidebar-glass-preset-btn.active,
     0 4px 14px rgba(37, 99, 235, 0.4) !important;
 }
 
-/* Studio Bottom Action Footer */
-.studio-footer {
-  background: rgba(255, 255, 255, 0.55) !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
-}
 
-body.dark-mode .studio-footer,
-.theme-dark .studio-footer,
-.studio-theme-dark .studio-footer {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-.studio-footer-reset-btn {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
-  color: #475569 !important;
-  box-shadow: inset 0 1px 1px #fff, 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-  cursor: pointer !important;
-}
-
-.studio-footer-reset-btn:hover {
-  background: #FFFFFF !important;
-  color: #0F172A !important;
-  border-color: rgba(147, 197, 253, 0.85) !important;
-  transform: translateY(-1px);
-  box-shadow: inset 0 1.5px 2px #fff, 0 4px 12px rgba(37, 99, 235, 0.1) !important;
-}
-
-body.dark-mode .studio-footer-reset-btn,
-.theme-dark .studio-footer-reset-btn,
-.studio-theme-dark .studio-footer-reset-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #CBD5E1 !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
-}
-
-body.dark-mode .studio-footer-reset-btn:hover,
-.theme-dark .studio-footer-reset-btn:hover,
-.studio-theme-dark .studio-footer-reset-btn:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
-  color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
-}
-
-/* Schedully App Trigger Buttons */
-.btn-studio-launch {
-  width: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  padding: 9px 14px !important;
-  background: #2563EB !important;
-  color: #FFFFFF !important;
-  font-weight: 800 !important;
-  font-size: 12px !important;
-  border-radius: 12px !important;
-  border: none !important;
-  cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
-  transition: all 0.2s ease !important;
-}
-
-.btn-studio-launch:hover {
-  background: #1D4ED8 !important;
-  transform: translateY(-1px);
-}
-
-.btn-studio-import {
-  width: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding: 7px 12px !important;
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #334155 !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  border-radius: 10px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.btn-studio-import svg {
-  color: #64748B !important;
-}
-
-.dark .btn-studio-import,
-[data-theme="dark"] .btn-studio-import,
-.theme-dark .btn-studio-import {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #F1F5F9 !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-}
-
-.dark .btn-studio-import svg,
-[data-theme="dark"] .btn-studio-import svg,
-.theme-dark .btn-studio-import svg {
-  color: #94A3B8 !important;
-}
-
-.btn-studio-import:hover {
-  background: rgba(0, 0, 0, 0.09) !important;
-}
-
-.dark .btn-studio-import:hover,
-[data-theme="dark"] .btn-studio-import:hover,
-.theme-dark .btn-studio-import:hover {
-  background: rgba(255, 255, 255, 0.14) !important;
-}
