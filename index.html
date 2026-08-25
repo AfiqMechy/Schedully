@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260825_noblur_final">
+<link rel="stylesheet" href="styles.css?v=20260825_hardware_camera_match">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -168,7 +168,7 @@
 <!-- MOBILE: single centered Export button with dropdown -->
 <div id="mobile-export-bar" class="show-mobile-only fixed top-4 left-1/2 -translate-x-1/2 z-50">
   <!-- Single Export trigger button -->
-  <button id="btn-mobile-export-toggle" class="flex items-center gap-2 px-5 py-2.5 btn-theme-primary bg-blue-600 text-white rounded-full text-sm font-extrabold active:scale-95 transition-all shadow-lg">
+  <button id="btn-mobile-export-toggle" class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold active:scale-95 transition-all shadow-lg">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
     <span>Export</span>
     <svg id="mobile-export-chevron" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
@@ -1317,8 +1317,15 @@
       <!-- Dedicated Wallpaper & Background Layer (Supports isolated background blur!) -->
       <div id="phone-wallpaper-layer" class="phone-wallpaper-layer"></div>
       
-      <!-- Camera Cutout -->
-      <div class="phone-camera-dot"></div>
+      <!-- Authentic Dynamic Island Front Camera (Matching Real Hardware Reference) -->
+      <div class="phone-camera-dot" aria-hidden="true">
+        <div class="camera-lens-ring">
+          <div class="camera-lens-glass">
+            <div class="camera-lens-reflection"></div>
+            <div class="camera-lens-dot"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Lock Screen Time & Date Header -->
       <div id="phone-lock-header" class="phone-lock-header">

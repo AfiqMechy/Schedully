@@ -263,6 +263,7 @@ body.dark-mode .m3-right-sidebar {
     padding: 0 clamp(8px, 2.5vw, 16px) !important;
     font-size: clamp(11px, 2.8vw, 13px) !important;
     font-weight: 800 !important;
+    color: #0F172A !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -280,6 +281,21 @@ body.dark-mode .m3-right-sidebar {
     width: clamp(13px, 3.2vw, 15px) !important;
     height: clamp(13px, 3.2vw, 15px) !important;
     flex-shrink: 0 !important;
+    color: #0F172A !important;
+    stroke: currentColor !important;
+  }
+
+  body.dark-mode #btn-expand-left-floating,
+  body.dark-mode #btn-expand-right-floating,
+  body.dark-mode #btn-mobile-export-toggle {
+    color: #F1F5F9 !important;
+  }
+
+  body.dark-mode #btn-expand-left-floating svg,
+  body.dark-mode #btn-expand-right-floating svg,
+  body.dark-mode #btn-mobile-export-toggle svg {
+    color: #F1F5F9 !important;
+    stroke: currentColor !important;
   }
 
   /* Left: Menu Floating Button */
@@ -1318,6 +1334,7 @@ body.dark-mode .quick-time-badge {
 }
 
 .time-display-mode-container {
+  position: relative !important;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
@@ -1325,6 +1342,8 @@ body.dark-mode .quick-time-badge {
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 10px;
+  overflow: hidden !important;
+  isolation: isolate !important;
 }
 
 body.dark-mode .time-display-mode-container {
@@ -1346,14 +1365,15 @@ body.dark-mode .time-display-mode-container {
 }
 
 .time-mode-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
   color: #1E293B;
 }
 
 .time-mode-btn.active {
-  background-color: var(--m3-sys-color-primary, #2563EB) !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode .time-mode-btn {
@@ -1361,14 +1381,15 @@ body.dark-mode .time-mode-btn {
 }
 
 body.dark-mode .time-mode-btn:hover {
-  background-color: rgba(255, 255, 255, 0.08);
   color: #E2E8F0;
 }
 
 body.dark-mode .time-mode-btn.active {
-  background-color: #2563EB !important;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #FFFFFF !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
 }
 
 /* OCR Language Card */
@@ -2473,20 +2494,87 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   display: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIC DYNAMIC ISLAND HARDWARE MODULE (1:1 Reference Match)
+   ═══════════════════════════════════════════════════════════════ */
 .phone-camera-dot {
-  width: 110px;
-  height: 32px;
+  width: 96px;
+  height: 26px;
   background: #000000;
-  border-radius: 16px;
-  margin: -6px auto 16px auto;
-  box-shadow: inset 0 -2px 4px rgba(255,255,255,0.1);
+  border-radius: 9999px;
+  margin: -4px auto 14px auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 7px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  pointer-events: none;
+  z-index: 10;
 }
 
+/* Outer Camera Lens Aperture Ring (Far Right) */
+.camera-lens-ring {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0b0c10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Inner Optical Lens Glass */
+.camera-lens-glass {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 45%, #181c30 0%, #0c0f1c 65%, #030408 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Realistic Multi-Coated Blue/Purple Lens Glare */
+.camera-lens-reflection {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.85) 0%, rgba(59, 130, 246, 0.4) 60%, transparent 100%);
+  filter: blur(0.3px);
+}
+
+/* Micro Specular Sensor Glint (Direct center/upper-left highlight) */
+.camera-lens-dot {
+  position: absolute;
+  top: 2.2px;
+  left: 2.4px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 2px #60a5fa, 0 0 3px #818cf8;
+}
+
+/* Tablet Mode: Compact Single Centered Lens Module */
 .m3-phone-canvas.canvas-tablet .phone-camera-dot {
   width: 16px;
   height: 16px;
   border-radius: 50%;
   margin: 0 auto 12px auto;
+  padding: 0;
+  justify-content: center;
+}
+
+.m3-phone-canvas.canvas-tablet .camera-lens-ring {
+  width: 16px;
+  height: 16px;
 }
 
 /* LOCK SCREEN CLOCK HEADER WITH SMOOTH CONTRAST TRANSITION */
@@ -5352,7 +5440,9 @@ body.dark-mode #input-title-text-stage {
 .pill-toggle-group,
 .capsule-group,
 .device-capsule-switcher,
-#time-display-mode-group {
+#time-display-mode-group,
+.time-display-mode-container,
+.edit-course-time-format {
   position: relative !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -5369,9 +5459,16 @@ body.dark-mode #input-title-text-stage {
   isolation: isolate !important;
 }
 
+.time-display-mode-container,
+.edit-course-time-format {
+  border-radius: 12px !important;
+}
+
 /* Full-width toggle containers */
 #device-type-toggles,
 #time-display-mode-group,
+.time-display-mode-container,
+.edit-course-time-format,
 .device-capsule-switcher,
 .opt-row-stack .pill-toggle-group {
   width: 100% !important;
@@ -5411,7 +5508,9 @@ body.dark-mode #device-type-toggles,
 body.dark-mode .pill-toggle-group,
 body.dark-mode .capsule-group,
 body.dark-mode .device-capsule-switcher,
-body.dark-mode #time-display-mode-group {
+body.dark-mode #time-display-mode-group,
+body.dark-mode .time-display-mode-container,
+body.dark-mode .edit-course-time-format {
   background: rgba(0, 0, 0, 0.35) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.35) !important;
@@ -5421,7 +5520,9 @@ body.dark-mode #time-display-mode-group {
 #device-type-toggles .capsule-btn,
 .pill-toggle-group .pill-btn,
 .capsule-group button,
-#time-display-mode-group button {
+#time-display-mode-group button,
+.time-display-mode-container button,
+.time-mode-btn {
   position: relative !important;
   z-index: 10 !important;
   background: transparent !important;
@@ -5468,7 +5569,10 @@ body.dark-mode #time-display-mode-group {
 #device-type-toggles .capsule-btn.active,
 .pill-toggle-group .pill-btn.active,
 .capsule-group button.active,
-#time-display-mode-group button.active {
+#time-display-mode-group button.active,
+.time-display-mode-container button.active,
+.edit-course-time-format button.active,
+.time-mode-btn.active {
   background: transparent !important;
   background-color: transparent !important;
   color: #0F172A !important;
@@ -5485,7 +5589,10 @@ body.dark-mode #time-display-mode-group {
 body.dark-mode #device-type-toggles .capsule-btn,
 body.dark-mode .pill-toggle-group .pill-btn,
 body.dark-mode .capsule-group button,
-body.dark-mode #time-display-mode-group button {
+body.dark-mode #time-display-mode-group button,
+body.dark-mode .time-display-mode-container button,
+body.dark-mode .edit-course-time-format button,
+body.dark-mode .time-mode-btn {
   background: transparent !important;
   background-color: transparent !important;
   color: #94A3B8 !important;
@@ -5496,9 +5603,17 @@ body.dark-mode #time-display-mode-group button {
 body.dark-mode #device-type-toggles .capsule-btn.active,
 body.dark-mode .pill-toggle-group .pill-btn.active,
 body.dark-mode .capsule-group button.active,
-body.dark-mode #time-display-mode-group button.active {
+body.dark-mode #time-display-mode-group button.active,
+body.dark-mode .time-display-mode-container button.active,
+body.dark-mode .edit-course-time-format button.active,
+body.dark-mode .time-mode-btn.active {
   background: transparent !important;
   background-color: transparent !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
   color: #FFFFFF !important;
   font-weight: 800 !important;
   box-shadow: none !important;
@@ -5539,6 +5654,11 @@ body.dark-mode .glass-slider-thumb {
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.6),
     inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
     0 4px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+.time-display-mode-container .glass-slider-thumb,
+.edit-course-time-format .glass-slider-thumb {
+  border-radius: 8px !important;
 }
 
 #device-type-toggles .capsule-btn svg,

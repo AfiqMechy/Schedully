@@ -5467,11 +5467,12 @@ class SchedullyApp {
 
           const matchIdx = this.classes.indexOf(matched);
           const adaptiveBg = courseSwatches[matchIdx % courseSwatches.length] || matched.customColor;
-          const effectiveBg = (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0)
-            ? (matched.isManualCustomColor ? matched.customColor : adaptiveBg)
-            : (this.globalAdaptiveColor ? adaptiveBg : matched.customColor);
+          // Manual customColor is the BOSS: If user manually configured customColor on this course, use it 100%
+          const effectiveBg = (matched.customColor && (matched.isManualCustomColor || !this.globalAdaptiveColor))
+            ? matched.customColor
+            : (this.globalAdaptiveColor ? adaptiveBg : (matched.customColor || adaptiveBg));
 
-          // Smart Auto-Contrast Font Color for Card Text
+          // Smart Auto-Contrast Font Color for Card Text (Manual fontColor is the BOSS)
           const autoContrastFont = this.getContrastColor(effectiveBg);
           const customFontOverride = (this.userHasPickedFontColor && this.customFontColor) ? this.customFontColor : null;
           const textColor = matched.fontColor || customFontOverride || autoContrastFont;
@@ -5492,6 +5493,21 @@ class SchedullyApp {
           // Compute exact pixel height based on duration ratio
           const cardHeightPx = Math.max(16, durationHours * rowH);
 
+          // Course-level time display and format configuration (Individual Course is the Boss)
+          const shouldShowTime = (matched.displayTime !== undefined) ? matched.displayTime : this.globalCardTimes;
+          const courseTimeMode = matched.timeFormat || this.cardTimeDisplayType || 'start';
+
+          // Count active text lines per card
+          let lineCount = 1;
+          const isShortCard = (cardHeightPx < 22);
+          if (!isShortCard) {
+            if (this.globalCourseType && matched.type) lineCount++;
+            if (this.globalCourseRoom && matched.room) lineCount++;
+            if (this.globalCourseLecturer && matched.lecturer) lineCount++;
+            if (this.globalCourseGroup && matched.group) lineCount++;
+            if (shouldShowTime) lineCount += (courseTimeMode === 'both' ? 2 : 1);
+          }
+
           // Dynamically compute adaptive max font size based on cell height
           const numDays = days.length;
           const isPhone = (this.activeDevice === 'phone');
@@ -5499,19 +5515,6 @@ class SchedullyApp {
           
           const fontFactor = isPhone ? (widthScale < 0.8 ? 38 : 46) : 60;
           const maxAdaptiveFont = Math.min(16, Math.max(5.5, Math.round(fontFactor / numDays)));
-          
-          const isShortCard = (cardHeightPx < 22);
-          
-          // Count active text lines per card
-          let lineCount = 1;
-          if (!isShortCard) {
-            if (this.globalCourseType && matched.type) lineCount++;
-            if (this.globalCourseRoom && matched.room) lineCount++;
-            if (this.globalCourseLecturer && matched.lecturer) lineCount++;
-            if (this.globalCourseGroup && matched.group) lineCount++;
-            if (this.globalCardTimes) lineCount += (this.cardTimeDisplayType === 'both' ? 2 : 1);
-          }
-
           const heightAdaptiveFont = Math.min(16, Math.max(6, Math.floor(cardHeightPx / (lineCount * 1.3))));
           const effectiveMaxFont = Math.min(maxAdaptiveFont, heightAdaptiveFont);
 
@@ -5519,9 +5522,9 @@ class SchedullyApp {
           const detailFontSize = Math.max(7.0, codeFontSize - 1.0);
 
           let timeDisplayText = formatStart;
-          if (this.cardTimeDisplayType === 'both') {
+          if (courseTimeMode === 'both') {
             timeDisplayText = `${formatStart} - ${formatEnd}`;
-          } else if (this.cardTimeDisplayType === 'end') {
+          } else if (courseTimeMode === 'end') {
             timeDisplayText = formatEnd;
           }
 
@@ -5533,7 +5536,7 @@ class SchedullyApp {
             ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
             ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
             ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
-            ${this.globalCardTimes ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
+            ${shouldShowTime ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
           `;
 
           const cardElement = document.createElement('div');
@@ -5675,6 +5678,18 @@ class SchedullyApp {
             </div>
           </div>
 
+          <div class="editor-row-stack edit-time-format-row ${c.displayTime === false ? 'hidden' : ''}" style="margin-top: -4px;">
+            <div class="flex items-center justify-between w-full mb-1">
+              <span class="submenu-header-label font-bold text-[10px] uppercase text-slate-400">Card Time Format</span>
+              <span class="quick-time-badge font-bold text-[10px] edit-course-time-badge">${c.timeFormat === 'both' ? 'Start & End' : (c.timeFormat === 'end' ? 'End Only' : 'Start Only')}</span>
+            </div>
+            <div class="time-display-mode-container edit-course-time-format w-full">
+              <button type="button" class="time-mode-btn ${(!c.timeFormat || c.timeFormat === 'start') ? 'active' : ''}" data-timemode="start">Start Only</button>
+              <button type="button" class="time-mode-btn ${c.timeFormat === 'both' ? 'active' : ''}" data-timemode="both">Start &amp; End</button>
+              <button type="button" class="time-mode-btn ${c.timeFormat === 'end' ? 'active' : ''}" data-timemode="end">End Only</button>
+            </div>
+          </div>
+
           <div class="editor-row">
             <label>${lblDay}:</label>
             <select class="m3-input-time edit-day">
@@ -5773,11 +5788,35 @@ class SchedullyApp {
       });
 
       // Independent Display Time Toggle Listener
+      const timeFormatRow = card.querySelector('.edit-time-format-row');
+      const timeBadge = card.querySelector('.edit-course-time-badge');
+
       card.querySelectorAll('.edit-display-time .pill-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           card.querySelectorAll('.edit-display-time .pill-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          c.displayTime = (btn.getAttribute('data-val') === 'yes');
+          const show = (btn.getAttribute('data-val') === 'yes');
+          c.displayTime = show;
+          if (timeFormatRow) {
+            timeFormatRow.classList.toggle('hidden', !show);
+          }
+          this.renderTimetableGrid();
+          window.syncGlassSliders?.();
+        });
+      });
+
+      // Individual Course Time Format Selector (Start Only, Start & End, End Only)
+      card.querySelectorAll('.edit-course-time-format .time-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          card.querySelectorAll('.edit-course-time-format .time-mode-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          c.timeFormat = btn.getAttribute('data-timemode') || 'start';
+          c.displayTime = true;
+          if (timeBadge) {
+            if (c.timeFormat === 'both') timeBadge.innerText = 'Start & End';
+            else if (c.timeFormat === 'end') timeBadge.innerText = 'End Only';
+            else timeBadge.innerText = 'Start Only';
+          }
           this.renderTimetableGrid();
           window.syncGlassSliders?.();
         });
@@ -5945,7 +5984,7 @@ if (document.readyState === 'loading') {
 // Interactive Touch & Pointer Dragging + Auto-Centering + Elastic Snap
 // ═══════════════════════════════════════════════════════════════
 function initGlassSegmentedSliders() {
-  const selector = '#device-type-toggles, .pill-toggle-group, .capsule-group, .device-capsule-switcher, #time-display-mode-group, .edit-display-time';
+  const selector = '#device-type-toggles, .pill-toggle-group, .capsule-group, .device-capsule-switcher, #time-display-mode-group, .edit-display-time, .time-display-mode-container, .edit-course-time-format';
 
   const updateGroupThumb = (group, instant = false) => {
     if (!group) return;
@@ -5956,7 +5995,7 @@ function initGlassSegmentedSliders() {
       group.prepend(thumb);
     }
 
-    const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+    const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn'));
     if (!buttons.length) return;
 
     let activeBtn = group.querySelector('.active') || buttons[0];
@@ -6016,7 +6055,7 @@ function initGlassSegmentedSliders() {
 
     group.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
-      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn'));
       const activeBtn = group.querySelector('.active') || buttons[0];
       if (!activeBtn) return;
 
@@ -6038,7 +6077,7 @@ function initGlassSegmentedSliders() {
       }
       if (!hasDragged) return;
 
-      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn'));
       if (!buttons.length) return;
 
       const groupRect = group.getBoundingClientRect();
@@ -6058,7 +6097,7 @@ function initGlassSegmentedSliders() {
         thumb.style.transition = '';
 
         window._globalDragSuppressUntil = Date.now() + 350;
-        const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+        const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn'));
         const currentX = e.clientX;
         let targetBtn = null;
         let minDistance = Infinity;
