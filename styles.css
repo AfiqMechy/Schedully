@@ -4234,9 +4234,12 @@ body.dark-mode #bottom-floating-pill-bar button:not(.btn-theme-primary) {
 
 /* Dark Mode support for revamped OCC Group selector modal */
 body.dark-mode .modal-card {
-  background: #1E293B !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   color: #F8FAFC !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.70), inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
 }
 body.dark-mode .modal-header h3 {
   color: #F8FAFC !important;
@@ -5253,34 +5256,105 @@ main > header > *,
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-body.dark-mode .liquid-glass,
-body.dark-mode #bottom-floating-pill-bar,
-body.dark-mode #header-desktop-bar,
-body.dark-mode #btn-expand-left-floating,
-body.dark-mode #btn-expand-right-floating,
+/* Mobile Export Bar, Dropdown, and Action Buttons (Light & Dark Glass) */
+#btn-mobile-export-toggle {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  color: #0F172A !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), inset 0 1.5px 2px #FFFFFF !important;
+}
+
 body.dark-mode #btn-mobile-export-toggle,
-body.dark-mode #btn-schedule-settings-toggle,
-body.dark-mode #btn-clear-all,
-.theme-dark .liquid-glass,
-.theme-dark #bottom-floating-pill-bar,
-.theme-dark #header-desktop-bar,
-.theme-dark #btn-expand-left-floating,
-.theme-dark #btn-expand-right-floating,
-.theme-dark #btn-mobile-export-toggle,
-.theme-dark #btn-schedule-settings-toggle,
-.theme-dark #btn-clear-all {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.35) 45%, rgba(15, 23, 42, 0.55) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+.theme-dark #btn-mobile-export-toggle {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
+}
+
+#mobile-export-dropdown {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.48) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), inset 0 1.5px 2px #FFFFFF !important;
+}
+
+body.dark-mode #mobile-export-dropdown,
+.theme-dark #mobile-export-dropdown {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.70), inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
+}
+
+.mobile-export-option {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  color: #0F172A !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.mobile-export-option:hover {
+  background: rgba(255, 255, 255, 0.75) !important;
+  transform: translateY(-1px) scale(1.01) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1) !important;
+}
+
+.mobile-export-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 60%, #1D4ED8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  color: #FFFFFF !important;
   box-shadow: 
-    0 16px 36px rgba(0, 0, 0, 0.55),
-    0 2px 8px rgba(0, 0, 0, 0.35),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.9)),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3),
-    inset calc(var(--glass-dispersion, 7) * 0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-cyan, rgba(147, 197, 253, 0.5)),
-    inset calc(var(--glass-dispersion, 7) * -0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.38)) !important;
-  color: #F8FAFC !important;
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.7),
+    0 6px 16px -2px rgba(37, 99, 235, 0.4) !important;
+}
+
+.mobile-export-divider {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dark-mode .mobile-export-option:not(.mobile-export-primary),
+.theme-dark .mobile-export-option:not(.mobile-export-primary) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.10) !important;
+}
+
+body.dark-mode .mobile-export-option:not(.mobile-export-primary) p.text-gray-800,
+body.dark-mode .mobile-export-option:not(.mobile-export-primary) p.dark\:text-gray-100,
+.theme-dark .mobile-export-option:not(.mobile-export-primary) p.text-gray-800,
+.theme-dark .mobile-export-option:not(.mobile-export-primary) p.dark\:text-gray-100 {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+body.dark-mode .mobile-export-option:not(.mobile-export-primary) p.text-gray-500,
+body.dark-mode .mobile-export-option:not(.mobile-export-primary) p.dark\:text-gray-400,
+.theme-dark .mobile-export-option:not(.mobile-export-primary) p.text-gray-500,
+.theme-dark .mobile-export-option:not(.mobile-export-primary) p.dark\:text-gray-400 {
+  color: #CBD5E1 !important;
+  font-weight: 500 !important;
+}
+
+body.dark-mode .mobile-export-option:not(.mobile-export-primary):hover,
+.theme-dark .mobile-export-option:not(.mobile-export-primary):hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+body.dark-mode .mobile-export-divider,
+.theme-dark .mobile-export-divider {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 #btn-mobile-export-toggle,
