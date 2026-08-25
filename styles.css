@@ -77,6 +77,10 @@ html, body {
 body.dark-mode, .theme-dark {
   background-color: #07090E !important;
   background-attachment: fixed !important;
+  background-image: 
+    radial-gradient(at 10% 15%, rgba(59, 130, 246, 0.35) 0px, transparent 55%),
+    radial-gradient(at 90% 85%, rgba(147, 51, 234, 0.28) 0px, transparent 55%),
+    radial-gradient(at 50% 50%, #0B101D 0px, #07090E 100%) !important;
 
   /* Glass Surface System Tokens (Dark Mode - Pure Refraction & Specular Glare) */
   --glass-surface-glare-mult: 0.28;
