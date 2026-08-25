@@ -1261,28 +1261,39 @@ body.dark-mode .coffee-desc {
   color: #94A3B8 !important;
 }
 
-/* Support Modal Tab Buttons */
+/* Support Modal Tab Buttons (Integrated with Liquid Glass Slider) */
 .support-tab-btn {
-  color: #64748B;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  position: relative !important;
+  z-index: 10 !important;
+  color: #64748B !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  transition: color 0.15s ease !important;
 }
 
 .support-tab-btn.active {
-  background-color: #FFFFFF !important;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #0F172A !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode .support-tab-btn {
-  color: #94A3B8;
+  color: #94A3B8 !important;
 }
 
 body.dark-mode .support-tab-btn.active {
-  background-color: #334155 !important;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #FFFFFF !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
 }
 
 /* Creator Disclaimer Footer */
@@ -1449,8 +1460,15 @@ body.dark-mode .creator-footer span {
 }
 
 .language-modal-card .modal-lang-icon-plate {
-  background-color: var(--m3-sys-color-primary-container, #DBEAFE) !important;
-  color: var(--m3-sys-color-primary, #2563EB) !important;
+  background-color: #EFF6FF !important;
+  color: #2563EB !important;
+  border: 1px solid #DBEAFE !important;
+}
+
+.language-modal-card .modal-lang-icon-plate svg {
+  color: #2563EB !important;
+  stroke: #2563EB !important;
+  stroke-width: 2.2 !important;
 }
 
 .language-modal-card .btn-close-modal {
@@ -1481,8 +1499,14 @@ body.dark-mode .language-modal-card .lang-modal-desc {
 }
 
 body.dark-mode .language-modal-card .modal-lang-icon-plate {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: var(--m3-sys-color-primary, #3B82F6) !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60A5FA !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .language-modal-card .modal-lang-icon-plate svg {
+  color: #60A5FA !important;
+  stroke: #60A5FA !important;
 }
 
 body.dark-mode .language-modal-card .btn-close-modal {
@@ -1494,14 +1518,14 @@ body.dark-mode .language-modal-card .btn-close-modal:hover {
   color: #F8FAFC !important;
 }
 
-/* Language Option Pill (Matching User Reference Image) */
+/* Language Option Pill (Matching User Reference Image & High-Contrast) */
 .lang-option-pill {
   width: 100%;
   padding: 10px 16px;
   border-radius: 16px;
   border: 1.5px solid var(--m3-sys-color-outline, #E2E8F0);
   background-color: var(--m3-sys-color-surface-variant, #F8FAFC);
-  color: var(--m3-sys-text-primary, #1E293B);
+  color: #1E293B !important;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -1513,34 +1537,58 @@ body.dark-mode .language-modal-card .btn-close-modal:hover {
 }
 
 .lang-option-pill:hover {
-  border-color: var(--m3-sys-color-primary, #2563EB);
-  background-color: var(--m3-sys-color-surface, #FFFFFF);
+  border-color: #2563EB !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .lang-option-pill.active {
-  border-color: var(--m3-sys-color-primary, #2563EB);
-  background-color: rgba(37, 99, 235, 0.08);
-  color: var(--m3-sys-color-primary, #2563EB);
-  font-weight: 900;
+  border-color: #2563EB !important;
+  background-color: rgba(37, 99, 235, 0.12) !important;
+  color: #1D4ED8 !important;
+  font-weight: 900 !important;
+}
+
+.lang-option-pill.active span {
+  color: #1D4ED8 !important;
+  font-weight: 900 !important;
+}
+
+.lang-option-pill.active .lang-check-icon {
+  display: block !important;
+  color: #1D4ED8 !important;
 }
 
 body.dark-mode .lang-option-pill {
-  background-color: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #F8FAFC;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
 }
 
 body.dark-mode .lang-option-pill:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: var(--m3-sys-color-primary, #3B82F6);
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 body.dark-mode .lang-option-pill.active {
-  background-color: rgba(59, 130, 246, 0.2);
-  border-color: var(--m3-sys-color-primary, #3B82F6);
-  color: #60A5FA;
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  border-color: #3B82F6 !important;
+  color: #93C5FD !important;
+  font-weight: 900 !important;
+}
+
+body.dark-mode .lang-option-pill.active span {
+  color: #93C5FD !important;
+  font-weight: 900 !important;
+}
+
+body.dark-mode .lang-option-pill.active .lang-check-icon {
+  display: block !important;
+  color: #93C5FD !important;
 }
 
 .user-avatar-badge {
