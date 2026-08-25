@@ -70,13 +70,13 @@ html, body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
   background-color: #F1F5F9;
-  background-image: none !important;
+  background-attachment: fixed;
   min-height: 100vh;
 }
 
 body.dark-mode, .theme-dark {
-  background-color: #0B0F17 !important;
-  background-image: none !important;
+  background-color: #07090E !important;
+  background-attachment: fixed !important;
 
   /* Glass Surface System Tokens (Dark Mode - Pure Refraction & Specular Glare) */
   --glass-surface-glare-mult: 0.28;
