@@ -481,39 +481,39 @@ class SchedullyApp {
 
       const leftSidebar  = document.getElementById('left-sidebar');
       const rightSidebar = document.getElementById('right-sidebar');
-      if (leftSidebar)  { leftSidebar.style.backgroundColor  = surface; leftSidebar.style.color  = textColor; }
-      if (rightSidebar) { rightSidebar.style.backgroundColor = surface; rightSidebar.style.color = textColor; }
+      if (leftSidebar)  { leftSidebar.style.backgroundColor  = ''; leftSidebar.style.color  = textColor; }
+      if (rightSidebar) { rightSidebar.style.backgroundColor = ''; rightSidebar.style.color = textColor; }
 
-      // Top Action Bar header & pill container
+      // Top Action Bar header & pill container (Handled by CSS Liquid Glass)
       const topHeader = mainEl?.querySelector('header');
-      if (topHeader) topHeader.style.backgroundColor = surface + 'DD';
+      if (topHeader) topHeader.style.backgroundColor = '';
 
       const topActionBarPill = topHeader?.querySelector('div');
       if (topActionBarPill) {
-        topActionBarPill.style.backgroundColor = variant;
-        topActionBarPill.style.borderColor = outline || 'rgba(255,255,255,0.15)';
+        topActionBarPill.style.backgroundColor = '';
+        topActionBarPill.style.borderColor = '';
       }
 
       // Top Action Bar inactive buttons (Calendar, Export CSV, Save as PDF)
       topHeader?.querySelectorAll('button:not(.btn-theme-primary)').forEach(btn => {
-        btn.style.color = textColor;
-        btn.querySelectorAll('svg').forEach(svg => svg.style.color = textColor);
+        btn.style.color = '';
+        btn.querySelectorAll('svg').forEach(svg => svg.style.color = '');
       });
 
-      // Bottom floating toolbar capsules & inner controls
+      // Bottom floating toolbar capsules & inner controls (Handled by CSS Liquid Glass)
       const bottomFloatingBar = document.getElementById('bottom-floating-pill-bar');
       if (bottomFloatingBar) {
-        bottomFloatingBar.style.backgroundColor = variant;
-        bottomFloatingBar.style.borderColor = outline || 'rgba(255,255,255,0.15)';
+        bottomFloatingBar.style.backgroundColor = '';
+        bottomFloatingBar.style.borderColor = '';
 
         // Inner zoom pill containers & theme pill container
         bottomFloatingBar.querySelectorAll('.bg-white').forEach(capsule => {
-          capsule.style.backgroundColor = surface;
-          capsule.style.borderColor = outline || 'rgba(255,255,255,0.15)';
-          capsule.style.color = textColor;
+          capsule.style.backgroundColor = '';
+          capsule.style.borderColor = '';
+          capsule.style.color = '';
           capsule.querySelectorAll('button, span, svg').forEach(child => {
             if (!child.classList.contains('btn-theme-primary')) {
-              child.style.color = textColor;
+              child.style.color = '';
             }
           });
         });
@@ -521,9 +521,9 @@ class SchedullyApp {
 
       // Floating sidebar trigger buttons
       document.querySelectorAll('#btn-expand-left-floating, #btn-expand-right-floating').forEach(btn => {
-        btn.style.backgroundColor = variant;
-        btn.style.borderColor = outline || 'rgba(255,255,255,0.15)';
-        btn.style.color = textColor;
+        btn.style.backgroundColor = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
       });
 
       // Settings toggle button & clear all button (handled by CSS Liquid Glass)
@@ -562,16 +562,16 @@ class SchedullyApp {
         });
       });
 
-      // Force explicitly override the expandable content containers (to bypass CSS caching)
+      // Expandable content containers & popovers (CSS Liquid Glass manages backgrounds)
       document.querySelectorAll('.expandable-content, .card-expand-content, #schedule-quick-settings, #canvas-controls-popover, #login-providers-menu, #profile-settings-menu').forEach(el => {
-        el.style.backgroundColor = surface;
-        el.style.borderColor = outline || 'rgba(255,255,255,0.15)';
+        el.style.backgroundColor = '';
+        el.style.borderColor = '';
       });
 
       // Target Popover menus in dark mode
       document.querySelectorAll('#login-providers-menu, #profile-settings-menu').forEach(menu => {
-        menu.style.backgroundColor = surface;
-        menu.style.borderColor = outline || 'rgba(255,255,255,0.15)';
+        menu.style.backgroundColor = '';
+        menu.style.borderColor = '';
         menu.querySelectorAll('.popover-item-title, p:not(.popover-item-desc)').forEach(t => t.style.color = textColor);
         menu.querySelectorAll('.popover-item-desc, span.text-gray-400').forEach(d => d.style.color = subtext);
         menu.querySelectorAll('.popover-divider, .popover-header').forEach(div => div.style.borderColor = outline || 'rgba(255,255,255,0.15)');
@@ -580,6 +580,8 @@ class SchedullyApp {
       // Target Popover controls card (#canvas-controls-popover) in dark mode
       const canvasPopover = document.getElementById('canvas-controls-popover');
       if (canvasPopover) {
+        canvasPopover.style.backgroundColor = '';
+        canvasPopover.style.borderColor = '';
         canvasPopover.querySelectorAll('span, p, label').forEach(textEl => {
           if (textEl.classList.contains('text-slate-500') || textEl.classList.contains('text-slate-400') || textEl.classList.contains('text-gray-500')) {
             textEl.style.color = subtext;
@@ -588,8 +590,8 @@ class SchedullyApp {
           }
         });
         canvasPopover.querySelectorAll('.bg-white, #device-type-toggles, .pill-toggle-group').forEach(box => {
-          box.style.backgroundColor = variant;
-          box.style.borderColor = outline || 'rgba(255,255,255,0.15)';
+          box.style.backgroundColor = '';
+          box.style.borderColor = '';
         });
       }
 
@@ -6018,14 +6020,14 @@ function initGlassSegmentedSliders() {
       thumb.style.opacity = '1';
       if (instant) {
         thumb.style.transition = 'none';
-        thumb.style.transform = `translateX(${left}px)`;
+        thumb.style.transform = `translateX(${left}px) scale(1, 1)`;
         thumb.style.width = `${width}px`;
         requestAnimationFrame(() => {
           thumb.style.transition = '';
         });
       } else {
-        thumb.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.35, 1), width 0.24s cubic-bezier(0.25, 1, 0.35, 1)';
-        thumb.style.transform = `translateX(${left}px)`;
+        thumb.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275), width 0.26s cubic-bezier(0.25, 1, 0.35, 1)';
+        thumb.style.transform = `translateX(${left}px) scale(1, 1)`;
         thumb.style.width = `${width}px`;
       }
     }
@@ -6047,7 +6049,7 @@ function initGlassSegmentedSliders() {
     }
     if (ro) ro.observe(group);
 
-    // Interactive Touch / Pointer Drag Gesture Engine
+    // Interactive Touch / Pointer Drag Gesture Engine (Liquid Elastic Physics)
     let isDragging = false;
     let hasDragged = false;
     let startX = 0;
@@ -6086,7 +6088,11 @@ function initGlassSegmentedSliders() {
       const maxLeft = groupRect.width - currentThumbWidth - 3;
       const currentLeft = Math.max(minLeft, Math.min(maxLeft, startLeft + deltaX));
 
-      thumb.style.transform = `translateX(${currentLeft}px)`;
+      // Authentic Liquid Glass Volume Preservation: stretch horizontally, contract vertically
+      const stretchX = Math.min(1.15, 1 + Math.abs(deltaX) * 0.0018);
+      const stretchY = 1 / Math.sqrt(stretchX);
+
+      thumb.style.transform = `translateX(${currentLeft}px) scale(${stretchX}, ${stretchY})`;
     });
 
     const endDrag = (e) => {
@@ -6173,24 +6179,208 @@ function initGlassSegmentedSliders() {
   }, { passive: true });
 }
 
-// Ultra-Smooth 60/120fps RAF-Throttled Liquid Glass Refraction Tracker
+// ═════════════════════════════════════════════════════════════════════
+// 🔮 UNIVERSAL LIQUID GLASS REFRACTION TRACKER (Mouse + Touch)
+// ═════════════════════════════════════════════════════════════════════
 let pointerRafId = null;
 let lastPointerEvent = null;
+let activeTouchTarget = null;
 
+function updateGlassSheen(clientX, clientY, targetEl) {
+  const target = targetEl || document.elementFromPoint(clientX, clientY);
+  if (!target) return null;
+  const glassCard = target.closest(
+    '.card-expand-header, .exact-course-card, .class-card-item, .expandable-class-card, ' +
+    '#bottom-floating-pill-bar, #bottom-floating-pill-bar button, #header-desktop-bar, #header-desktop-bar button, ' +
+    '#btn-expand-left-floating, #btn-expand-right-floating, #btn-mobile-export-toggle, #btn-schedule-settings-toggle, #btn-clear-all, ' +
+    '.btn-adaptive-auth, .btn-globe-language, .btn-coffee-support, .pill-btn, .capsule-btn, .dock-icon-circle, .lang-option-pill, ' +
+    '.btn-studio-launch, .btn-studio-import, .modal-card, .language-modal-card, .coffee-modal-card, .ocr-lang-card'
+  );
+  if (glassCard) {
+    const rect = glassCard.getBoundingClientRect();
+    glassCard.style.setProperty('--mouse-x', `${clientX - rect.left}px`);
+    glassCard.style.setProperty('--mouse-y', `${clientY - rect.top}px`);
+    return glassCard;
+  }
+  return null;
+}
+
+// Mouse / Pointer Move
 document.addEventListener('pointermove', (e) => {
   lastPointerEvent = e;
   if (!pointerRafId) {
     pointerRafId = requestAnimationFrame(() => {
       pointerRafId = null;
       if (!lastPointerEvent) return;
-      const target = lastPointerEvent.target.closest(
-        '.card-expand-header, .exact-course-card, .class-card-item, #bottom-floating-pill-bar, #header-desktop-bar button, .btn-adaptive-auth, .btn-globe-language, .btn-coffee-support, .m3-button'
-      );
-      if (target) {
-        const rect = target.getBoundingClientRect();
-        target.style.setProperty('--mouse-x', `${lastPointerEvent.clientX - rect.left}px`);
-        target.style.setProperty('--mouse-y', `${lastPointerEvent.clientY - rect.top}px`);
-      }
+      updateGlassSheen(lastPointerEvent.clientX, lastPointerEvent.clientY);
     });
   }
 }, { passive: true });
+
+// Touch Tracking for Mobile Fingers
+document.addEventListener('touchstart', (e) => {
+  if (e.touches && e.touches.length > 0) {
+    const touch = e.touches[0];
+    if (activeTouchTarget) activeTouchTarget.classList.remove('is-touch-active');
+    activeTouchTarget = updateGlassSheen(touch.clientX, touch.clientY);
+    if (activeTouchTarget) activeTouchTarget.classList.add('is-touch-active');
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (e.touches && e.touches.length > 0) {
+    const touch = e.touches[0];
+    const newTarget = updateGlassSheen(touch.clientX, touch.clientY);
+    if (newTarget !== activeTouchTarget) {
+      if (activeTouchTarget) activeTouchTarget.classList.remove('is-touch-active');
+      activeTouchTarget = newTarget;
+      if (activeTouchTarget) activeTouchTarget.classList.add('is-touch-active');
+    }
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  if (activeTouchTarget) {
+    setTimeout(() => {
+      activeTouchTarget?.classList.remove('is-touch-active');
+      activeTouchTarget = null;
+    }, 250);
+  }
+}, { passive: true });
+
+// ═════════════════════════════════════════════════════════════════════
+// 🔮 LIQUID GLASS OPTICAL PRESETS (Crystal, Frosted, Fluid, Prism)
+// ═════════════════════════════════════════════════════════════════════
+function initLiquidGlassPresets() {
+  const presets = {
+    crystal: {
+      name: 'Crystal',
+      refThickness: 16,
+      refFactor: 1.5,
+      refDispersion: 4.0,
+      glareAngle: -45,
+      glareFactor: 110,
+      glareOppositeFactor: 85,
+      refFresnelFactor: 15,
+      mergeRate: 0.04,
+      springSizeFactor: 12
+    },
+    frosted: {
+      name: 'Frosted',
+      refThickness: 28,
+      refFactor: 1.25,
+      refDispersion: 9.0,
+      glareAngle: -35,
+      glareFactor: 75,
+      glareOppositeFactor: 60,
+      refFresnelFactor: 30,
+      mergeRate: 0.08,
+      springSizeFactor: 8
+    },
+    fluid: {
+      name: 'Fluid',
+      refThickness: 22,
+      refFactor: 1.45,
+      refDispersion: 8.0,
+      glareAngle: -45,
+      glareFactor: 95,
+      glareOppositeFactor: 90,
+      refFresnelFactor: 25,
+      mergeRate: 0.15,
+      springSizeFactor: 18
+    },
+    prism: {
+      name: 'Prism',
+      refThickness: 32,
+      refFactor: 1.65,
+      refDispersion: 18.0,
+      glareAngle: -60,
+      glareFactor: 120,
+      glareOppositeFactor: 95,
+      refFresnelFactor: 40,
+      mergeRate: 0.05,
+      springSizeFactor: 14
+    }
+  };
+
+  let activePresetKey = 'crystal';
+
+  // Apply Preset Configuration to Schedully CSS Variables
+  window.applyLiquidGlassConfig = function(cfg, presetKey) {
+    if (!cfg) return;
+    const s = cfg.controls || cfg;
+    const thicknessPx = `${s.refThickness || 20}px`;
+    const blurPx = `${Math.max(4, Math.round((s.refThickness || 20) * 0.8))}px`;
+    const glareFactor = ((s.glareFactor !== undefined ? s.glareFactor : 90) / 100).toFixed(2);
+    const glareOpposite = ((s.glareOppositeFactor !== undefined ? s.glareOppositeFactor : 80) / 100).toFixed(2);
+    const dispersion = s.refDispersion !== undefined ? s.refDispersion : 7;
+    const glareAngleDeg = `${s.glareAngle !== undefined ? s.glareAngle : -45}deg`;
+    const dispersionCyan = `rgba(96, 165, 250, ${((dispersion / 20) * 0.85).toFixed(2)})`;
+    const dispersionPink = `rgba(244, 114, 182, ${((dispersion / 20) * 0.7).toFixed(2)})`;
+    const fresnelFactor = ((s.refFresnelFactor !== undefined ? s.refFresnelFactor : 20) / 100).toFixed(2);
+
+    const root = document.documentElement;
+    root.style.setProperty('--glass-thickness', thicknessPx);
+    root.style.setProperty('--glass-blur', blurPx);
+    root.style.setProperty('--glass-ref-factor', s.refFactor || 1.4);
+    root.style.setProperty('--glass-dispersion', dispersion);
+    root.style.setProperty('--glass-dispersion-cyan', dispersionCyan);
+    root.style.setProperty('--glass-dispersion-pink', dispersionPink);
+    root.style.setProperty('--glass-glare-angle', glareAngleDeg);
+    root.style.setProperty('--glass-glare-factor', glareFactor);
+    root.style.setProperty('--glass-glare-opposite', glareOpposite);
+    root.style.setProperty('--glass-fresnel-factor', fresnelFactor);
+
+    if (presetKey) {
+      activePresetKey = presetKey;
+      const label = document.getElementById('active-glass-preset-label');
+      if (label) label.textContent = presets[presetKey]?.name || presetKey;
+
+      document.querySelectorAll('.sidebar-glass-preset-btn').forEach(btn => {
+        if (btn.dataset.glassPreset === presetKey) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      try {
+        localStorage.setItem('schedully_liquid_glass_preset', presetKey);
+      } catch (e) {}
+    }
+
+    try {
+      localStorage.setItem('schedully_liquid_glass_custom', JSON.stringify(s));
+    } catch (e) {}
+
+    if (typeof window.syncGlassSliders === 'function') {
+      window.syncGlassSliders();
+    }
+  };
+
+  // Wire up sidebar preset button clicks
+  document.querySelectorAll('.sidebar-glass-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.glassPreset;
+      if (presets[key]) {
+        window.applyLiquidGlassConfig(presets[key], key);
+      }
+    });
+  });
+
+  // Restore saved preset on load
+  try {
+    const savedPreset = localStorage.getItem('schedully_liquid_glass_preset') || 'crystal';
+    if (presets[savedPreset]) {
+      window.applyLiquidGlassConfig(presets[savedPreset], savedPreset);
+    }
+  } catch (e) {}
+}
+
+// Auto-initialize Liquid Glass Presets on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLiquidGlassPresets);
+} else {
+  initLiquidGlassPresets();
+}
+

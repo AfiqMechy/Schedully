@@ -151,13 +151,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260825_dark_hover_fix">
+<link rel="stylesheet" href="styles.css?v=20260825_sidebar_liquid_presets">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 </head>
 <body class="text-gray-800 h-screen overflow-hidden flex">
+
+<!-- SVG Optical Glass Refraction & Chromatic Dispersion Filter -->
+<svg style="position: absolute; width: 0; height: 0; pointer-events: none; overflow: hidden;" aria-hidden="true">
+  <defs>
+    <filter id="liquid-glass-lens" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves="1" result="liquidNoise" />
+      <feDisplacementMap in="SourceGraphic" in2="liquidNoise" scale="2" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+      <feComposite in="SourceGraphic" in2="refracted" operator="over" />
+    </filter>
+  </defs>
+</svg>
 
 <!-- BEGIN: Left Sidebar Navigation -->
 <button id="btn-expand-left-floating" class="hidden fixed top-5 left-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
@@ -176,51 +187,51 @@
 
   <!-- Dropdown card: expands downward from the button, vertically scrollable in landscape -->
   <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 rounded-3xl shadow-2xl z-50 overflow-y-auto">
-    <div class="p-2 flex flex-col gap-1">
-      <!-- Download Image -->
-      <button id="btn-download-hd-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left" style="background: var(--m3-sys-color-primary-container);">
-        <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background: var(--m3-sys-color-primary);">
+    <div class="p-2 flex flex-col gap-1.5">
+      <!-- Download Image (Primary) -->
+      <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
+        <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </span>
         <div>
-          <p class="font-extrabold text-sm" style="color: var(--m3-sys-color-primary);">Download Image</p>
-          <p class="text-xs font-medium opacity-70" style="color: var(--m3-sys-color-primary);">Save as wallpaper PNG</p>
+          <p class="font-extrabold text-sm text-white">Download Image</p>
+          <p class="text-[11px] font-medium text-blue-100 opacity-90">Save as wallpaper PNG</p>
         </div>
       </button>
 
       <!-- Divider -->
-      <div style="height:1px; background: var(--m3-sys-color-outline); opacity:0.3; margin: 2px 8px;"></div>
+      <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
 
       <!-- Calendar ICS -->
-      <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+        <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </span>
         <div>
-          <p class="font-extrabold text-sm text-gray-800">Calendar (.ics)</p>
-          <p class="text-xs text-gray-400 font-medium">Sync to Google / Apple</p>
+          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Calendar (.ics)</p>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Sync to Google / Apple</p>
         </div>
       </button>
 
       <!-- CSV Export -->
-      <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+        <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </span>
         <div>
-          <p class="font-extrabold text-sm text-gray-800">Export CSV</p>
-          <p class="text-xs text-gray-400 font-medium">Spreadsheet format</p>
+          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Export CSV</p>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Spreadsheet format</p>
         </div>
       </button>
 
       <!-- Save PDF -->
-      <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+        <span class="w-8 h-8 rounded-xl bg-red-500/15 text-red-500 flex items-center justify-center shrink-0 border border-red-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </span>
         <div>
-          <p class="font-extrabold text-sm text-gray-800">Save as PDF</p>
-          <p class="text-xs text-gray-400 font-medium">Print-ready document</p>
+          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Save as PDF</p>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Print-ready document</p>
         </div>
       </button>
 
@@ -231,7 +242,7 @@
 
 
 
-<aside id="left-sidebar" class="w-80 m-3 rounded-3xl bg-white/90 backdrop-blur-xl border border-gray-200/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] flex flex-col justify-between overflow-y-auto no-scrollbar p-6 z-20 shrink-0">
+<aside id="left-sidebar" class="w-80 m-3 rounded-3xl flex flex-col justify-between overflow-y-auto no-scrollbar p-6 z-20 shrink-0">
 <!-- Top Section: Logo and Nav Items -->
 <div>
 <!-- Logo & Collapse Button -->
@@ -284,11 +295,8 @@
                 <!-- 1. Mode & Palette -->
                 <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-palette" data-dock-key="paletteAndMode" data-dock-label="Palette & Mode">
                   <div class="dock-icon-circle">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12c0 3.69 2.47 6.8 6 7.73.5.11.83-.34.83-.8v-1.12c0-1.24 1.01-2.25 2.25-2.25h1.84c3.91 0 7.08-3.17 7.08-7.06C20 6.01 16.41 2 12 2z"/>
-                      <circle cx="7" cy="9" r="1.5" fill="currentColor"/>
-                      <circle cx="11" cy="6.5" r="1.5" fill="currentColor"/>
-                      <circle cx="16" cy="9" r="1.5" fill="currentColor"/>
+                    <svg class="w-5 h-5 text-purple-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l2.06-2.06C9.17 19.46 10.53 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                     </svg>
                   </div>
                   <span class="dock-icon-label" data-i18n="paletteAndMode">Palette &amp; Mode</span>
@@ -297,10 +305,8 @@
                 <!-- 2. Photo Wallpaper -->
                 <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-wallpaper" data-dock-key="wallpaper" data-dock-label="Wallpaper">
                   <div class="dock-icon-circle">
-                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="3" width="18" height="18" rx="3" stroke-width="2"/>
-                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15l-5-5L5 21"/>
+                    <svg class="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M4 4h7V2H4c-1.1 0-2 .9-2 2v7h2V4zm6 9l-4 5h12l-3-4-2.03 2.71L10 13zm7-9c1.1 0 2 .9 2 2v7h2V4c0-1.1-.9-2-2-2h-7v2h7zM4 13H2v7c0 1.1.9 2 2 2h7v-2H4v-7zm16 7h-7v2h7c1.1 0 2-.9 2-2v-7h-2v7z"/>
                     </svg>
                   </div>
                   <span class="dock-icon-label" data-i18n="wallpaper">Wallpaper</span>
@@ -309,8 +315,8 @@
                 <!-- 3. Blur & Opacity -->
                 <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-effects" data-dock-key="blurAndOpacity" data-dock-label="Effects & Blur">
                   <div class="dock-icon-circle">
-                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    <svg class="w-5 h-5 text-amber-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
                     </svg>
                   </div>
                   <span class="dock-icon-label" data-i18n="blurAndOpacity">Effects &amp; Blur</span>
@@ -319,9 +325,8 @@
                 <!-- 4. Typography & Fonts -->
                 <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-fonts" data-dock-key="fontsAndStyle" data-dock-label="Font & Style">
                   <div class="dock-icon-circle">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 18L7.5 6h1L13 18M4.8 14h6.4"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12v6m0-3a3 3 0 10-6 0 3 3 0 006 0z"/>
+                    <svg class="w-5 h-5 text-blue-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M2.5 4v3h5v12h3V7h5V4h-13zm19 5h-9v3h3v7h3v-7h3V9z"/>
                     </svg>
                   </div>
                   <span class="dock-icon-label" data-i18n="fontsAndStyle">Font &amp; Style</span>
@@ -518,6 +523,41 @@
                   <span id="timetable-opacity-val" class="text-blue-600 font-extrabold">100%</span>
                 </div>
                 <input type="range" id="slider-timetable-opacity" min="20" max="100" value="100" step="5" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer mt-1.5">
+              </div>
+
+              <!-- Liquid Glass Optical Presets (Crystal, Frosted, Fluid, Prism) -->
+              <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60 dark:border-white/10 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-200">Liquid Glass Style</span>
+                  <span id="active-glass-preset-label" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Crystal</span>
+                </div>
+                
+                <!-- 4 Preset Pills Matching Image Exactly -->
+                <div class="grid grid-cols-2 gap-2 mt-1" id="sidebar-glass-presets-group">
+                  <!-- Crystal -->
+                  <button type="button" class="sidebar-glass-preset-btn active flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="crystal">
+                    <svg class="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19.5 3h-15L1 9l11 12L23 9l-3.5-6zM12 18.5L4.5 9h15L12 18.5z"/></svg>
+                    <span>Crystal</span>
+                  </button>
+
+                  <!-- Frosted -->
+                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="frosted">
+                    <svg class="w-4 h-4 text-sky-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    <span>Frosted</span>
+                  </button>
+
+                  <!-- Fluid -->
+                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="fluid">
+                    <svg class="w-4 h-4 text-emerald-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    <span>Fluid</span>
+                  </button>
+
+                  <!-- Prism -->
+                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="prism">
+                    <svg class="w-4 h-4 text-purple-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/></svg>
+                    <span>Prism</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1265,7 +1305,7 @@
 <!-- BEGIN: Center Workspace -->
 <main class="flex-1 flex flex-col relative overflow-hidden bg-[#F6F8FB] dot-matrix-bg">
 <!-- Top Action Bar -->
-<header class="h-auto px-6 py-3 flex items-center justify-center border-b border-gray-100/80 bg-white/50 backdrop-blur-md z-10 relative">
+<header class="h-auto flex items-center justify-center border-none bg-transparent pointer-events-none z-10 relative">
 
   <!-- DESKTOP: full pill bar (hidden on mobile) -->
   <div id="header-desktop-bar" class="hidden-mobile inline-flex items-center gap-2 p-1.5 bg-white/90 backdrop-blur-md border border-gray-200/90 rounded-full shadow-sm">
@@ -1449,7 +1489,7 @@
   <span>Schedule</span>
 </button>
 
-<aside id="right-sidebar" class="w-80 m-3 rounded-3xl bg-white/90 backdrop-blur-xl border border-gray-200/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] flex flex-col overflow-hidden z-20 shrink-0">
+<aside id="right-sidebar" class="w-80 m-3 rounded-3xl flex flex-col overflow-hidden z-20 shrink-0">
     <!-- Header -->
     <div class="p-5 border-b border-gray-100">
       <div class="flex items-center justify-between mb-3.5">
@@ -1921,6 +1961,8 @@
     </div>
   </div>
 
+
+
   <!-- Live Picture-in-Picture (PiP) Mobile Phone Device Mockup Preview Widget -->
   <div id="mobile-pip-container" class="mobile-pip-widget hidden">
     <!-- Exact Miniature Device Frame (Exact model clone with no extra external borders) -->
@@ -1943,7 +1985,7 @@
     <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
   </button>
 
-  <script src="app_v3.js"></script>
+  <script src="app_v3.js?v=20260825_sidebar_liquid_presets"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
