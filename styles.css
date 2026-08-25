@@ -501,19 +501,6 @@ body.dark-mode .mobile-export-divider,
 }
 
 
-/* ── PERFORMANCE OPTIMIZATION FOR MOBILE & TABLET (60 FPS, ZERO LAG, ZERO GLITCHING) ── */
-@media (max-width: 1280px) {
-  /* Completely remove GPU blur rendering on mobile & tablet to stop lag & color glitching */
-  .animate-aura {
-    display: none !important;
-  }
-
-  /* Solid lightweight backgrounds for mobile & tablet containers to guarantee 60 FPS */
-  #left-sidebar, #right-sidebar {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-}
 
 
 /* ── ADAPTIVE CANVAS HORIZONTAL SWIPING (TABLET 920px, PAPER 720px, PHONE 380px) ── */
