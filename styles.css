@@ -1041,6 +1041,24 @@ body.dark-mode .sidebar-bottom-container {
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15) !important;
 }
 
+/* Dark Mode User Profile Card */
+body.dark-mode .user-profile-card {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.18),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .user-profile-card #user-display-name {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .user-profile-card #user-status-text {
+  color: #94A3B8 !important;
+}
+
 .btn-globe-language,
 .btn-coffee-support {
   width: 40px !important;
@@ -2352,7 +2370,7 @@ textarea::placeholder,
 
 .m3-phone-canvas {
   background: var(--m3-sys-color-background);
-  border: 12px solid #000000 !important;
+  border: 12px solid #000000;
   border-radius: 46px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   position: relative;
@@ -2739,16 +2757,74 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   padding-bottom: 32px !important;
 }
 
-.expandable-class-card {
-  background: var(--m3-sys-color-surface-variant);
-  border: 1px solid var(--m3-sys-color-outline);
-  border-radius: 16px;
-  padding: 14px;
+.expandable-class-card,
+.class-item-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-radius: 20px !important;
+  padding: 14px !important;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.2s ease;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03),
+    0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100%;
+}
+
+.expandable-class-card:hover,
+.class-item-card:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+  border-color: rgba(147, 197, 253, 0.8) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+    0 10px 28px -4px rgba(37, 99, 235, 0.14) !important;
+}
+
+body.dark-mode .expandable-class-card,
+body.dark-mode .class-item-card {
+  background: rgba(30, 41, 59, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) contrast(105%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+    0 8px 24px -4px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .expandable-class-card:hover,
+body.dark-mode .class-item-card:hover {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.3),
+    0 12px 32px -4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Glass Search Input Box */
+#course-search-input,
+#input-search-classes {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+}
+
+body.dark-mode #course-search-input,
+body.dark-mode #input-search-classes {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.4) !important;
+  color: #FFFFFF !important;
 }
 
 .class-card-header {
@@ -2767,21 +2843,32 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 }
 
 .item-info h4 {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--m3-card-text-color, var(--m3-sys-text-primary));
 }
 
+body.dark-mode .item-info h4 {
+  color: #F8FAFC !important;
+}
+
 .item-info p {
   font-size: 11px;
+  font-weight: 600;
   color: var(--m3-card-text-color, var(--m3-sys-text-secondary));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+body.dark-mode .item-info p {
+  color: #94A3B8 !important;
 }
 
 .class-card-actions {
@@ -2793,7 +2880,11 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 
 .class-expand-arrow {
   color: var(--m3-sys-text-secondary);
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.dark-mode .class-expand-arrow {
+  color: #94A3B8 !important;
 }
 
 .class-expand-arrow.open {
@@ -2801,23 +2892,27 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 }
 
 .btn-delete-pill {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: none;
-  background: rgba(244, 63, 94, 0.15);
-  color: #F43F5E;
+  border: 1px solid rgba(244, 63, 94, 0.25) !important;
+  background: rgba(244, 63, 94, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  color: #FB7185 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.2), 0 2px 6px rgba(244, 63, 94, 0.15) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-delete-pill:hover {
-  background: #F43F5E;
-  color: #FFFFFF;
-  transform: scale(1.1);
+  background: #F43F5E !important;
+  color: #FFFFFF !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.45) !important;
 }
 
 .icon-delete {
@@ -3508,21 +3603,24 @@ body.dark-mode #user-status-text {
   color: #94A3B8 !important;
 }
 
-/* Photo Wallpaper & Auto-Adaptive Dynamic Styling */
+/* Photo Wallpaper & Auto-Adaptive Dynamic Styling (Seamless Full-Bleed Blur) */
 .phone-wallpaper-layer {
   position: absolute;
-  top: -14px;
-  left: -14px;
-  right: -14px;
-  bottom: -14px;
+  top: -24px;
+  left: -24px;
+  right: -24px;
+  bottom: -24px;
+  width: calc(100% + 48px);
+  height: calc(100% + 48px);
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
   filter: blur(var(--wallpaper-blur-val, 0px));
+  transform: scale(1.08);
+  transform-origin: center center;
   transition: filter 0.15s ease, opacity 0.3s ease;
   z-index: 0;
   pointer-events: none;
-  border-radius: inherit;
 }
 
 .phone-camera-dot,
@@ -4920,31 +5018,6 @@ body.dark-mode .language-modal-card {
     0 18px 42px -4px rgba(37, 99, 235, 0.15) !important;
 }
 
-/* Photo wallpaper glass timetable container */
-#phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
-  background: rgba(255, 255, 255, 0.68) !important;
-  backdrop-filter: blur(24px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 
-    inset 0 2px 3px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -2px 3px 0 rgba(255, 255, 255, 0.25),
-    inset 0 0 24px 2px rgba(255, 255, 255, 0.35),
-    0 20px 50px rgba(0, 0, 0, 0.22) !important;
-}
-
-body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
-  background: rgba(15, 23, 42, 0.68) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 
-    inset 0 2px 3px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -2px 3px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 24px 2px rgba(255, 255, 255, 0.12),
-    0 20px 50px rgba(0, 0, 0, 0.45) !important;
-}
-
 /* ── Primary Liquid Glass Action Buttons ── */
 #btn-download-hd,
 .btn-theme-primary {
@@ -5304,24 +5377,32 @@ body.dark-mode #input-title-text-stage {
   width: 100% !important;
 }
 
-/* Compact side-by-side row toggle groups (YES/NO, ROUNDED/SHARP) */
-.opt-row .pill-toggle-group {
+/* Compact side-by-side row toggle groups (YES/NO) */
+.opt-row .pill-toggle-group,
+.editor-row .pill-toggle-group,
+.edit-display-time {
   width: 112px !important;
   min-width: 112px !important;
   flex-shrink: 0 !important;
 }
 
-/* Precise fit for 12-HOUR / 24-HOUR to prevent edge cutoff */
+/* Precise fit for ROUNDED / SHARP and 12-HOUR / 24-HOUR to prevent overlapping & text clipping */
 .opt-row #toggle-clock-type,
-#toggle-clock-type {
-  width: 122px !important;
-  min-width: 122px !important;
-  max-width: 122px !important;
+#toggle-clock-type,
+.opt-row #toggle-table-corners,
+#toggle-table-corners,
+.opt-row #toggle-card-corners,
+#toggle-card-corners {
+  width: 124px !important;
+  min-width: 124px !important;
+  max-width: 124px !important;
 }
 
-#toggle-clock-type .pill-btn {
+#toggle-clock-type .pill-btn,
+#toggle-table-corners .pill-btn,
+#toggle-card-corners .pill-btn {
   padding: 4px 2px !important;
-  font-size: 10.5px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;
 }

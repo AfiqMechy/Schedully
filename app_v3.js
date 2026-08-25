@@ -2452,6 +2452,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseType = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -2462,6 +2463,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseRoom = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -2472,6 +2474,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseLecturer = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -2482,6 +2485,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseGroup = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -2492,6 +2496,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalAdaptiveColor = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -3883,107 +3888,96 @@ class SchedullyApp {
       alert("📊 Exported CSV File!");
     });
 
-    // Wallpaper export — Using dom-to-image-more
+    // Wallpaper export — Timetable Factory Original dom-to-image-more Engine
     const exportWallpaper = (onComplete) => {
-      const originalCanvas = document.getElementById('phone-canvas');
-      
-      const cssW = originalCanvas.clientWidth + 24;
-      const cssH = originalCanvas.clientHeight + 24;
+      if (this.classes.length === 0) {
+        alert("📊 Your schedule is empty! Please add courses first.");
+        return;
+      }
 
+      const originalCanvas = document.getElementById('phone-canvas');
+      if (!originalCanvas) return;
+
+      // clientWidth/Height strictly targets the exact inside of the canvas, ignoring the 12px black bezel!
+      const cssW = originalCanvas.clientWidth;
+      const cssH = originalCanvas.clientHeight;
+
+      // Create an off-screen staging area so we can render it at perfect 1x unzoomed scale natively
       const stagingContainer = document.createElement('div');
       stagingContainer.style.cssText = `
         position: absolute;
         top: -9999px; left: -9999px;
+        width: ${cssW}px; height: ${cssH}px;
         z-index: -9999;
+        zoom: 1; transform: none;
       `;
       document.body.appendChild(stagingContainer);
 
       const clone = originalCanvas.cloneNode(true);
-      
-      clone.style.setProperty('overflow', 'visible', 'important');
-      clone.style.setProperty('border-radius', '0', 'important');
+
+      // Remove the black bezel from the clone
+      clone.style.setProperty('width', cssW + 'px', 'important');
+      clone.style.setProperty('height', cssH + 'px', 'important');
+      clone.style.setProperty('border', 'none', 'important');
+      clone.style.setProperty('border-width', '0px', 'important');
+      clone.style.setProperty('outline', 'none', 'important');
+      clone.style.setProperty('border-radius', '0px', 'important');
       clone.style.setProperty('box-shadow', 'none', 'important');
-      
+      clone.style.setProperty('margin', '0px', 'important');
+      clone.style.setProperty('overflow', 'hidden', 'important');
+
+      // Explicitly enforce Background Blur state on clone
+      const wallpaperLayer = clone.querySelector('.phone-wallpaper-layer');
+      if (wallpaperLayer) {
+        if (!this.bgBlurEnabled) {
+          wallpaperLayer.style.setProperty('filter', 'none', 'important');
+        } else {
+          wallpaperLayer.style.setProperty('filter', `blur(${this.bgBlurIntensity || 10}px)`, 'important');
+        }
+      }
+
+      // Explicitly prevent any backdrop-filter blur on timetable container
+      const timetableContainer = clone.querySelector('#lock-timetable-container');
+      if (timetableContainer) {
+        timetableContainer.style.setProperty('backdrop-filter', 'none', 'important');
+        timetableContainer.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+      }
+
+      // Make clock, camera dot, and nav bar invisible, but keep physical space so timetable stays correctly Y-aligned
       ['.phone-camera-dot', '#phone-lock-header', '.phone-nav-bar'].forEach(sel => {
         const el = clone.querySelector(sel);
         if (el) {
-          el.style.setProperty('visibility', 'hidden', 'important');
-          el.style.setProperty('opacity', '0', 'important');
+          el.style.visibility = 'hidden';
+          el.style.opacity = '0';
         }
       });
-
-      const isMobileExport = window.innerWidth <= 1280;
-      const shrinkFactor = isMobileExport ? 0.85 : 0.94;
-      const letterSpace = isMobileExport ? '-0.25px' : '-0.15px';
-      
-      clone.querySelectorAll('.exact-card-code').forEach(el => {
-        const currentFontSize = parseFloat(el.style.fontSize) || 10;
-        el.style.setProperty('font-size', (currentFontSize * shrinkFactor) + 'px', 'important');
-        el.style.setProperty('letter-spacing', letterSpace, 'important');
-      });
-      
-      const activeTimetableFont = getComputedStyle(document.documentElement).getPropertyValue('--timetable-font-family') || "'Inter', sans-serif";
-      const timetableContainer = clone.querySelector('#lock-timetable-container');
-      if (timetableContainer) {
-        timetableContainer.style.setProperty('font-family', activeTimetableFont, 'important');
-        timetableContainer.style.setProperty('opacity', `${(this.timetableOpacity || 100) / 100}`, 'important');
-        timetableContainer.querySelectorAll('*').forEach(el => {
-          el.style.setProperty('font-family', activeTimetableFont, 'important');
-        });
-      }
 
       stagingContainer.appendChild(clone);
 
-      const runRasterize = async () => {
-        if (document.fonts && document.fonts.ready) {
-          try {
-            await document.fonts.ready;
-          } catch (e) {}
-        }
-
+      // Render via domtoimage at 3x resolution
+      setTimeout(() => {
         const scale = 3;
         window.domtoimage.toCanvas(clone, {
-          width: originalCanvas.offsetWidth * scale,
-          height: originalCanvas.offsetHeight * scale,
+          width: cssW * scale,
+          height: cssH * scale,
           style: {
             transform: `scale(${scale})`,
             transformOrigin: 'top left',
-            width: `${originalCanvas.offsetWidth}px`,
-            height: `${originalCanvas.offsetHeight}px`
+            width: `${cssW}px`,
+            height: `${cssH}px`
           }
         }).then(canvas => {
-          if (document.body.contains(stagingContainer)) document.body.removeChild(stagingContainer);
-          
-          const computedStyle = window.getComputedStyle(originalCanvas);
-          const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
-          const borderLeft = parseFloat(computedStyle.borderLeftWidth) || 0;
-          const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
-          const borderRight = parseFloat(computedStyle.borderRightWidth) || 0;
-          
-          const finalW = canvas.width - ((borderLeft + borderRight) * scale);
-          const finalH = canvas.height - ((borderTop + borderBottom) * scale);
-          
-          const finalCanvas = document.createElement('canvas');
-          finalCanvas.width = finalW;
-          finalCanvas.height = finalH;
-          const ctx = finalCanvas.getContext('2d');
-          
-          ctx.drawImage(
-            canvas,
-            borderLeft * scale, borderTop * scale, finalW, finalH,
-            0, 0, finalW, finalH
-          );
-          
-          onComplete(finalCanvas);
+          if (document.body.contains(stagingContainer)) {
+            document.body.removeChild(stagingContainer);
+          }
+          onComplete(canvas);
         }).catch(err => {
-          if (document.body.contains(stagingContainer)) document.body.removeChild(stagingContainer);
-          console.error('Wallpaper export failed:', err);
-          alert('Export failed. Please try again.');
+          if (document.body.contains(stagingContainer)) {
+            document.body.removeChild(stagingContainer);
+          }
+          console.error("Wallpaper export error:", err);
+          alert("Failed to export image. Please try again.");
         });
-      };
-
-      setTimeout(() => {
-        runRasterize();
       }, 50);
     };
 
@@ -5768,6 +5762,14 @@ class SchedullyApp {
         const isHidden = cardEditor.classList.contains('hidden');
         cardEditor.classList.toggle('hidden');
         expandArrow.classList.toggle('open', isHidden);
+        if (isHidden) {
+          requestAnimationFrame(() => {
+            window.syncGlassSliders?.();
+          });
+          setTimeout(() => {
+            window.syncGlassSliders?.();
+          }, 60);
+        }
       });
 
       // Independent Display Time Toggle Listener
@@ -5777,6 +5779,7 @@ class SchedullyApp {
           btn.classList.add('active');
           c.displayTime = (btn.getAttribute('data-val') === 'yes');
           this.renderTimetableGrid();
+          window.syncGlassSliders?.();
         });
       });
 
@@ -5942,7 +5945,7 @@ if (document.readyState === 'loading') {
 // Interactive Touch & Pointer Dragging + Auto-Centering + Elastic Snap
 // ═══════════════════════════════════════════════════════════════
 function initGlassSegmentedSliders() {
-  const selector = '#device-type-toggles, .pill-toggle-group, .capsule-group, .device-capsule-switcher, #time-display-mode-group';
+  const selector = '#device-type-toggles, .pill-toggle-group, .capsule-group, .device-capsule-switcher, #time-display-mode-group, .edit-display-time';
 
   const updateGroupThumb = (group, instant = false) => {
     if (!group) return;
@@ -5989,17 +5992,14 @@ function initGlassSegmentedSliders() {
     }
   };
 
-  window.syncGlassSliders = () => {
-    document.querySelectorAll(selector).forEach(group => {
-      updateGroupThumb(group, false);
-    });
-  };
-
   const ro = (typeof ResizeObserver !== 'undefined') ? new ResizeObserver(() => {
     window.syncGlassSliders();
   }) : null;
 
-  document.querySelectorAll(selector).forEach(group => {
+  const setupGroup = (group) => {
+    if (!group || group._hasGlassSlider) return;
+    group._hasGlassSlider = true;
+
     let thumb = group.querySelector('.glass-slider-thumb');
     if (!thumb) {
       thumb = document.createElement('div');
@@ -6088,6 +6088,21 @@ function initGlassSegmentedSliders() {
 
     group.addEventListener('pointerup', endDrag);
     group.addEventListener('pointercancel', endDrag);
+
+    updateGroupThumb(group, true);
+  };
+
+  window.syncGlassSliders = () => {
+    document.querySelectorAll(selector).forEach(group => {
+      if (!group._hasGlassSlider) {
+        setupGroup(group);
+      }
+      updateGroupThumb(group, false);
+    });
+  };
+
+  document.querySelectorAll(selector).forEach(group => {
+    setupGroup(group);
   });
 
   // Global delegated click handler for clean, single-tap switching
@@ -6097,12 +6112,12 @@ function initGlassSegmentedSliders() {
       e.stopPropagation();
       return;
     }
-    const btn = e.target.closest(`${selector} button, ${selector} .pill-btn, ${selector} .capsule-btn`);
+    const btn = e.target.closest('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn');
     if (!btn) return;
     const group = btn.closest(selector);
     if (!group) return;
 
-    group.querySelectorAll('button, .pill-btn, .capsule-btn').forEach(b => b.classList.remove('active'));
+    group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     updateGroupThumb(group, false);
   }, true);
