@@ -526,19 +526,11 @@ class SchedullyApp {
         btn.style.color = textColor;
       });
 
-      // Settings toggle button & clear all button
+      // Settings toggle button & clear all button (handled by CSS Liquid Glass)
       document.querySelectorAll('#btn-schedule-settings-toggle, #btn-clear-all').forEach(btn => {
-        if (btn.id === 'btn-schedule-settings-toggle') {
-          btn.style.backgroundColor = variant;
-          btn.style.borderColor = outline || 'rgba(255,255,255,0.15)';
-          btn.style.color = textColor;
-          btn.querySelectorAll('span, svg').forEach(child => child.style.color = textColor);
-        } else if (btn.id === 'btn-clear-all') {
-          btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
-          btn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-          btn.style.color = '#EF4444';
-          btn.querySelectorAll('span, svg').forEach(child => child.style.color = '#EF4444');
-        }
+        btn.style.backgroundColor = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
       });
 
       // Bottom Login & Globe pill buttons
@@ -817,9 +809,9 @@ class SchedullyApp {
     });
 
     // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Active pill / capsule buttons ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
-    document.querySelectorAll('.pill-btn.active, .capsule-btn.active').forEach(el => {
-      el.style.backgroundColor = primary;
-      el.style.color = onPrimary;
+    document.querySelectorAll('.pill-btn, .capsule-btn').forEach(el => {
+      el.style.backgroundColor = '';
+      el.style.color = '';
     });
 
     // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Theme & Layout card inner ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
@@ -928,92 +920,19 @@ class SchedullyApp {
 
   toggleAccordion(header, content) {
     if (!content) return;
-    const isOpening = content.classList.contains('hidden') || content.style.maxHeight === '0px';
-
-    // Clear any pending animation timers
-    if (content._animTimer) {
-      clearTimeout(content._animTimer);
-      content._animTimer = null;
-    }
+    const isOpening = content.classList.contains('hidden') || !content.classList.contains('is-open');
 
     if (isOpening) {
-      content.classList.remove('hidden');
       header?.classList.add('active');
-
-      // Instant measurement pass with no transitions
-      content.style.transition = 'none';
-      content.style.maxHeight = 'none';
-      content.style.opacity = '1';
-      content.style.overflow = 'hidden';
-      const targetHeight = content.scrollHeight;
-
-      // Start from 0 with initial state
-      content.style.maxHeight = '0px';
-      content.style.opacity = '0';
-      content.style.paddingTop = '0px';
-      content.style.paddingBottom = '0px';
-      content.style.marginTop = '0px';
-      content.style.marginBottom = '0px';
-      content.style.borderWidth = '0px';
-      content.style.transform = 'scale(0.985) translateY(-4px)';
-
-      // Force synchronous reflow to register the 0-state
-      void content.offsetHeight;
-
-      // Animate smoothly to target size
-      content.style.transition = 'max-height 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out, transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), padding 0.26s cubic-bezier(0.16, 1, 0.3, 1), margin 0.26s cubic-bezier(0.16, 1, 0.3, 1), border-width 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
-      content.style.maxHeight = targetHeight + 'px';
-      content.style.opacity = '1';
-      content.style.paddingTop = '';
-      content.style.paddingBottom = '';
-      content.style.marginTop = '';
-      content.style.marginBottom = '';
-      content.style.borderWidth = '';
-      content.style.transform = 'scale(1) translateY(0)';
-
-      content._animTimer = setTimeout(() => {
-        if (!content.classList.contains('hidden')) {
-          content.style.maxHeight = 'none';
-          content.style.overflow = 'visible';
-          content.style.transition = '';
-        }
-      }, 270);
+      content.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        content.classList.add('is-open');
+        window.syncGlassSliders?.();
+      });
     } else {
       header?.classList.remove('active');
-
-      // Lock current height instantly from 'none' to px value without animation delay
-      content.style.overflow = 'hidden';
-      content.style.transition = 'none';
-      content.style.maxHeight = content.scrollHeight + 'px';
-      content.style.opacity = '1';
-      content.style.transform = 'scale(1) translateY(0)';
-
-      // Force synchronous reflow to register the starting height
-      void content.offsetHeight;
-
-      // Animate all dimensions directly to zero smoothly
-      content.style.transition = 'max-height 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease-in, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), padding 0.22s cubic-bezier(0.16, 1, 0.3, 1), margin 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-width 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
-      content.style.maxHeight = '0px';
-      content.style.opacity = '0';
-      content.style.paddingTop = '0px';
-      content.style.paddingBottom = '0px';
-      content.style.marginTop = '0px';
-      content.style.marginBottom = '0px';
-      content.style.borderWidth = '0px';
-      content.style.transform = 'scale(0.985) translateY(-4px)';
-
-      content._animTimer = setTimeout(() => {
-        if (content.style.maxHeight === '0px') {
-          content.classList.add('hidden');
-          content.style.paddingTop = '';
-          content.style.paddingBottom = '';
-          content.style.marginTop = '';
-          content.style.marginBottom = '';
-          content.style.borderWidth = '';
-          content.style.transform = '';
-          content.style.transition = '';
-        }
-      }, 230);
+      content.classList.remove('is-open');
+      content.classList.add('hidden');
     }
   }
 
@@ -2185,38 +2104,6 @@ class SchedullyApp {
       });
     }
 
-    // Global delegated listener for pill-btn / capsule-btn clicks
-    // Imperatively applies theme color when .active changes
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.pill-btn, .capsule-btn');
-      if (!btn) return;
-
-      // Brief rAF to let classList.add('active') fire first
-      requestAnimationFrame(() => {
-        const primary = getComputedStyle(document.documentElement)
-          .getPropertyValue('--m3-sys-color-primary').trim() || '#2563EB';
-        const onPrimary = getComputedStyle(document.documentElement)
-          .getPropertyValue('--m3-sys-color-on-primary').trim() || '#FFFFFF';
-
-        // Reset siblings
-        const group = btn.closest('.pill-toggle-group, .capsule-group') || btn.parentElement;
-        if (group) {
-          group.querySelectorAll('.pill-btn, .capsule-btn').forEach(b => {
-            if (!b.classList.contains('active')) {
-              b.style.backgroundColor = '';
-              b.style.color = '';
-            }
-          });
-        }
-
-        // Style active btn
-        if (btn.classList.contains('active')) {
-          btn.style.backgroundColor = primary;
-          btn.style.color = onPrimary;
-        }
-      });
-    });
-
     // Expandable Card Accordions
     this.headerTheme.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2415,14 +2302,8 @@ class SchedullyApp {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#toggle-table-corners .pill-btn').forEach(b => {
           b.classList.remove('active');
-          b.style.backgroundColor = '';
-          b.style.color = '';
         });
         btn.classList.add('active');
-        const primary = getComputedStyle(document.documentElement).getPropertyValue('--m3-sys-color-primary').trim() || '#2563EB';
-        const onPrimary = getComputedStyle(document.documentElement).getPropertyValue('--m3-sys-color-on-primary').trim() || '#FFFFFF';
-        btn.style.backgroundColor = primary;
-        btn.style.color = onPrimary;
 
         this.tableCornerStyle = btn.getAttribute('data-val');
         
@@ -2459,14 +2340,8 @@ class SchedullyApp {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#toggle-card-corners .pill-btn').forEach(b => {
           b.classList.remove('active');
-          b.style.backgroundColor = '';
-          b.style.color = '';
         });
         btn.classList.add('active');
-        const primary = getComputedStyle(document.documentElement).getPropertyValue('--m3-sys-color-primary').trim() || '#2563EB';
-        const onPrimary = getComputedStyle(document.documentElement).getPropertyValue('--m3-sys-color-on-primary').trim() || '#FFFFFF';
-        btn.style.backgroundColor = primary;
-        btn.style.color = onPrimary;
 
         this.cardCornerStyle = btn.getAttribute('data-val');
         
@@ -3203,7 +3078,10 @@ class SchedullyApp {
 
     // Segmented Capsule Switcher
     document.querySelectorAll('.capsule-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        if (window._globalDragSuppressUntil && Date.now() < window._globalDragSuppressUntil && !e._isProgrammaticDrag) {
+          return;
+        }
         document.querySelectorAll('.capsule-btn').forEach(b => {
           b.classList.remove('active');
           b.style.backgroundColor = '';
@@ -3212,6 +3090,14 @@ class SchedullyApp {
         btn.classList.add('active');
         const device = btn.getAttribute('data-device');
         this.activeDevice = device;
+
+        // Instantly glide the glass slider thumb to tapped device button
+        if (typeof window.syncGlassSliders === 'function') {
+          window.syncGlassSliders();
+          requestAnimationFrame(window.syncGlassSliders);
+          setTimeout(window.syncGlassSliders, 60);
+          setTimeout(window.syncGlassSliders, 250);
+        }
 
         const lockUIToggle = document.getElementById('toggle-lock-ui');
 
@@ -3402,6 +3288,10 @@ class SchedullyApp {
       btnTogglePopover.addEventListener('click', (e) => {
         e.stopPropagation();
         canvasPopover.classList.toggle('hidden');
+        if (!canvasPopover.classList.contains('hidden')) {
+          setTimeout(window.syncGlassSliders, 20);
+          setTimeout(window.syncGlassSliders, 120);
+        }
       });
 
       // Keep popover open while customizing themes/sidebars/controls.
@@ -3914,17 +3804,24 @@ class SchedullyApp {
     }
 
     if (this.btnClearAll) {
-      this.btnClearAll.addEventListener('click', (e) => {
+      this.btnClearAll.addEventListener('click', async (e) => {
          try {
            const originalText = e.currentTarget.innerHTML;
            e.currentTarget.innerHTML = "Clearing...";
            e.currentTarget.style.backgroundColor = "#dcfce7";
            e.currentTarget.style.color = "#166534";
            
-           // Clear internal state
+           // Clear internal state & presets
            this.classes = [];
-           localStorage.removeItem('schedully_classes');
-           localStorage.removeItem('timefactory_classes');
+           if (this.presets && this.activePresetKey && this.presets[this.activePresetKey]) {
+             this.presets[this.activePresetKey].classes = [];
+           }
+           this.saveToLocal();
+
+           // Sync cleared state to Firebase Cloud if logged in
+           if (window.schedullyFirebase?.currentUser) {
+             await this.saveToCloud();
+           }
            
            // Forcefully clear the UI immediately
            if (this.classListContainer) this.classListContainer.innerHTML = '';
@@ -4331,6 +4228,9 @@ class SchedullyApp {
       }
 
       this.renderTimetableGrid();
+      if (typeof window.syncGlassSliders === 'function') {
+        setTimeout(window.syncGlassSliders, 30);
+      }
     } catch (e) {
       console.warn("Could not apply preset settings:", e);
     }
@@ -5016,6 +4916,10 @@ class SchedullyApp {
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
+  }
+
+  saveClasses() {
+    this.saveToLocal();
   }
 
   markUnsaved() {
@@ -6025,14 +5929,214 @@ const initSchedullyApp = () => {
   if (!window.schedullyApp) {
     window.schedullyApp = new SchedullyApp();
   }
+  initGlassSegmentedSliders();
 };
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSchedullyApp);
 } else {
   initSchedullyApp();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// APPLE LIQUID GLASS SLIDING SEGMENTED SWITCHER ENGINE
+// Interactive Touch & Pointer Dragging + Auto-Centering + Elastic Snap
+// ═══════════════════════════════════════════════════════════════
+function initGlassSegmentedSliders() {
+  const selector = '#device-type-toggles, .pill-toggle-group, .capsule-group, .device-capsule-switcher, #time-display-mode-group';
 
+  const updateGroupThumb = (group, instant = false) => {
+    if (!group) return;
+    let thumb = group.querySelector('.glass-slider-thumb');
+    if (!thumb) {
+      thumb = document.createElement('div');
+      thumb.className = 'glass-slider-thumb';
+      group.prepend(thumb);
+    }
 
+    const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+    if (!buttons.length) return;
 
+    let activeBtn = group.querySelector('.active') || buttons[0];
+    const idx = Math.max(0, buttons.indexOf(activeBtn));
+
+    const groupWidth = group.clientWidth - 6;
+    const fallbackWidth = groupWidth > 0 ? (groupWidth / buttons.length) : (group.offsetWidth / buttons.length);
+    const fallbackLeft = 3 + (idx * fallbackWidth);
+
+    let left = activeBtn.offsetLeft;
+    let width = activeBtn.offsetWidth;
+
+    // If offsetLeft is 0 or abnormal while idx > 0, use guaranteed mathematical positioning
+    if ((idx > 0 && left <= 4) || width <= 0 || width >= group.offsetWidth - 2) {
+      left = fallbackLeft;
+      width = fallbackWidth;
+    }
+
+    if (width > 0) {
+      thumb.style.opacity = '1';
+      if (instant) {
+        thumb.style.transition = 'none';
+        thumb.style.transform = `translateX(${left}px)`;
+        thumb.style.width = `${width}px`;
+        requestAnimationFrame(() => {
+          thumb.style.transition = '';
+        });
+      } else {
+        thumb.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.35, 1), width 0.24s cubic-bezier(0.25, 1, 0.35, 1)';
+        thumb.style.transform = `translateX(${left}px)`;
+        thumb.style.width = `${width}px`;
+      }
+    }
+  };
+
+  window.syncGlassSliders = () => {
+    document.querySelectorAll(selector).forEach(group => {
+      updateGroupThumb(group, false);
+    });
+  };
+
+  const ro = (typeof ResizeObserver !== 'undefined') ? new ResizeObserver(() => {
+    window.syncGlassSliders();
+  }) : null;
+
+  document.querySelectorAll(selector).forEach(group => {
+    let thumb = group.querySelector('.glass-slider-thumb');
+    if (!thumb) {
+      thumb = document.createElement('div');
+      thumb.className = 'glass-slider-thumb';
+      group.prepend(thumb);
+    }
+    if (ro) ro.observe(group);
+
+    // Interactive Touch / Pointer Drag Gesture Engine
+    let isDragging = false;
+    let hasDragged = false;
+    let startX = 0;
+    let startLeft = 0;
+
+    group.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+      const activeBtn = group.querySelector('.active') || buttons[0];
+      if (!activeBtn) return;
+
+      isDragging = true;
+      hasDragged = false;
+      startX = e.clientX;
+      startLeft = activeBtn.offsetLeft;
+    });
+
+    group.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      if (Math.abs(deltaX) > 5) {
+        if (!hasDragged) {
+          hasDragged = true;
+          try { group.setPointerCapture?.(e.pointerId); } catch (_) {}
+          thumb.style.transition = 'none';
+        }
+      }
+      if (!hasDragged) return;
+
+      const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+      if (!buttons.length) return;
+
+      const groupRect = group.getBoundingClientRect();
+      const currentThumbWidth = thumb.offsetWidth || (groupRect.width / buttons.length);
+      const minLeft = 3;
+      const maxLeft = groupRect.width - currentThumbWidth - 3;
+      const currentLeft = Math.max(minLeft, Math.min(maxLeft, startLeft + deltaX));
+
+      thumb.style.transform = `translateX(${currentLeft}px)`;
+    });
+
+    const endDrag = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      if (hasDragged) {
+        try { group.releasePointerCapture?.(e.pointerId); } catch (_) {}
+        thumb.style.transition = '';
+
+        window._globalDragSuppressUntil = Date.now() + 350;
+        const buttons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn'));
+        const currentX = e.clientX;
+        let targetBtn = null;
+        let minDistance = Infinity;
+
+        for (const btn of buttons) {
+          const r = btn.getBoundingClientRect();
+          const center = r.left + r.width / 2;
+          const dist = Math.abs(currentX - center);
+          if (dist < minDistance) {
+            minDistance = dist;
+            targetBtn = btn;
+          }
+        }
+
+        if (targetBtn) {
+          buttons.forEach(b => b.classList.remove('active'));
+          targetBtn.classList.add('active');
+          
+          const progClick = new MouseEvent('click', { bubbles: true, cancelable: true });
+          progClick._isProgrammaticDrag = true;
+          targetBtn.dispatchEvent(progClick);
+        }
+
+        updateGroupThumb(group, false);
+      }
+    };
+
+    group.addEventListener('pointerup', endDrag);
+    group.addEventListener('pointercancel', endDrag);
+  });
+
+  // Global delegated click handler for clean, single-tap switching
+  document.addEventListener('click', (e) => {
+    if (window._globalDragSuppressUntil && Date.now() < window._globalDragSuppressUntil && !e._isProgrammaticDrag) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    const btn = e.target.closest(`${selector} button, ${selector} .pill-btn, ${selector} .capsule-btn`);
+    if (!btn) return;
+    const group = btn.closest(selector);
+    if (!group) return;
+
+    group.querySelectorAll('button, .pill-btn, .capsule-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateGroupThumb(group, false);
+  }, true);
+
+  // Initial and delayed synchronizations
+  setTimeout(window.syncGlassSliders, 60);
+  setTimeout(window.syncGlassSliders, 260);
+
+  // Debounced Re-sync on window resize
+  let resizeRaf = null;
+  window.addEventListener('resize', () => {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(window.syncGlassSliders);
+  }, { passive: true });
+}
+
+// Ultra-Smooth 60/120fps RAF-Throttled Liquid Glass Refraction Tracker
+let pointerRafId = null;
+let lastPointerEvent = null;
+
+document.addEventListener('pointermove', (e) => {
+  lastPointerEvent = e;
+  if (!pointerRafId) {
+    pointerRafId = requestAnimationFrame(() => {
+      pointerRafId = null;
+      if (!lastPointerEvent) return;
+      const target = lastPointerEvent.target.closest(
+        '.card-expand-header, .exact-course-card, .class-card-item, #bottom-floating-pill-bar, #header-desktop-bar button, .btn-adaptive-auth, .btn-globe-language, .btn-coffee-support, .m3-button'
+      );
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        target.style.setProperty('--mouse-x', `${lastPointerEvent.clientX - rect.left}px`);
+        target.style.setProperty('--mouse-y', `${lastPointerEvent.clientY - rect.top}px`);
+      }
+    });
+  }
+}, { passive: true });
