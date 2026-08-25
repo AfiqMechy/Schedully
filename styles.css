@@ -46,6 +46,19 @@
   --glass-glare-factor: 0.9;
   --glass-glare-opposite: 0.8;
   --glass-fresnel-factor: 0.2;
+
+  /* Glass Surface System Tokens (Universal Optical Liquid Glass) */
+  --glass-surface-glare-mult: 0.38;
+  --glass-surface-mid: rgba(255, 255, 255, 0.08);
+  --glass-surface-base: rgba(255, 255, 255, calc(var(--glass-glare-opposite, 0.8) * 0.12));
+  --glass-border-color: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.4 + 0.25));
+  --glass-card-bg-start: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.22));
+  --glass-card-bg-mid: rgba(255, 255, 255, 0.04);
+  --glass-card-bg-end: rgba(255, 255, 255, 0.08);
+  --glass-card-border: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.3 + 0.15));
+  --glass-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.35);
+  --glass-inset-glare-mult: 0.8;
+  --glass-dispersion-factor: 1;
 }
 
 html, body {
@@ -61,9 +74,22 @@ html, body {
   min-height: 100vh;
 }
 
-body.dark-mode {
+body.dark-mode, .theme-dark {
   background-color: #0B0F17 !important;
   background-image: none !important;
+
+  /* Glass Surface System Tokens (Dark Mode - Pure Refraction & Specular Glare) */
+  --glass-surface-glare-mult: 0.28;
+  --glass-surface-mid: rgba(255, 255, 255, 0.03);
+  --glass-surface-base: rgba(255, 255, 255, 0.05);
+  --glass-border-color: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.25 + 0.08));
+  --glass-card-bg-start: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.14));
+  --glass-card-bg-mid: rgba(255, 255, 255, 0.02);
+  --glass-card-bg-end: rgba(0, 0, 0, 0.20);
+  --glass-card-border: rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.2 + 0.06));
+  --glass-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.80);
+  --glass-inset-glare-mult: 0.6;
+  --glass-dispersion-factor: 0;
 }
 
 * {
@@ -758,37 +784,33 @@ body.dark-mode #schedule-quick-settings,
   margin: 0 !important;
   z-index: 50 !important;
   opacity: 1;
-  transform: translateX(0) scale(1);
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.45)) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.25)) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(210%) contrast(106%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(210%) contrast(106%) brightness(1.04) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.35) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(190%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
-    0 24px 60px -10px rgba(15, 23, 42, 0.12),
+    0 20px 50px -10px rgba(15, 23, 42, 0.12),
     0 4px 16px -2px rgba(15, 23, 42, 0.04),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 1.1)),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.04),
-    inset calc(var(--glass-dispersion, 7) * 0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
-    inset calc(var(--glass-dispersion, 7) * -0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+    inset 0 1.5px 2px 0 #FFFFFF !important;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
               opacity 0.3s ease,
-              box-shadow 0.3s ease !important;
+              box-shadow 0.3s ease,
+              background 0.3s ease !important;
 }
 
 body.dark-mode #left-sidebar,
 body.dark-mode #right-sidebar,
 .theme-dark #left-sidebar,
 .theme-dark #right-sidebar {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.82) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) brightness(1.1) contrast(1.08) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) brightness(1.1) contrast(1.08) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   color: #F8FAFC !important;
   box-shadow: 
-    0 24px 60px -10px rgba(0, 0, 0, 0.75),
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
+    0 24px 60px -10px rgba(0, 0, 0, 0.70),
+    0 4px 16px rgba(0, 0, 0, 0.40),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 #left-sidebar {
@@ -969,38 +991,23 @@ body.dark-mode .sub-accordion-header.active {
 }
 
 .card-expand-header {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.18) 100%) !important;
-  backdrop-filter: blur(16px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
-  border-radius: 9999px !important;
-  padding: 10px 18px !important;
-  min-height: 62px !important;
-  height: 62px !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03),
-    0 6px 16px -2px rgba(15, 23, 42, 0.06),
-    0 2px 6px 0 rgba(15, 23, 42, 0.03) !important;
-  position: relative;
-  touch-action: pan-y;
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
+  width: 100% !important;
+  padding: 13px 15px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 #FFFFFF,
+    0 4px 14px -2px rgba(15, 23, 42, 0.06) !important;
+  cursor: pointer !important;
   text-decoration: none !important;
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-body.dark-mode .card-expand-header,
-.theme-dark .card-expand-header {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-  backdrop-filter: blur(18px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
-    0 6px 18px -2px rgba(0, 0, 0, 0.45) !important;
 }
 
 .card-expand-header:hover {
@@ -1012,13 +1019,22 @@ body.dark-mode .card-expand-header,
     0 12px 28px -4px rgba(15, 23, 42, 0.14) !important;
 }
 
+body.dark-mode .card-expand-header,
+.theme-dark .card-expand-header {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.30),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
 body.dark-mode .card-expand-header:hover,
 .theme-dark .card-expand-header:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.09) 100%) !important;
-  border-color: rgba(147, 197, 253, 0.5) !important;
-  box-shadow: 
-    inset 0 2px 3px 0 rgba(255, 255, 255, 0.35),
-    0 10px 24px rgba(0, 0, 0, 0.6) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45) !important;
 }
 
 .card-expand-header > div {
@@ -1096,10 +1112,22 @@ body.dark-mode #header-file-import svg:first-child,
 }
 
 body.dark-mode .card-expand-header.active {
-  border-color: rgba(96, 165, 250, 0.4) !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.3),
-    0 6px 20px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .animate-aura,
+.theme-dark .animate-aura {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+body.dark-mode .theme-card-inner,
+body.dark-mode .layout-card-inner,
+.theme-dark .theme-card-inner,
+.theme-dark .layout-card-inner {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .card-expand-header.active svg:last-child {
@@ -3060,10 +3088,12 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 }
 
 .expandable-class-card,
-.class-item-card {
+.class-item-card,
+.class-card-item {
+  position: relative !important;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.38) 100%) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
   border-radius: 20px !important;
   padding: 14px !important;
@@ -3080,7 +3110,8 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 }
 
 .expandable-class-card:hover,
-.class-item-card:hover {
+.class-item-card:hover,
+.class-card-item:hover {
   transform: translateY(-2px) scale(1.01) !important;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.65) 100%) !important;
   border-color: rgba(147, 197, 253, 0.95) !important;
@@ -3090,24 +3121,30 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 }
 
 body.dark-mode .expandable-class-card,
-body.dark-mode .class-item-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px) saturate(160%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(160%) contrast(105%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+body.dark-mode .class-item-card,
+body.dark-mode .class-card-item,
+.theme-dark .expandable-class-card,
+.theme-dark .class-item-card,
+.theme-dark .class-card-item {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2),
-    0 6px 16px -2px rgba(0, 0, 0, 0.3) !important;
+    0 4px 14px rgba(0, 0, 0, 0.30),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.10) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 body.dark-mode .expandable-class-card:hover,
-body.dark-mode .class-item-card:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25),
-    0 10px 24px -3px rgba(0, 0, 0, 0.45) !important;
+body.dark-mode .class-item-card:hover,
+body.dark-mode .class-card-item:hover,
+.theme-dark .expandable-class-card:hover,
+.theme-dark .class-item-card:hover,
+.theme-dark .class-card-item:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Glass Search Input Box */
@@ -3906,18 +3943,26 @@ body.dark-mode #btn-edit-preset:hover {
   color: var(--m3-sys-color-primary, #60A5FA) !important;
 }
 
-body.dark-mode #user-logged-in-state {
-  background-color: rgba(15, 23, 42, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #F8FAFC !important;
+#user-logged-in-state,
+#user-logged-out-state,
+body.dark-mode #user-logged-in-state,
+body.dark-mode #user-logged-out-state,
+.theme-dark #user-logged-in-state,
+.theme-dark #user-logged-out-state {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 body.dark-mode #user-display-name {
-  color: #F8FAFC !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
 }
 
 body.dark-mode #user-status-text {
-  color: #94A3B8 !important;
+  color: #CBD5E1 !important;
 }
 
 /* Photo Wallpaper & Auto-Adaptive Dynamic Styling (Seamless Full-Bleed Blur) */
@@ -3948,15 +3993,25 @@ body.dark-mode #user-status-text {
 }
 
 #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
-  background: var(--m3-grid-surface-bg, rgba(255, 255, 255, 0.92)) !important;
-  border-color: rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.25) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.16),
+    inset 0 1.5px 2px 0 #FFFFFF !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
-  background: var(--m3-grid-surface-bg, rgba(15, 23, 42, 0.9)) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container,
+.theme-dark #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.60),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 body.dark-mode #wallpaper-controls-bar {
@@ -4143,34 +4198,7 @@ body.dark-mode #btn-google-logout:hover {
   color: #FCA5A5 !important;
 }
 
-/* ── GLOBAL Dark mode sidebar overlay & floating elements (Desktop + Mobile synchronized) ── */
-body.dark-mode #left-sidebar,
-body.dark-mode #right-sidebar,
-.theme-dark #left-sidebar,
-.theme-dark #right-sidebar {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.84) 100%) !important;
-  backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.12) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
-  color: var(--m3-sys-text-primary) !important;
-  box-shadow: 
-    0 24px 60px -10px rgba(0, 0, 0, 0.75),
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
-}
 
-body.dark-mode #btn-expand-left-floating,
-body.dark-mode #btn-expand-right-floating {
-  background: rgba(15, 23, 42, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: var(--m3-sys-text-primary) !important;
-}
-
-body.dark-mode #bottom-floating-pill-bar {
-  background: rgba(15, 23, 42, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-}
 
 body.dark-mode #bottom-floating-pill-bar > div {
   background: rgba(30, 41, 59, 0.9) !important;
@@ -6077,17 +6105,15 @@ body.dark-mode #zoom-label-text {
 
 body.dark-mode #canvas-controls-popover,
 .theme-dark #canvas-controls-popover {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.35) 45%, rgba(15, 23, 42, 0.55) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(20, 24, 33, 0.75) 40%, rgba(15, 23, 42, 0.88) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.65),
     0 4px 16px rgba(0, 0, 0, 0.35),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.9)),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3),
-    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(147, 197, 253, 0.5)),
-    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.38)) !important;
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
 #input-title-text-stage {
@@ -6713,21 +6739,27 @@ html, body {
 
 /* 1. Main Profile Card Capsule (User Pill & Login Pill) */
 .user-profile-card,
-#btn-google-login-drawer {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
-  backdrop-filter: blur(16px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.88) !important;
-  color: #0F172A !important;
-  padding: 6px 12px !important;
-  border-radius: 18px !important;
+#btn-google-login-drawer,
+.user-profile-card {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), var(--glass-card-bg-start) 0%, var(--glass-card-bg-mid) 40%, var(--glass-card-bg-end) 100%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  border: 1px solid var(--glass-card-border) !important;
+  color: var(--m3-sys-text-primary) !important;
+  padding: 0 12px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  box-sizing: border-box !important;
+  border-radius: 9999px !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02),
-    0 4px 14px rgba(15, 23, 42, 0.04) !important;
+    0 4px 14px rgba(0, 0, 0, 0.06),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * var(--glass-inset-glare-mult, 1.1) * 0.8)),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   user-select: none !important;
   touch-action: manipulation !important;
+  overflow: hidden !important;
 }
 
 .user-profile-card:hover,
@@ -6779,15 +6811,15 @@ html, body {
   min-width: 42px !important;
   min-height: 42px !important;
   border-radius: 16px !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
-  backdrop-filter: blur(16px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.88) !important;
-  color: #0F172A !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), var(--glass-card-bg-start) 0%, var(--glass-card-bg-mid) 40%, var(--glass-card-bg-end) 100%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(190%) !important;
+  border: 1px solid var(--glass-card-border) !important;
+  color: var(--m3-sys-text-primary) !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02),
-    0 4px 14px rgba(15, 23, 42, 0.04) !important;
+    0 4px 14px rgba(0, 0, 0, 0.06),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * var(--glass-inset-glare-mult, 1.1) * 0.8)),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04) !important;
   cursor: pointer !important;
   user-select: none !important;
   touch-action: manipulation !important;
@@ -6800,19 +6832,18 @@ html, body {
 
 .btn-globe-language svg,
 .btn-coffee-support svg {
-  color: #0F172A !important;
-  stroke: #0F172A !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
   transition: transform 0.2s ease !important;
 }
 
 .btn-globe-language:hover,
 .btn-coffee-support:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
-  border-color: rgba(147, 197, 253, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
   transform: translateY(-1px) scale(1.05) !important;
   box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
-    0 8px 20px -4px rgba(37, 99, 235, 0.15) !important;
+    0 8px 20px -4px rgba(0, 0, 0, 0.15),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.75) !important;
 }
 
 .btn-globe-language:hover svg,
@@ -6828,19 +6859,19 @@ html, body {
 /* 3. Popover Account Menus (Expand Upward) */
 #profile-settings-menu,
 #login-providers-menu {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.75)) 0%, rgba(255, 255, 255, 0.4) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.5)) 100%) !important;
-  backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * var(--glass-surface-glare-mult, 0.45))) 0%, var(--glass-surface-mid) 45%, var(--glass-surface-base) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) contrast(106%) !important;
+  border: 1.5px solid var(--glass-border-color) !important;
   box-shadow: 
-    0 20px 50px -10px rgba(15, 23, 42, 0.2),
-    0 4px 16px -2px rgba(15, 23, 42, 0.06),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1) !important;
+    var(--glass-shadow),
+    0 4px 16px -2px rgba(0, 0, 0, 0.06),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * var(--glass-inset-glare-mult, 1.1))) !important;
   border-radius: 24px !important;
 }
 
 .popover-item-title {
-  color: #0F172A !important;
+  color: var(--m3-sys-text-primary) !important;
 }
 
 .popover-item-desc {
@@ -6849,49 +6880,6 @@ html, body {
 
 .popover-divider {
   background: rgba(0, 0, 0, 0.06) !important;
-}
-
-/* 4. DARK MODE MOBILE CONTROLS GLASS */
-body.dark-mode .user-profile-card,
-body.dark-mode #btn-google-login-drawer,
-body.dark-mode .btn-globe-language,
-body.dark-mode .btn-coffee-support,
-.theme-dark .user-profile-card,
-.theme-dark #btn-google-login-drawer,
-.theme-dark .btn-globe-language,
-.theme-dark .btn-coffee-support {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
-  backdrop-filter: blur(18px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-  color: #FFFFFF !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
-    0 6px 16px rgba(0, 0, 0, 0.45) !important;
-}
-
-body.dark-mode .user-profile-card:hover,
-body.dark-mode #btn-google-login-drawer:hover,
-body.dark-mode .btn-globe-language:hover,
-body.dark-mode .btn-coffee-support:hover,
-.theme-dark .user-profile-card:hover,
-.theme-dark #btn-google-login-drawer:hover,
-.theme-dark .btn-globe-language:hover,
-.theme-dark .btn-coffee-support:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
-  border-color: rgba(147, 197, 253, 0.55) !important;
-  box-shadow: 
-    inset 0 2px 3px 0 rgba(255, 255, 255, 0.4),
-    0 8px 24px rgba(0, 0, 0, 0.6) !important;
-}
-
-body.dark-mode .btn-globe-language svg,
-body.dark-mode .btn-coffee-support svg,
-.theme-dark .btn-globe-language svg,
-.theme-dark .btn-coffee-support svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
 }
 
 body.dark-mode #user-avatar-badge,
@@ -6946,13 +6934,14 @@ body.dark-mode #profile-settings-menu,
 body.dark-mode #login-providers-menu,
 .theme-dark #profile-settings-menu,
 .theme-dark #login-providers-menu {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.6) 45%, rgba(15, 23, 42, 0.8) 100%) !important;
-  backdrop-filter: blur(28px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.16)) 0%, rgba(20, 24, 33, 0.75) 40%, rgba(15, 23, 42, 0.88) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) brightness(1.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.2)) !important;
   box-shadow: 
     0 24px 60px rgba(0, 0, 0, 0.65),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25) !important;
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.28)),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
 body.dark-mode .popover-item-title,
