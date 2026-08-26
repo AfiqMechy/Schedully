@@ -3895,26 +3895,42 @@ class SchedullyApp {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
 
-      // clientWidth/Height strictly targets the exact inside of the canvas, ignoring the 12px black bezel!
-      const cssW = originalCanvas.clientWidth;
-      const cssH = originalCanvas.clientHeight;
+      // Determine true unconstrained native dimensions based on active device model
+      let nativeW = 380;
+      let nativeH = 760;
 
-      // Create an off-screen staging area so we can render it at perfect 1x unzoomed scale natively
+      if (originalCanvas.classList.contains('canvas-tablet')) {
+        nativeW = 920;
+        nativeH = 690;
+      } else if (originalCanvas.classList.contains('canvas-paper')) {
+        nativeW = 720;
+        nativeH = Math.max(480, originalCanvas.scrollHeight || 480);
+      } else {
+        nativeW = 380;
+        nativeH = 760;
+      }
+
+      // Create an off-screen staging area so we can render it at perfect native scale
       const stagingContainer = document.createElement('div');
       stagingContainer.style.cssText = `
         position: absolute;
         top: -9999px; left: -9999px;
-        width: ${cssW}px; height: ${cssH}px;
+        width: ${nativeW}px; height: ${nativeH}px;
+        min-width: ${nativeW}px; max-width: ${nativeW}px;
         z-index: -9999;
         zoom: 1; transform: none;
+        overflow: hidden;
       `;
       document.body.appendChild(stagingContainer);
 
       const clone = originalCanvas.cloneNode(true);
 
-      // Remove the black bezel from the clone
-      clone.style.setProperty('width', cssW + 'px', 'important');
-      clone.style.setProperty('height', cssH + 'px', 'important');
+      // Force clone to full native dimensions (overriding any mobile responsive screen squishing)
+      clone.style.setProperty('width', `${nativeW}px`, 'important');
+      clone.style.setProperty('min-width', `${nativeW}px`, 'important');
+      clone.style.setProperty('max-width', `${nativeW}px`, 'important');
+      clone.style.setProperty('height', `${nativeH}px`, 'important');
+      clone.style.setProperty('min-height', `${nativeH}px`, 'important');
       clone.style.setProperty('border', 'none', 'important');
       clone.style.setProperty('border-width', '0px', 'important');
       clone.style.setProperty('outline', 'none', 'important');
@@ -3933,11 +3949,14 @@ class SchedullyApp {
         }
       }
 
-      // Explicitly prevent any backdrop-filter blur on timetable container
+      // Explicitly prevent any backdrop-filter blur and ensure full width on timetable container
       const timetableContainer = clone.querySelector('#lock-timetable-container');
       if (timetableContainer) {
         timetableContainer.style.setProperty('backdrop-filter', 'none', 'important');
         timetableContainer.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        timetableContainer.style.setProperty('width', '100%', 'important');
+        timetableContainer.style.setProperty('min-width', '100%', 'important');
+        timetableContainer.style.setProperty('max-width', 'none', 'important');
       }
 
       // Make clock, camera dot, and nav bar invisible, but keep physical space so timetable stays correctly Y-aligned
@@ -3951,17 +3970,19 @@ class SchedullyApp {
 
       stagingContainer.appendChild(clone);
 
-      // Render via domtoimage at 3x resolution
+      // Render via domtoimage at 3x resolution with native bounds
       setTimeout(() => {
         const scale = 3;
         window.domtoimage.toCanvas(clone, {
-          width: cssW * scale,
-          height: cssH * scale,
+          width: nativeW * scale,
+          height: nativeH * scale,
           style: {
             transform: `scale(${scale})`,
             transformOrigin: 'top left',
-            width: `${cssW}px`,
-            height: `${cssH}px`
+            width: `${nativeW}px`,
+            height: `${nativeH}px`,
+            minWidth: `${nativeW}px`,
+            maxWidth: `${nativeW}px`
           }
         }).then(canvas => {
           if (document.body.contains(stagingContainer)) {
