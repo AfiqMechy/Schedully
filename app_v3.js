@@ -1776,6 +1776,11 @@ class SchedullyApp {
 
     // 2. Sync Visibility with Sidebar Status
     const syncMobilePipVisibility = (isAnySidebarOpen) => {
+      if (window.isTourActive) {
+        pipWidget.classList.add('hidden');
+        pipBubble?.classList.add('hidden');
+        return;
+      }
       if (!isSmartphone()) {
         pipWidget.classList.add('hidden');
         pipBubble?.classList.add('hidden');
@@ -3041,6 +3046,7 @@ class SchedullyApp {
     document.querySelectorAll('.palette-dot').forEach(dot => {
       dot.addEventListener('click', () => {
         if (this.phoneCanvas?.classList.contains('has-photo-wallpaper')) return;
+        if (window.soundFX) window.soundFX.play('click');
         document.querySelectorAll('.palette-dot').forEach(d => d.classList.remove('active'));
         dot.classList.add('active');
         this.currentPalette = dot.getAttribute('data-palette');
@@ -3135,23 +3141,9 @@ class SchedullyApp {
         // Auto-adapt grid & font scaling on device switch
         this.renderTimetableGrid();
 
-        // Smooth scroll scroll area to center new device model
-        const scrollArea = document.getElementById('canvas-scroll-area');
-        if (scrollArea) {
-          setTimeout(() => {
-            const targetLeft = Math.max(0, (scrollArea.scrollWidth - scrollArea.clientWidth) / 2);
-            scrollArea.scrollTo({ left: targetLeft, behavior: 'smooth' });
-          }, 60);
-        }
-
-        // On mobile/tablet screens, preserve user zoom and only auto-center scroll
-        if (window.innerWidth < 1024) {
-          const scrollArea = document.getElementById('canvas-scroll-area');
-          if (scrollArea) {
-            setTimeout(() => {
-              scrollArea.scrollLeft = Math.max(0, (scrollArea.scrollWidth - scrollArea.clientWidth) / 2);
-            }, 60);
-          }
+        // Smoothly center the model on the screen
+        if (typeof centerCanvasModel === 'function') {
+          centerCanvasModel(true);
         }
       });
     });
@@ -3172,60 +3164,67 @@ class SchedullyApp {
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     const mainPhoneWrapper = document.getElementById('main-phone-wrapper');
     
+    // Auto-center canvas helper ensuring the model (phone/tablet/paper) is centered and horizontally pannable
+    const centerCanvasModel = (smooth = true) => {
+      const scrollArea = document.getElementById('canvas-scroll-area');
+      if (!scrollArea) return;
+      setTimeout(() => {
+        const maxScrollX = scrollArea.scrollWidth - scrollArea.clientWidth;
+        const maxScrollY = scrollArea.scrollHeight - scrollArea.clientHeight;
+        const targetLeft = maxScrollX > 0 ? Math.round(maxScrollX / 2) : 0;
+        const targetTop = maxScrollY > 0 ? Math.round(maxScrollY / 2) : 0;
+        scrollArea.scrollTo({ left: targetLeft, top: targetTop, behavior: smooth ? 'smooth' : 'auto' });
+      }, 50);
+    };
+    window.centerCanvasModel = centerCanvasModel;
+
     // Default zoom scale: 1.0 (100%) on mobile for 1:1 scale & smooth horizontal swiping, 0.85 (85%) on desktop
     let currentZoomScale = window.innerWidth < 1024 ? 1.0 : 0.85;
     
-    const applyZoom = () => {
+    const applyZoom = (smooth = true) => {
       if (!mainPhoneWrapper || !zoomLabel) return;
-      mainPhoneWrapper.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), zoom 0.2s ease';
+
+      mainPhoneWrapper.style.transition = smooth ? 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)' : 'none';
       mainPhoneWrapper.style.transformOrigin = 'center center';
+      mainPhoneWrapper.style.zoom = '';
       
-      if (currentZoomScale === 1.0) {
-        mainPhoneWrapper.style.zoom = '';
-        mainPhoneWrapper.style.transform = 'none';
-      } else if ('zoom' in mainPhoneWrapper.style && !window.navigator.userAgent.includes('Firefox')) {
-        mainPhoneWrapper.style.zoom = currentZoomScale;
-        mainPhoneWrapper.style.transform = 'none';
-      } else {
-        mainPhoneWrapper.style.transform = `scale(${currentZoomScale})`;
-      }
+      mainPhoneWrapper.style.transform = `scale(${currentZoomScale})`;
+
       const displayPercent = Math.round(currentZoomScale * 100);
       zoomLabel.innerText = `${displayPercent}%`;
 
-      const scrollArea = document.getElementById('canvas-scroll-area');
-      if (scrollArea) {
-        if (currentZoomScale < 1.0) {
-          scrollArea.classList.remove('justify-start');
-          scrollArea.classList.add('justify-center');
-        } else {
-          scrollArea.classList.remove('justify-center');
-          scrollArea.classList.add('justify-start');
-        }
-      }
+      centerCanvasModel(smooth);
     };
     this.applyCanvasZoom = applyZoom;
 
     if (btnZoomIn && btnZoomOut && zoomLabel && mainPhoneWrapper) {
-      // Set initial zoom on page load
-      applyZoom();
+      // Set initial zoom on page load (without animation on first paint)
+      applyZoom(false);
 
       btnZoomIn.addEventListener('click', () => {
         if (currentZoomScale < 1.5) {
           currentZoomScale = Math.min(1.5, Math.round((currentZoomScale + 0.15) * 100) / 100);
-          applyZoom();
+          if (window.soundFX) window.soundFX.play('zoom');
+          applyZoom(true);
         }
       });
 
       btnZoomOut.addEventListener('click', () => {
         if (currentZoomScale > 0.4) {
           currentZoomScale = Math.max(0.4, Math.round((currentZoomScale - 0.15) * 100) / 100);
-          applyZoom();
+          if (window.soundFX) window.soundFX.play('zoom');
+          applyZoom(true);
         }
+      });
+
+      window.addEventListener('resize', () => {
+        centerCanvasModel(false);
       });
     }
 
     if (btnThemeToggle) {
       btnThemeToggle.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('toggle');
         this.currentMode = this.currentMode === 'dark' ? 'light' : 'dark';
         document.querySelectorAll('.theme-mode-dot').forEach(d => {
           d.classList.toggle('active', d.getAttribute('data-mode') === this.currentMode);
@@ -3297,9 +3296,10 @@ class SchedullyApp {
       // Keep popover open while customizing themes/sidebars/controls.
       // Do NOT close when clicking sidebars, theme pickers, theme mode toggles, or bottom toolbar!
       document.addEventListener('click', (e) => {
+        if (window.isTourActive) return;
         const isClickInsidePopover = canvasPopover.contains(e.target);
         const isClickOnToggle = btnTogglePopover.contains(e.target);
-        const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
+        const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
 
         if (!canvasPopover.classList.contains('hidden') && !isClickInsidePopover && !isClickOnToggle && !isClickOnThemeOrSidebar) {
           canvasPopover.classList.add('hidden');
@@ -3341,9 +3341,9 @@ class SchedullyApp {
         if (!leftCollapsed || !rightCollapsed) {
           hideFloatingBtn(btnExpandLeftFloating);
           hideFloatingBtn(btnExpandRightFloating);
-          if (mobileExportBar) mobileExportBar.style.display = 'none';
-          if (mobileDropdown) mobileDropdown.classList.add('hidden');
-          if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+          if (mobileExportBar && !window.isTourActive) mobileExportBar.style.display = 'none';
+          if (mobileDropdown && !window.isTourActive) mobileDropdown.classList.add('hidden');
+          if (mobileChevron && !window.isTourActive) mobileChevron.classList.remove('mobile-export-chevron-open');
         } else {
           // Both sidebars closed: show all 3 floating top buttons
           showFloatingBtn(btnExpandLeftFloating);
@@ -3388,6 +3388,7 @@ class SchedullyApp {
       syncFloatingButtonsState();
     };
     this.toggleLeftSidebar = toggleLeftSidebar;
+    window.toggleLeftSidebar = toggleLeftSidebar;
 
     const toggleRightSidebar = (collapse) => {
       const isCurrentlyCollapsed = rightSidebar.classList.contains('sidebar-collapsed-right');
@@ -3404,6 +3405,7 @@ class SchedullyApp {
       syncFloatingButtonsState();
     };
     this.toggleRightSidebar = toggleRightSidebar;
+    window.toggleRightSidebar = toggleRightSidebar;
 
     btnToggleLeft?.addEventListener('click', () => toggleLeftSidebar(true));
     btnExpandLeftFloating?.addEventListener('click', () => toggleLeftSidebar(false));
@@ -3977,8 +3979,9 @@ class SchedullyApp {
     };
 
 
-    // Download Image Button â€” Pure clean wallpaper PNG export (Mobile & Desktop)
+    // Download Image Button — Pure clean wallpaper PNG export (Mobile & Desktop)
     this.btnDownloadHD?.addEventListener('click', () => {
+      if (window.soundFX) window.soundFX.play('success');
       exportWallpaper((canvas) => {
         canvas.toBlob((blob) => {
           if (blob && window.timetableEngine?.downloadOrShareFile) {
@@ -4043,9 +4046,10 @@ class SchedullyApp {
       }
     });
 
-    // Close dropdown when tapping elsewhere
+    // Close dropdown when tapping elsewhere (do not close on tour overlay clicks)
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#mobile-export-bar')) {
+      if (window.isTourActive) return;
+      if (!e.target.closest('#mobile-export-bar, #interactive-tour-overlay, #tour-popover-card')) {
         closeMobileDropdown();
       }
     });
@@ -6356,6 +6360,7 @@ function initLiquidGlassPresets() {
     btn.addEventListener('click', () => {
       const key = btn.dataset.glassPreset;
       if (presets[key]) {
+        if (window.soundFX) window.soundFX.play('preset');
         window.applyLiquidGlassConfig(presets[key], key);
       }
     });
@@ -6370,10 +6375,575 @@ function initLiquidGlassPresets() {
   } catch (e) {}
 }
 
-// Auto-initialize Liquid Glass Presets on DOM ready
+// ═══════════════════════════════════════════════════════════════
+// THEME STYLE SYSTEM (Default M3 Solid vs Liquid Glass)
+// ═══════════════════════════════════════════════════════════════
+function initThemeStyleEngine() {
+  const btnDefault = document.getElementById('btn-theme-style-default');
+  const btnGlass = document.getElementById('btn-theme-style-glass');
+  const styleLabel = document.getElementById('active-theme-style-label');
+  const glassPresetsSection = document.getElementById('liquid-glass-presets-section');
+
+  const applyThemeStyle = (style) => {
+    const isDefault = style === 'default';
+    
+    if (isDefault) {
+      document.body.classList.add('theme-style-default');
+      document.body.classList.remove('theme-style-glass');
+      if (btnDefault) btnDefault.classList.add('active');
+      if (btnGlass) btnGlass.classList.remove('active');
+      if (styleLabel) styleLabel.textContent = 'Default';
+      if (glassPresetsSection) glassPresetsSection.classList.add('disabled-preset-section');
+    } else {
+      document.body.classList.remove('theme-style-default');
+      document.body.classList.add('theme-style-glass');
+      if (btnDefault) btnDefault.classList.remove('active');
+      if (btnGlass) btnGlass.classList.add('active');
+      if (styleLabel) styleLabel.textContent = 'Glass';
+      if (glassPresetsSection) glassPresetsSection.classList.remove('disabled-preset-section');
+    }
+
+    try {
+      localStorage.setItem('schedully_theme_style', style);
+    } catch (e) {}
+  };
+  window.applyThemeStyle = applyThemeStyle;
+
+  if (btnDefault) {
+    btnDefault.addEventListener('click', () => applyThemeStyle('default'));
+  }
+  if (btnGlass) {
+    btnGlass.addEventListener('click', () => applyThemeStyle('glass'));
+  }
+
+  // Restore saved theme style on load (default to 'glass')
+  try {
+    const savedStyle = localStorage.getItem('schedully_theme_style') || 'glass';
+    applyThemeStyle(savedStyle);
+  } catch (e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NATIVE WEB AUDIO SOUND ENGINE (Apple-Style Micro Haptics)
+// ═══════════════════════════════════════════════════════════════
+class SoundEffectsEngine {
+  constructor() {
+    this.ctx = null;
+    this.enabled = localStorage.getItem('schedully_sound_enabled') !== 'false';
+    this.initContext = this.initContext.bind(this);
+    
+    // Auto-unlock AudioContext on first user gesture
+    window.addEventListener('pointerdown', this.initContext, { once: true });
+    window.addEventListener('keydown', this.initContext, { once: true });
+  }
+
+  initContext() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+      } catch (e) {}
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggle() {
+    this.enabled = !this.enabled;
+    try {
+      localStorage.setItem('schedully_sound_enabled', this.enabled ? 'true' : 'false');
+    } catch (e) {}
+    this.updateUI();
+    if (this.enabled) {
+      this.play('toggle');
+    }
+    return this.enabled;
+  }
+
+  updateUI() {
+    const iconOn = document.getElementById('icon-sound-on');
+    const iconOff = document.getElementById('icon-sound-off');
+    if (iconOn && iconOff) {
+      iconOn.classList.toggle('hidden', !this.enabled);
+      iconOff.classList.toggle('hidden', this.enabled);
+    }
+  }
+
+  play(type = 'click') {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      if (type === 'click') {
+        // Apple-style woody tactile mechanical tick
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.045);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'toggle') {
+        // Subtle soft bubble pop / toggle
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.07);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'preset' || type === 'glass') {
+        // Shimmering optical glass bell chime (dual harmonic)
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1174.66, now); // D6
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc.start(now);
+        osc.stop(now + 0.25);
+
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1760, now + 0.02); // A6
+        gain2.gain.setValueAtTime(0.05, now + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+        osc2.start(now + 0.02);
+        osc2.stop(now + 0.3);
+      } else if (type === 'zoom') {
+        // Subtle pneumatic zoom glide tick
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.035);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } else if (type === 'success') {
+        // Celebratory export chime
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const noteOsc = this.ctx.createOscillator();
+          const noteGain = this.ctx.createGain();
+          noteOsc.connect(noteGain);
+          noteGain.connect(this.ctx.destination);
+          noteOsc.type = 'triangle';
+          noteOsc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          noteGain.gain.setValueAtTime(0.06, now + idx * 0.06);
+          noteGain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.06 + 0.22);
+          noteOsc.start(now + idx * 0.06);
+          noteOsc.stop(now + idx * 0.06 + 0.25);
+        });
+      }
+    } catch (e) {}
+  }
+}
+window.soundFX = new SoundEffectsEngine();
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIVE SPOTLIGHT TOUR ONBOARDING CONTROLLER
+// ═══════════════════════════════════════════════════════════════
+class SchedullyTourController {
+  constructor() {
+    this.currentStep = 0;
+    this.steps = [
+      {
+        id: 'theme-menu',
+        target: '#left-sidebar',
+        title: 'Themes & Design Studio',
+        tag: 'Design Studio',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>',
+        iconTheme: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25',
+        badgeTheme: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25',
+        desc: 'Customize curated color palettes, auto-extract colors from wallpaper photos, and switch between solid M3 and optical Liquid Glass styles!',
+        position: 'right'
+      },
+      {
+        id: 'controls',
+        target: '#floating-controls-container',
+        title: 'Display & Canvas Controls',
+        tag: 'Canvas Controls',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>',
+        iconTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
+        badgeTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
+        desc: 'Switch between Smartphone, Tablet, and Paper device models, toggle UI overlays, set timetable title, and zoom smoothly!',
+        position: 'top'
+      },
+      {
+        id: 'courses',
+        target: '#right-sidebar',
+        title: 'Courses & Schedule List',
+        tag: 'Schedule Manager',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+        iconTheme: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+        badgeTheme: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+        desc: 'Add, search, and edit courses effortlessly. Schedully automatically detects time overlaps and alerts you to resolve clashes in 1 tap!',
+        position: 'left'
+      },
+      {
+        id: 'export',
+        target: '#mobile-export-dropdown, #mobile-export-bar, #header-desktop-bar',
+        title: '4K HD Export & Sync',
+        tag: 'Instant Export',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>',
+        iconTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
+        badgeTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
+        desc: 'Export crisp 4K lockscreen wallpapers, sync directly with Google & Apple Calendar (.ics), or generate print-ready PDFs and CSVs!',
+        position: 'bottom'
+      }
+    ];
+
+    this.overlay = document.getElementById('interactive-tour-overlay');
+    this.focusBox = document.getElementById('tour-spotlight-focus');
+    this.popoverCard = document.getElementById('tour-popover-card');
+    this.btnNext = document.getElementById('btn-tour-next');
+    this.btnPrev = document.getElementById('btn-tour-prev');
+    this.btnSkip = document.getElementById('btn-tour-skip');
+    this.dotsContainer = document.getElementById('tour-dots-container');
+
+    this.init();
+  }
+
+  init() {
+    if (this.btnNext) {
+      this.btnNext.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('click');
+        this.next();
+      });
+    }
+    if (this.btnPrev) {
+      this.btnPrev.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('click');
+        this.prev();
+      });
+    }
+    if (this.btnSkip) {
+      this.btnSkip.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('click');
+        this.finish();
+      });
+    }
+
+    const btnStartTour = document.getElementById('btn-start-tour-header');
+    if (btnStartTour) {
+      btnStartTour.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('toggle');
+        this.start();
+      });
+    }
+
+    const btnStartTourMobile = document.getElementById('btn-open-guide-modal');
+    if (btnStartTourMobile) {
+      btnStartTourMobile.addEventListener('click', () => {
+        if (window.soundFX) window.soundFX.play('toggle');
+        this.start();
+      });
+    }
+
+    // Auto-launch tour on first visit after 1.2s delay
+    try {
+      const tourSeen = localStorage.getItem('schedully_tour_seen');
+      if (!tourSeen && window.innerWidth >= 768) {
+        setTimeout(() => this.start(), 1200);
+      }
+    } catch (e) {}
+  }
+
+  start() {
+    window.isTourActive = true;
+    this.currentStep = 0;
+    const isMobile = window.innerWidth <= 1280;
+    if (!isMobile) {
+      if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(false);
+      if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(false);
+    }
+    if (this.overlay) {
+      this.overlay.classList.remove('hidden');
+      this.renderStep();
+    }
+  }
+
+  renderStep() {
+    const isMobile = window.innerWidth <= 1280;
+    const step = this.steps[this.currentStep];
+    if (!step) return;
+
+    const popover = document.getElementById('canvas-controls-popover');
+    const mobileExportDropdown = document.getElementById('mobile-export-dropdown');
+    const mobileChevron = document.getElementById('mobile-export-chevron');
+
+    // ── Mobile Orchestration: Expand ONLY the current step's component and collapse others ──
+    if (isMobile) {
+      if (step.id === 'theme-menu') {
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(false);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+        if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
+        if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+      } else if (step.id === 'controls') {
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+        if (popover) {
+          popover.classList.remove('hidden');
+          popover.style.display = 'flex';
+          popover.style.visibility = 'visible';
+          popover.style.opacity = '1';
+        }
+        if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
+        if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+      } else if (step.id === 'courses') {
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(false);
+        if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
+        if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+      } else if (step.id === 'export') {
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+        if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        const mobileExportBar = document.getElementById('mobile-export-bar');
+        if (mobileExportBar) mobileExportBar.style.display = 'flex';
+        if (mobileExportDropdown) {
+          mobileExportDropdown.classList.remove('hidden');
+          mobileExportDropdown.style.display = 'block';
+          mobileExportDropdown.style.visibility = 'visible';
+          mobileExportDropdown.style.opacity = '1';
+          if (mobileChevron) mobileChevron.classList.add('mobile-export-chevron-open');
+        }
+      }
+    } else {
+      // Desktop: BOTH Menu and Schedule sidebars ALWAYS stay fully expanded
+      if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(false);
+      if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(false);
+      if (step.id === 'controls') {
+        if (popover) {
+          popover.classList.remove('hidden');
+          popover.style.display = 'flex';
+          popover.style.visibility = 'visible';
+          popover.style.opacity = '1';
+        }
+      } else {
+        if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+      }
+    }
+
+    // Update Text, Badges & Vector SVG Icons
+    const badge = document.getElementById('tour-step-badge');
+    const tag = document.getElementById('tour-feature-tag');
+    const icon = document.getElementById('tour-step-icon');
+    const title = document.getElementById('tour-step-title');
+    const desc = document.getElementById('tour-step-description');
+
+    if (badge) {
+      badge.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      badge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${step.badgeTheme || 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25'}`;
+    }
+    if (tag) tag.textContent = step.tag;
+    if (icon) {
+      icon.innerHTML = step.iconSvg || '';
+      icon.className = `w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all ${step.iconTheme || 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'}`;
+    }
+    if (title) title.textContent = step.title;
+    if (desc) desc.textContent = step.desc;
+
+    // Update Dots
+    const dots = this.dotsContainer ? this.dotsContainer.querySelectorAll('.tour-dot') : [];
+    dots.forEach((dot, idx) => {
+      dot.className = `tour-dot w-2 h-2 rounded-full transition-all ${idx === this.currentStep ? 'bg-blue-600 w-4' : 'bg-slate-300 dark:bg-slate-700'}`;
+    });
+
+    // Update Navigation Buttons
+    if (this.btnPrev) {
+      this.btnPrev.classList.toggle('hidden', this.currentStep === 0);
+    }
+    if (this.btnNext) {
+      const isLast = this.currentStep === this.steps.length - 1;
+      this.btnNext.innerHTML = isLast ? '<span>Get Started</span> ✨' : '<span>Next</span> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>';
+    }
+
+    // Continuously track target bounding box during slide animations (500ms duration)
+    this.trackTargetPosition(step, 500);
+  }
+
+  trackTargetPosition(step, durationMs = 500) {
+    const isMobile = window.innerWidth <= 1280;
+    const startTime = performance.now();
+
+    const update = () => {
+      let targetEl = null;
+      if (step.id === 'export') {
+        const mobileDropdown = document.getElementById('mobile-export-dropdown');
+        if (isMobile && mobileDropdown) {
+          mobileDropdown.classList.remove('hidden');
+          mobileDropdown.style.display = 'block';
+        }
+        targetEl = isMobile ? (mobileDropdown || document.getElementById('mobile-export-bar')) : document.getElementById('header-desktop-bar');
+      } else if (step.id === 'controls') {
+        const popover = document.getElementById('canvas-controls-popover');
+        if (popover) {
+          popover.classList.remove('hidden');
+          popover.style.display = 'flex';
+        }
+        targetEl = document.querySelector(step.target);
+      } else {
+        targetEl = document.querySelector(step.target);
+      }
+
+      if (!targetEl || targetEl.offsetWidth === 0 || targetEl.offsetHeight === 0) {
+        if (step.target.includes('#left-sidebar')) {
+          targetEl = document.querySelector('#btn-expand-left-floating') || targetEl;
+        } else if (step.target.includes('#right-sidebar')) {
+          targetEl = document.querySelector('#btn-expand-right-floating') || targetEl;
+        } else {
+          targetEl = document.querySelector('#mobile-export-bar') || targetEl;
+        }
+      }
+
+      if (targetEl && this.focusBox && this.popoverCard) {
+        let rect = targetEl.getBoundingClientRect();
+        
+        // On mobile in export step, calculate combined box of trigger button + dropdown
+        if (step.id === 'export' && isMobile) {
+          const toggleBtn = document.getElementById('btn-mobile-export-toggle');
+          const dropdown = document.getElementById('mobile-export-dropdown');
+          if (toggleBtn && dropdown) {
+            const rBtn = toggleBtn.getBoundingClientRect();
+            const rDrop = dropdown.getBoundingClientRect();
+            rect = {
+              top: Math.min(rBtn.top, rDrop.top),
+              left: Math.min(rBtn.left, rDrop.left),
+              right: Math.max(rBtn.right, rDrop.right),
+              bottom: Math.max(rBtn.bottom, rDrop.bottom),
+              width: Math.max(rBtn.width, rDrop.width),
+              height: Math.max(rBtn.bottom, rDrop.bottom) - Math.min(rBtn.top, rDrop.top)
+            };
+          }
+        }
+
+        const pad = 8;
+        
+        this.focusBox.style.top = `${Math.max(4, rect.top - pad)}px`;
+        this.focusBox.style.left = `${Math.max(4, rect.left - pad)}px`;
+        this.focusBox.style.width = `${Math.min(window.innerWidth - 8, rect.width + pad * 2)}px`;
+        this.focusBox.style.height = `${Math.min(window.innerHeight - 8, rect.height + pad * 2)}px`;
+
+        // Responsive Popover Card Placement
+        const cardW = Math.min(window.innerWidth - 32, 340);
+        const cardH = this.popoverCard.offsetHeight || 220;
+        let cardLeft = (window.innerWidth - cardW) / 2;
+        let cardTop = window.innerHeight - cardH - 24;
+
+        if (window.innerWidth > 1024) {
+          // Large Desktop Studio Mode: Side-by-side positioning
+          if (step.position === 'right' && rect.right + cardW + 32 <= window.innerWidth) {
+            cardLeft = rect.right + 24;
+            cardTop = Math.max(20, Math.min(window.innerHeight - cardH - 20, rect.top + 30));
+          } else if (step.position === 'left' && rect.left - cardW - 24 >= 16) {
+            cardLeft = rect.left - cardW - 24;
+            cardTop = Math.max(20, Math.min(window.innerHeight - cardH - 20, rect.top + 30));
+          } else if (step.position === 'top') {
+            cardLeft = (window.innerWidth - cardW) / 2;
+            cardTop = Math.max(20, rect.top - cardH - 16);
+          } else {
+            cardLeft = (window.innerWidth - cardW) / 2;
+            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 20);
+          }
+        } else {
+          // Smartphone & Tablet (< 1024px): Guaranteed centered, bottom-docked card
+          cardLeft = (window.innerWidth - cardW) / 2;
+          if (step.id === 'controls') {
+            cardTop = Math.max(16, rect.top - cardH - 16);
+          } else {
+            cardTop = window.innerHeight - cardH - 24;
+          }
+        }
+
+        // Constrain strictly inside viewport
+        cardLeft = Math.max(16, Math.min(window.innerWidth - cardW - 16, cardLeft));
+        cardTop = Math.max(16, Math.min(window.innerHeight - cardH - 16, cardTop));
+
+        this.popoverCard.style.top = `${cardTop}px`;
+        this.popoverCard.style.left = `${cardLeft}px`;
+        this.popoverCard.style.width = `${cardW}px`;
+      }
+
+      if (performance.now() - startTime < durationMs) {
+        this.animFrameId = requestAnimationFrame(update);
+      }
+    };
+
+    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+    this.animFrameId = requestAnimationFrame(update);
+  }
+
+  next() {
+    if (this.currentStep < this.steps.length - 1) {
+      this.currentStep++;
+      this.renderStep();
+    } else {
+      if (window.soundFX) window.soundFX.play('success');
+      this.finish();
+    }
+  }
+
+  prev() {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+      this.renderStep();
+    }
+  }
+
+  finish() {
+    window.isTourActive = false;
+    if (this.overlay) {
+      this.overlay.classList.add('hidden');
+    }
+    const isMobile = window.innerWidth <= 1280;
+    const popover = document.getElementById('canvas-controls-popover');
+    if (popover) {
+      popover.classList.add('hidden');
+      popover.style.display = '';
+    }
+    if (isMobile) {
+      if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+      if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+      const mobileExportDropdown = document.getElementById('mobile-export-dropdown');
+      const mobileChevron = document.getElementById('mobile-export-chevron');
+      if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
+      if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+    } else {
+      if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(false);
+      if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(false);
+    }
+    if (window.schedullyApp && typeof window.schedullyApp.syncMobilePipVisibility === 'function') {
+      window.schedullyApp.syncMobilePipVisibility(false);
+    }
+    try {
+      localStorage.setItem('schedully_tour_seen', 'true');
+    } catch (e) {}
+  }
+}
+
+// Auto-initialize Liquid Glass Presets, Theme Style & Tour on DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLiquidGlassPresets);
+  document.addEventListener('DOMContentLoaded', () => {
+    initLiquidGlassPresets();
+    initThemeStyleEngine();
+    window.schedullyTour = new SchedullyTourController();
+  });
 } else {
   initLiquidGlassPresets();
+  initThemeStyleEngine();
+  window.schedullyTour = new SchedullyTourController();
 }
 

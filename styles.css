@@ -385,15 +385,15 @@ body.dark-mode .m3-right-sidebar {
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 10000 !important;
-    background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.75)) 0%, rgba(255, 255, 255, 0.32) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.5)) 100%) !important;
-    backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%) contrast(108%) brightness(1.06) !important;
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%) contrast(108%) brightness(1.06) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+    background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.88 + 0.1)) 0%, rgba(255, 255, 255, 0.72) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.65)) 100%) !important;
+    backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
     border-radius: 24px !important;
     box-shadow: 
-      0 28px 70px -10px rgba(15, 23, 42, 0.22),
-      0 4px 16px -2px rgba(15, 23, 42, 0.08),
-      inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 1.1)),
+      0 24px 60px -10px rgba(15, 23, 42, 0.18),
+      0 4px 16px -2px rgba(15, 23, 42, 0.06),
+      inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, 0.95),
       inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.05),
       inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
       inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
@@ -415,24 +415,35 @@ body.dark-mode .m3-right-sidebar {
 
 .mobile-export-option {
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   cursor: pointer;
+  color: #0F172A !important;
 }
 
 .mobile-export-option:hover {
   transform: translateY(-1px) scale(1.02);
-  background: rgba(255, 255, 255, 0.75);
-  border-color: rgba(147, 197, 253, 0.9);
-  box-shadow: inset 0 1.5px 2px #fff, 0 6px 16px rgba(37, 99, 235, 0.12);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
+  box-shadow: inset 0 1.5px 2px #fff, 0 6px 16px rgba(37, 99, 235, 0.12) !important;
 }
 
 .mobile-export-option:active {
   transform: scale(0.97);
+}
+
+.mobile-export-option:not(.mobile-export-primary) p:first-child {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+.mobile-export-option:not(.mobile-export-primary) p:last-child {
+  color: #475569 !important;
+  font-weight: 600 !important;
 }
 
 /* Primary Download Button in Mobile Dropdown */
@@ -445,6 +456,12 @@ body.dark-mode .m3-right-sidebar {
     0 6px 18px -2px rgba(37, 99, 235, 0.45) !important;
 }
 
+.mobile-export-option.mobile-export-primary p,
+.mobile-export-option.mobile-export-primary span,
+.mobile-export-option.mobile-export-primary svg {
+  color: #FFFFFF !important;
+}
+
 .mobile-export-option.mobile-export-primary:hover {
   background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 60%, #2563EB 100%) !important;
   box-shadow: 
@@ -453,7 +470,7 @@ body.dark-mode .m3-right-sidebar {
 }
 
 .mobile-export-divider {
-  background-color: rgba(255, 255, 255, 0.4) !important;
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Dark mode mobile export dropdown */
@@ -503,16 +520,18 @@ body.dark-mode .mobile-export-divider,
   #canvas-scroll-area {
     width: 100% !important;
     max-width: 100vw !important;
+    min-height: 100% !important;
     overflow-x: auto !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    scroll-snap-type: x proximity;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    padding-top: 76px !important; /* Top space for floating buttons */
-    padding-left: 40px !important;
-    padding-right: 40px !important;
+    justify-content: center !important;
+    padding-top: 80px !important; /* Top space for floating buttons */
+    padding-bottom: 110px !important; /* Bottom space for floating toolbar */
+    padding-left: 24px !important;
+    padding-right: 24px !important;
     touch-action: pan-x pan-y !important;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
@@ -526,12 +545,12 @@ body.dark-mode .mobile-export-divider,
     border-radius: 4px;
   }
 
-  /* Wrapper preserves natural 1:1 model width without squashing */
+  /* Wrapper preserves natural 1:1 model width and centers dead-center both horizontally and vertically */
   #main-phone-wrapper {
     max-width: none !important;
     flex-shrink: 0 !important;
-    margin: 0 auto !important;
-    scroll-snap-align: center;
+    margin: auto !important;
+    transform-origin: center center !important;
     touch-action: pan-x pan-y !important;
   }
 
@@ -1247,9 +1266,10 @@ body.dark-mode .user-profile-card #user-status-text {
   color: #94A3B8 !important;
 }
 
-/* Glass Globe & Coffee Utility Buttons */
+/* Glass Globe, Coffee & Guide Utility Buttons */
 .btn-globe-language,
-.btn-coffee-support {
+.btn-coffee-support,
+.btn-guide-tour {
   width: 40px !important;
   min-width: 40px !important;
   max-width: 40px !important;
@@ -1280,7 +1300,12 @@ body.dark-mode .user-profile-card #user-status-text {
   color: #D97706 !important;
 }
 
-.btn-globe-language:hover {
+.btn-guide-tour {
+  color: #2563EB !important;
+}
+
+.btn-globe-language:hover,
+.btn-guide-tour:hover {
   transform: translateY(-1px) scale(1.05);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.35) 100%) !important;
   border-color: rgba(147, 197, 253, 0.9) !important;
@@ -1302,8 +1327,10 @@ body.dark-mode .user-profile-card #user-status-text {
 
 body.dark-mode .btn-globe-language,
 body.dark-mode .btn-coffee-support,
+body.dark-mode .btn-guide-tour,
 .theme-dark .btn-globe-language,
-.theme-dark .btn-coffee-support {
+.theme-dark .btn-coffee-support,
+.theme-dark .btn-guide-tour {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 
@@ -1317,8 +1344,15 @@ body.dark-mode .btn-coffee-support,
   color: #FBBF24 !important;
 }
 
+body.dark-mode .btn-guide-tour,
+.theme-dark .btn-guide-tour {
+  color: #60A5FA !important;
+}
+
 body.dark-mode .btn-globe-language:hover,
-.theme-dark .btn-globe-language:hover {
+body.dark-mode .btn-guide-tour:hover,
+.theme-dark .btn-globe-language:hover,
+.theme-dark .btn-guide-tour:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
   border-color: rgba(147, 197, 253, 0.4) !important;
   color: #60A5FA !important;
@@ -4618,44 +4652,62 @@ body.dark-mode #btn-preset-menu-trigger:hover {
   bottom: 24px;
   right: 16px;
   z-index: 99999;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid #3B82F6;
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35), 0 2px 8px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.90)) 0%, rgba(255, 255, 255, 0.45) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.6)) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 16px 36px -6px rgba(37, 99, 235, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.12) calc(var(--glass-thickness, 20px) * 0.16) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 1.2)),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.05),
+    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.4)),
+    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.3));
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%);
   cursor: move;
   user-select: none;
   touch-action: none;
   animation: pipScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: transform 0.15s ease, background-color 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .mobile-pip-bubble:active {
   transform: scale(0.92);
 }
 
-.pip-bubble-pulse {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
-  animation: pulse 1.8s infinite;
+body.dark-mode .mobile-pip-bubble,
+.theme-dark .mobile-pip-bubble {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.03)) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(0, 0, 0, 0.25) 100%);
+  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.15 + 0.10));
+  box-shadow: 
+    0 16px 36px -6px rgba(0, 0, 0, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%);
 }
 
-body.dark-mode .mobile-pip-bubble {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: #60A5FA;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(96, 165, 250, 0.25);
+/* ── Default Style: Solid Crisp Material 3 Circular FAB ── */
+body.theme-style-default .mobile-pip-bubble {
+  background: #FFFFFF !important;
+  border: 1.5px solid #E2E8F0 !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-style-default.dark-mode .mobile-pip-bubble {
+  background: #1E293B !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.60), 0 2px 6px rgba(0, 0, 0, 0.30) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 @media (min-width: 641px) {
@@ -6618,6 +6670,7 @@ body.dark-mode #input-title-text-sidebar {
 .btn-adaptive-auth,
 .btn-globe-language,
 .btn-coffee-support,
+.btn-guide-tour,
 #bottom-floating-pill-bar,
 #bottom-floating-pill-bar button,
 #header-desktop-bar,
@@ -6636,7 +6689,8 @@ body.dark-mode #input-title-text-sidebar {
 .modal-card,
 .language-modal-card,
 .coffee-modal-card,
-.ocr-lang-card {
+.ocr-lang-card,
+#tour-popover-card {
   position: relative;
 }
 
@@ -6649,6 +6703,7 @@ body.dark-mode #input-title-text-sidebar {
 .btn-adaptive-auth::before,
 .btn-globe-language::before,
 .btn-coffee-support::before,
+.btn-guide-tour::before,
 #bottom-floating-pill-bar::before,
 #bottom-floating-pill-bar button::before,
 #header-desktop-bar::before,
@@ -6667,7 +6722,8 @@ body.dark-mode #input-title-text-sidebar {
 .modal-card::before,
 .language-modal-card::before,
 .coffee-modal-card::before,
-.ocr-lang-card::before {
+.ocr-lang-card::before,
+#tour-popover-card::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -6694,6 +6750,7 @@ body.dark-mode #input-title-text-sidebar {
 .btn-adaptive-auth:hover::before,
 .btn-globe-language:hover::before,
 .btn-coffee-support:hover::before,
+.btn-guide-tour:hover::before,
 #bottom-floating-pill-bar:hover::before,
 #bottom-floating-pill-bar button:hover::before,
 #header-desktop-bar:hover::before,
@@ -6709,7 +6766,8 @@ body.dark-mode #input-title-text-sidebar {
 .dock-icon-btn:hover .dock-icon-circle::before,
 .lang-option-pill:hover::before,
 .btn-studio-launch:hover::before,
-.btn-studio-import:hover::before {
+.btn-studio-import:hover::before,
+#tour-popover-card:hover::before {
   opacity: 1;
 }
 
@@ -6917,9 +6975,10 @@ html, body {
   color: #64748B !important;
 }
 
-/* 2. Language Globe & Coffee Support Rounded Square Buttons */
+/* 2. Language Globe, Coffee Support & Guide Rounded Square Buttons */
 .btn-globe-language,
-.btn-coffee-support {
+.btn-coffee-support,
+.btn-guide-tour {
   width: 42px !important;
   height: 42px !important;
   min-width: 42px !important;
@@ -6945,14 +7004,16 @@ html, body {
 }
 
 .btn-globe-language svg,
-.btn-coffee-support svg {
+.btn-coffee-support svg,
+.btn-guide-tour svg {
   color: currentColor !important;
   stroke: currentColor !important;
   transition: transform 0.2s ease !important;
 }
 
 .btn-globe-language:hover,
-.btn-coffee-support:hover {
+.btn-coffee-support:hover,
+.btn-guide-tour:hover {
   border-color: rgba(255, 255, 255, 0.85) !important;
   transform: translateY(-1px) scale(1.05) !important;
   box-shadow: 
@@ -6961,12 +7022,14 @@ html, body {
 }
 
 .btn-globe-language:hover svg,
-.btn-coffee-support:hover svg {
+.btn-coffee-support:hover svg,
+.btn-guide-tour:hover svg {
   transform: scale(1.1);
 }
 
 .btn-globe-language:active,
-.btn-coffee-support:active {
+.btn-coffee-support:active,
+.btn-guide-tour:active {
   transform: scale(0.93) !important;
 }
 
@@ -7133,6 +7196,451 @@ body.dark-mode .sidebar-glass-preset-btn.active,
   box-shadow: 
     inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
     0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME STYLE SWITCHER (Default M3 Expressive vs Liquid Glass)
+   ═══════════════════════════════════════════════════════════════ */
+.theme-style-btn {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  color: #0F172A !important;
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+    0 2px 6px rgba(15, 23, 42, 0.03) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  touch-action: manipulation !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.theme-style-btn:hover {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: inset 0 1.5px 2px #fff, 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+}
+
+.theme-style-btn:active {
+  transform: scale(0.96);
+}
+
+.theme-style-btn.active {
+  background: #FFFFFF !important;
+  border-color: #2563EB !important;
+  color: #2563EB !important;
+  box-shadow: 
+    inset 0 1.5px 2px #fff,
+    0 4px 14px rgba(37, 99, 235, 0.2) !important;
+}
+
+body.dark-mode .theme-style-btn,
+.theme-dark .theme-style-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F1F5F9 !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.dark-mode .theme-style-btn:hover,
+.theme-dark .theme-style-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(147, 197, 253, 0.4) !important;
+}
+
+body.dark-mode .theme-style-btn.active,
+.theme-dark .theme-style-btn.active {
+  background: rgba(37, 99, 235, 0.25) !important;
+  border-color: #38BDF8 !important;
+  color: #FFFFFF !important;
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
+    0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+
+/* ── Greyed-Out / Disabled Liquid Glass Style Option in Default Mode ── */
+#liquid-glass-presets-section.disabled-preset-section {
+  opacity: 0.38 !important;
+  pointer-events: none !important;
+  filter: grayscale(100%) !important;
+  cursor: not-allowed !important;
+  user-select: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DEFAULT STYLE (Solid Material 3 Expressive Surfaces)
+   ═══════════════════════════════════════════════════════════════ */
+body.theme-style-default #left-sidebar,
+body.theme-style-default #right-sidebar,
+body.theme-style-default #header-desktop-bar,
+body.theme-style-default #bottom-floating-pill-bar,
+body.theme-style-default #canvas-controls-popover,
+body.theme-style-default .mobile-export-dropdown,
+body.theme-style-default #mobile-export-dropdown,
+body.theme-style-default #btn-mobile-export-toggle,
+body.theme-style-default #btn-expand-left-floating,
+body.theme-style-default #btn-expand-right-floating,
+body.theme-style-default #btn-schedule-settings-toggle,
+body.theme-style-default #preset-action-dropdown,
+body.theme-style-default .modal-card,
+body.theme-style-default .language-modal-card,
+body.theme-style-default .coffee-modal-card {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid #E2E8F0 !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.theme-style-default.dark-mode #left-sidebar,
+body.theme-style-default.dark-mode #right-sidebar,
+body.theme-style-default.dark-mode #header-desktop-bar,
+body.theme-style-default.dark-mode #bottom-floating-pill-bar,
+body.theme-style-default.dark-mode #canvas-controls-popover,
+body.theme-style-default.dark-mode .mobile-export-dropdown,
+body.theme-style-default.dark-mode #mobile-export-dropdown,
+body.theme-style-default.dark-mode #btn-mobile-export-toggle,
+body.theme-style-default.dark-mode #btn-expand-left-floating,
+body.theme-style-default.dark-mode #btn-expand-right-floating,
+body.theme-style-default.dark-mode #btn-schedule-settings-toggle,
+body.theme-style-default.dark-mode #preset-action-dropdown,
+body.theme-style-default.dark-mode .modal-card,
+body.theme-style-default.dark-mode .language-modal-card,
+body.theme-style-default.dark-mode .coffee-modal-card {
+  background: #1E293B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ── Sidebar Utility Buttons in Default Style ── */
+body.theme-style-default .btn-globe-language,
+body.theme-style-default .btn-coffee-support,
+body.theme-style-default .btn-guide-tour {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-style-default.dark-mode .btn-globe-language,
+body.theme-style-default.dark-mode .btn-coffee-support,
+body.theme-style-default.dark-mode .btn-guide-tour {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Mobile Export Options in Default Style ── */
+body.theme-style-default .mobile-export-option:not(.mobile-export-primary) {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+
+body.theme-style-default .mobile-export-option:not(.mobile-export-primary) p:first-child {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+body.theme-style-default .mobile-export-option:not(.mobile-export-primary) p:last-child {
+  color: #64748B !important;
+}
+
+body.theme-style-default .mobile-export-option:not(.mobile-export-primary):hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+body.theme-style-default .mobile-export-option.mobile-export-primary {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  border: 1px solid #1E40AF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+}
+
+body.theme-style-default .mobile-export-option.mobile-export-primary p,
+body.theme-style-default .mobile-export-option.mobile-export-primary span,
+body.theme-style-default .mobile-export-option.mobile-export-primary svg {
+  color: #FFFFFF !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-primary) {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-primary) p:first-child {
+  color: #F8FAFC !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-primary) p:last-child {
+  color: #94A3B8 !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-primary):hover {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  border: 1px solid #3B82F6 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── Bottom Floating Pill Bar & Buttons in Default Style ── */
+body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd) {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+
+body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd) {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  color: #F8FAFC !important;
+}
+
+/* ── Search Input, Preset Input & Controls in Default Style ── */
+body.theme-style-default #course-search-input,
+body.theme-style-default #input-preset-name,
+body.theme-style-default #input-title-text-sidebar,
+body.theme-style-default #input-title-text-stage,
+body.theme-style-default .m3-input.opt-input {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+
+body.theme-style-default.dark-mode #course-search-input,
+body.theme-style-default.dark-mode #input-preset-name,
+body.theme-style-default.dark-mode #input-title-text-sidebar,
+body.theme-style-default.dark-mode #input-title-text-stage,
+body.theme-style-default.dark-mode .m3-input.opt-input {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+/* ── Course Cards & Expansion in Default Style (Preserve Timetable Grid Colors!) ── */
+body.theme-style-default .exact-course-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-style-default .expandable-class-card,
+body.theme-style-default .class-card-item,
+body.theme-style-default .card-expand-header {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-style-default.dark-mode .expandable-class-card,
+body.theme-style-default.dark-mode .class-card-item,
+body.theme-style-default.dark-mode .card-expand-header {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Clear All & Settings buttons in Default Style ── */
+body.theme-style-default #btn-clear-all {
+  background: #FEE2E2 !important;
+  border: 1px solid #FECACA !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #DC2626 !important;
+}
+
+body.theme-style-default.dark-mode #btn-clear-all {
+  background: rgba(220, 38, 38, 0.15) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #FCA5A5 !important;
+}
+
+body.theme-style-default #btn-schedule-settings-toggle,
+body.theme-style-default #btn-preset-menu-trigger {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-style-default.dark-mode #btn-schedule-settings-toggle,
+body.theme-style-default.dark-mode #btn-preset-menu-trigger {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── Inner Theme Panels & Toggles in Default Style ── */
+body.theme-style-default .theme-card-inner,
+body.theme-style-default .layout-card-inner,
+body.theme-style-default .pill-toggle-group,
+body.theme-style-default .capsule-group,
+body.theme-style-default #device-type-toggles,
+body.theme-style-default #toggle-lock-ui,
+body.theme-style-default #toggle-show-table {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.theme-style-default.dark-mode .theme-card-inner,
+body.theme-style-default.dark-mode .layout-card-inner,
+body.theme-style-default.dark-mode .pill-toggle-group,
+body.theme-style-default.dark-mode .capsule-group,
+body.theme-style-default.dark-mode #device-type-toggles,
+body.theme-style-default.dark-mode #toggle-lock-ui,
+body.theme-style-default.dark-mode #toggle-show-table {
+  background: #0B0F17 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── Disable specific glass glare overlay layers in Default Style ── */
+body.theme-style-default #left-sidebar::before,
+body.theme-style-default #right-sidebar::before,
+body.theme-style-default #header-desktop-bar::before,
+body.theme-style-default #bottom-floating-pill-bar::before,
+body.theme-style-default #canvas-controls-popover::before,
+body.theme-style-default #mobile-export-dropdown::before,
+body.theme-style-default #btn-mobile-export-toggle::before,
+body.theme-style-default #btn-expand-left-floating::before,
+body.theme-style-default #btn-expand-right-floating::before,
+body.theme-style-default .modal-card::before,
+body.theme-style-default #tour-popover-card::before {
+  display: none !important;
+  background-image: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERACTIVE SPOTLIGHT TOUR ONBOARDING STYLES
+   ═══════════════════════════════════════════════════════════════ */
+#interactive-tour-overlay {
+  z-index: 99999 !important;
+  pointer-events: none !important;
+}
+
+#tour-spotlight-focus {
+  z-index: 99999 !important;
+  pointer-events: none !important;
+  border-radius: 28px !important;
+  border: 2px solid #38BDF8 !important;
+  background: transparent !important;
+  box-shadow: 
+    0 0 0 9999px rgba(11, 15, 23, 0.78),
+    0 0 50px 10px rgba(56, 189, 248, 0.6),
+    inset 0 0 30px rgba(56, 189, 248, 0.25) !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ── Tour Popover Guide Card: Optical Liquid Glass Shader ── */
+#tour-popover-card {
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.85)) 0%, rgba(255, 255, 255, 0.48) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.6)) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(230%) contrast(110%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(230%) contrast(110%) brightness(1.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(15, 23, 42, 0.25),
+    0 4px 16px -2px rgba(15, 23, 42, 0.10),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 1.2)),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.05),
+    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
+    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+}
+
+body.dark-mode #tour-popover-card,
+.theme-dark #tour-popover-card {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.03)) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(0, 0, 0, 0.22) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.14 + 0.10)) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.3)),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.35),
+    inset calc(var(--glass-dispersion, 7) * 0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.30)),
+    inset calc(var(--glass-dispersion, 7) * -0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.25)) !important;
+}
+
+#tour-popover-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle 100px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0.1) 35%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+#tour-popover-card:hover::before {
+  opacity: 1;
+}
+
+/* ── Tour Popover Guide Card: Solid Default Style Fallback ── */
+body.theme-style-default #tour-popover-card {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.16) !important;
+}
+
+body.theme-style-default.dark-mode #tour-popover-card {
+  background: #1E293B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6) !important;
 }
 
 
