@@ -2078,6 +2078,7 @@ class SchedullyApp {
     this.setupWallpaperEngine();
     this.setupFontFamilyEngine();
     this.setupCustomColorModalEngine();
+    this.setupCourseListDelegation();
 
     if (this.courseSearchInput) {
       this.courseSearchInput.addEventListener('input', (e) => {
@@ -2627,7 +2628,7 @@ class SchedullyApp {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
         this.gridWidthVal = Math.min(100, Math.max(50, val));
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2636,7 +2637,7 @@ class SchedullyApp {
       if (isNaN(val) || val < 50) e.target.value = 50;
       else if (val > 100) e.target.value = 100;
       this.gridWidthVal = parseInt(e.target.value, 10);
-      this.renderTimetableGrid();
+      this.requestGridRender();
       this._stagePending();
     });
 
@@ -2644,7 +2645,7 @@ class SchedullyApp {
       if (this.gridWidthVal > 50) {
         this.gridWidthVal -= 5;
         if (gridWidthValEl) gridWidthValEl.value = this.gridWidthVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2653,7 +2654,7 @@ class SchedullyApp {
       if (this.gridWidthVal < 100) {
         this.gridWidthVal += 5;
         if (gridWidthValEl) gridWidthValEl.value = this.gridWidthVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2667,7 +2668,7 @@ class SchedullyApp {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
         this.gridHeightVal = Math.min(90, Math.max(30, val));
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2676,7 +2677,7 @@ class SchedullyApp {
       if (isNaN(val) || val < 30) e.target.value = 30;
       else if (val > 90) e.target.value = 90;
       this.gridHeightVal = parseInt(e.target.value, 10);
-      this.renderTimetableGrid();
+      this.requestGridRender();
       this._stagePending();
     });
 
@@ -2684,7 +2685,7 @@ class SchedullyApp {
       if (this.gridHeightVal > 30) {
         this.gridHeightVal -= 3;
         if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2693,7 +2694,7 @@ class SchedullyApp {
       if (this.gridHeightVal < 90) {
         this.gridHeightVal += 3;
         if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2707,7 +2708,7 @@ class SchedullyApp {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
         this.gridFontSizeVal = Math.min(16, Math.max(6, val));
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2716,7 +2717,7 @@ class SchedullyApp {
       if (isNaN(val) || val < 6) e.target.value = 6;
       else if (val > 16) e.target.value = 16;
       this.gridFontSizeVal = parseInt(e.target.value, 10);
-      this.renderTimetableGrid();
+      this.requestGridRender();
       this._stagePending();
     });
 
@@ -2724,7 +2725,7 @@ class SchedullyApp {
       if (this.gridFontSizeVal > 6) {
         this.gridFontSizeVal -= 1;
         if (gridFontSizeValEl) gridFontSizeValEl.value = this.gridFontSizeVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2733,7 +2734,7 @@ class SchedullyApp {
       if (this.gridFontSizeVal < 16) {
         this.gridFontSizeVal += 1;
         if (gridFontSizeValEl) gridFontSizeValEl.value = this.gridFontSizeVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2747,7 +2748,7 @@ class SchedullyApp {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
         this.gridYPosVal = Math.min(150, Math.max(-120, val));
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2756,7 +2757,7 @@ class SchedullyApp {
       if (isNaN(val) || val < -120) e.target.value = -120;
       else if (val > 150) e.target.value = 150;
       this.gridYPosVal = parseInt(e.target.value, 10);
-      this.renderTimetableGrid();
+      this.requestGridRender();
       this._stagePending();
     });
 
@@ -2775,7 +2776,7 @@ class SchedullyApp {
       if (this.gridYPosVal > minY) {
         this.gridYPosVal = Math.max(Math.round(minY), this.gridYPosVal - 5);
         if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -2795,7 +2796,7 @@ class SchedullyApp {
       if (this.gridYPosVal < maxY) {
         this.gridYPosVal = Math.min(Math.round(maxY), this.gridYPosVal + 5);
         if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
-        this.renderTimetableGrid();
+        this.requestGridRender();
         this._stagePending();
       }
     });
@@ -3164,17 +3165,26 @@ class SchedullyApp {
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     const mainPhoneWrapper = document.getElementById('main-phone-wrapper');
     
-    // Auto-center canvas helper ensuring the model (phone/tablet/paper) is centered and horizontally pannable
+    const getBaseModelDimensions = () => {
+      const originalCanvas = document.getElementById('phone-canvas');
+      if (!originalCanvas) return { width: 380, height: 760 };
+      if (originalCanvas.classList.contains('canvas-tablet')) return { width: 920, height: 690 };
+      if (originalCanvas.classList.contains('canvas-paper')) return { width: 720, height: originalCanvas.scrollHeight || 480 };
+      return { width: 380, height: 760 };
+    };
+
+    // Auto-center canvas helper ensuring the model (phone/tablet/paper) is always centered and horizontally pannable
     const centerCanvasModel = (smooth = true) => {
       const scrollArea = document.getElementById('canvas-scroll-area');
-      if (!scrollArea) return;
-      setTimeout(() => {
-        const maxScrollX = scrollArea.scrollWidth - scrollArea.clientWidth;
-        const maxScrollY = scrollArea.scrollHeight - scrollArea.clientHeight;
-        const targetLeft = maxScrollX > 0 ? Math.round(maxScrollX / 2) : 0;
-        const targetTop = maxScrollY > 0 ? Math.round(maxScrollY / 2) : 0;
-        scrollArea.scrollTo({ left: targetLeft, top: targetTop, behavior: smooth ? 'smooth' : 'auto' });
-      }, 50);
+      const wrapper = document.getElementById('main-phone-wrapper');
+      if (!scrollArea || !wrapper) return;
+      
+      requestAnimationFrame(() => {
+        const scrollW = scrollArea.scrollWidth;
+        const clientW = scrollArea.clientWidth;
+        const targetLeft = scrollW > clientW ? Math.round((scrollW - clientW) / 2) : 0;
+        scrollArea.scrollTo({ left: targetLeft, behavior: smooth ? 'smooth' : 'auto' });
+      });
     };
     window.centerCanvasModel = centerCanvasModel;
 
@@ -5593,6 +5603,210 @@ class SchedullyApp {
     }
   }
 
+  requestGridRender() {
+    if (this._gridRenderPending) return;
+    this._gridRenderPending = true;
+    requestAnimationFrame(() => {
+      this._gridRenderPending = false;
+      this.renderTimetableGrid();
+    });
+  }
+
+  setupCourseListDelegation() {
+    if (this._courseDelegationBound) return;
+    this._courseDelegationBound = true;
+    const container = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
+    if (!container) return;
+
+    // 1. Click delegation (Accordion toggle, Delete, Toggles, Color Pickers)
+    container.addEventListener('click', (e) => {
+      const card = e.target.closest('.class-item-card');
+      if (!card) return;
+      const courseId = card.getAttribute('data-id');
+      const c = this.classes.find(x => String(x.id) === String(courseId));
+      if (!c) return;
+
+      // Delete Course Button
+      const delBtn = e.target.closest('.btn-delete-pill');
+      if (delBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classes = this.classes.filter(x => String(x.id) !== String(courseId));
+        this.renderAll();
+        this._stagePending();
+        return;
+      }
+
+      // Expand / Collapse Accordion Header
+      const header = e.target.closest('.class-card-header');
+      if (header) {
+        const editor = card.querySelector('.class-card-editor');
+        const arrow = card.querySelector('.class-expand-arrow');
+        if (editor) {
+          const isHidden = editor.classList.contains('hidden');
+          editor.classList.toggle('hidden');
+          if (arrow) arrow.classList.toggle('open', isHidden);
+          if (isHidden) {
+            requestAnimationFrame(() => window.syncGlassSliders?.());
+          }
+        }
+        return;
+      }
+
+      // Display Time Toggle (YES / NO)
+      const displayTimeBtn = e.target.closest('.edit-display-time .pill-btn');
+      if (displayTimeBtn) {
+        card.querySelectorAll('.edit-display-time .pill-btn').forEach(b => b.classList.remove('active'));
+        displayTimeBtn.classList.add('active');
+        const show = (displayTimeBtn.getAttribute('data-val') === 'yes');
+        c.displayTime = show;
+        const timeFormatRow = card.querySelector('.edit-time-format-row');
+        if (timeFormatRow) timeFormatRow.classList.toggle('hidden', !show);
+        this.requestGridRender();
+        window.syncGlassSliders?.();
+        return;
+      }
+
+      // Course Time Format Selector (Start Only, Start & End, End Only)
+      const timeModeBtn = e.target.closest('.edit-course-time-format .time-mode-btn');
+      if (timeModeBtn) {
+        card.querySelectorAll('.edit-course-time-format .time-mode-btn').forEach(b => b.classList.remove('active'));
+        timeModeBtn.classList.add('active');
+        c.timeFormat = timeModeBtn.getAttribute('data-timemode') || 'start';
+        c.displayTime = true;
+        const timeBadge = card.querySelector('.edit-course-time-badge');
+        if (timeBadge) {
+          timeBadge.innerText = c.timeFormat === 'both' ? 'Start & End' : (c.timeFormat === 'end' ? 'End Only' : 'Start Only');
+        }
+        this.requestGridRender();
+        window.syncGlassSliders?.();
+        return;
+      }
+
+      // Grid Colour Swatch Dot
+      const swatchBtn = e.target.closest('.mini-swatch');
+      if (swatchBtn) {
+        card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
+        swatchBtn.classList.add('active');
+        const pickedColor = swatchBtn.getAttribute('data-hex');
+        c.customColor = pickedColor;
+        c.isManualCustomColor = true;
+        const customBtn = card.querySelector('.mini-grid-custom');
+        if (customBtn) customBtn.style.background = pickedColor;
+        this.requestGridRender();
+        this._stagePending();
+        return;
+      }
+
+      // Grid Custom Colour Picker
+      const customGridBtn = e.target.closest('.mini-grid-custom');
+      if (customGridBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openCustomColorPicker(c.customColor || '#2563EB', `Customize Color: ${c.code}`, (pickedColor) => {
+          card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
+          c.customColor = pickedColor;
+          c.isManualCustomColor = true;
+          customGridBtn.style.background = pickedColor;
+          this.requestGridRender();
+          this._stagePending();
+        });
+        return;
+      }
+
+      // Font Colour Swatch Dot
+      const fontSwatchBtn = e.target.closest('.mini-font-swatch');
+      if (fontSwatchBtn) {
+        e.stopPropagation();
+        card.querySelectorAll('.mini-font-swatch').forEach(b => b.classList.remove('active'));
+        fontSwatchBtn.classList.add('active');
+        const pickedFont = fontSwatchBtn.getAttribute('data-fonthex');
+        c.fontColor = pickedFont;
+        const customFontBtn = card.querySelector('.mini-font-custom');
+        if (customFontBtn) customFontBtn.style.background = pickedFont;
+        this.requestGridRender();
+        this._stagePending();
+        return;
+      }
+
+      // Font Custom Colour Picker
+      const customFontBtn = e.target.closest('.mini-font-custom');
+      if (customFontBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openCustomColorPicker(c.fontColor || '#FFFFFF', `Card Font Color: ${c.code}`, (pickedFont) => {
+          card.querySelectorAll('.mini-font-swatch').forEach(b => b.classList.remove('active'));
+          c.fontColor = pickedFont;
+          customFontBtn.style.background = pickedFont;
+          this.requestGridRender();
+          this._stagePending();
+        });
+        return;
+      }
+    });
+
+    // 2. Input & Change delegation (Live text inputs & dropdown selects)
+    const handleFieldUpdate = (e) => {
+      const card = e.target.closest('.class-item-card');
+      if (!card) return;
+      const courseId = card.getAttribute('data-id');
+      const c = this.classes.find(x => String(x.id) === String(courseId));
+      if (!c) return;
+
+      const val = e.target.value.trim();
+      const subtextEl = card.querySelector('.item-subtext');
+
+      const updateSubtext = () => {
+        if (subtextEl) {
+          const localizedDay = window.SchedullyI18n ? window.SchedullyI18n.getDayName(c.day) : c.day;
+          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})`;
+        }
+      };
+
+      if (e.target.classList.contains('edit-code')) {
+        c.code = val.toUpperCase() || 'COURSE';
+        c.title = c.code;
+        const titleEl = card.querySelector('.item-info h4');
+        if (titleEl) titleEl.innerText = c.code;
+        this.requestGridRender();
+      } else if (e.target.classList.contains('edit-day')) {
+        c.day = val;
+        updateSubtext();
+        this.requestGridRender();
+        this._stagePending();
+      } else if (e.target.classList.contains('edit-start')) {
+        c.startTime = val;
+        updateSubtext();
+        this.requestGridRender();
+        this._stagePending();
+      } else if (e.target.classList.contains('edit-end')) {
+        c.endTime = val;
+        updateSubtext();
+        this.requestGridRender();
+        this._stagePending();
+      } else if (e.target.classList.contains('edit-type')) {
+        c.type = val;
+        updateSubtext();
+        this.requestGridRender();
+      } else if (e.target.classList.contains('edit-room')) {
+        c.room = val;
+        updateSubtext();
+        this.requestGridRender();
+      } else if (e.target.classList.contains('edit-lecturer')) {
+        c.lecturer = val;
+        updateSubtext();
+        this.requestGridRender();
+      } else if (e.target.classList.contains('edit-group')) {
+        c.group = val;
+        updateSubtext();
+        this.requestGridRender();
+      }
+    };
+
+    container.addEventListener('input', handleFieldUpdate);
+    container.addEventListener('change', handleFieldUpdate);
+  }
+
   renderClassList() {
     if (!this.classListContainer) {
       this.classListContainer = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
@@ -5638,9 +5852,12 @@ class SchedullyApp {
        this.classListContainer.innerHTML = '<div class="text-center p-6 text-gray-500 text-sm font-semibold">No courses match your search.</div>';
     }
 
+    const fragment = document.createDocumentFragment();
+
     filteredClasses.forEach(c => {
       const card = document.createElement('div');
       card.className = 'class-item-card expandable-class-card';
+      card.setAttribute('data-id', c.id);
       
       const swatchBtnsHTML = swatches.map(hex => `
         <button type="button" class="swatch-dot mini-swatch ${c.customColor === hex ? 'active' : ''}" data-hex="${hex}" style="background: ${hex}"></button>
@@ -5787,203 +6004,10 @@ class SchedullyApp {
         </div>
       `;
 
-      // Expand / Collapse Accordion Header Event
-      const cardHeader = card.querySelector('.class-card-header');
-      const cardEditor = card.querySelector('.class-card-editor');
-      const expandArrow = card.querySelector('.class-expand-arrow');
-
-      cardHeader.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-delete-pill')) return;
-        const isHidden = cardEditor.classList.contains('hidden');
-        cardEditor.classList.toggle('hidden');
-        expandArrow.classList.toggle('open', isHidden);
-        if (isHidden) {
-          requestAnimationFrame(() => {
-            window.syncGlassSliders?.();
-          });
-          setTimeout(() => {
-            window.syncGlassSliders?.();
-          }, 60);
-        }
-      });
-
-      // Independent Display Time Toggle Listener
-      const timeFormatRow = card.querySelector('.edit-time-format-row');
-      const timeBadge = card.querySelector('.edit-course-time-badge');
-
-      card.querySelectorAll('.edit-display-time .pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          card.querySelectorAll('.edit-display-time .pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const show = (btn.getAttribute('data-val') === 'yes');
-          c.displayTime = show;
-          if (timeFormatRow) {
-            timeFormatRow.classList.toggle('hidden', !show);
-          }
-          this.renderTimetableGrid();
-          window.syncGlassSliders?.();
-        });
-      });
-
-      // Individual Course Time Format Selector (Start Only, Start & End, End Only)
-      card.querySelectorAll('.edit-course-time-format .time-mode-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          card.querySelectorAll('.edit-course-time-format .time-mode-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          c.timeFormat = btn.getAttribute('data-timemode') || 'start';
-          c.displayTime = true;
-          if (timeBadge) {
-            if (c.timeFormat === 'both') timeBadge.innerText = 'Start & End';
-            else if (c.timeFormat === 'end') timeBadge.innerText = 'End Only';
-            else timeBadge.innerText = 'Start Only';
-          }
-          this.renderTimetableGrid();
-          window.syncGlassSliders?.();
-        });
-      });
-
-      // In-line Input Change Listeners
-      card.querySelector('.edit-code').addEventListener('input', (e) => {
-        c.code = e.target.value.trim().toUpperCase() || 'COURSE';
-        c.title = c.code;
-        card.querySelector('.item-info h4').innerText = c.code;
-        this.renderTimetableGrid();
-      });
-
-      card.querySelector('.edit-day').addEventListener('change', (e) => {
-        c.day = e.target.value;
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const localizedDay = window.SchedullyI18n ? window.SchedullyI18n.getDayName(c.day) : c.day;
-          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})`;
-        }
-        this.renderTimetableGrid();
-        this._stagePending();
-      });
-
-      card.querySelector('.edit-start').addEventListener('change', (e) => {
-        c.startTime = e.target.value;
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const localizedDay = window.SchedullyI18n ? window.SchedullyI18n.getDayName(c.day) : c.day;
-          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})`;
-        }
-        this.renderTimetableGrid();
-        this._stagePending();
-      });
-
-      card.querySelector('.edit-end').addEventListener('change', (e) => {
-        c.endTime = e.target.value;
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const localizedDay = window.SchedullyI18n ? window.SchedullyI18n.getDayName(c.day) : c.day;
-          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})`;
-        }
-        this.renderTimetableGrid();
-        this._stagePending();
-      });
-
-      card.querySelector('.edit-type').addEventListener('input', (e) => {
-        c.type = e.target.value.trim();
-        this.renderTimetableGrid();
-      });
-
-      card.querySelector('.edit-room').addEventListener('input', (e) => {
-        c.room = e.target.value.trim();
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const subtext = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${c.day} (${c.startTime} - ${c.endTime})`;
-          subtextEl.innerText = subtext;
-        }
-        this.renderTimetableGrid();
-      });
-
-      card.querySelector('.edit-lecturer')?.addEventListener('input', (e) => {
-        c.lecturer = e.target.value.trim();
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const subtext = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${c.day} (${c.startTime} - ${c.endTime})`;
-          subtextEl.innerText = subtext;
-        }
-        this.renderTimetableGrid();
-      });
-
-      card.querySelector('.edit-group')?.addEventListener('input', (e) => {
-        c.group = e.target.value.trim();
-        const subtextEl = card.querySelector('.item-subtext');
-        if (subtextEl) {
-          const subtext = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${c.day} (${c.startTime} - ${c.endTime})`;
-          subtextEl.innerText = subtext;
-        }
-        this.renderTimetableGrid();
-      });
-
-      // In-line Colour Swatch Picker (Grid Color - Individual Card)
-      card.querySelectorAll('.mini-swatch').forEach(btn => {
-        btn.addEventListener('click', () => {
-          card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const pickedColor = btn.getAttribute('data-hex');
-          c.customColor = pickedColor;
-          c.isManualCustomColor = true;
-          this.renderTimetableGrid();
-          this._stagePending();
-        });
-      });
-
-      // In-line Custom Colour Picker (Individual Card)
-      card.querySelector('.mini-grid-custom')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.openCustomColorPicker(c.customColor || '#2563EB', `Customize Color: ${c.code}`, (pickedColor) => {
-          card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
-          c.customColor = pickedColor;
-          c.isManualCustomColor = true;
-          const btn = card.querySelector('.mini-grid-custom');
-          if (btn) btn.style.background = pickedColor;
-          this.renderTimetableGrid();
-          this._stagePending();
-        });
-      });
-
-      // In-line Font Colour Swatch Picker (Individual Card Text Font Color)
-      card.querySelectorAll('.mini-font-swatch').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          card.querySelectorAll('.mini-font-swatch').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const pickedFont = btn.getAttribute('data-fonthex');
-          c.fontColor = pickedFont;
-          const customBtn = card.querySelector('.mini-font-custom');
-          if (customBtn) customBtn.style.background = pickedFont;
-          this.renderTimetableGrid();
-          this._stagePending();
-        });
-      });
-
-      // In-line Font Colour Custom Picker (Individual Card Font Color)
-      card.querySelector('.mini-font-custom')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.openCustomColorPicker(c.fontColor || '#FFFFFF', `Card Font Color: ${c.code}`, (pickedFont) => {
-          card.querySelectorAll('.mini-font-swatch').forEach(b => b.classList.remove('active'));
-          c.fontColor = pickedFont;
-          const btn = card.querySelector('.mini-font-custom');
-          if (btn) btn.style.background = pickedFont;
-          this.renderTimetableGrid();
-          this._stagePending();
-        });
-      });
-
-      // Sleek Trash Can Delete Button Event
-      card.querySelector('.btn-delete-pill').addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.classes = this.classes.filter(item => item.id !== c.id);
-        this.renderAll();
-      });
-
-      this.classListContainer.appendChild(card);
+      fragment.appendChild(card);
     });
+
+    this.classListContainer.appendChild(fragment);
   }
 }
 
@@ -6198,22 +6222,26 @@ function initGlassSegmentedSliders() {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// 🔮 UNIVERSAL LIQUID GLASS REFRACTION TRACKER (Mouse + Touch)
+// 🔮 UNIVERSAL LIQUID GLASS REFRACTION TRACKER (High-Performance 60FPS)
 // ═════════════════════════════════════════════════════════════════════
 let pointerRafId = null;
 let lastPointerEvent = null;
 let activeTouchTarget = null;
 
+const GLASS_CARD_SELECTOR = 
+  '.card-expand-header, .exact-course-card, .class-card-item, .expandable-class-card, ' +
+  '#bottom-floating-pill-bar, #bottom-floating-pill-bar button, #header-desktop-bar, #header-desktop-bar button, ' +
+  '#btn-expand-left-floating, #btn-expand-right-floating, #btn-mobile-export-toggle, #btn-schedule-settings-toggle, #btn-clear-all, ' +
+  '.btn-adaptive-auth, .btn-globe-language, .btn-coffee-support, .pill-btn, .capsule-btn, .dock-icon-circle, .lang-option-pill, ' +
+  '.btn-studio-launch, .btn-studio-import, .modal-card, .language-modal-card, .coffee-modal-card, .ocr-lang-card, #tour-popover-card';
+
 function updateGlassSheen(clientX, clientY, targetEl) {
-  const target = targetEl || document.elementFromPoint(clientX, clientY);
+  // Fast path: completely bypass in Default Style (solid surfaces, no glare)
+  if (document.body.classList.contains('theme-style-default')) return null;
+
+  const target = targetEl || (clientX !== undefined && clientY !== undefined ? document.elementFromPoint(clientX, clientY) : null);
   if (!target) return null;
-  const glassCard = target.closest(
-    '.card-expand-header, .exact-course-card, .class-card-item, .expandable-class-card, ' +
-    '#bottom-floating-pill-bar, #bottom-floating-pill-bar button, #header-desktop-bar, #header-desktop-bar button, ' +
-    '#btn-expand-left-floating, #btn-expand-right-floating, #btn-mobile-export-toggle, #btn-schedule-settings-toggle, #btn-clear-all, ' +
-    '.btn-adaptive-auth, .btn-globe-language, .btn-coffee-support, .pill-btn, .capsule-btn, .dock-icon-circle, .lang-option-pill, ' +
-    '.btn-studio-launch, .btn-studio-import, .modal-card, .language-modal-card, .coffee-modal-card, .ocr-lang-card'
-  );
+  const glassCard = target.closest(GLASS_CARD_SELECTOR);
   if (glassCard) {
     const rect = glassCard.getBoundingClientRect();
     glassCard.style.setProperty('--mouse-x', `${clientX - rect.left}px`);
@@ -6223,45 +6251,36 @@ function updateGlassSheen(clientX, clientY, targetEl) {
   return null;
 }
 
-// Mouse / Pointer Move
+// Mouse / Pointer Move - Strictly RAF Throttled with Direct Target Fast-Path
 document.addEventListener('pointermove', (e) => {
+  if (document.body.classList.contains('theme-style-default')) return;
   lastPointerEvent = e;
   if (!pointerRafId) {
     pointerRafId = requestAnimationFrame(() => {
       pointerRafId = null;
       if (!lastPointerEvent) return;
-      updateGlassSheen(lastPointerEvent.clientX, lastPointerEvent.clientY);
+      updateGlassSheen(lastPointerEvent.clientX, lastPointerEvent.clientY, lastPointerEvent.target);
     });
   }
 }, { passive: true });
 
-// Touch Tracking for Mobile Fingers
+// Touch Tracking for Mobile Fingers (Fast-path on tap without heavy continuous touchmove thrashing)
 document.addEventListener('touchstart', (e) => {
+  if (document.body.classList.contains('theme-style-default')) return;
   if (e.touches && e.touches.length > 0) {
     const touch = e.touches[0];
     if (activeTouchTarget) activeTouchTarget.classList.remove('is-touch-active');
-    activeTouchTarget = updateGlassSheen(touch.clientX, touch.clientY);
+    activeTouchTarget = updateGlassSheen(touch.clientX, touch.clientY, e.target);
     if (activeTouchTarget) activeTouchTarget.classList.add('is-touch-active');
-  }
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-  if (e.touches && e.touches.length > 0) {
-    const touch = e.touches[0];
-    const newTarget = updateGlassSheen(touch.clientX, touch.clientY);
-    if (newTarget !== activeTouchTarget) {
-      if (activeTouchTarget) activeTouchTarget.classList.remove('is-touch-active');
-      activeTouchTarget = newTarget;
-      if (activeTouchTarget) activeTouchTarget.classList.add('is-touch-active');
-    }
   }
 }, { passive: true });
 
 document.addEventListener('touchend', () => {
   if (activeTouchTarget) {
+    const prev = activeTouchTarget;
+    activeTouchTarget = null;
     setTimeout(() => {
-      activeTouchTarget?.classList.remove('is-touch-active');
-      activeTouchTarget = null;
+      prev?.classList.remove('is-touch-active');
     }, 250);
   }
 }, { passive: true });
@@ -6792,15 +6811,14 @@ class SchedullyTourController {
       this.btnNext.innerHTML = isLast ? '<span>Get Started</span> ✨' : '<span>Next</span> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>';
     }
 
-    // Continuously track target bounding box during slide animations (500ms duration)
-    this.trackTargetPosition(step, 500);
+    // Track target bounding box smoothly after CSS slide animations
+    this.trackTargetPosition(step);
   }
 
-  trackTargetPosition(step, durationMs = 500) {
+  trackTargetPosition(step) {
     const isMobile = window.innerWidth <= 1280;
-    const startTime = performance.now();
 
-    const update = () => {
+    const applyPosition = () => {
       let targetEl = null;
       if (step.id === 'export') {
         const mobileDropdown = document.getElementById('mobile-export-dropdown');
@@ -6897,14 +6915,12 @@ class SchedullyTourController {
         this.popoverCard.style.left = `${cardLeft}px`;
         this.popoverCard.style.width = `${cardW}px`;
       }
-
-      if (performance.now() - startTime < durationMs) {
-        this.animFrameId = requestAnimationFrame(update);
-      }
     };
 
-    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
-    this.animFrameId = requestAnimationFrame(update);
+    // Calculate immediately and schedule smooth follow-ups after CSS panel animation completes
+    requestAnimationFrame(applyPosition);
+    setTimeout(applyPosition, 120);
+    setTimeout(applyPosition, 360);
   }
 
   next() {
