@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260827_remove_redundant_guide_btn_v202">
+<link rel="stylesheet" href="styles.css?v=20260827_ocr_modal_fixes_v203">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -1936,36 +1936,36 @@
 
       <!-- 2. Schedule Axis & Period System Choice -->
       <div id="ocr-period-section" class="flex flex-col gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
-          <span>2. Schedule Format</span>
-          <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">時限 / Period System</span>
+        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          2. Time Axis Format
         </label>
-        
-        <!-- Axis Mode Segments -->
+
+        <!-- Axis Mode Segments — JS sets .active on open based on detected type -->
         <div class="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50">
-          <button id="btn-axis-period" type="button" class="axis-mode-btn active py-2 px-1 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-sm transition-all text-center">
-            1, 2, 3限 (Periods)
+          <button id="btn-axis-period" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use period numbers (1st, 2nd…) on the time axis">
+            Periods
           </button>
-          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all text-center">
-            09:00 (Clock)
+          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use clock times (09:00, 10:30…) on the time axis">
+            Clock
           </button>
-          <button id="btn-axis-both" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all text-center">
-            1限 + 09:00
+          <button id="btn-axis-both" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Show both period numbers and clock times side by side">
+            Both
           </button>
         </div>
 
-        <!-- Period Time Presets (Active when clock or both is chosen) -->
-        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-1">
-          <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500">Quick Period Schedule Presets:</span>
+        <!-- Period Start Time Presets — shown only when Clock or Both is selected -->
+        <!-- JS shows/hides #ocr-period-preset-container based on axis mode -->
+        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-0.5">
+          <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500">Period start time &amp; duration:</span>
           <div class="flex flex-wrap gap-1.5">
-            <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-100/90 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40 transition-all">
-              9:00 AM (90-min)
+            <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-100/90 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40 transition-all" title="1st period at 9:00 AM, each period is 90 min (standard university)">
+              9:00 AM · 90 min
             </button>
-            <button type="button" data-preset="90m-850" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all">
-              8:50 AM (90-min)
+            <button type="button" data-preset="90m-850" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all" title="1st period at 8:50 AM, each period is 90 min (some universities)">
+              8:50 AM · 90 min
             </button>
-            <button type="button" data-preset="50m-school" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all">
-              50-min (High School)
+            <button type="button" data-preset="50m-school" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all" title="Starts 8:30 AM, 50-minute classes with 10 min break (high school)">
+              8:30 AM · 50 min
             </button>
           </div>
         </div>

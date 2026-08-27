@@ -7561,7 +7561,8 @@ body.theme-style-default #btn-schedule-settings-toggle,
 body.theme-style-default #preset-action-dropdown,
 body.theme-style-default .modal-card,
 body.theme-style-default .language-modal-card,
-body.theme-style-default .coffee-modal-card {
+body.theme-style-default .coffee-modal-card,
+body.theme-style-default .ocr-lang-card {
   background: #FFFFFF !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -7583,7 +7584,8 @@ body.theme-style-default.dark-mode #btn-schedule-settings-toggle,
 body.theme-style-default.dark-mode #preset-action-dropdown,
 body.theme-style-default.dark-mode .modal-card,
 body.theme-style-default.dark-mode .language-modal-card,
-body.theme-style-default.dark-mode .coffee-modal-card {
+body.theme-style-default.dark-mode .coffee-modal-card,
+body.theme-style-default.dark-mode .ocr-lang-card {
   background: #1E293B !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;

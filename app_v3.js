@@ -3816,13 +3816,31 @@ class SchedullyApp {
 
     // 2. Schedule Axis Mode Buttons (Period / Clock / Both)
     const axisButtons = [this.btnAxisPeriod, this.btnAxisTime, this.btnAxisBoth].filter(Boolean);
+    const presetContainer = document.getElementById('ocr-period-preset-container');
+
+    const updatePresetVisibility = (mode) => {
+      if (presetContainer) {
+        // Show presets when Clock or Both mode is selected (times matter)
+        if (mode === 'time' || mode === 'both') {
+          presetContainer.style.display = 'flex';
+        } else {
+          presetContainer.style.display = 'none';
+        }
+      }
+    };
+
     axisButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         axisButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        if (btn === this.btnAxisPeriod) this.selectedOcrAxisMode = 'period';
-        else if (btn === this.btnAxisTime) this.selectedOcrAxisMode = 'time';
-        else if (btn === this.btnAxisBoth) this.selectedOcrAxisMode = 'both';
+        if (btn === this.btnAxisPeriod) {
+          this.selectedOcrAxisMode = 'period';
+        } else if (btn === this.btnAxisTime) {
+          this.selectedOcrAxisMode = 'time';
+        } else if (btn === this.btnAxisBoth) {
+          this.selectedOcrAxisMode = 'both';
+        }
+        updatePresetVisibility(this.selectedOcrAxisMode);
       });
     });
 
@@ -3830,14 +3848,8 @@ class SchedullyApp {
     const presetChips = document.querySelectorAll('.period-preset-chip');
     presetChips.forEach(chip => {
       chip.addEventListener('click', () => {
-        presetChips.forEach(c => {
-          c.classList.remove('active');
-          c.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-gray-700', 'dark:text-gray-300', 'border-slate-200', 'dark:border-slate-700');
-          c.classList.remove('bg-blue-100/90', 'dark:bg-blue-500/20', 'text-blue-700', 'dark:text-blue-300', 'border-blue-300', 'dark:border-blue-500/40');
-        });
+        presetChips.forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
-        chip.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-gray-700', 'dark:text-gray-300', 'border-slate-200', 'dark:border-slate-700');
-        chip.classList.add('bg-blue-100/90', 'dark:bg-blue-500/20', 'text-blue-700', 'dark:text-blue-300', 'border-blue-300', 'dark:border-blue-500/40');
         this.selectedOcrPeriodPreset = chip.getAttribute('data-preset') || '90m-900';
       });
     });
@@ -5415,14 +5427,31 @@ class SchedullyApp {
     this.selectedOcrAxisMode = isPeriodBased ? 'period' : 'time';
     this.selectedOcrPeriodPreset = '90m-900';
 
+    // Show the period section always
     if (this.ocrPeriodSection) {
       this.ocrPeriodSection.style.display = 'flex';
     }
 
-    // Reset Segment Highlights
-    if (this.btnAxisPeriod) this.btnAxisPeriod.classList.toggle('active', isPeriodBased);
-    if (this.btnAxisTime) this.btnAxisTime.classList.toggle('active', !isPeriodBased);
-    if (this.btnAxisBoth) this.btnAxisBoth.classList.remove('active');
+    // Reset Segment Highlights — purely via .active class, CSS handles the styling
+    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime, this.btnAxisBoth].filter(Boolean);
+    axisButtons.forEach(b => b.classList.remove('active'));
+    if (isPeriodBased && this.btnAxisPeriod) {
+      this.btnAxisPeriod.classList.add('active');
+    } else if (this.btnAxisTime) {
+      this.btnAxisTime.classList.add('active');
+    }
+
+    // Show/hide preset chips based on initial axis mode
+    const presetContainer = document.getElementById('ocr-period-preset-container');
+    if (presetContainer) {
+      presetContainer.style.display = (this.selectedOcrAxisMode === 'time' || this.selectedOcrAxisMode === 'both') ? 'flex' : 'none';
+    }
+
+    // Reset preset chip to first (9:00 AM)
+    const presetChips = document.querySelectorAll('.period-preset-chip');
+    presetChips.forEach(c => c.classList.remove('active'));
+    const firstChip = document.querySelector('.period-preset-chip[data-preset="90m-900"]');
+    if (firstChip) firstChip.classList.add('active');
 
     // Collapse sidebars for full focus
     if (typeof this.toggleLeftSidebar === 'function') this.toggleLeftSidebar(true);
