@@ -1137,28 +1137,28 @@ class SchedullyApp {
         }
       } else {
         // 📱 SMARTPHONE MODE RATIOS (Android 20:9, iOS 19.5:9, Classic 18:9)
-        let targetHeight = 770; // Realistic flagship smartphone proportion
+        let targetHeight = 844; // Exact 20:9 (380 * 20 / 9 = 844px)
         let badgeLabel = 'Auto (Match)';
 
         if (ratio === 'auto') {
           if (devScreen && devScreen.aspect > 1.4) {
-            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, devScreen.aspect)));
+            targetHeight = Math.round(380 * devScreen.aspect);
             badgeLabel = `Auto (${devScreen.ratioFormatted} Screen)`;
           } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
-            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, this.wallpaperAspect)));
+            targetHeight = Math.round(380 * this.wallpaperAspect);
             badgeLabel = `Auto (${(this.wallpaperAspect * 9).toFixed(1)}:9 Photo)`;
           } else {
-            targetHeight = 770;
-            badgeLabel = 'Auto (Match)';
+            targetHeight = 844;
+            badgeLabel = 'Auto (20:9)';
           }
         } else if (ratio === 'android' || ratio === 'xiaomi') {
-          targetHeight = 775; // Proportional 20:9 flagship frame
+          targetHeight = 844; // Exact 20:9
           badgeLabel = 'Android (20:9)';
         } else if (ratio === 'ios' || ratio === 'iphone') {
-          targetHeight = 765; // Proportional 19.5:9 iPhone frame
+          targetHeight = 823; // Exact 19.5:9
           badgeLabel = 'iOS (19.5:9)';
         } else if (ratio === 'standard') {
-          targetHeight = 750; // Proportional 18:9 frame
+          targetHeight = 760; // Exact 18:9
           badgeLabel = '18:9 Classic';
         }
 

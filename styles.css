@@ -3468,8 +3468,8 @@ textarea::placeholder,
 
 .m3-phone-canvas.canvas-phone {
   width: 380px !important;
-  height: var(--phone-canvas-height, 770px) !important;
-  min-height: var(--phone-canvas-height, 770px) !important;
+  height: var(--phone-canvas-height, 844px) !important;
+  min-height: var(--phone-canvas-height, 844px) !important;
   border: 10px solid #000000 !important;
   border-radius: 56px !important;
   padding: 14px 16px !important;
