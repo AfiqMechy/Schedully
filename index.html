@@ -150,8 +150,8 @@
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260827_ocr_modal_fixes_v203">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=20260827_dark_mode_svg_colors_v220">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -540,7 +540,7 @@
                     <span>Blur Intensity</span>
                     <span id="blur-intensity-val" class="text-blue-600 font-extrabold">10px</span>
                   </div>
-                  <input type="range" id="slider-bg-blur" min="2" max="30" value="10" step="1" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer">
+                  <input type="range" id="slider-bg-blur" min="1" max="40" value="12" step="1" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
               </div>
 
@@ -601,16 +601,186 @@
                     <input type="file" id="custom-font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
                   </label>
                 </div>
-                <select id="select-font-family" class="m3-input opt-input text-xs font-bold mt-1.5 cursor-pointer">
-                  <option value="default" selected>Google Sans (Default)</option>
-                  <option value="plus-jakarta">Plus Jakarta Sans (iOS Aesthetic)</option>
-                  <option value="outfit">Outfit (Geometric & Clean)</option>
-                  <option value="jetbrains">JetBrains Mono (Code / Minimal)</option>
-                  <option value="lexend">Lexend (Ultra Readable)</option>
-                  <option value="space-grotesk">Space Grotesk (Modernist Display)</option>
-                  <option value="playfair">Playfair Display (Classy Serif)</option>
-                  <option value="inter">Inter (Neutral Clean)</option>
-                </select>
+                <!-- Custom Font Picker Container (Inline Flow - Never Blocked!) -->
+                <div class="custom-font-dropdown-container relative mt-1.5" id="font-dropdown-container">
+                  <button type="button" id="btn-font-dropdown-trigger" class="custom-font-trigger-btn">
+                    <div class="font-trigger-left">
+                      <span class="font-preview-badge" id="font-trigger-badge">Aa</span>
+                      <div class="flex flex-col text-left overflow-hidden">
+                        <span class="font-trigger-label" id="font-trigger-name">Google Sans</span>
+                        <span class="font-trigger-sub" id="font-trigger-sub">Default Clean</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 font-trigger-right">
+                      <span class="text-[10px] font-extrabold text-blue-600 font-trigger-action">CHANGE</span>
+                      <svg class="font-chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </div>
+                  </button>
+
+                  <!-- Expandable Font Menu (Inline Flow) -->
+                  <div id="font-dropdown-menu" class="custom-font-menu custom-font-menu-inline hidden mt-2">
+                    <div class="custom-font-menu-scroll custom-modal-scrollbar">
+                      
+                      <!-- Group 1: Cursive & Script -->
+                      <div class="font-group-header">
+                        <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-cursive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                        <span>Cursive & Script</span>
+                      </div>
+                      <div class="font-group-items">
+                        <button type="button" class="font-option-item" data-font="great-vibes" style="font-family: 'Great Vibes', cursive;">
+                          <div class="font-option-info">
+                            <span class="font-option-title text-base font-normal">Great Vibes</span>
+                            <span class="font-option-desc">Royal Cursive Calligraphy</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="dancing-script" style="font-family: 'Dancing Script', cursive;">
+                          <div class="font-option-info">
+                            <span class="font-option-title text-sm">Dancing Script</span>
+                            <span class="font-option-desc">Aesthetic Casual Flow</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="caveat" style="font-family: 'Caveat', cursive;">
+                          <div class="font-option-info">
+                            <span class="font-option-title text-base">Caveat</span>
+                            <span class="font-option-desc">Studygram Handwritten</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="sacramento" style="font-family: 'Sacramento', cursive;">
+                          <div class="font-option-info">
+                            <span class="font-option-title text-base">Sacramento</span>
+                            <span class="font-option-desc">Delicate Signature</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                      </div>
+
+                      <!-- Group 2: Aesthetic & Editorial -->
+                      <div class="font-group-header">
+                        <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-aesthetic" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                        </svg>
+                        <span>Aesthetic & Editorial</span>
+                      </div>
+                      <div class="font-group-items">
+                        <button type="button" class="font-option-item" data-font="cinzel" style="font-family: 'Cinzel', serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Cinzel</span>
+                            <span class="font-option-desc">Luxury Roman / Academia</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="comfortaa" style="font-family: 'Comfortaa', cursive;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Comfortaa</span>
+                            <span class="font-option-desc">Cute Soft Aesthetic</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="syne" style="font-family: 'Syne', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Syne</span>
+                            <span class="font-option-desc">Avant-Garde Art</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="playfair" style="font-family: 'Playfair Display', serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Playfair Display</span>
+                            <span class="font-option-desc">Classy Serif</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                      </div>
+
+                      <!-- Group 3: Modern & Minimalist -->
+                      <div class="font-group-header">
+                        <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-modern" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                        </svg>
+                        <span>Modern & Minimalist</span>
+                      </div>
+                      <div class="font-group-items">
+                        <button type="button" class="font-option-item active" data-font="default" style="font-family: 'Google Sans', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Google Sans</span>
+                            <span class="font-option-desc">Default Clean</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="plus-jakarta" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Plus Jakarta Sans</span>
+                            <span class="font-option-desc">iOS Aesthetic Sans</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="outfit" style="font-family: 'Outfit', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Outfit</span>
+                            <span class="font-option-desc">Geometric & Crisp</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="jetbrains" style="font-family: 'JetBrains Mono', monospace;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">JetBrains Mono</span>
+                            <span class="font-option-desc">Developer Monospace</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="space-grotesk" style="font-family: 'Space Grotesk', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Space Grotesk</span>
+                            <span class="font-option-desc">Modernist Tech Display</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="lexend" style="font-family: 'Lexend', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Lexend</span>
+                            <span class="font-option-desc">Ultra Readable</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                        <button type="button" class="font-option-item" data-font="inter" style="font-family: 'Inter', sans-serif;">
+                          <div class="font-option-info">
+                            <span class="font-option-title">Inter</span>
+                            <span class="font-option-desc">Neutral Clean</span>
+                          </div>
+                          <span class="font-check-icon">✓</span>
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- Fallback Select Element -->
+                  <select id="select-font-family" class="hidden">
+                    <option value="default" selected>Google Sans</option>
+                    <option value="great-vibes">Great Vibes</option>
+                    <option value="dancing-script">Dancing Script</option>
+                    <option value="caveat">Caveat</option>
+                    <option value="sacramento">Sacramento</option>
+                    <option value="cinzel">Cinzel</option>
+                    <option value="comfortaa">Comfortaa</option>
+                    <option value="syne">Syne</option>
+                    <option value="playfair">Playfair Display</option>
+                    <option value="plus-jakarta">Plus Jakarta Sans</option>
+                    <option value="outfit">Outfit</option>
+                    <option value="jetbrains">JetBrains Mono</option>
+                    <option value="space-grotesk">Space Grotesk</option>
+                    <option value="lexend">Lexend</option>
+                    <option value="inter">Inter</option>
+                    <option value="custom">Custom Font</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -710,6 +880,29 @@
                 <div class="opt-row">
                   <span class="opt-label" data-i18n="titleText">Title Text</span>
                   <input type="text" id="input-title-text-sidebar" value="Untitled" class="m3-input opt-input" placeholder="">
+                </div>
+
+                <!-- Trademark / Watermark Toggle & Custom Text -->
+                <div class="opt-row margin-top-xs">
+                  <span class="opt-label" data-i18n="trademark">Trademark</span>
+                  <div class="pill-toggle-group" id="toggle-trademark">
+                    <button type="button" class="pill-btn" data-val="yes">YES</button>
+                    <button type="button" class="pill-btn active" data-val="no">NO</button>
+                  </div>
+                </div>
+
+                <div class="opt-row margin-top-xs" id="row-trademark-text" style="display: none;">
+                  <span class="opt-label" data-i18n="trademarkText">Trademark Text</span>
+                  <input type="text" id="input-trademark-text" value="Schedully • Student Edition" class="m3-input opt-input" placeholder="e.g. Schedully • Your Name">
+                </div>
+
+                <div class="opt-row-stack margin-top-xs" id="row-trademark-style" style="display: none;">
+                  <span class="opt-label" data-i18n="trademarkStyle">Border Style</span>
+                  <div class="pill-toggle-group" id="toggle-trademark-style">
+                    <button type="button" class="pill-btn active" data-val="default">DEFAULT</button>
+                    <button type="button" class="pill-btn" data-val="rounded">ROUNDED</button>
+                    <button type="button" class="pill-btn" data-val="squared">SQUARED</button>
+                  </div>
                 </div>
 
                 <!-- Timetable Frame Corners -->
@@ -1429,6 +1622,11 @@
         <div id="universal-timetable-grid" class="m3-lock-grid-exact">
           <!-- Dynamically populated by JS -->
         </div>
+      </div>
+
+      <!-- Floating Trademark Entity (Separate element floating underneath timetable) -->
+      <div id="lock-trademark-footer" class="phone-trademark-floating style-default" style="display: none;">
+        <span id="lock-trademark-text">Schedully • Student Edition</span>
       </div>
 
       <!-- Phone Navigation Bar Indicator -->

@@ -217,7 +217,11 @@ body.dark-mode, .theme-dark {
 .exact-card-room,
 .exact-card-lecturer,
 .exact-card-group,
-.exact-card-time {
+.exact-card-time,
+.phone-trademark-floating,
+.phone-trademark-floating *,
+.lock-trademark-footer,
+.lock-trademark-footer * {
   font-family: var(--timetable-font-family) !important;
 }
 
@@ -2198,6 +2202,326 @@ body.dark-mode .pill-btn {
 body.dark-mode .pill-btn.active {
   background: #3B82F6 !important;
   box-shadow: 0 3px 12px rgba(59, 130, 246, 0.45) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CUSTOM FONT PICKER DROPDOWN & REAL-TIME TYPOGRAPHY PREVIEWS
+   ═══════════════════════════════════════════════════════════════ */
+.custom-font-dropdown-container {
+  position: relative;
+  width: 100%;
+  z-index: 50;
+}
+
+.custom-font-trigger-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 7px 10px !important;
+  border-radius: 12px !important;
+  background: var(--m3-sys-color-surface-variant, #F1F5F9) !important;
+  border: 1.5px solid var(--m3-sys-color-outline, rgba(226, 232, 240, 0.8)) !important;
+  color: var(--m3-sys-text-primary, #0F172A) !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.custom-font-trigger-btn:hover {
+  background: #E2E8F0 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.custom-font-trigger-btn.is-open {
+  border-color: #2563EB !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.custom-font-trigger-btn.is-open .font-chevron-icon {
+  transform: rotate(180deg);
+}
+
+.font-trigger-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.font-preview-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 900;
+  flex-shrink: 0;
+  letter-spacing: -0.04em;
+}
+
+.font-trigger-label {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font-trigger-sub {
+  font-family: var(--app-ui-font, sans-serif) !important;
+  font-size: 9px;
+  font-weight: 600;
+  color: #64748B;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.dark-mode .font-trigger-sub {
+  color: #94A3B8;
+}
+
+.font-chevron-icon {
+  width: 15px;
+  height: 15px;
+  color: #2563EB;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Expandable Inline Font Catalog (No Stacking Bugs / Never Blocked) */
+.custom-font-menu-inline {
+  position: relative !important;
+  width: 100% !important;
+  z-index: 10 !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 14px !important;
+  box-shadow: 
+    0 10px 25px -5px rgba(15, 23, 42, 0.08),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+  padding: 6px !important;
+  animation: fontMenuExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+  box-sizing: border-box;
+}
+
+@keyframes fontMenuExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-font-menu-scroll {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.font-group-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 10px 4px 10px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #475569 !important;
+}
+
+.font-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.font-option-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 6px 10px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #1E293B !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.15s ease !important;
+}
+
+.font-option-item:hover {
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: #2563EB !important;
+}
+
+.font-option-item.active {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.font-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  overflow: hidden;
+}
+
+.font-option-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font-option-desc {
+  font-family: var(--app-ui-font, sans-serif) !important;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #64748B;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+}
+
+.font-check-icon {
+  display: none;
+  font-size: 12px;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.font-option-item.active .font-check-icon {
+  display: inline-block;
+}
+
+.font-option-item.active .font-option-desc {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Dark Mode Overrides for Custom Font Picker */
+body.dark-mode .custom-font-trigger-btn,
+.theme-dark .custom-font-trigger-btn {
+  background: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .custom-font-trigger-btn:hover,
+.theme-dark .custom-font-trigger-btn:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border-color: #3B82F6 !important;
+}
+
+body.dark-mode .custom-font-menu,
+.theme-dark .custom-font-menu {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65) !important;
+}
+
+body.dark-mode .font-group-header,
+.theme-dark .font-group-header {
+  color: #F1F5F9 !important;
+}
+
+body.dark-mode .font-group-header span,
+.theme-dark .font-group-header span {
+  color: #F8FAFC !important;
+  font-weight: 800 !important;
+}
+
+body.dark-mode .font-group-header svg,
+.theme-dark .font-group-header svg {
+  filter: brightness(1.25) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* Category SVG Colors (Light & Dark Mode) */
+.font-header-icon-cursive {
+  color: #F59E0B !important;
+  stroke: #F59E0B !important;
+}
+
+body.dark-mode .font-header-icon-cursive,
+.theme-dark .font-header-icon-cursive {
+  color: #FBBF24 !important;
+  stroke: #FBBF24 !important;
+}
+
+.font-header-icon-aesthetic {
+  color: #EC4899 !important;
+  stroke: #EC4899 !important;
+}
+
+body.dark-mode .font-header-icon-aesthetic,
+.theme-dark .font-header-icon-aesthetic {
+  color: #F472B6 !important;
+  stroke: #F472B6 !important;
+}
+
+.font-header-icon-modern {
+  color: #3B82F6 !important;
+  stroke: #3B82F6 !important;
+}
+
+body.dark-mode .font-header-icon-modern,
+.theme-dark .font-header-icon-modern {
+  color: #60A5FA !important;
+  stroke: #60A5FA !important;
+}
+
+.font-header-icon-custom {
+  color: #6366F1 !important;
+  stroke: #6366F1 !important;
+}
+
+body.dark-mode .font-header-icon-custom,
+.theme-dark .font-header-icon-custom {
+  color: #818CF8 !important;
+  stroke: #818CF8 !important;
+}
+
+body.dark-mode .font-option-item,
+.theme-dark .font-option-item {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .font-option-item:hover,
+.theme-dark .font-option-item:hover {
+  background: rgba(59, 130, 246, 0.25) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .font-option-desc,
+.theme-dark .font-option-desc {
+  color: #CBD5E1 !important;
+  opacity: 0.92 !important;
+}
+
+body.dark-mode .font-option-item.active,
+.theme-dark .font-option-item.active {
+  background: #3B82F6 !important;
+  color: #FFFFFF !important;
 }
 
 /* Color Grid Swatches */
@@ -4373,24 +4697,52 @@ body.dark-mode #user-status-text {
   color: #CBD5E1 !important;
 }
 
-/* Photo Wallpaper & Auto-Adaptive Dynamic Styling (Seamless Full-Bleed Blur) */
+/* Photo Wallpaper & Auto-Adaptive Dynamic Styling (Seamless Full-Bleed Optical Blur Engine) */
 .phone-wallpaper-layer {
   position: absolute;
-  top: -24px;
-  left: -24px;
-  right: -24px;
-  bottom: -24px;
-  width: calc(100% + 48px);
-  height: calc(100% + 48px);
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  filter: blur(var(--wallpaper-blur-val, 0px));
-  transform: scale(1.08);
-  transform-origin: center center;
-  transition: filter 0.15s ease, opacity 0.3s ease;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
   z-index: 0;
   pointer-events: none;
+  border-radius: 46px;
+  transition: opacity 0.3s ease, border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.phone-wallpaper-layer::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  right: -30px;
+  bottom: -30px;
+  width: calc(100% + 60px);
+  height: calc(100% + 60px);
+  background-image: inherit;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  filter: blur(var(--wallpaper-blur-val, 0px));
+  transform: scale(1.06);
+  transform-origin: center center;
+  transition: filter 0.12s ease;
+  pointer-events: none;
+}
+
+.canvas-phone .phone-wallpaper-layer {
+  border-radius: 46px !important;
+}
+
+.canvas-tablet .phone-wallpaper-layer {
+  border-radius: 24px !important;
+}
+
+.canvas-paper .phone-wallpaper-layer {
+  border-radius: 16px !important;
 }
 
 .phone-camera-dot,
@@ -4398,6 +4750,118 @@ body.dark-mode #user-status-text {
 .m3-lock-timetable-container {
   position: relative;
   z-index: 2;
+}
+
+/* Floating Trademark / Signature Entity (Underneath Timetable) */
+.phone-trademark-floating,
+.lock-trademark-footer {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  align-self: center;
+  margin: 10px auto 0 auto;
+  font-family: var(--timetable-font-family) !important;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--timetable-header-text, #1E293B);
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  transition: all 0.25s ease;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 1. DEFAULT STYLE (No border, pure clean floating typography with high-clarity contrast) */
+.phone-trademark-floating.style-default,
+.lock-trademark-footer.style-default {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 3px 6px !important;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .phone-trademark-floating.style-default,
+body.dark-mode .lock-trademark-footer.style-default,
+.theme-dark .phone-trademark-floating.style-default,
+.theme-dark .lock-trademark-footer.style-default,
+#phone-canvas.has-photo-wallpaper .phone-trademark-floating.style-default {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 2. ROUNDED STYLE (Pill Capsule Border & Frosted Backing) */
+.phone-trademark-floating.style-rounded,
+.lock-trademark-footer.style-rounded {
+  padding: 4px 14px;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+body.dark-mode .phone-trademark-floating.style-rounded,
+body.dark-mode .lock-trademark-footer.style-rounded,
+.theme-dark .phone-trademark-floating.style-rounded,
+.theme-dark .lock-trademark-footer.style-rounded {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  color: var(--timetable-header-text, #E2E8F0);
+}
+
+/* 3. SQUARED STYLE (Squared Rectangular Border & Frosted Backing) */
+.phone-trademark-floating.style-squared,
+.lock-trademark-footer.style-squared {
+  padding: 4px 12px;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+body.dark-mode .phone-trademark-floating.style-squared,
+body.dark-mode .lock-trademark-footer.style-squared,
+.theme-dark .phone-trademark-floating.style-squared,
+.theme-dark .lock-trademark-footer.style-squared {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  color: var(--timetable-header-text, #E2E8F0);
+}
+
+/* Default Solid App Theme Overrides */
+body.theme-style-default .phone-trademark-floating.style-rounded,
+body.theme-style-default .phone-trademark-floating.style-squared,
+body.theme-style-default .lock-trademark-footer.style-rounded,
+body.theme-style-default .lock-trademark-footer.style-squared {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.theme-style-default.dark-mode .phone-trademark-floating.style-rounded,
+body.theme-style-default.dark-mode .phone-trademark-floating.style-squared,
+body.theme-style-default.dark-mode .lock-trademark-footer.style-rounded,
+body.theme-style-default.dark-mode .lock-trademark-footer.style-squared {
+  background: #1E293B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
@@ -4425,6 +4889,19 @@ body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container,
 body.dark-mode #wallpaper-controls-bar {
   background-color: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Zero Border-Radius Clean Export Staging Area */
+.export-staging-container,
+.export-staging-container .m3-phone-canvas,
+.export-staging-container #phone-canvas,
+.export-staging-container .phone-wallpaper-layer,
+.export-staging-container .canvas-phone .phone-wallpaper-layer,
+.export-staging-container .canvas-tablet .phone-wallpaper-layer,
+.export-staging-container .canvas-paper .phone-wallpaper-layer {
+  border-radius: 0px !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .btn-resync-wallpaper {
@@ -6745,6 +7222,24 @@ body.dark-mode #input-title-text-stage,
   font-size: 10px !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;
+}
+
+/* Full-Width Fit for 3-button Trademark Border Style (DEFAULT / ROUNDED / SQUARED) */
+.opt-row-stack #toggle-trademark-style,
+#toggle-trademark-style {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+#toggle-trademark-style .pill-btn {
+  padding: 4.5px 6px !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em !important;
+  text-align: center !important;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
 }
 
 body.dark-mode #device-type-toggles,

@@ -287,6 +287,13 @@ class SchedullyApp {
     this.inputTitleStage = document.getElementById('input-title-text-stage');
     this.inputTitleSidebar = document.getElementById('input-title-text-sidebar');
 
+    this.inputTrademark = document.getElementById('input-trademark-text');
+    this.lockTrademarkFooter = document.getElementById('lock-trademark-footer');
+    this.lockTrademarkText = document.getElementById('lock-trademark-text');
+    this.showTrademark = false;
+    this.trademarkText = 'Schedully • Student Edition';
+    this.trademarkStyle = 'default';
+
     // Universal Importer
     this.universalFileInput = document.getElementById('universal-file-input');
     
@@ -924,6 +931,30 @@ class SchedullyApp {
     this.inputTitleSidebar.value = newText;
   }
 
+  updateTrademarkText(newText) {
+    this.trademarkText = (newText !== undefined && newText !== null) ? newText : 'Schedully • Student Edition';
+    if (this.lockTrademarkText) {
+      this.lockTrademarkText.innerText = this.trademarkText;
+    }
+    if (this.inputTrademark) {
+      this.inputTrademark.value = this.trademarkText;
+    }
+  }
+
+  applyTrademarkStyle(style) {
+    this.trademarkStyle = ['default', 'rounded', 'squared'].includes(style) ? style : 'default';
+    if (this.lockTrademarkFooter) {
+      this.lockTrademarkFooter.classList.remove('style-default', 'style-rounded', 'style-squared');
+      this.lockTrademarkFooter.classList.add(`style-${this.trademarkStyle}`);
+    }
+    const toggleTrademarkStyle = document.getElementById('toggle-trademark-style');
+    if (toggleTrademarkStyle) {
+      toggleTrademarkStyle.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === this.trademarkStyle);
+      });
+    }
+  }
+
   toggleAccordion(header, content) {
     if (!content) return;
     const isOpening = content.classList.contains('hidden') || !content.classList.contains('is-open');
@@ -1237,29 +1268,102 @@ class SchedullyApp {
   setupFontFamilyEngine() {
     const fontSelect = document.getElementById('select-font-family');
     const customFontInput = document.getElementById('custom-font-upload');
+    const dropdownContainer = document.getElementById('font-dropdown-container');
+    const triggerBtn = document.getElementById('btn-font-dropdown-trigger');
+    const dropdownMenu = document.getElementById('font-dropdown-menu');
+    const triggerName = document.getElementById('font-trigger-name');
+    const triggerBadge = document.getElementById('font-trigger-badge');
 
     const fontMap = {
       'default': "'Google Sans', 'Product Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      'great-vibes': "'Great Vibes', cursive",
+      'dancing-script': "'Dancing Script', cursive",
+      'caveat': "'Caveat', cursive",
+      'sacramento': "'Sacramento', cursive",
+      'cinzel': "'Cinzel', Georgia, serif",
+      'comfortaa': "'Comfortaa', cursive, sans-serif",
+      'syne': "'Syne', sans-serif",
+      'playfair': "'Playfair Display', Georgia, serif",
       'plus-jakarta': "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       'outfit': "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif",
       'jetbrains': "'JetBrains Mono', monospace",
-      'lexend': "'Lexend', -apple-system, BlinkMacSystemFont, sans-serif",
       'space-grotesk': "'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif",
-      'playfair': "'Playfair Display', Georgia, serif",
+      'lexend': "'Lexend', -apple-system, BlinkMacSystemFont, sans-serif",
       'inter': "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
     };
+
+    const fontNames = {
+      'default': 'Google Sans',
+      'great-vibes': 'Great Vibes',
+      'dancing-script': 'Dancing Script',
+      'caveat': 'Caveat',
+      'sacramento': 'Sacramento',
+      'cinzel': 'Cinzel',
+      'comfortaa': 'Comfortaa',
+      'syne': 'Syne',
+      'playfair': 'Playfair Display',
+      'plus-jakarta': 'Plus Jakarta Sans',
+      'outfit': 'Outfit',
+      'jetbrains': 'JetBrains Mono',
+      'space-grotesk': 'Space Grotesk',
+      'lexend': 'Lexend',
+      'inter': 'Inter',
+      'custom': 'Custom Font'
+    };
+
+    const fontSubtitles = {
+      'default': 'Default Clean',
+      'great-vibes': 'Royal Cursive Calligraphy',
+      'dancing-script': 'Aesthetic Casual Flow',
+      'caveat': 'Studygram Handwritten',
+      'sacramento': 'Delicate Signature',
+      'cinzel': 'Luxury Roman / Academia',
+      'comfortaa': 'Cute Soft Aesthetic',
+      'syne': 'Avant-Garde Art',
+      'playfair': 'Classy Serif',
+      'plus-jakarta': 'iOS Aesthetic Sans',
+      'outfit': 'Geometric & Crisp',
+      'jetbrains': 'Developer Monospace',
+      'space-grotesk': 'Modernist Tech Display',
+      'lexend': 'Ultra Readable',
+      'inter': 'Neutral Clean',
+      'custom': 'Custom Uploaded Font'
+    };
+
+    const triggerSub = document.getElementById('font-trigger-sub');
 
     this.currentFontKey = 'default';
 
     this.applyFontFamily = async (fontKey, customFamilyName = null, skipSave = false) => {
       this.currentFontKey = fontKey;
       let stack = fontMap[fontKey] || fontMap['default'];
+      let displayName = fontNames[fontKey] || fontKey;
+
       if (fontKey === 'custom' && customFamilyName) {
         stack = `'${customFamilyName}', -apple-system, BlinkMacSystemFont, sans-serif`;
+        displayName = this.customLoadedCleanName || customFamilyName;
       }
 
       document.documentElement.style.setProperty('--timetable-font-family', stack);
       
+      // Update custom trigger UI
+      if (triggerName) {
+        triggerName.innerText = displayName;
+      }
+      if (triggerSub) {
+        triggerSub.innerText = fontSubtitles[fontKey] || 'Custom Font';
+      }
+      if (triggerBadge) {
+        triggerBadge.style.fontFamily = stack;
+      }
+
+      // Update active state in custom popover items
+      if (dropdownMenu) {
+        dropdownMenu.querySelectorAll('.font-option-item').forEach(item => {
+          item.classList.toggle('active', item.getAttribute('data-font') === fontKey);
+        });
+      }
+
       // Ensure browser font cache is primed
       if (document.fonts && document.fonts.ready) {
         try {
@@ -1275,6 +1379,41 @@ class SchedullyApp {
         this._stagePending();
       }
     };
+
+    // Toggle Popover Menu
+    if (triggerBtn && dropdownMenu) {
+      triggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !dropdownMenu.classList.contains('hidden');
+        if (isOpen) {
+          dropdownMenu.classList.add('hidden');
+          triggerBtn.classList.remove('is-open');
+        } else {
+          dropdownMenu.classList.remove('hidden');
+          triggerBtn.classList.add('is-open');
+        }
+      });
+
+      // Option item selection
+      dropdownMenu.querySelectorAll('.font-option-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const fontKey = item.getAttribute('data-font');
+          if (fontKey) {
+            this.applyFontFamily(fontKey);
+            dropdownMenu.classList.add('hidden');
+            triggerBtn.classList.remove('is-open');
+          }
+        });
+      });
+
+      // Close menu on outside click
+      document.addEventListener('click', (e) => {
+        if (!dropdownContainer?.contains(e.target)) {
+          dropdownMenu.classList.add('hidden');
+          triggerBtn.classList.remove('is-open');
+        }
+      });
+    }
 
     if (fontSelect) {
       fontSelect.addEventListener('change', (e) => {
@@ -1294,14 +1433,58 @@ class SchedullyApp {
           await fontFace.load();
           document.fonts.add(fontFace);
 
-          // Add / update custom option in dropdown
+          const cleanName = file.name.replace(/\.[^/.]+$/, "");
+          this.customLoadedCleanName = cleanName;
+
+          // Add or update custom item in custom dropdown menu
+          if (dropdownMenu) {
+            let customItem = dropdownMenu.querySelector('.font-option-item[data-font="custom"]');
+            if (!customItem) {
+              const scrollContainer = dropdownMenu.querySelector('.custom-font-menu-scroll');
+              if (scrollContainer) {
+                const customHeader = document.createElement('div');
+                customHeader.className = 'font-group-header';
+                customHeader.innerHTML = `
+                  <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                  </svg>
+                  <span>Uploaded Custom Font</span>
+                `;
+                scrollContainer.appendChild(customHeader);
+
+                const customGroup = document.createElement('div');
+                customGroup.className = 'font-group-items';
+                customItem = document.createElement('button');
+                customItem.type = 'button';
+                customItem.className = 'font-option-item active';
+                customItem.setAttribute('data-font', 'custom');
+                customItem.innerHTML = `
+                  <div class="font-option-info">
+                    <span class="font-option-title">${cleanName}</span>
+                    <span class="font-option-desc">Custom Uploaded Font</span>
+                  </div>
+                  <span class="font-check-icon">✓</span>
+                `;
+                customItem.addEventListener('click', () => {
+                  this.applyFontFamily('custom', fontName);
+                  dropdownMenu.classList.add('hidden');
+                  triggerBtn?.classList.remove('is-open');
+                });
+                customGroup.appendChild(customItem);
+                scrollContainer.appendChild(customGroup);
+              }
+            } else {
+              customItem.querySelector('.font-option-title').innerText = cleanName;
+            }
+          }
+
+          // Fallback select element
           let customOpt = fontSelect.querySelector('option[value="custom"]');
           if (!customOpt) {
             customOpt = document.createElement('option');
             customOpt.value = 'custom';
             fontSelect.appendChild(customOpt);
           }
-          const cleanName = file.name.replace(/\.[^/.]+$/, "");
           customOpt.innerText = `Custom: ${cleanName}`;
           customOpt.selected = true;
 
@@ -2309,6 +2492,55 @@ class SchedullyApp {
       });
     });
 
+    // Trademark Input & Toggle (YES / NO)
+    if (this.inputTrademark) {
+      this.inputTrademark.addEventListener('input', (e) => {
+        this.updateTrademarkText(e.target.value);
+        this._stagePending();
+      });
+    }
+
+    const toggleTrademark = document.getElementById('toggle-trademark');
+    if (toggleTrademark) {
+      toggleTrademark.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          toggleTrademark.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const isYes = (btn.getAttribute('data-val') === 'yes');
+          this.showTrademark = isYes;
+          const rowTrademark = document.getElementById('row-trademark-text');
+          const rowStyle = document.getElementById('row-trademark-style');
+          if (rowTrademark) {
+            rowTrademark.style.display = isYes ? 'flex' : 'none';
+          }
+          if (rowStyle) {
+            rowStyle.style.display = isYes ? 'flex' : 'none';
+          }
+          if (this.lockTrademarkFooter) {
+            this.lockTrademarkFooter.style.display = isYes ? 'inline-flex' : 'none';
+          }
+          if (isYes && typeof window.syncGlassSliders === 'function') {
+            setTimeout(window.syncGlassSliders, 40);
+          }
+          this._stagePending();
+        });
+      });
+    }
+
+    const toggleTrademarkStyle = document.getElementById('toggle-trademark-style');
+    if (toggleTrademarkStyle) {
+      toggleTrademarkStyle.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const style = btn.getAttribute('data-val') || 'default';
+          this.applyTrademarkStyle(style);
+          if (typeof window.syncGlassSliders === 'function') {
+            setTimeout(window.syncGlassSliders, 30);
+          }
+          this._stagePending();
+        });
+      });
+    }
+
     // Timetable Frame Corners Toggle
     document.querySelectorAll('#toggle-table-corners .pill-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2978,6 +3210,22 @@ class SchedullyApp {
       document.querySelector('.m3-right-sidebar')?.style.removeProperty('--m3-card-text-color');
 
       document.querySelectorAll('#toggle-title .pill-btn')[0].click();
+
+      this.updateTrademarkText('Schedully • Student Edition');
+      this.applyTrademarkStyle('default');
+      const toggleTrademark = document.getElementById('toggle-trademark');
+      if (toggleTrademark) {
+        toggleTrademark.querySelectorAll('.pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+        });
+      }
+      const rowTrademark = document.getElementById('row-trademark-text');
+      const rowStyle = document.getElementById('row-trademark-style');
+      if (rowTrademark) rowTrademark.style.display = 'none';
+      if (rowStyle) rowStyle.style.display = 'none';
+      if (this.lockTrademarkFooter) this.lockTrademarkFooter.style.display = 'none';
+      this.showTrademark = false;
+
       document.querySelectorAll('#toggle-table-corners .pill-btn')[0]?.click();
       document.querySelectorAll('#toggle-card-corners .pill-btn')[0]?.click();
       
@@ -4067,6 +4315,7 @@ class SchedullyApp {
 
       // Create an off-screen staging area so we can render it at perfect native scale
       const stagingContainer = document.createElement('div');
+      stagingContainer.className = 'export-staging-container';
       stagingContainer.style.cssText = `
         position: absolute;
         top: -9999px; left: -9999px;
@@ -4075,10 +4324,14 @@ class SchedullyApp {
         z-index: -9999;
         zoom: 1; transform: none;
         overflow: hidden;
+        border-radius: 0px !important;
       `;
       document.body.appendChild(stagingContainer);
 
       const clone = originalCanvas.cloneNode(true);
+
+      // Remove device-specific chassis classes that enforce rounded corners on inner layers
+      clone.classList.remove('canvas-phone', 'canvas-tablet', 'canvas-paper');
 
       // Force clone to full native dimensions (overriding any mobile responsive screen squishing)
       clone.style.setProperty('width', `${nativeW}px`, 'important');
@@ -4094,14 +4347,16 @@ class SchedullyApp {
       clone.style.setProperty('margin', '0px', 'important');
       clone.style.setProperty('overflow', 'hidden', 'important');
 
-      // Explicitly enforce Background Blur state on clone
+      // Set exact blur CSS variable on clone so ::before edge-bleed blur renders identically
+      const blurVal = this.bgBlurEnabled ? `${this.bgBlurIntensity || 12}px` : '0px';
+      clone.style.setProperty('--wallpaper-blur-val', blurVal, 'important');
+
+      // Explicitly enforce Background Blur variable & Zero Border Radius on clone wallpaper layer
       const wallpaperLayer = clone.querySelector('.phone-wallpaper-layer');
       if (wallpaperLayer) {
-        if (!this.bgBlurEnabled) {
-          wallpaperLayer.style.setProperty('filter', 'none', 'important');
-        } else {
-          wallpaperLayer.style.setProperty('filter', `blur(${this.bgBlurIntensity || 10}px)`, 'important');
-        }
+        wallpaperLayer.style.setProperty('border-radius', '0px', 'important');
+        wallpaperLayer.style.setProperty('--wallpaper-blur-val', blurVal, 'important');
+        wallpaperLayer.style.setProperty('filter', 'none', 'important');
       }
 
       // Explicitly prevent any backdrop-filter blur and ensure full width on timetable container
@@ -4381,6 +4636,34 @@ class SchedullyApp {
         this.updateTitleText(settings.titleText);
       }
 
+      // 8b. Trademark
+      if (settings.showTrademark !== undefined) {
+        this.showTrademark = settings.showTrademark;
+        const toggleTrademark = document.getElementById('toggle-trademark');
+        if (toggleTrademark) {
+          toggleTrademark.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.showTrademark ? 'yes' : 'no'));
+          });
+        }
+        const rowTrademark = document.getElementById('row-trademark-text');
+        const rowStyle = document.getElementById('row-trademark-style');
+        if (rowTrademark) {
+          rowTrademark.style.display = this.showTrademark ? 'flex' : 'none';
+        }
+        if (rowStyle) {
+          rowStyle.style.display = this.showTrademark ? 'flex' : 'none';
+        }
+        if (this.lockTrademarkFooter) {
+          this.lockTrademarkFooter.style.display = this.showTrademark ? 'inline-flex' : 'none';
+        }
+      }
+      if (settings.trademarkText !== undefined) {
+        this.updateTrademarkText(settings.trademarkText);
+      }
+      if (settings.trademarkStyle !== undefined) {
+        this.applyTrademarkStyle(settings.trademarkStyle);
+      }
+
       // 9. Active Days
       if (Array.isArray(settings.activeDays)) {
         this.activeDays = [...settings.activeDays];
@@ -4397,6 +4680,15 @@ class SchedullyApp {
       if (settings.gridEndHour && this.gridEndTimeSelect) {
         this.gridEndHour = settings.gridEndHour;
         this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+      }
+
+      // 11. Axis Mode (Period / Time / Both) & Period Preset
+      if (settings.axisMode) {
+        this.axisMode = settings.axisMode;
+        try { localStorage.setItem('schedully_axis_mode', this.axisMode); } catch (e) {}
+      }
+      if (settings.selectedOcrPeriodPreset) {
+        this.selectedOcrPeriodPreset = settings.selectedOcrPeriodPreset;
       }
 
       this.renderTimetableGrid();
@@ -4710,6 +5002,10 @@ class SchedullyApp {
       const saved = localStorage.getItem('schedully_classes') || localStorage.getItem('timefactory_classes');
       if (saved) {
         this.classes = JSON.parse(saved);
+      }
+      const savedAxis = localStorage.getItem('schedully_axis_mode');
+      if (savedAxis) {
+        this.axisMode = savedAxis;
       }
     } catch (e) {
       console.warn("Could not load classes from local storage", e);
@@ -5027,9 +5323,14 @@ class SchedullyApp {
       timetableOpacity: this.timetableOpacity || 100,
       showTitle: this.showTitle !== undefined ? this.showTitle : true,
       titleText: this.timetableTitleText || 'Untitled',
+      showTrademark: this.showTrademark || false,
+      trademarkText: this.trademarkText || 'Schedully • Student Edition',
+      trademarkStyle: this.trademarkStyle || 'default',
       activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
       gridStartHour: this.gridStartHour || 8,
-      gridEndHour: this.gridEndHour || 20
+      gridEndHour: this.gridEndHour || 20,
+      axisMode: this.axisMode || 'time',
+      selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900'
     };
   }
 
@@ -5051,6 +5352,7 @@ class SchedullyApp {
       localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
       localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
+      localStorage.setItem('schedully_axis_mode', this.axisMode || 'time');
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
