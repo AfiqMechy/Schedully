@@ -121,8 +121,9 @@ Analyze this timetable image and extract ALL scheduled classes/courses into clea
 
 1. MULTILINGUAL & SCRIPT SUPPORT:
 - Support ANY language: English, Malay/Bahasa Melayu, Japanese, Chinese, Korean, Arabic, French, German, Spanish, Indonesian, Russian, etc.
-- Detect "detectedLanguage" (e.g. "Malay", "Japanese", "English", "Chinese", "Arabic", "French").
+- Detect "detectedLanguage" (e.g. "Malay", "Japanese", "English", "Chinese", "Korean", "Arabic", "French").
 - Set "hasNonEnglishText": true if non-English characters or non-English course names are present.
+- Detect "isPeriodBased": true if the timetable uses period numbers (1, 2, 3, 4, 5, 6 / 1限, 2限 / 1교시 / 第1节) instead of explicit clock hours on the left axis.
 
 2. DAYS PARSING:
 - Normalize days to standard 3-letter English: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
@@ -130,17 +131,20 @@ Analyze this timetable image and extract ALL scheduled classes/courses into clea
   * Malay/Indonesian: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun
   * Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun
   * Chinese: 星期一/周一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun
+  * Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun
   * Arabic: الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat
 
-3. TIME SLOTS:
-- Extract "startTime" and "endTime" in 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "18:00").
-- If period numbers are used (1 to 6 without explicit times):
-  * 1: 09:00 - 10:30
-  * 2: 10:40 - 12:10
-  * 3: 13:00 - 14:30
-  * 4: 14:40 - 16:10
-  * 5: 16:20 - 17:50
-  * 6: 18:00 - 19:30
+3. TIME SLOTS & PERIODS:
+- If clock times are explicitly visible on the image, extract "startTime" and "endTime" in 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "18:00").
+- If period numbers are used (1 to 6 without explicit clock times):
+  * Set "periodNumber": 1, 2, 3, 4, 5, 6...
+  * Use standard university period slots for default fallback:
+    * 1: 09:00 - 10:30
+    * 2: 10:40 - 12:10
+    * 3: 13:00 - 14:30
+    * 4: 14:40 - 16:10
+    * 5: 16:20 - 17:50
+    * 6: 18:00 - 19:30
 
 4. COURSE ATTRIBUTES (DUAL-LANGUAGE):
 For each class:
@@ -153,27 +157,30 @@ For each class:
 - "day": "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
 - "startTime": "HH:MM"
 - "endTime": "HH:MM"
+- "periodNumber": 1 | 2 | 3 | 4 | 5 | 6 (if period-based)
 - "type": "Lecture" | "Tutorial" | "Lab" | "Class"
 - "room": Room / Venue / Hall if visible
 - "lecturer": Lecturer / Professor name if visible
 
 OUTPUT JSON FORMAT ONLY:
 {
-  "detectedLanguage": "English",
-  "hasNonEnglishText": false,
+  "detectedLanguage": "Japanese",
+  "hasNonEnglishText": true,
+  "isPeriodBased": true,
   "courses": [
     {
-      "originalTitle": "Calculus I",
-      "originalCode": "MAT101",
-      "translatedTitle": "Calculus I",
-      "translatedCode": "MAT101",
-      "title": "Calculus I",
-      "code": "MAT101",
+      "originalTitle": "MSLC 定期トレーニング",
+      "originalCode": "MSLC",
+      "translatedTitle": "MSLC Regular Training",
+      "translatedCode": "MSLC-1",
+      "title": "MSLC 定期トレーニング",
+      "code": "MSLC",
       "day": "Mon",
       "startTime": "09:00",
-      "endTime": "11:00",
+      "endTime": "10:30",
+      "periodNumber": 1,
       "type": "Lecture",
-      "room": "DK1",
+      "room": "",
       "lecturer": "",
       "group": ""
     }
@@ -228,7 +235,8 @@ OUTPUT JSON FORMAT ONLY:
             return {
               courses,
               detectedLanguage: parsed.detectedLanguage || 'English',
-              hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : false
+              hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : false,
+              isPeriodBased: parsed.isPeriodBased !== undefined ? parsed.isPeriodBased : false
             };
           }
         }

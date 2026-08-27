@@ -1974,7 +1974,8 @@ window.SchedullyI18n = {
 
   applyTranslations() {
     const lang = this.translations[this.currentLang] || this.translations.en;
-    const ui = lang.ui;
+    const ui = lang.ui || {};
+    const enUi = (this.translations.en && this.translations.en.ui) || {};
 
     // Update Language Modal active states
     document.querySelectorAll('.lang-option-pill').forEach(btn => {
@@ -1988,24 +1989,27 @@ window.SchedullyI18n = {
     // Update elements with data-i18n attributes
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
-      if (ui[key]) {
-        el.innerText = ui[key];
+      const text = ui[key] || enUi[key];
+      if (text !== undefined) {
+        el.innerText = text;
       }
     });
 
     // Update placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
-      if (ui[key]) {
-        el.setAttribute('placeholder', ui[key]);
+      const text = ui[key] || enUi[key];
+      if (text !== undefined) {
+        el.setAttribute('placeholder', text);
       }
     });
 
     // Update titles/tooltips
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
       const key = el.getAttribute('data-i18n-title');
-      if (ui[key]) {
-        el.setAttribute('title', ui[key]);
+      const text = ui[key] || enUi[key];
+      if (text !== undefined) {
+        el.setAttribute('title', text);
       }
     });
 

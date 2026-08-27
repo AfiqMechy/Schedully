@@ -515,7 +515,7 @@ body.dark-mode .mobile-export-divider,
 
 
 
-/* ── ADAPTIVE CANVAS HORIZONTAL SWIPING (TABLET 920px, PAPER 720px, PHONE 380px) ── */
+/* ── ADAPTIVE CANVAS HORIZONTAL & VERTICAL SWIPING (TABLET 920px, PAPER 720px, PHONE 380px) ── */
 @media (max-width: 1280px) {
   #canvas-scroll-area {
     width: 100% !important;
@@ -523,15 +523,14 @@ body.dark-mode .mobile-export-divider,
     min-height: 100% !important;
     overflow-x: auto !important;
     overflow-y: auto !important;
+    scroll-behavior: auto !important;
     -webkit-overflow-scrolling: touch !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding-top: 80px !important; /* Top space for floating buttons */
-    padding-bottom: 110px !important; /* Bottom space for floating toolbar */
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    align-items: safe center !important;
+    justify-content: safe center !important;
+    padding: 60px 40px !important;
+    box-sizing: border-box !important;
     touch-action: pan-x pan-y !important;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
@@ -545,32 +544,43 @@ body.dark-mode .mobile-export-divider,
     border-radius: 4px;
   }
 
-  /* Wrapper preserves natural 1:1 model width and centers dead-center horizontally and vertically */
-  #main-phone-wrapper {
-    max-width: none !important;
-    flex-shrink: 0 !important;
+  /* Scaler footprint container gives exact visual size to scroll area for 100% boundary panning */
+  .canvas-scaler-container {
+    position: relative !important;
     margin: auto !important;
-    transform-origin: center center !important;
-    touch-action: pan-x pan-y !important;
-    will-change: transform !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
-  /* Specific full widths so swiping works smoothly and never overflows small phones */
+  /* Wrapper contains canvas & physical side buttons scaled seamlessly as one hardware unit */
+  #main-phone-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    max-width: none !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    touch-action: pan-x pan-y !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    transform-origin: 0 0 !important;
+  }
+
   .m3-phone-canvas.canvas-phone {
-    min-width: min(380px, calc(100vw - 32px)) !important;
-    width: min(380px, calc(100vw - 32px)) !important;
+    width: 380px !important;
+    min-width: 380px !important;
   }
 
   .m3-phone-canvas.canvas-tablet {
-    min-width: 920px !important;
     width: 920px !important;
+    min-width: 920px !important;
   }
 
   .m3-phone-canvas.canvas-paper {
-    min-width: 720px !important;
     width: 720px !important;
+    min-width: 720px !important;
   }
 
   /* Bottom floating pill bar: ALWAYS strictly 1 horizontal row pill (Image 1 layout, NEVER wraps!) */
@@ -1010,60 +1020,175 @@ body.dark-mode .sub-accordion-header.active {
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  padding: 13px 15px !important;
-  border-radius: 18px !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  min-height: 74px !important;
+  height: 74px !important;
+  padding: 0 20px !important;
+  border-radius: 9999px !important; /* Premium Uniform Rounded Pill */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.55) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(var(--glass-blur, 24px)) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px)) saturate(190%) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 #FFFFFF,
-    0 4px 14px -2px rgba(15, 23, 42, 0.06) !important;
+    0 6px 18px -3px rgba(15, 23, 42, 0.07),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
   cursor: pointer !important;
   text-decoration: none !important;
+  box-sizing: border-box !important;
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card-expand-header:hover {
   transform: translateY(-2px) scale(1.01) !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.65) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.72) 100%) !important;
   border-color: rgba(255, 255, 255, 1) !important;
   box-shadow: 
     inset 0 2px 3px 0 #FFFFFF,
-    0 12px 28px -4px rgba(15, 23, 42, 0.14) !important;
+    0 12px 28px -4px rgba(15, 23, 42, 0.13) !important;
 }
 
 body.dark-mode .card-expand-header,
 .theme-dark .card-expand-header {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.13) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   box-shadow: 
-    0 4px 14px rgba(0, 0, 0, 0.25),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.15) !important;
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.16) !important;
 }
 
 body.dark-mode .card-expand-header:hover,
 .theme-dark .card-expand-header:hover {
-  background: rgba(255, 255, 255, 0.10) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.11) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38), inset 0 1px 1.5px rgba(255, 255, 255, 0.24) !important;
 }
 
-.card-expand-header > div {
-  min-width: 0;
-  flex: 1;
+.card-expand-header > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+/* Leading Icon Circle / Container */
+.menu-pill-icon-box {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease !important;
+}
+
+.card-expand-header:hover .menu-pill-icon-box {
+  transform: scale(1.06) !important;
+}
+
+/* Category Accent Icon Boxes (Light Mode) */
+#header-theme .menu-pill-icon-box {
+  background: rgba(139, 92, 246, 0.12) !important;
+}
+#header-theme .menu-pill-icon-box svg {
+  color: #8B5CF6 !important;
+  stroke: #8B5CF6 !important;
+}
+
+#header-layout-options .menu-pill-icon-box {
+  background: rgba(37, 99, 235, 0.12) !important;
+}
+#header-layout-options .menu-pill-icon-box svg {
+  color: #2563EB !important;
+  stroke: #2563EB !important;
+}
+
+#header-add-course .menu-pill-icon-box {
+  background: rgba(16, 185, 129, 0.12) !important;
+}
+#header-add-course .menu-pill-icon-box svg {
+  color: #059669 !important;
+  stroke: #059669 !important;
+}
+
+#header-file-import .menu-pill-icon-box {
+  background: rgba(245, 158, 11, 0.13) !important;
+}
+#header-file-import .menu-pill-icon-box svg {
+  color: #D97706 !important;
+  stroke: #D97706 !important;
+}
+
+/* Category Accent Icon Boxes (Dark Mode) */
+body.dark-mode #header-theme .menu-pill-icon-box,
+.theme-dark #header-theme .menu-pill-icon-box {
+  background: rgba(192, 132, 252, 0.18) !important;
+}
+body.dark-mode #header-theme .menu-pill-icon-box svg,
+.theme-dark #header-theme .menu-pill-icon-box svg {
+  color: #C084FC !important;
+  stroke: #C084FC !important;
+}
+
+body.dark-mode #header-layout-options .menu-pill-icon-box,
+.theme-dark #header-layout-options .menu-pill-icon-box {
+  background: rgba(96, 165, 250, 0.18) !important;
+}
+body.dark-mode #header-layout-options .menu-pill-icon-box svg,
+.theme-dark #header-layout-options .menu-pill-icon-box svg {
+  color: #60A5FA !important;
+  stroke: #60A5FA !important;
+}
+
+body.dark-mode #header-add-course .menu-pill-icon-box,
+.theme-dark #header-add-course .menu-pill-icon-box {
+  background: rgba(52, 211, 153, 0.18) !important;
+}
+body.dark-mode #header-add-course .menu-pill-icon-box svg,
+.theme-dark #header-add-course .menu-pill-icon-box svg {
+  color: #34D399 !important;
+  stroke: #34D399 !important;
+}
+
+body.dark-mode #header-file-import .menu-pill-icon-box,
+.theme-dark #header-file-import .menu-pill-icon-box {
+  background: rgba(251, 146, 60, 0.18) !important;
+}
+body.dark-mode #header-file-import .menu-pill-icon-box svg,
+.theme-dark #header-file-import .menu-pill-icon-box svg {
+  color: #FB923C !important;
+  stroke: #FB923C !important;
+}
+
+.menu-pill-icon-box svg {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  stroke-width: 2.2 !important;
+}
+
+/* Text Container */
+.menu-pill-text-stack {
+  min-width: 0 !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
 }
 
 .card-expand-header p:first-child {
-  font-size: 13.5px !important;
+  font-size: 15.5px !important;
   font-weight: 800 !important;
-  line-height: 1.25 !important;
+  line-height: 1.22 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   color: #0F172A !important;
+  letter-spacing: -0.01em !important;
 }
 
 body.dark-mode .card-expand-header p:first-child,
@@ -1074,13 +1199,13 @@ body.dark-mode .card-expand-header p:first-child,
 
 .card-expand-header p.text-xs,
 .card-expand-header p:last-child {
-  font-size: 11px !important;
+  font-size: 12.5px !important;
   font-weight: 500 !important;
-  line-height: 1.2 !important;
+  line-height: 1.22 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  margin-top: 1px !important;
+  margin-top: 3px !important;
   color: #64748B !important;
 }
 
@@ -1088,71 +1213,58 @@ body.dark-mode .card-expand-header p.text-xs,
 body.dark-mode .card-expand-header p:last-child,
 .theme-dark .card-expand-header p.text-xs,
 .theme-dark .card-expand-header p:last-child {
-  color: #CBD5E1 !important;
-  opacity: 0.9 !important;
+  color: #94A3B8 !important;
+  opacity: 0.95 !important;
 }
 
-body.dark-mode .card-expand-header svg,
-.theme-dark .card-expand-header svg {
-  color: #CBD5E1 !important;
+/* Right Chevron Arrow */
+.card-expand-header > svg:last-child {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  flex-shrink: 0 !important;
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease !important;
 }
 
-/* Category SVG Accent Icons in Dark Mode (Vivid & Crisp) */
-body.dark-mode #header-theme svg:first-child,
-.theme-dark #header-theme svg:first-child {
-  color: #C084FC !important;
+.card-expand-header:hover > svg:last-child {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+  transform: translateX(3px) !important;
 }
 
-body.dark-mode #header-layout svg:first-child,
-.theme-dark #header-layout svg:first-child {
-  color: #60A5FA !important;
+body.dark-mode .card-expand-header > svg:last-child {
+  color: #64748B !important;
+  stroke: #64748B !important;
 }
 
-body.dark-mode #header-add-course svg:first-child,
-.theme-dark #header-add-course svg:first-child {
-  color: #34D399 !important;
-}
-
-body.dark-mode #header-file-import svg:first-child,
-.theme-dark #header-file-import svg:first-child {
-  color: #FB923C !important;
+body.dark-mode .card-expand-header:hover > svg:last-child {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 .card-expand-header.active {
-  border-color: rgba(37, 99, 235, 0.35) !important;
+  border-color: rgba(37, 99, 235, 0.38) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
-    0 6px 20px rgba(37, 99, 235, 0.1) !important;
+    0 6px 20px rgba(37, 99, 235, 0.12) !important;
 }
 
 body.dark-mode .card-expand-header.active {
-  border-color: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
-body.dark-mode .animate-aura,
-.theme-dark .animate-aura {
-  display: none !important;
-  opacity: 0 !important;
-}
-
-body.dark-mode .theme-card-inner,
-body.dark-mode .layout-card-inner,
-.theme-dark .theme-card-inner,
-.theme-dark .layout-card-inner {
-  background: rgba(255, 255, 255, 0.04) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-.card-expand-header.active svg:last-child {
+.card-expand-header.active > svg:last-child {
   transform: rotate(90deg) !important;
   color: #0F172A !important;
+  stroke: #0F172A !important;
 }
 
-body.dark-mode .card-expand-header.active svg:last-child {
+body.dark-mode .card-expand-header.active > svg:last-child {
   color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 
@@ -2598,7 +2710,6 @@ textarea::placeholder,
   font-weight: 700;
   color: var(--m3-sys-text-secondary);
   letter-spacing: 0.05em;
-  transition: max-width 0.3s ease;
 }
 
 .stage-top-actions {
@@ -2634,93 +2745,331 @@ textarea::placeholder,
   position: relative;
   perspective: 1000px;
   margin: auto;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
-/* Side Buttons Styling (Right Side: Volume Top, Power Bottom) */
-.side-btn {
+/* ═══════════════════════════════════════════════════════════════
+   SMOOTH 60FPS HARDWARE MORPH TRANSITION (PHONE ↔ TABLET ↔ PAPER)
+   ═══════════════════════════════════════════════════════════════ */
+
+.m3-phone-wrapper {
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PERIOD SYSTEM & AXIS MODE CONTROLS (OCR MODAL & SETTINGS)
+   ═══════════════════════════════════════════════════════════════ */
+.axis-mode-btn {
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-sans, inherit);
+  transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.axis-mode-btn.active {
+  background: #ffffff !important;
+  color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  font-weight: 700 !important;
+}
+
+.dark .axis-mode-btn.active {
+  background: #0f172a !important;
+  color: #60a5fa !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.period-preset-chip {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.period-preset-chip.active {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+  border-color: #93c5fd !important;
+  font-weight: 700 !important;
+}
+
+.dark .period-preset-chip.active {
+  background: rgba(59, 130, 246, 0.25) !important;
+  color: #93c5fd !important;
+  border-color: rgba(96, 165, 250, 0.5) !important;
+}
+
+/* Glass Style Overrides for OCR Card when Theme is Liquid Glass */
+.theme-liquid-glass .ocr-lang-card,
+.theme-frosted-glass .ocr-lang-card,
+.theme-cyber-glass .ocr-lang-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.25), inset 0 1px 1.5px rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark.theme-liquid-glass .ocr-lang-card,
+.dark.theme-frosted-glass .ocr-lang-card,
+.dark.theme-cyber-glass .ocr-lang-card {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1.5px rgba(255, 255, 255, 0.15) !important;
+}
+
+.canvas-scaler-container {
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIC HARDWARE PHYSICAL BUTTONS (FUSED TO CHASSIS BEZEL)
+   ═══════════════════════════════════════════════════════════════ */
+.m3-phone-canvas .side-btn {
   position: absolute;
-  right: -5px;
-  background: #1E293B;
-  border-radius: 4px;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-  box-shadow: inset -1px 0 2px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.4);
-  z-index: 1;
+  background: #334155;
+  z-index: 100;
+  display: block;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+  opacity: 1;
+  visibility: visible;
+  transition: none !important;
+  animation: none !important;
 }
 
-/* Single Continuous Volume Rocker Button (Top) */
-.btn-vol-rocker {
-  top: 110px;
-  width: 5px;
-  height: 72px;
+/* Smartphone Hardware Left Side (Matching Reference 1:1) */
+.m3-phone-canvas.canvas-phone .btn-action-mute,
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-action-mute {
+  left: -14.5px !important;
+  right: auto !important;
+  top: 106px !important;
+  bottom: auto !important;
+  width: 4.5px !important;
+  height: 26px !important;
+  border-radius: 2.5px 0 0 2.5px !important;
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 45%, #334155 80%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-right: none !important;
+  box-shadow: -1.5px 1.5px 4px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
+  display: block !important;
 }
 
-/* Power Button (Bottom, directly under Volume Rocker) */
-.btn-power {
-  top: 196px;
-  width: 5px;
-  height: 48px;
+.m3-phone-canvas.canvas-phone .btn-vol-up,
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-up {
+  left: -14.5px !important;
+  right: auto !important;
+  top: 148px !important;
+  bottom: auto !important;
+  width: 4.5px !important;
+  height: 50px !important;
+  border-radius: 2.5px 0 0 2.5px !important;
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 45%, #334155 80%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-right: none !important;
+  box-shadow: -1.5px 1.5px 4px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+.m3-phone-canvas.canvas-phone .btn-vol-down,
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-down {
+  left: -14.5px !important;
+  right: auto !important;
+  top: 208px !important;
+  bottom: auto !important;
+  width: 4.5px !important;
+  height: 50px !important;
+  border-radius: 2.5px 0 0 2.5px !important;
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 45%, #334155 80%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-right: none !important;
+  box-shadow: -1.5px 1.5px 4px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Smartphone Hardware Right Side (Power / Lock Key - Matching Reference 1:1) */
+.m3-phone-canvas.canvas-phone .btn-power,
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-power {
+  right: -14.5px !important;
+  left: auto !important;
+  top: 168px !important;
+  bottom: auto !important;
+  width: 4.5px !important;
+  height: 78px !important;
+  border-radius: 0 2.5px 2.5px 0 !important;
+  background: linear-gradient(90deg, #0f172a 0%, #334155 20%, #64748b 55%, #94a3b8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-left: none !important;
+  box-shadow: 1.5px 1.5px 4px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+.m3-phone-canvas.canvas-phone .btn-vol-rocker,
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-rocker {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLET MODE HARDWARE (Power Left-Side, 2-Piece Volume on Top-Left)
+   ═══════════════════════════════════════════════════════════════ */
+.m3-phone-canvas.canvas-tablet .btn-action-mute {
+  opacity: 0 !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.m3-phone-canvas.canvas-tablet .btn-power {
+  left: -27px !important;
+  right: auto !important;
+  top: 60px !important;
+  bottom: auto !important;
+  width: 5px !important;
+  height: 54px !important;
+  border-radius: 3px 0 0 3px !important;
+  background: linear-gradient(90deg, #94a3b8 0%, #475569 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-right: none !important;
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1.5px rgba(255, 255, 255, 0.9) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Tablet Volume Up Button */
+.m3-phone-canvas.canvas-tablet .btn-vol-up {
+  top: -27px !important;
+  bottom: auto !important;
+  left: 60px !important;
+  right: auto !important;
+  width: 32px !important;
+  height: 5px !important;
+  border-radius: 3px 3px 0 0 !important;
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-bottom: none !important;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1.5px rgba(255, 255, 255, 0.9) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Tablet Volume Down Button (Separated by a 4px Cut Gap) */
+.m3-phone-canvas.canvas-tablet .btn-vol-down {
+  top: -27px !important;
+  bottom: auto !important;
+  left: 96px !important;
+  right: auto !important;
+  width: 32px !important;
+  height: 5px !important;
+  border-radius: 3px 3px 0 0 !important;
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-bottom: none !important;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1.5px rgba(255, 255, 255, 0.9) !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+.m3-phone-canvas.canvas-tablet .btn-vol-rocker {
+  opacity: 0 !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* Paper Mode: Hardware buttons hidden */
+.m3-phone-canvas.canvas-paper .side-btn {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .m3-phone-canvas {
   background: var(--m3-sys-color-background);
   border: 12px solid #000000;
-  border-radius: 46px;
+  border-radius: 48px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   padding: 16px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              min-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              min-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              border-radius 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              padding 0.35s ease,
-              border 0.35s ease,
-              box-shadow 0.35s ease,
-              background-color 0.3s ease;
-  will-change: width, height;
-}
-
-/* Device Morph Scale Keyframes for silky smooth switching */
-.device-switching {
-  animation: deviceMorph 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes deviceMorph {
-  0%   { opacity: 0.9; transform: scale(0.97); }
-  60%  { opacity: 0.98; transform: scale(1.008); }
-  100% { opacity: 1; transform: scale(1); }
+  transform-origin: 0 0 !important;
+  will-change: transform, width, height, border-radius;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              border-width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              border-color 0.35s ease, 
+              padding 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              box-shadow 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              background 0.3s ease;
 }
 
 .m3-phone-canvas.canvas-phone {
-  width: 380px;
-  height: 760px;
+  width: 380px !important;
+  height: 780px !important;
+  border: 10px solid #000000 !important;
+  border-radius: 56px !important;
+  padding: 14px 16px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  box-shadow: 
+    0 0 0 1.5px #71717a,
+    0 0 0 3px #18181b,
+    0 25px 60px -10px rgba(0, 0, 0, 0.65),
+    0 12px 28px -6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.m3-phone-canvas.canvas-phone::before {
+  content: '';
+  position: absolute;
+  top: -7.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 3px;
+  background: #1c1917;
+  border-radius: 9999px;
+  z-index: 15;
+  pointer-events: none;
 }
 
 .m3-phone-canvas.canvas-tablet {
-  width: 920px;
-  height: 690px;
-  border-radius: 36px;
+  width: 920px !important;
+  height: 690px !important;
+  border: 22px solid #000000 !important;
+  border-radius: 46px !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
+  box-shadow: 
+    0 0 0 1.5px #262930,
+    0 0 0 2.5px #121418,
+    0 25px 70px -10px rgba(0, 0, 0, 0.7),
+    0 12px 28px -6px rgba(0, 0, 0, 0.4) !important;
 }
 
 .m3-phone-canvas.canvas-paper {
-  width: 720px;
+  width: 720px !important;
   height: auto !important;
-  min-height: 480px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  min-height: 480px !important;
+  padding: 24px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
   border-radius: 18px !important;
+  box-sizing: border-box !important;
   box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.15) !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
@@ -2735,57 +3084,76 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   box-shadow: 0 16px 45px -10px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Hide side buttons ONLY when in paper mode */
-.m3-phone-wrapper.paper-mode .side-btn {
-  display: none !important;
+/* Strictly hide buttons in paper mode */
+.m3-phone-wrapper.paper-mode .side-btn,
+.canvas-paper .side-btn {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-/* Tablet Hardware Buttons Placement: Power on Left Side, Volume Rocker on Top Leftmost */
-.m3-phone-wrapper.tablet-mode .btn-power {
-  left: -5px !important;
-  right: auto !important;
-  top: 40px !important;
-  width: 5px !important;
-  height: 48px !important;
-  border-radius: 3px 0 0 3px !important;
-  box-shadow: inset 1px 0 2px rgba(255,255,255,0.2), -2px 0 4px rgba(0,0,0,0.4) !important;
+/* Lockscreen Header, Navigation Bar & Dynamic Island Morph */
+.phone-lock-header {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), margin-bottom 0.35s ease, max-height 0.35s ease;
+  max-height: 200px;
+  overflow: visible;
 }
 
-.m3-phone-wrapper.tablet-mode .btn-vol-rocker {
-  top: -5px !important;
-  right: auto !important;
-  left: 80px !important;
-  width: 72px !important;
-  height: 5px !important;
-  border-radius: 3px 3px 0 0 !important;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2), 0 -2px 4px rgba(0,0,0,0.4) !important;
-}
-
-.m3-phone-canvas.canvas-paper .phone-camera-dot,
-.m3-phone-canvas.canvas-paper .phone-nav-bar,
 .m3-phone-canvas.canvas-paper .phone-lock-header {
-  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  transform: scale(0.95) translateY(-10px) !important;
+  overflow: hidden !important;
+}
+
+.phone-nav-bar {
+  transition: opacity 0.3s ease;
+}
+
+.m3-phone-canvas.canvas-paper .phone-nav-bar {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.m3-phone-canvas.canvas-paper .phone-camera-dot {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: scale(0.6) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    AUTHENTIC DYNAMIC ISLAND HARDWARE MODULE (1:1 Reference Match)
    ═══════════════════════════════════════════════════════════════ */
 .phone-camera-dot {
-  width: 96px;
-  height: 26px;
+  width: 104px;
+  height: 28px;
   background: #000000;
   border-radius: 9999px;
-  margin: -4px auto 14px auto;
+  margin: 0 auto 16px auto;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 7px;
+  padding-right: 8px;
   box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   user-select: none;
   pointer-events: none;
   z-index: 10;
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              margin 0.35s ease, 
+              opacity 0.25s ease, 
+              transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
 /* Outer Camera Lens Aperture Ring (Far Right) */
@@ -2799,6 +3167,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   justify-content: center;
   position: relative;
   box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.15);
+  transition: width 0.35s ease, height 0.35s ease;
 }
 
 /* Inner Optical Lens Glass */
@@ -2835,19 +3204,12 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   box-shadow: 0 0 2px #60a5fa, 0 0 3px #818cf8;
 }
 
-/* Tablet Mode: Compact Single Centered Lens Module */
+/* Tablet Mode: Camera module completely removed */
 .m3-phone-canvas.canvas-tablet .phone-camera-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  margin: 0 auto 12px auto;
-  padding: 0;
-  justify-content: center;
-}
-
-.m3-phone-canvas.canvas-tablet .camera-lens-ring {
-  width: 16px;
-  height: 16px;
+  opacity: 0 !important;
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* LOCK SCREEN CLOCK HEADER WITH SMOOTH CONTRAST TRANSITION */
@@ -2855,7 +3217,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   text-align: center;
   margin-bottom: 18px;
   color: var(--m3-sys-text-primary);
-  transition: color 0.25s ease;
+  transition: color 0.25s ease, opacity 0.35s ease, transform 0.35s ease;
 }
 
 .lock-date { font-size: 13px; font-weight: 600; opacity: 0.85; }
@@ -2889,7 +3251,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   align-self: center;
   width: 100%;
   box-sizing: border-box;
-  transition: transform 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
 /* HEADER COLOUR & FONT COLOUR SWATCH TARGETS TITLE BAR, DAY HEADERS & TIME COLUMN */
@@ -4046,7 +4408,7 @@ body.dark-mode #user-status-text {
   box-shadow: 
     0 16px 40px rgba(0, 0, 0, 0.16),
     inset 0 1.5px 2px 0 #FFFFFF !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container,
@@ -5216,7 +5578,8 @@ body.dark-mode .expandable-content::before {
               border-radius 0.3s ease,
               box-shadow 0.3s ease;
   will-change: width, height, transform;
-  contain: layout style paint;
+  contain: none !important;
+  overflow: visible !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -5762,6 +6125,20 @@ body.dark-mode .lang-option-pill.active,
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.65) 100%) !important;
   border-color: rgba(255, 255, 255, 0.45) !important;
   color: #FFFFFF !important;
+}
+
+.custom-modal-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
 }
 
 /* Glass Support Modal Items */
@@ -6697,88 +7074,6 @@ body.dark-mode #input-title-text-sidebar {
   position: relative;
 }
 
-#left-sidebar::before,
-#right-sidebar::before,
-.card-expand-header::before,
-.exact-course-card::before,
-.class-card-item::before,
-.expandable-class-card::before,
-.btn-adaptive-auth::before,
-.btn-globe-language::before,
-.btn-coffee-support::before,
-.btn-guide-tour::before,
-#bottom-floating-pill-bar::before,
-#bottom-floating-pill-bar button::before,
-#header-desktop-bar::before,
-#header-desktop-bar button::before,
-#btn-expand-left-floating::before,
-#btn-expand-right-floating::before,
-#btn-mobile-export-toggle::before,
-#btn-schedule-settings-toggle::before,
-#btn-clear-all::before,
-.pill-btn::before,
-.capsule-btn::before,
-.dock-icon-circle::before,
-.lang-option-pill::before,
-.btn-studio-launch::before,
-.btn-studio-import::before,
-.modal-card::before,
-.language-modal-card::before,
-.coffee-modal-card::before,
-.ocr-lang-card::before,
-#tour-popover-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.32),
-    rgba(255, 255, 255, 0.08) 35%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.22s ease;
-  pointer-events: none;
-  z-index: 5;
-  border-radius: inherit;
-}
-
-/* Desktop Hover */
-#left-sidebar:hover::before,
-#right-sidebar:hover::before,
-.card-expand-header:hover::before,
-.exact-course-card:hover::before,
-.class-card-item:hover::before,
-.expandable-class-card:hover::before,
-.btn-adaptive-auth:hover::before,
-.btn-globe-language:hover::before,
-.btn-coffee-support:hover::before,
-.btn-guide-tour:hover::before,
-#bottom-floating-pill-bar:hover::before,
-#bottom-floating-pill-bar button:hover::before,
-#header-desktop-bar:hover::before,
-#header-desktop-bar button:hover::before,
-#btn-expand-left-floating:hover::before,
-#btn-expand-right-floating:hover::before,
-#btn-mobile-export-toggle:hover::before,
-#btn-schedule-settings-toggle:hover::before,
-#btn-clear-all:hover::before,
-.pill-btn:hover::before,
-.capsule-btn:hover::before,
-.dock-icon-circle:hover::before,
-.dock-icon-btn:hover .dock-icon-circle::before,
-.lang-option-pill:hover::before,
-.btn-studio-launch:hover::before,
-.btn-studio-import:hover::before,
-#tour-popover-card:hover::before {
-  opacity: 1;
-}
-
-/* Mobile Touch Active Sheen */
-.is-touch-active::before {
-  opacity: 1 !important;
-}
-
 /* Tactile Active Press */
 .exact-course-card:active,
 .class-card-item:active,
@@ -6813,28 +7108,6 @@ body.dark-mode #input-title-text-sidebar {
   stroke: #D97706 !important;
 }
 
-/* Right Chevron Arrow */
-.card-expand-header > svg:last-child {
-  color: #94A3B8 !important;
-  stroke: #94A3B8 !important;
-  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease !important;
-}
-
-.card-expand-header:hover > svg:last-child {
-  color: #0F172A !important;
-  stroke: #0F172A !important;
-  transform: translateX(2px);
-}
-
-body.dark-mode .card-expand-header > svg:last-child {
-  color: #64748B !important;
-  stroke: #64748B !important;
-}
-
-body.dark-mode .card-expand-header:hover > svg:last-child {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    UNIVERSAL CROSS-PLATFORM SMOOTHNESS & 120Hz/60Hz PERFORMANCE
@@ -6855,7 +7128,6 @@ html, body {
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior-y: contain !important;
-  scroll-behavior: smooth !important;
   justify-content: flex-start !important;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important; /* IE / Edge */
@@ -7459,8 +7731,7 @@ body.theme-style-default .exact-course-card {
 }
 
 body.theme-style-default .expandable-class-card,
-body.theme-style-default .class-card-item,
-body.theme-style-default .card-expand-header {
+body.theme-style-default .class-card-item {
   background: #F8FAFC !important;
   border: 1px solid #E2E8F0 !important;
   backdrop-filter: none !important;
@@ -7468,14 +7739,31 @@ body.theme-style-default .card-expand-header {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
+body.theme-style-default .card-expand-header {
+  background: #FFFFFF !important;
+  border: 1.5px solid #E2E8F0 !important;
+  border-radius: 9999px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
 body.theme-style-default.dark-mode .expandable-class-card,
-body.theme-style-default.dark-mode .class-card-item,
-body.theme-style-default.dark-mode .card-expand-header {
+body.theme-style-default.dark-mode .class-card-item {
   background: #0F172A !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
+}
+
+body.theme-style-default.dark-mode .card-expand-header {
+  background: #1E293B !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9999px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* ── Clear All & Settings buttons in Default Style ── */
@@ -7608,39 +7896,71 @@ body.theme-style-default #tour-popover-card::before {
 }
 
 body.dark-mode #tour-popover-card,
-.theme-dark #tour-popover-card {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.03)) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(0, 0, 0, 0.22) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
-  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.14 + 0.10)) !important;
+.theme-dark #tour-popover-card,
+.dark #tour-popover-card {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.03)) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(0, 0, 0, 0.35) 100%) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.14 + 0.12)) !important;
   box-shadow: 
-    0 24px 60px -10px rgba(0, 0, 0, 0.75),
-    0 4px 16px rgba(0, 0, 0, 0.45),
+    0 24px 60px -10px rgba(0, 0, 0, 0.85),
+    0 4px 16px rgba(0, 0, 0, 0.55),
     inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.3)),
     inset 0 -1px 2px 0 rgba(0, 0, 0, 0.35),
     inset calc(var(--glass-dispersion, 7) * 0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.30)),
     inset calc(var(--glass-dispersion, 7) * -0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.25)) !important;
 }
 
-#tour-popover-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle 100px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.35),
-    rgba(255, 255, 255, 0.1) 35%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.22s ease;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: inherit;
+/* Crisp White High-Visibility Font in Dark Mode & Glass */
+.dark #tour-popover-card #tour-step-title,
+body.dark-mode #tour-popover-card #tour-step-title,
+.theme-dark #tour-popover-card #tour-step-title,
+.theme-liquid-glass #tour-popover-card #tour-step-title,
+.theme-cyber-glass #tour-popover-card #tour-step-title {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
 }
 
-#tour-popover-card:hover::before {
-  opacity: 1;
+.dark #tour-popover-card #tour-step-description,
+body.dark-mode #tour-popover-card #tour-step-description,
+.theme-dark #tour-popover-card #tour-step-description,
+.theme-liquid-glass #tour-popover-card #tour-step-description,
+.theme-cyber-glass #tour-popover-card #tour-step-description {
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark #tour-popover-card #tour-feature-tag,
+body.dark-mode #tour-popover-card #tour-feature-tag,
+.theme-dark #tour-popover-card #tour-feature-tag,
+.theme-liquid-glass #tour-popover-card #tour-feature-tag {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark #tour-popover-card #btn-tour-skip,
+body.dark-mode #tour-popover-card #btn-tour-skip,
+.theme-dark #tour-popover-card #btn-tour-skip,
+.theme-liquid-glass #tour-popover-card #btn-tour-skip {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.dark #tour-popover-card #btn-tour-skip:hover,
+body.dark-mode #tour-popover-card #btn-tour-skip:hover,
+.theme-dark #tour-popover-card #btn-tour-skip:hover {
+  color: #FFFFFF !important;
+}
+
+.dark #tour-popover-card #tour-step-badge,
+body.dark-mode #tour-popover-card #tour-step-badge,
+.theme-dark #tour-popover-card #tour-step-badge,
+.theme-liquid-glass #tour-popover-card #tour-step-badge {
+  color: #67e8f9 !important;
+  background: rgba(6, 182, 212, 0.25) !important;
+  border-color: rgba(6, 182, 212, 0.5) !important;
+}
+
+#tour-popover-card::before {
+  display: none !important;
 }
 
 /* ── Tour Popover Guide Card: Solid Default Style Fallback ── */
@@ -7652,7 +7972,8 @@ body.theme-style-default #tour-popover-card {
   box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.16) !important;
 }
 
-body.theme-style-default.dark-mode #tour-popover-card {
+body.theme-style-default.dark-mode #tour-popover-card,
+.dark body.theme-style-default #tour-popover-card {
   background: #1E293B !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;

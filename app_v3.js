@@ -311,6 +311,17 @@ class SchedullyApp {
     this.btnOcrKeepOriginal = document.getElementById('btn-ocr-keep-original');
     this.btnOcrTranslateEnglish = document.getElementById('btn-ocr-translate-english');
     this.btnCloseOcrLangModal = document.getElementById('btn-close-ocr-lang-modal');
+    this.btnOcrApplyImport = document.getElementById('btn-ocr-apply-import');
+    this.ocrPeriodSection = document.getElementById('ocr-period-section');
+    this.ocrPeriodPresetContainer = document.getElementById('ocr-period-preset-container');
+    this.btnAxisPeriod = document.getElementById('btn-axis-period');
+    this.btnAxisTime = document.getElementById('btn-axis-time');
+    this.btnAxisBoth = document.getElementById('btn-axis-both');
+
+    this.axisMode = 'time'; // 'time' | 'period' | 'both'
+    this.selectedOcrLangChoice = 'original'; // 'original' | 'translated'
+    this.selectedOcrAxisMode = 'period'; // 'period' | 'time' | 'both'
+    this.selectedOcrPeriodPreset = '90m-900'; // '90m-900' | '90m-850' | '50m-school'
 
     // Gemini AI API Key Modal
     this.geminiApiKeyModal = document.getElementById('gemini-api-key-modal');
@@ -3095,56 +3106,58 @@ class SchedullyApp {
           b.style.color = '';
         });
         btn.classList.add('active');
-        const device = btn.getAttribute('data-device');
+        const device = btn.getAttribute('data-device') || 'phone';
         this.activeDevice = device;
 
-        // Instantly glide the glass slider thumb to tapped device button
+        // Instantly glide the glass slider thumb with a single RAF
         if (typeof window.syncGlassSliders === 'function') {
-          window.syncGlassSliders();
           requestAnimationFrame(window.syncGlassSliders);
-          setTimeout(window.syncGlassSliders, 60);
-          setTimeout(window.syncGlassSliders, 250);
         }
 
         const lockUIToggle = document.getElementById('toggle-lock-ui');
-
-        // Apply smooth scale morph class
-        this.phoneCanvas.classList.add('device-switching');
-        setTimeout(() => this.phoneCanvas.classList.remove('device-switching'), 450);
-
+        const wrapper = document.getElementById('main-phone-wrapper');
         const hasWallpaper = !!localStorage.getItem('schedully_wallpaper_data');
         const wallpaperClass = hasWallpaper ? ' has-photo-wallpaper' : '';
 
+        // Switch DOM classes & device mode instantly
         if (device === 'tablet') {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-tablet device-switching${wallpaperClass}`;
+          this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
-          document.querySelector('.m3-phone-wrapper').className = 'm3-phone-wrapper tablet-mode';
+          if (wrapper) {
+            wrapper.classList.add('tablet-mode');
+            wrapper.classList.remove('paper-mode');
+          }
           if (lockUIToggle) lockUIToggle.style.display = 'flex';
         } else if (device === 'paper') {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-paper device-switching${wallpaperClass}`;
+          this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
-          document.querySelector('.m3-phone-wrapper').className = 'm3-phone-wrapper paper-mode';
+          if (wrapper) {
+            wrapper.classList.add('paper-mode');
+            wrapper.classList.remove('tablet-mode');
+          }
           if (lockUIToggle) lockUIToggle.style.display = 'none';
         } else {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-phone device-switching${wallpaperClass}`;
+          this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
-          document.querySelector('.m3-phone-wrapper').className = 'm3-phone-wrapper';
+          if (wrapper) {
+            wrapper.classList.remove('tablet-mode', 'paper-mode');
+          }
           if (lockUIToggle) lockUIToggle.style.display = 'flex';
         }
 
-        // Reset inline screen size styles if switching device modes
+        // Reset inline screen size styles
         this.phoneCanvas.style.width = '';
         this.phoneCanvas.style.height = '';
 
-        // Auto-adapt grid & font scaling on device switch
+        // 3. Render grid synchronously
         this.renderTimetableGrid();
 
-        // Smoothly center the model on the screen
-        if (typeof centerCanvasModel === 'function') {
-          centerCanvasModel(true);
+        // 4. Smoothly update scaled wrapper footprint and auto-center
+        if (typeof applyZoom === 'function') {
+          applyZoom(true);
         }
       });
     });
@@ -3169,22 +3182,33 @@ class SchedullyApp {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return { width: 380, height: 760 };
       if (originalCanvas.classList.contains('canvas-tablet')) return { width: 920, height: 690 };
-      if (originalCanvas.classList.contains('canvas-paper')) return { width: 720, height: originalCanvas.scrollHeight || 480 };
+      if (originalCanvas.classList.contains('canvas-paper')) {
+        const h = (originalCanvas.scrollHeight && originalCanvas.scrollHeight > 300) ? originalCanvas.scrollHeight : 540;
+        return { width: 720, height: h };
+      }
       return { width: 380, height: 760 };
     };
 
-    // Auto-center canvas helper ensuring the model (phone/tablet/paper) is always centered and horizontally pannable
-    const centerCanvasModel = (smooth = true) => {
+    // Auto-center canvas helper ensuring the model (phone/tablet/paper) is always centered on both axes
+    const centerCanvasModel = (smooth = false) => {
       const scrollArea = document.getElementById('canvas-scroll-area');
       const wrapper = document.getElementById('main-phone-wrapper');
       if (!scrollArea || !wrapper) return;
       
-      requestAnimationFrame(() => {
-        const scrollW = scrollArea.scrollWidth;
-        const clientW = scrollArea.clientWidth;
-        const targetLeft = scrollW > clientW ? Math.round((scrollW - clientW) / 2) : 0;
-        scrollArea.scrollTo({ left: targetLeft, behavior: smooth ? 'smooth' : 'auto' });
-      });
+      const scrollW = scrollArea.scrollWidth;
+      const clientW = scrollArea.clientWidth;
+      const scrollH = scrollArea.scrollHeight;
+      const clientH = scrollArea.clientHeight;
+      
+      const targetLeft = scrollW > clientW ? Math.round((scrollW - clientW) / 2) : 0;
+      const targetTop = scrollH > clientH ? Math.round((scrollH - clientH) / 2) : 0;
+
+      if (smooth) {
+        scrollArea.scrollTo({ left: targetLeft, top: targetTop, behavior: 'smooth' });
+      } else {
+        scrollArea.scrollLeft = targetLeft;
+        scrollArea.scrollTop = targetTop;
+      }
     };
     window.centerCanvasModel = centerCanvasModel;
 
@@ -3192,13 +3216,37 @@ class SchedullyApp {
     let currentZoomScale = window.innerWidth < 1024 ? 1.0 : 0.85;
     
     const applyZoom = (smooth = true) => {
-      if (!mainPhoneWrapper || !zoomLabel) return;
+      const scalerContainer = document.getElementById('canvas-scaler-container');
+      const wrapper = document.getElementById('main-phone-wrapper');
+      if (!scalerContainer || !wrapper || !zoomLabel) return;
 
-      mainPhoneWrapper.style.transition = smooth ? 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)' : 'none';
-      mainPhoneWrapper.style.transformOrigin = 'center center';
-      mainPhoneWrapper.style.zoom = '';
-      
-      mainPhoneWrapper.style.transform = `scale(${currentZoomScale})`;
+      const dims = getBaseModelDimensions();
+      const visualW = Math.round(dims.width * currentZoomScale);
+      const visualH = Math.round(dims.height * currentZoomScale);
+
+      // Scaler footprint container defines the exact scaled pixel boundary for 100% boundary panning & center flex
+      scalerContainer.style.transition = smooth ? 'width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      scalerContainer.style.width = `${visualW}px`;
+      scalerContainer.style.height = `${visualH}px`;
+      scalerContainer.style.margin = 'auto';
+      scalerContainer.style.display = 'block';
+      scalerContainer.style.position = 'relative';
+
+      // Wrapper holds unscaled dimensions and scales with transform: scale(zoom) from 0 0
+      wrapper.style.transition = smooth ? 'width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      wrapper.style.width = `${dims.width}px`;
+      wrapper.style.height = `${dims.height}px`;
+      wrapper.style.position = 'absolute';
+      wrapper.style.top = '0';
+      wrapper.style.left = '0';
+      wrapper.style.transformOrigin = '0 0';
+      wrapper.style.transform = `scale(${currentZoomScale})`;
+      wrapper.style.flexShrink = '0';
+
+      const phoneCanvas = document.getElementById('phone-canvas');
+      if (phoneCanvas) {
+        phoneCanvas.style.transform = 'none';
+      }
 
       const displayPercent = Math.round(currentZoomScale * 100);
       zoomLabel.innerText = `${displayPercent}%`;
@@ -3597,8 +3645,9 @@ class SchedullyApp {
                 return;
               }
 
-              if (hasNonEnglish || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang);
+              const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? scanResult.isPeriodBased : extracted.some(c => c.periodNumber !== undefined);
+              if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased);
               } else {
                 this.importClassesDirectly(extracted);
               }
@@ -3710,36 +3759,120 @@ class SchedullyApp {
       });
     }
 
+    const PERIOD_SCHEDULES = {
+      '90m-900': {
+        1: { start: '09:00', end: '10:30' },
+        2: { start: '10:40', end: '12:10' },
+        3: { start: '13:00', end: '14:30' },
+        4: { start: '14:40', end: '16:10' },
+        5: { start: '16:20', end: '17:50' },
+        6: { start: '18:00', end: '19:30' },
+        7: { start: '19:40', end: '21:10' }
+      },
+      '90m-850': {
+        1: { start: '08:50', end: '10:20' },
+        2: { start: '10:30', end: '12:00' },
+        3: { start: '12:50', end: '14:20' },
+        4: { start: '14:30', end: '16:00' },
+        5: { start: '16:10', end: '17:40' },
+        6: { start: '17:50', end: '19:20' },
+        7: { start: '19:30', end: '21:00' }
+      },
+      '50m-school': {
+        1: { start: '08:30', end: '09:20' },
+        2: { start: '09:30', end: '10:20' },
+        3: { start: '10:40', end: '11:30' },
+        4: { start: '11:40', end: '12:30' },
+        5: { start: '13:30', end: '14:20' },
+        6: { start: '14:30', end: '15:20' },
+        7: { start: '15:30', end: '16:20' }
+      }
+    };
+
+    // 1. Language Toggle Cards
     if (this.btnOcrKeepOriginal) {
       this.btnOcrKeepOriginal.addEventListener('click', () => {
-        if (this.ocrLangModal) {
-          this.ocrLangModal.classList.add('hidden');
-          this.ocrLangModal.style.display = 'none';
-        }
-        if (this.pendingOcrResult) {
-          const courses = this.pendingOcrResult.courses.map(c => ({
-            ...c,
-            code: c.originalTitle || c.originalCode || c.code,
-            title: c.originalTitle || c.title
-          }));
-          this.importClassesDirectly(courses);
-          this.pendingOcrResult = null;
+        this.selectedOcrLangChoice = 'original';
+        this.btnOcrKeepOriginal.classList.add('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
+        this.btnOcrKeepOriginal.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+        if (this.btnOcrTranslateEnglish) {
+          this.btnOcrTranslateEnglish.classList.remove('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
+          this.btnOcrTranslateEnglish.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
         }
       });
     }
 
     if (this.btnOcrTranslateEnglish) {
       this.btnOcrTranslateEnglish.addEventListener('click', () => {
+        this.selectedOcrLangChoice = 'translated';
+        this.btnOcrTranslateEnglish.classList.add('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
+        this.btnOcrTranslateEnglish.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+        if (this.btnOcrKeepOriginal) {
+          this.btnOcrKeepOriginal.classList.remove('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
+          this.btnOcrKeepOriginal.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+        }
+      });
+    }
+
+    // 2. Schedule Axis Mode Buttons (Period / Clock / Both)
+    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime, this.btnAxisBoth].filter(Boolean);
+    axisButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        axisButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (btn === this.btnAxisPeriod) this.selectedOcrAxisMode = 'period';
+        else if (btn === this.btnAxisTime) this.selectedOcrAxisMode = 'time';
+        else if (btn === this.btnAxisBoth) this.selectedOcrAxisMode = 'both';
+      });
+    });
+
+    // 3. Quick Period Schedule Preset Chips
+    const presetChips = document.querySelectorAll('.period-preset-chip');
+    presetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        presetChips.forEach(c => {
+          c.classList.remove('active');
+          c.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-gray-700', 'dark:text-gray-300', 'border-slate-200', 'dark:border-slate-700');
+          c.classList.remove('bg-blue-100/90', 'dark:bg-blue-500/20', 'text-blue-700', 'dark:text-blue-300', 'border-blue-300', 'dark:border-blue-500/40');
+        });
+        chip.classList.add('active');
+        chip.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-gray-700', 'dark:text-gray-300', 'border-slate-200', 'dark:border-slate-700');
+        chip.classList.add('bg-blue-100/90', 'dark:bg-blue-500/20', 'text-blue-700', 'dark:text-blue-300', 'border-blue-300', 'dark:border-blue-500/40');
+        this.selectedOcrPeriodPreset = chip.getAttribute('data-preset') || '90m-900';
+      });
+    });
+
+    // 4. Apply & Import Action Button
+    if (this.btnOcrApplyImport) {
+      this.btnOcrApplyImport.addEventListener('click', () => {
         if (this.ocrLangModal) {
           this.ocrLangModal.classList.add('hidden');
           this.ocrLangModal.style.display = 'none';
         }
         if (this.pendingOcrResult) {
-          const courses = this.pendingOcrResult.courses.map(c => ({
-            ...c,
-            code: c.translatedCode || c.code,
-            title: c.translatedTitle || c.title
-          }));
+          const scheduleMap = PERIOD_SCHEDULES[this.selectedOcrPeriodPreset] || PERIOD_SCHEDULES['90m-900'];
+          const courses = this.pendingOcrResult.courses.map(c => {
+            const isTranslated = (this.selectedOcrLangChoice === 'translated');
+            const mappedTitle = isTranslated ? (c.translatedTitle || c.title) : (c.originalTitle || c.title);
+            const mappedCode = isTranslated ? (c.translatedCode || c.code) : (c.originalCode || c.code);
+            
+            let sTime = c.startTime;
+            let eTime = c.endTime;
+            if (c.periodNumber && scheduleMap[c.periodNumber]) {
+              sTime = scheduleMap[c.periodNumber].start;
+              eTime = scheduleMap[c.periodNumber].end;
+            }
+
+            return {
+              ...c,
+              title: mappedTitle,
+              code: mappedCode,
+              startTime: sTime || '09:00',
+              endTime: eTime || '10:30'
+            };
+          });
+
+          this.axisMode = this.selectedOcrAxisMode || 'period';
           this.importClassesDirectly(courses);
           this.pendingOcrResult = null;
         }
@@ -3969,13 +4102,16 @@ class SchedullyApp {
         timetableContainer.style.setProperty('max-width', 'none', 'important');
       }
 
-      // Make clock, camera dot, and nav bar invisible, but keep physical space so timetable stays correctly Y-aligned
+      // Make clock, camera dot, nav bar, and physical bezel buttons invisible on exported wallpaper
       ['.phone-camera-dot', '#phone-lock-header', '.phone-nav-bar'].forEach(sel => {
         const el = clone.querySelector(sel);
         if (el) {
           el.style.visibility = 'hidden';
           el.style.opacity = '0';
         }
+      });
+      clone.querySelectorAll('.side-btn').forEach(btn => {
+        btn.style.setProperty('display', 'none', 'important');
       });
 
       stagingContainer.appendChild(clone);
@@ -5225,13 +5361,13 @@ class SchedullyApp {
     }
   }
 
-  showOcrLanguageModal(courses, detectedLang) {
+  showOcrLanguageModal(courses, detectedLang, isPeriodBased = false) {
     if (!this.ocrLangModal) {
       this.importClassesDirectly(courses);
       return;
     }
 
-    this.pendingOcrResult = { courses, detectedLang };
+    this.pendingOcrResult = { courses, detectedLang, isPeriodBased };
 
     const langLower = (detectedLang || '').toLowerCase();
     const flagMap = {
@@ -5258,7 +5394,8 @@ class SchedullyApp {
     const flag = flagMap[langLower] || '🌐';
 
     if (this.ocrDetectedLangBadge) {
-      this.ocrDetectedLangBadge.innerText = `${flag} ${detectedLang} Detected`;
+      const typeLabel = isPeriodBased ? '時限 Period System' : 'Schedule Detected';
+      this.ocrDetectedLangBadge.innerText = `${flag} ${detectedLang} • ${typeLabel}`;
     }
     if (this.ocrDetectedLangTitle) {
       this.ocrDetectedLangTitle.innerText = `${detectedLang} Timetable Detected`;
@@ -5267,11 +5404,25 @@ class SchedullyApp {
       this.ocrLangFlagIcon.innerText = flag;
     }
     if (this.ocrKeepLangLabel) {
-      this.ocrKeepLangLabel.innerText = `Keep ${detectedLang} (Original)`;
+      this.ocrKeepLangLabel.innerText = `Keep ${detectedLang}`;
     }
     if (this.ocrKeepLangDesc) {
-      this.ocrKeepLangDesc.innerText = `Display original ${detectedLang} course names & characters`;
+      this.ocrKeepLangDesc.innerText = `Original ${detectedLang} characters`;
     }
+
+    // Default Selection State
+    this.selectedOcrLangChoice = 'original';
+    this.selectedOcrAxisMode = isPeriodBased ? 'period' : 'time';
+    this.selectedOcrPeriodPreset = '90m-900';
+
+    if (this.ocrPeriodSection) {
+      this.ocrPeriodSection.style.display = 'flex';
+    }
+
+    // Reset Segment Highlights
+    if (this.btnAxisPeriod) this.btnAxisPeriod.classList.toggle('active', isPeriodBased);
+    if (this.btnAxisTime) this.btnAxisTime.classList.toggle('active', !isPeriodBased);
+    if (this.btnAxisBoth) this.btnAxisBoth.classList.remove('active');
 
     // Collapse sidebars for full focus
     if (typeof this.toggleLeftSidebar === 'function') this.toggleLeftSidebar(true);
@@ -5399,21 +5550,52 @@ class SchedullyApp {
     }
 
     const timeSlots = [];
-    for (let h = effectiveStartHour; h <= effectiveEndHour; h++) {
-      if (this.clockFormat === '24') {
+    if (this.axisMode === 'period' || this.axisMode === 'both') {
+      const isPeriodMode = (this.axisMode === 'period');
+      const maxPeriodFound = Math.max(6, ...this.classes.map(c => c.periodNumber || 0));
+      const periodCount = Math.min(8, Math.max(5, maxPeriodFound));
+      
+      const currentLang = window.SchedullyI18n ? window.SchedullyI18n.currentLang : 'ja';
+      const periodSuffix = (currentLang === 'ja') ? '限' : (currentLang === 'ko' ? '교시' : (currentLang === 'zh-cn' || currentLang === 'zh-tw' ? '节' : ''));
+      
+      const defaultSchedule = {
+        1: { start: '09:00', end: '10:30' },
+        2: { start: '10:40', end: '12:10' },
+        3: { start: '13:00', end: '14:30' },
+        4: { start: '14:40', end: '16:10' },
+        5: { start: '16:20', end: '17:50' },
+        6: { start: '18:00', end: '19:30' },
+        7: { start: '19:40', end: '21:10' }
+      };
+
+      for (let p = 1; p <= periodCount; p++) {
+        const slotData = defaultSchedule[p] || { start: `${p + 8}:00`, end: `${p + 9}:30` };
+        const label = periodSuffix ? `${p}${periodSuffix}` : `${p}`;
         timeSlots.push({
-          hour: h,
-          topText: `${String(h).padStart(2, '0')}:00`,
-          bottomText: ''
+          period: p,
+          hour: parseInt(slotData.start.split(':')[0], 10),
+          topText: label,
+          bottomText: isPeriodMode ? '' : slotData.start,
+          isPeriod: true
         });
-      } else {
-        const displayH = h > 12 ? h - 12 : h;
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        timeSlots.push({
-          hour: h,
-          topText: `${String(displayH).padStart(2, '0')}:00`,
-          bottomText: ampm
-        });
+      }
+    } else {
+      for (let h = effectiveStartHour; h <= effectiveEndHour; h++) {
+        if (this.clockFormat === '24') {
+          timeSlots.push({
+            hour: h,
+            topText: `${String(h).padStart(2, '0')}:00`,
+            bottomText: ''
+          });
+        } else {
+          const displayH = h > 12 ? h - 12 : h;
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          timeSlots.push({
+            hour: h,
+            topText: `${String(displayH).padStart(2, '0')}:00`,
+            bottomText: ampm
+          });
+        }
       }
     }
 
@@ -5466,6 +5648,11 @@ class SchedullyApp {
 
         const matchesInCell = this.classes.filter(c => {
           const dayMatch = c.day.toLowerCase().startsWith(day.toLowerCase());
+          if (tObj.isPeriod) {
+            if (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) {
+              return dayMatch && (c.periodNumber === tObj.period);
+            }
+          }
           const [sh] = c.startTime.split(':').map(Number);
           return dayMatch && (sh === tObj.hour);
         });
@@ -5482,8 +5669,8 @@ class SchedullyApp {
           const endTotalM = (eh * 60) + (em || 0);
           const durationM = Math.max(15, endTotalM - startTotalM);
 
-          const topPercent = ((sm || 0) / 60) * 100;
-          const durationHours = durationM / 60;
+          const topPercent = tObj.isPeriod ? 0 : (((sm || 0) / 60) * 100);
+          const durationHours = tObj.isPeriod ? 1 : (durationM / 60);
 
           // Adaptive Color Palette Rotation (Wallpaper Swatches or Theme Palette)
           const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;

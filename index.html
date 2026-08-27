@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260826_60fps_optimization_v145">
+<link rel="stylesheet" href="styles.css?v=20260827_remove_redundant_guide_btn_v202">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -268,14 +268,16 @@
 <!-- Navigation Menu -->
 <nav class="space-y-3">
 <a id="header-theme" class="card-expand-header flex items-center justify-between" href="#">
-<div class="flex items-center gap-3">
-<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<div>
+<div class="flex items-center gap-3.5">
+<div class="menu-pill-icon-box">
+<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="menu-pill-text-stack">
 <p data-i18n="themeAndColors" class="font-bold text-sm text-gray-800">Theme &amp; Colors</p>
 <p data-i18n="customizeLook" class="text-xs text-gray-500 font-medium mt-0.5">Customize your look</p>
 </div>
 </div>
-<svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
 </a>
 <div class="expandable-content hidden" id="content-theme">
           <div class="layout-card-inner margin-top-sm">
@@ -621,14 +623,16 @@
       
 <!-- Inactive Items -->
 <a id="header-layout-options" class="card-expand-header flex items-center justify-between" href="#">
-<div class="flex items-center gap-3">
-<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<div>
+<div class="flex items-center gap-3.5">
+<div class="menu-pill-icon-box">
+<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="menu-pill-text-stack">
 <p data-i18n="timetableLayout" class="font-bold text-sm text-gray-800">Timetable Layout</p>
-<p data-i18n="layoutDesc" class="text-xs text-gray-500 font-medium mt-0.5">Edit title, clock, fonts &amp; colors</p>
+<p data-i18n="layoutDesc" class="text-xs text-gray-500 font-medium mt-0.5">Title, clock, fonts &amp; colors</p>
 </div>
 </div>
-<svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
 </a>
 <div class="expandable-content hidden" id="content-layout-options">
           <div class="layout-card-inner margin-top-sm">
@@ -974,14 +978,16 @@
         </div>
       
 <a id="header-add-course" class="card-expand-header flex items-center justify-between" href="#">
-<div class="flex items-center gap-3">
-<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<div>
+<div class="flex items-center gap-3.5">
+<div class="menu-pill-icon-box">
+<svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="menu-pill-text-stack">
 <p data-i18n="addCourse" class="font-bold text-sm text-gray-800">Add A Course</p>
-<p data-i18n="addCourseDesc" class="text-xs text-gray-500 font-medium mt-0.5">Create a custom class or event</p>
+<p data-i18n="addCourseDesc" class="text-xs text-gray-500 font-medium mt-0.5">Create class or event</p>
 </div>
 </div>
-<svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
 </a>
 <div class="expandable-content hidden" id="content-add-course">
           <div class="layout-card-inner">
@@ -1172,14 +1178,16 @@
         </div>
       
 <a id="header-file-import" class="card-expand-header flex items-center justify-between" href="#">
-<div class="flex items-center gap-3">
-<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<div>
-<p data-i18n="uploadFile" class="font-bold text-sm text-gray-800">Upload Timetable File or Image</p>
-<p data-i18n="uploadDesc" class="text-xs text-gray-500 font-medium mt-0.5">Supports CSV, .ics, PNG, JPG, WebP</p>
+<div class="flex items-center gap-3.5">
+<div class="menu-pill-icon-box">
+<svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="menu-pill-text-stack">
+<p data-i18n="uploadFile" class="font-bold text-sm text-gray-800">Upload Timetable</p>
+<p data-i18n="uploadDesc" class="text-xs text-gray-500 font-medium mt-0.5">CSV, .ics, PNG, JPG, WebP</p>
 </div>
 </div>
-<svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
 </a>
 <div class="card-expand-content hidden" id="content-file-import">
           <div class="layout-card-inner">
@@ -1342,16 +1350,6 @@
 
   <!-- DESKTOP: full pill bar (hidden on mobile) -->
   <div id="header-desktop-bar" class="hidden-mobile inline-flex items-center gap-2 p-1.5 bg-white/90 backdrop-blur-md border border-gray-200/90 rounded-full shadow-sm">
-    <!-- Quick Tour Guide Button with clean SVG lightbulb -->
-    <button id="btn-start-tour-header" type="button" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 dark:text-blue-400 dark:bg-blue-500/15 transition-all cursor-pointer shrink-0" title="Take Interactive Tour">
-      <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-      </svg>
-      <span>Guide</span>
-    </button>
-
-    <div class="h-4 w-[1px] bg-gray-200 dark:bg-gray-700 my-auto"></div>
-
     <button id="btn-export-ical" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 adaptive-icon-btn transition-all">
       <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       <span data-i18n="exportIcs">Calendar (.ics)</span>
@@ -1390,15 +1388,20 @@
     <span>4K HD Export Ready</span>
   </div>
 
-  <!-- Phone Mockup Canvas (Top Priority) -->
-  <div class="m3-phone-wrapper" id="main-phone-wrapper">
-    <!-- Physical Side Buttons (Merged Volume Rocker + Power) -->
-    <div class="side-btn btn-vol-rocker"></div>
-    <div class="side-btn btn-power"></div>
+  <!-- Scaler Footprint Container for 100% Edge-to-Edge Dragging and Centering -->
+  <div id="canvas-scaler-container" class="canvas-scaler-container">
+    <!-- Phone Mockup Canvas (Top Priority) -->
+    <div class="m3-phone-wrapper" id="main-phone-wrapper">
+      <div id="phone-canvas" class="m3-phone-canvas canvas-phone">
+        <!-- Physical Hardware Side Buttons -->
+        <div class="side-btn btn-action-mute" aria-hidden="true"></div>
+        <div class="side-btn btn-vol-up" aria-hidden="true"></div>
+        <div class="side-btn btn-vol-down" aria-hidden="true"></div>
+        <div class="side-btn btn-vol-rocker" aria-hidden="true"></div>
+        <div class="side-btn btn-power" aria-hidden="true"></div>
 
-    <div id="phone-canvas" class="m3-phone-canvas canvas-phone">
-      <!-- Dedicated Wallpaper & Background Layer (Supports isolated background blur!) -->
-      <div id="phone-wallpaper-layer" class="phone-wallpaper-layer"></div>
+        <!-- Dedicated Wallpaper & Background Layer (Supports isolated background blur!) -->
+        <div id="phone-wallpaper-layer" class="phone-wallpaper-layer"></div>
       
       <!-- Authentic Dynamic Island Front Camera (Matching Real Hardware Reference) -->
       <div class="phone-camera-dot" aria-hidden="true">
@@ -1431,6 +1434,7 @@
       <!-- Phone Navigation Bar Indicator -->
       <div class="phone-nav-bar"></div>
     </div>
+  </div>
   </div>
 
 </div>
@@ -1828,74 +1832,74 @@
   </div>
 
   <!-- Center Language Selection Modal -->
-  <div id="language-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="language-modal-card rounded-3xl shadow-2xl border max-w-xs w-full p-5 animate-scaleIn flex flex-col gap-4">
-      <div class="popover-header flex items-center justify-between border-b pb-3">
+  <div id="language-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+    <div class="language-modal-card rounded-3xl shadow-2xl border max-w-xs w-full p-5 animate-scaleIn flex flex-col gap-3.5 max-h-[88vh]">
+      <div class="popover-header flex items-center justify-between border-b pb-3 shrink-0">
         <div class="flex items-center gap-2.5">
-          <div class="modal-lang-icon-plate w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div class="modal-lang-icon-plate w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 00-3.5 9 14.5 14.5 0 003.5 9 14.5 14.5 0 003.5-9 14.5 14.5 0 00-3.5-9z"></path>
             </svg>
           </div>
           <div>
             <h3 data-i18n="language" class="lang-modal-title font-extrabold text-sm leading-tight">Language</h3>
-            <p data-i18n="selectLanguage" class="lang-modal-desc text-[10px] font-medium">Select your language</p>
+            <p data-i18n="selectLanguage" class="lang-modal-desc text-[10px] font-medium text-gray-500 dark:text-gray-400">Select your language</p>
           </div>
         </div>
-        <button id="btn-close-language-modal" type="button" class="btn-close-modal p-1.5 rounded-xl transition-colors">
+        <button id="btn-close-language-modal" type="button" class="btn-close-modal p-1.5 rounded-xl transition-colors text-gray-400 hover:text-gray-700 dark:hover:text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
-      <!-- Languages List Pills (ENGLISH, CHRONICALLY ONLINE, FRANÇAIS, 中文, 繁體中文, 한국어, 日本語, MELAYU, BAHASA INDONESIA, ESPAÑOL) -->
-      <div class="flex flex-col gap-2 max-h-80 overflow-y-auto no-scrollbar pr-1">
+      <!-- Languages List Pills (Full 10 languages with smooth scrolling & no clipping) -->
+      <div class="flex flex-col gap-2 max-h-[62vh] overflow-y-auto pr-1 pb-1.5 custom-modal-scrollbar">
         <button type="button" class="lang-option-pill" data-lang="en">
           <span>ENGLISH</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="en-slang">
           <span>CHRONICALLY ONLINE</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="fr">
           <span>FRANÇAIS</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="zh-cn">
           <span>中文</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="zh-tw">
           <span>繁體中文</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ko">
           <span>한국어</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ja">
           <span>日本語</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ms">
           <span>MELAYU</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="id">
           <span>BAHASA INDONESIA</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="es">
           <span>ESPAÑOL</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- OCR Language Choice Modal (Triggered when AI detects non-English / Japanese timetable) -->
-  <div id="ocr-language-choice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="ocr-lang-card rounded-3xl shadow-2xl border max-w-sm w-full p-5 animate-scaleIn flex flex-col gap-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+  <!-- OCR Language & Period Choice Modal (Triggered when AI detects non-English / Japanese / Period timetable) -->
+  <div id="ocr-language-choice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+    <div class="ocr-lang-card rounded-3xl shadow-2xl border max-w-md w-full p-5 animate-scaleIn flex flex-col gap-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-slate-200/80 dark:border-slate-800/80">
       <div class="flex items-center justify-between">
         <span id="ocr-detected-lang-badge" class="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100/80 dark:bg-blue-500/15 px-3 py-1 rounded-full">🌐 Language Detected</span>
         <button id="btn-close-ocr-lang-modal" type="button" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
@@ -1906,32 +1910,71 @@
       <div class="flex flex-col gap-1">
         <h3 id="ocr-detected-lang-title" class="font-extrabold text-base text-gray-900 dark:text-white leading-tight">Japanese Timetable Detected</h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-          Would you like to keep the original language or translate course names into English?
+          Customize your timetable format, language, and period schedule below:
         </p>
       </div>
 
-      <!-- 2 Main Choice Cards -->
-      <div class="flex flex-col gap-2.5">
-        <!-- Option A: Keep Original Language -->
-        <button id="btn-ocr-keep-original" type="button" class="w-full p-3.5 rounded-2xl border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 hover:bg-blue-100/80 dark:hover:bg-blue-900/60 flex items-center gap-3.5 text-left transition-all active:scale-[0.98]">
-          <span id="ocr-lang-flag-icon" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-lg shrink-0 shadow-sm">
-            🇯🇵
-          </span>
-          <div class="flex-1 min-w-0">
-            <p id="ocr-keep-lang-label" class="font-extrabold text-sm text-blue-900 dark:text-blue-200">Keep Original Language</p>
-            <p id="ocr-keep-lang-desc" class="text-[11px] text-blue-700/80 dark:text-blue-300/80 font-medium truncate">Display original Japanese text & names</p>
-          </div>
-        </button>
+      <!-- 1. Language Choice Options -->
+      <div class="flex flex-col gap-2">
+        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">1. Course Language</label>
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Option A: Keep Original -->
+          <button id="btn-ocr-keep-original" type="button" class="ocr-choice-btn active p-3 rounded-2xl border-2 border-blue-500 bg-blue-50/70 dark:bg-blue-950/50 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98]">
+            <span id="ocr-lang-flag-icon" class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-base shadow-sm">🇯🇵</span>
+            <span id="ocr-keep-lang-label" class="font-extrabold text-xs text-blue-950 dark:text-blue-100">Keep Original</span>
+            <span id="ocr-keep-lang-desc" class="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight">Japanese text</span>
+          </button>
 
-        <!-- Option B: Translate to English -->
-        <button id="btn-ocr-translate-english" type="button" class="w-full p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3.5 text-left transition-all active:scale-[0.98]">
-          <span class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-extrabold text-lg shrink-0 shadow-sm">
-            🇬🇧
-          </span>
-          <div class="flex-1 min-w-0">
-            <p class="font-extrabold text-sm text-gray-900 dark:text-white">Translate to English</p>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium truncate">Convert course names to English & Latin codes</p>
+          <!-- Option B: Translate to English -->
+          <button id="btn-ocr-translate-english" type="button" class="ocr-choice-btn p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-50 dark:hover:bg-slate-800 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98]">
+            <span class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-extrabold text-base shadow-sm">🇬🇧</span>
+            <span class="font-extrabold text-xs text-gray-900 dark:text-white">Translate</span>
+            <span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">English & Codes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Schedule Axis & Period System Choice -->
+      <div id="ocr-period-section" class="flex flex-col gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
+          <span>2. Schedule Format</span>
+          <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">時限 / Period System</span>
+        </label>
+        
+        <!-- Axis Mode Segments -->
+        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50">
+          <button id="btn-axis-period" type="button" class="axis-mode-btn active py-2 px-1 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-sm transition-all text-center">
+            1, 2, 3限 (Periods)
+          </button>
+          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all text-center">
+            09:00 (Clock)
+          </button>
+          <button id="btn-axis-both" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all text-center">
+            1限 + 09:00
+          </button>
+        </div>
+
+        <!-- Period Time Presets (Active when clock or both is chosen) -->
+        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-1">
+          <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500">Quick Period Schedule Presets:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-100/90 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40 transition-all">
+              9:00 AM (90-min)
+            </button>
+            <button type="button" data-preset="90m-850" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all">
+              8:50 AM (90-min)
+            </button>
+            <button type="button" data-preset="50m-school" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all">
+              50-min (High School)
+            </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Action Button: Apply to Timetable -->
+      <div class="pt-1">
+        <button id="btn-ocr-apply-import" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <span>✨ Apply & Generate Timetable</span>
         </button>
       </div>
     </div>
@@ -2085,13 +2128,15 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260826_60fps_optimization_v145"></script>
+  <script src="app_v3.js?v=20260827_zero_anim_smooth_v179"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch((err) => console.log('SW reg error:', err));
+      navigator.serviceWorker.register('/sw.js?v=20260827_zero_anim_smooth_v179').then(reg => {
+        if (reg) reg.update();
+      }).catch((err) => console.log('SW reg error:', err));
     });
   }
 </script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'schedully-cache-v145';
+const CACHE_NAME = 'schedully-cache-v202';
 const ASSETS = [
   '/',
   '/index.html',
@@ -26,7 +26,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event: cleanup old caches
+// Activate Event: cleanup old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -37,9 +37,8 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Fetch Event: Network-first for code assets, cache fallback
