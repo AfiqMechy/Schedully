@@ -2456,10 +2456,141 @@ body.dark-mode .font-group-header svg,
   filter: brightness(1.25) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
 }
 
-/* Category SVG Colors (Light & Dark Mode) */
-.font-header-icon-cursive {
-  color: #F59E0B !important;
-  stroke: #F59E0B !important;
+/* Screen Ratio Section (Disabled in Paper Mode) */
+#screen-ratio-section.is-disabled-paper {
+  opacity: 0.35 !important;
+  pointer-events: none !important;
+  filter: grayscale(0.9) !important;
+  cursor: not-allowed !important;
+  user-select: none !important;
+  transition: opacity 0.25s ease, filter 0.25s ease !important;
+}
+
+#screen-ratio-toggles {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 6px !important;
+  padding: 2px !important;
+  background: transparent !important;
+}
+
+.ratio-card-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 6px 8px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+  color: #1E293B !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-align: left !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  min-width: 0 !important;
+}
+
+.ratio-card-btn:hover {
+  transform: translateY(-1px) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(37, 99, 235, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08) !important;
+}
+
+.ratio-card-btn.active {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  border-color: #2563EB !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+}
+
+.ratio-card-btn.active .ratio-card-icon-box {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ratio-card-btn.active .ratio-card-icon-box svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+.ratio-card-btn.active .ratio-card-title {
+  color: #FFFFFF !important;
+}
+
+.ratio-card-btn.active .ratio-card-sub {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ratio-card-icon-box {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  border-radius: 6px !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.ratio-card-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+.ratio-card-title {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  color: #0F172A !important;
+}
+
+.ratio-card-sub {
+  font-family: var(--app-ui-font, sans-serif) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+}
+
+/* Dark Mode Overrides for Ratio Cards */
+body.dark-mode .ratio-card-btn,
+.theme-dark .ratio-card-btn {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .ratio-card-title,
+.theme-dark .ratio-card-title {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .ratio-card-sub,
+.theme-dark .ratio-card-sub {
+  color: #CBD5E1 !important;
+}
+
+body.dark-mode .ratio-card-btn:hover,
+.theme-dark .ratio-card-btn:hover {
+  background: rgba(51, 65, 85, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+body.dark-mode .ratio-card-btn.active,
+.theme-dark .ratio-card-btn.active {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+  border-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45) !important;
 }
 
 body.dark-mode .font-header-icon-cursive,
@@ -3337,7 +3468,8 @@ textarea::placeholder,
 
 .m3-phone-canvas.canvas-phone {
   width: 380px !important;
-  height: 780px !important;
+  height: var(--phone-canvas-height, 770px) !important;
+  min-height: var(--phone-canvas-height, 770px) !important;
   border: 10px solid #000000 !important;
   border-radius: 56px !important;
   padding: 14px 16px !important;
@@ -3365,8 +3497,10 @@ textarea::placeholder,
 }
 
 .m3-phone-canvas.canvas-tablet {
-  width: 920px !important;
-  height: 690px !important;
+  width: var(--tablet-canvas-width, 920px) !important;
+  height: var(--tablet-canvas-height, 690px) !important;
+  min-width: var(--tablet-canvas-width, 920px) !important;
+  min-height: var(--tablet-canvas-height, 690px) !important;
   border: 22px solid #000000 !important;
   border-radius: 46px !important;
   padding: 20px !important;

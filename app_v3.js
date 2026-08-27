@@ -1038,6 +1038,168 @@ class SchedullyApp {
       });
     }
 
+    // Screen Aspect Ratio Engine (Zero-Crop Technology)
+    this.currentScreenRatio = localStorage.getItem('schedully_screen_ratio') || 'auto';
+    this.wallpaperAspect = null;
+
+    const getLocalDeviceScreenInfo = () => {
+      if (typeof window === 'undefined' || !window.screen) return null;
+      const isMobileOrTouch = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent) || 
+        (window.matchMedia && window.matchMedia('(max-width: 1024px) and (pointer: coarse)').matches);
+      
+      if (!isMobileOrTouch) return null;
+
+      const screenW = Math.min(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1);
+      const screenH = Math.max(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1);
+
+      if (screenW > 0 && screenH > 0) {
+        const aspect = screenH / screenW;
+        return {
+          aspect,
+          width: screenW,
+          height: screenH,
+          ratioFormatted: `${(aspect * 9).toFixed(1)}:9`
+        };
+      }
+      return null;
+    };
+
+    this.updateCanvasScreenRatio = () => {
+      const phoneCanvas = document.getElementById('phone-canvas');
+      const ratioSection = document.getElementById('screen-ratio-section');
+      const badge = document.getElementById('current-ratio-badge');
+      const toggles = document.getElementById('screen-ratio-toggles');
+
+      if (!phoneCanvas) return;
+
+      const isPaper = phoneCanvas.classList.contains('canvas-paper');
+      if (isPaper) {
+        if (ratioSection) ratioSection.classList.add('is-disabled-paper');
+        if (badge) badge.innerText = 'N/A (Print Paper)';
+        return;
+      } else {
+        if (ratioSection) ratioSection.classList.remove('is-disabled-paper');
+      }
+
+      const isTablet = phoneCanvas.classList.contains('canvas-tablet');
+      const ratio = this.currentScreenRatio || 'auto';
+      const devScreen = getLocalDeviceScreenInfo();
+
+      if (isTablet) {
+        // 🖥️ TABLET MODE RATIOS (iPad 4:3, Android Tablet 16:10 / 3:2, Widescreen 16:9)
+        let targetTabletW = 920;
+        let targetTabletH = 690; // Default iPad 4:3
+        let badgeLabel = 'iPad (4:3)';
+
+        if (ratio === 'auto') {
+          if (devScreen && devScreen.aspect <= 1.45) {
+            targetTabletH = Math.round(920 / devScreen.aspect);
+            badgeLabel = `Auto (${devScreen.ratioFormatted} Screen)`;
+          } else if (this.wallpaperAspect && this.wallpaperAspect >= 0.5 && this.wallpaperAspect <= 0.85) {
+            targetTabletH = Math.round(920 * this.wallpaperAspect);
+            targetTabletH = Math.max(518, Math.min(690, targetTabletH));
+            badgeLabel = `Auto (${(16 / (1 / this.wallpaperAspect)).toFixed(1)}:10 Photo)`;
+          } else {
+            targetTabletH = 690;
+            badgeLabel = 'Auto (4:3)';
+          }
+        } else if (ratio === 'android' || ratio === 'xiaomi') {
+          targetTabletH = 575; // 16:10 ratio for Xiaomi Pad / Galaxy Tab
+          badgeLabel = 'Android Tab (16:10)';
+        } else if (ratio === 'ios' || ratio === 'iphone') {
+          targetTabletH = 690; // 4:3 ratio for iPad Pro / iPad Air
+          badgeLabel = 'iPad (4:3)';
+        } else if (ratio === 'standard') {
+          targetTabletH = 518; // 16:9 widescreen
+          badgeLabel = '16:9 Widescreen';
+        }
+
+        document.documentElement.style.setProperty('--tablet-canvas-width', `${targetTabletW}px`);
+        document.documentElement.style.setProperty('--tablet-canvas-height', `${targetTabletH}px`);
+        if (badge) badge.innerText = badgeLabel;
+
+        // Dynamic Tablet Mode Sublabels
+        if (toggles) {
+          const btnAndroid = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-sub');
+          const btnIosTitle = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-title');
+          const btnIos = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-sub');
+          const btnStd = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-sub');
+          if (btnAndroid) btnAndroid.innerText = '16:10';
+          if (btnIosTitle) btnIosTitle.innerText = 'iPad';
+          if (btnIos) btnIos.innerText = '4:3';
+          if (btnStd) btnStd.innerText = '16:9';
+        }
+      } else {
+        // 📱 SMARTPHONE MODE RATIOS (Android 20:9, iOS 19.5:9, Classic 18:9)
+        let targetHeight = 770; // Realistic flagship smartphone proportion
+        let badgeLabel = 'Auto (Match)';
+
+        if (ratio === 'auto') {
+          if (devScreen && devScreen.aspect > 1.4) {
+            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, devScreen.aspect)));
+            badgeLabel = `Auto (${devScreen.ratioFormatted} Screen)`;
+          } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
+            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, this.wallpaperAspect)));
+            badgeLabel = `Auto (${(this.wallpaperAspect * 9).toFixed(1)}:9 Photo)`;
+          } else {
+            targetHeight = 770;
+            badgeLabel = 'Auto (Match)';
+          }
+        } else if (ratio === 'android' || ratio === 'xiaomi') {
+          targetHeight = 775; // Proportional 20:9 flagship frame
+          badgeLabel = 'Android (20:9)';
+        } else if (ratio === 'ios' || ratio === 'iphone') {
+          targetHeight = 765; // Proportional 19.5:9 iPhone frame
+          badgeLabel = 'iOS (19.5:9)';
+        } else if (ratio === 'standard') {
+          targetHeight = 750; // Proportional 18:9 frame
+          badgeLabel = '18:9 Classic';
+        }
+
+        document.documentElement.style.setProperty('--phone-canvas-height', `${targetHeight}px`);
+        if (badge) badge.innerText = badgeLabel;
+
+        // Restore Smartphone Mode Sublabels
+        if (toggles) {
+          const btnAndroid = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-sub');
+          const btnIosTitle = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-title');
+          const btnIos = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-sub');
+          const btnStd = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-sub');
+          if (btnAndroid) btnAndroid.innerText = '20:9';
+          if (btnIosTitle) btnIosTitle.innerText = 'iOS';
+          if (btnIos) btnIos.innerText = '19.5:9';
+          if (btnStd) btnStd.innerText = '18:9';
+        }
+      }
+
+      // Update active toggle buttons
+      if (toggles) {
+        toggles.querySelectorAll('.pill-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-ratio') === ratio);
+        });
+      }
+    };
+
+    const ratioToggles = document.getElementById('screen-ratio-toggles');
+    if (ratioToggles) {
+      ratioToggles.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const r = btn.getAttribute('data-ratio');
+          if (r) {
+            this.currentScreenRatio = r;
+            try {
+              localStorage.setItem('schedully_screen_ratio', r);
+            } catch (e) {}
+            this.updateCanvasScreenRatio();
+            this._stagePending();
+          }
+        });
+      });
+    }
+
+    // Initialize aspect ratio on startup
+    this.updateCanvasScreenRatio();
+
     // Restore saved wallpaper from storage if present
     try {
       const savedWallpaper = localStorage.getItem('schedully_wallpaper_data');
@@ -1102,8 +1264,8 @@ class SchedullyApp {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const MAX_WIDTH = 1080;
-        const MAX_HEIGHT = 1920;
+        const MAX_WIDTH = 1440;
+        const MAX_HEIGHT = 3200;
         let width = img.width;
         let height = img.height;
 
@@ -1125,8 +1287,8 @@ class SchedullyApp {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // JPEG at 0.85 quality produces ~120KB - 250KB crisp wallpaper dataUrl
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // JPEG at 0.88 quality produces crisp 4K wallpaper with lightweight payload
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
         callback(compressedDataUrl);
       };
       img.src = e.target.result;
@@ -1209,6 +1371,18 @@ class SchedullyApp {
       this.presets[this.activePresetKey].wallpaper = dataUrl;
     }
 
+    // Detect image aspect ratio for zero-crop fit
+    const imgAspectChecker = new Image();
+    imgAspectChecker.onload = () => {
+      if (imgAspectChecker.naturalWidth > 0 && imgAspectChecker.naturalHeight > 0) {
+        this.wallpaperAspect = imgAspectChecker.naturalHeight / imgAspectChecker.naturalWidth;
+        if (typeof this.updateCanvasScreenRatio === 'function') {
+          this.updateCanvasScreenRatio();
+        }
+      }
+    };
+    imgAspectChecker.src = dataUrl;
+
     if (shouldExtract) {
       this.extractColorsFromImage(dataUrl, isSwitchingPreset);
     }
@@ -1220,6 +1394,11 @@ class SchedullyApp {
     const controlsBar = document.getElementById('wallpaper-controls-bar');
     const uploadContainer = document.getElementById('wallpaper-upload-container');
     const input = document.getElementById('wallpaper-image-input');
+
+    this.wallpaperAspect = null;
+    if (typeof this.updateCanvasScreenRatio === 'function') {
+      this.updateCanvasScreenRatio();
+    }
 
     if (wallpaperLayer) {
       wallpaperLayer.style.backgroundImage = '';
@@ -3400,6 +3579,11 @@ class SchedullyApp {
         this.phoneCanvas.style.width = '';
         this.phoneCanvas.style.height = '';
 
+        // Update Screen Aspect Ratio engine for current device
+        if (typeof this.updateCanvasScreenRatio === 'function') {
+          this.updateCanvasScreenRatio();
+        }
+
         // 3. Render grid synchronously
         this.renderTimetableGrid();
 
@@ -4300,17 +4484,17 @@ class SchedullyApp {
 
       // Determine true unconstrained native dimensions based on active device model
       let nativeW = 380;
-      let nativeH = 760;
+      let nativeH = 844;
 
       if (originalCanvas.classList.contains('canvas-tablet')) {
-        nativeW = 920;
-        nativeH = 690;
+        nativeW = originalCanvas.offsetWidth || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tablet-canvas-width')) || 920);
+        nativeH = originalCanvas.offsetHeight || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tablet-canvas-height')) || 690);
       } else if (originalCanvas.classList.contains('canvas-paper')) {
         nativeW = 720;
         nativeH = Math.max(480, originalCanvas.scrollHeight || 480);
       } else {
         nativeW = 380;
-        nativeH = 760;
+        nativeH = originalCanvas.offsetHeight || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--phone-canvas-height')) || 770);
       }
 
       // Create an off-screen staging area so we can render it at perfect native scale
