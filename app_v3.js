@@ -939,6 +939,9 @@ class SchedullyApp {
     if (this.inputTrademark) {
       this.inputTrademark.value = this.trademarkText;
     }
+    if (typeof this.updateMobilePip === 'function') {
+      this.updateMobilePip();
+    }
   }
 
   applyTrademarkStyle(style) {
@@ -952,6 +955,9 @@ class SchedullyApp {
       toggleTrademarkStyle.querySelectorAll('.pill-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-val') === this.trademarkStyle);
       });
+    }
+    if (typeof this.updateMobilePip === 'function') {
+      this.updateMobilePip();
     }
   }
 
@@ -2697,6 +2703,9 @@ class SchedullyApp {
           }
           if (this.lockTrademarkFooter) {
             this.lockTrademarkFooter.style.display = isYes ? 'inline-flex' : 'none';
+          }
+          if (typeof this.updateMobilePip === 'function') {
+            this.updateMobilePip();
           }
           if (isYes && typeof window.syncGlassSliders === 'function') {
             setTimeout(window.syncGlassSliders, 40);
@@ -4485,16 +4494,51 @@ class SchedullyApp {
       // Determine true unconstrained native dimensions based on active device model
       let nativeW = 380;
       let nativeH = 844;
+      const ratio = this.currentScreenRatio || 'auto';
+      const devScreen = typeof getLocalDeviceScreenInfo === 'function' ? getLocalDeviceScreenInfo() : null;
 
       if (originalCanvas.classList.contains('canvas-tablet')) {
-        nativeW = originalCanvas.offsetWidth || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tablet-canvas-width')) || 920);
-        nativeH = originalCanvas.offsetHeight || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tablet-canvas-height')) || 690);
+        if (ratio === 'ios' || ratio === 'iphone') {
+          nativeW = 920; nativeH = 690; // Exact 4:3 (iPad Pro / Air)
+        } else if (ratio === 'android' || ratio === 'xiaomi') {
+          nativeW = 920; nativeH = 575; // Exact 16:10 (Xiaomi Pad / Galaxy Tab)
+        } else if (ratio === 'standard') {
+          nativeW = 920; nativeH = 518; // Exact 16:9 Widescreen
+        } else {
+          // Auto (Match)
+          if (devScreen && devScreen.aspect <= 1.45) {
+            nativeW = 920; nativeH = Math.round(920 / devScreen.aspect);
+          } else if (this.wallpaperAspect && this.wallpaperAspect >= 0.5 && this.wallpaperAspect <= 0.85) {
+            nativeW = 920; nativeH = Math.round(920 * this.wallpaperAspect);
+          } else {
+            nativeW = 920; nativeH = 690;
+          }
+        }
       } else if (originalCanvas.classList.contains('canvas-paper')) {
         nativeW = 720;
         nativeH = Math.max(480, originalCanvas.scrollHeight || 480);
       } else {
+        // PHONE MODE: Mathematical 1:1 Aspect Ratio Export Engine
         nativeW = 380;
-        nativeH = originalCanvas.offsetHeight || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--phone-canvas-height')) || 770);
+        if (ratio === 'android' || ratio === 'xiaomi') {
+          // Exact 20:9 -> 380 * (20/9) = 844.4px -> exported at 1140 x 2533 (1080 x 2400 / 1220 x 2712 1:1 match)
+          nativeH = 844;
+        } else if (ratio === 'ios' || ratio === 'iphone') {
+          // Exact 19.5:9 -> 380 * (19.5/9) = 823.3px -> exported at 1140 x 2470 (1179 x 2556 1:1 match)
+          nativeH = 823;
+        } else if (ratio === 'standard') {
+          // Exact 18:9 -> 380 * (18/9) = 760px -> exported at 1140 x 2280 (1080 x 2160 1:1 match)
+          nativeH = 760;
+        } else {
+          // Auto (Match)
+          if (devScreen && devScreen.aspect > 1.4) {
+            nativeH = Math.round(380 * devScreen.aspect);
+          } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
+            nativeH = Math.round(380 * this.wallpaperAspect);
+          } else {
+            nativeH = 844; // Default 20:9
+          }
+        }
       }
 
       // Create an off-screen staging area so we can render it at perfect native scale
@@ -4873,6 +4917,30 @@ class SchedullyApp {
       }
       if (settings.selectedOcrPeriodPreset) {
         this.selectedOcrPeriodPreset = settings.selectedOcrPeriodPreset;
+      }
+
+      // 12. App-wide Cloud Preferences (Language, Time Mode, Screen Ratio, Device, Lock UI)
+      if (settings.language && window.SchedullyI18n && typeof window.SchedullyI18n.setLanguage === 'function') {
+        if (window.SchedullyI18n.currentLang !== settings.language) {
+          window.SchedullyI18n.setLanguage(settings.language);
+        }
+      }
+      if (settings.timeDisplayMode) {
+        this.timeDisplayMode = settings.timeDisplayMode;
+        try { localStorage.setItem('schedully_time_display_mode', this.timeDisplayMode); } catch (e) {}
+        document.querySelectorAll('.time-mode-btn, #time-display-mode-group button').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-mode') === this.timeDisplayMode);
+        });
+      }
+      if (settings.screenRatio) {
+        this.currentScreenRatio = settings.screenRatio;
+        try { localStorage.setItem('schedully_screen_ratio', this.currentScreenRatio); } catch (e) {}
+        if (typeof this.updateCanvasScreenRatio === 'function') {
+          this.updateCanvasScreenRatio();
+        }
+      }
+      if (settings.customHexColors && Array.isArray(settings.customHexColors)) {
+        this.customHexColors = [...settings.customHexColors];
       }
 
       this.renderTimetableGrid();
@@ -5496,6 +5564,7 @@ class SchedullyApp {
       cardCornerRadiusVal: this.cardCornerRadiusVal || 8,
       currentMode: this.currentMode || 'light',
       currentPalette: this.currentPalette || 'nord',
+      customHexColors: this.customHexColors || null,
       gridWidthVal: this.gridWidthVal || 100,
       gridHeightVal: this.gridHeightVal || 49,
       gridYPosVal: this.gridYPosVal || 0,
@@ -5514,7 +5583,12 @@ class SchedullyApp {
       gridStartHour: this.gridStartHour || 8,
       gridEndHour: this.gridEndHour || 20,
       axisMode: this.axisMode || 'time',
-      selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900'
+      selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900',
+      timeDisplayMode: this.timeDisplayMode || localStorage.getItem('schedully_time_display_mode') || 'time',
+      screenRatio: this.currentScreenRatio || localStorage.getItem('schedully_screen_ratio') || 'auto',
+      activeDevice: this.activeDevice || 'phone',
+      showLockUI: this.showLockUI !== undefined ? this.showLockUI : true,
+      language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_user_lang') || 'en'))
     };
   }
 
