@@ -2593,6 +2593,114 @@ body.dark-mode .ratio-card-btn.active,
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45) !important;
 }
 
+/* Slim Elegant Aspect Ratio Pill Toggle in Controls Popover Header */
+.btn-ratio-pill-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5.5px !important;
+  height: 23px !important;
+  padding: 0 10px !important;
+  border-radius: 9999px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.5 + 0.3)) 0%, rgba(255, 255, 255, 0.18) 45%, rgba(255, 255, 255, 0.42) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) brightness(1.04) !important;
+  color: #0F172A !important;
+  box-shadow: 
+    0 2px 8px rgba(15, 23, 42, 0.08),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.04),
+    inset calc(var(--glass-dispersion, 7) * 0.25px) 0 2px var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
+    inset calc(var(--glass-dispersion, 7) * -0.25px) 0 2px var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+  line-height: 1 !important;
+  user-select: none !important;
+}
+
+.btn-ratio-pill-toggle svg {
+  color: #2563EB !important;
+  stroke: #2563EB !important;
+  width: 11.5px !important;
+  height: 11.5px !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.btn-ratio-pill-toggle:hover {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0.8) 100%) !important;
+  border-color: rgba(37, 99, 235, 0.5) !important;
+  color: #1D4ED8 !important;
+  box-shadow: 
+    0 4px 14px rgba(37, 99, 235, 0.2),
+    inset 0 1px 2px #FFFFFF,
+    inset calc(var(--glass-dispersion, 7) * 0.35px) 0 3px var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.6)),
+    inset calc(var(--glass-dispersion, 7) * -0.35px) 0 3px var(--glass-dispersion-pink, rgba(244, 114, 182, 0.5)) !important;
+  transform: scale(1.03) !important;
+}
+
+.btn-ratio-pill-toggle:hover svg {
+  transform: rotate(15deg) scale(1.1) !important;
+}
+
+.btn-ratio-pill-toggle:active {
+  transform: scale(0.96) !important;
+}
+
+/* Dark Mode Liquid Glass */
+body.dark-mode .btn-ratio-pill-toggle,
+.theme-dark .btn-ratio-pill-toggle {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, 0.2) 0%, rgba(30, 41, 59, 0.4) 45%, rgba(15, 23, 42, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  color: #F8FAFC !important;
+  box-shadow: 
+    0 3px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3),
+    inset calc(var(--glass-dispersion, 7) * 0.25px) 0 2px var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.35)),
+    inset calc(var(--glass-dispersion, 7) * -0.25px) 0 2px var(--glass-dispersion-pink, rgba(244, 114, 182, 0.3)) !important;
+}
+
+body.dark-mode .btn-ratio-pill-toggle svg,
+.theme-dark .btn-ratio-pill-toggle svg {
+  color: #60A5FA !important;
+  stroke: #60A5FA !important;
+}
+
+body.dark-mode .btn-ratio-pill-toggle:hover,
+.theme-dark .btn-ratio-pill-toggle:hover {
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, 0.3) 0%, rgba(51, 65, 85, 0.7) 45%, rgba(30, 41, 59, 0.85) 100%) !important;
+  border-color: rgba(96, 165, 250, 0.6) !important;
+  color: #FFFFFF !important;
+  box-shadow: 
+    0 6px 18px rgba(0, 0, 0, 0.65),
+    inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Default / Solid App Theme Style (Opaque Solid Flat) */
+body.theme-style-default .btn-ratio-pill-toggle {
+  background: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.theme-style-default.dark-mode .btn-ratio-pill-toggle {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
 body.dark-mode .font-header-icon-cursive,
 .theme-dark .font-header-icon-cursive {
   color: #FBBF24 !important;
@@ -3295,7 +3403,7 @@ textarea::placeholder,
 
 /* Smartphone Hardware Left Side (Matching Reference 1:1) */
 .m3-phone-canvas.canvas-phone .btn-action-mute,
-.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-action-mute {
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper):not(.canvas-watch) .btn-action-mute {
   left: -14.5px !important;
   right: auto !important;
   top: 106px !important;
@@ -3312,7 +3420,7 @@ textarea::placeholder,
 }
 
 .m3-phone-canvas.canvas-phone .btn-vol-up,
-.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-up {
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper):not(.canvas-watch) .btn-vol-up {
   left: -14.5px !important;
   right: auto !important;
   top: 148px !important;
@@ -3329,7 +3437,7 @@ textarea::placeholder,
 }
 
 .m3-phone-canvas.canvas-phone .btn-vol-down,
-.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-down {
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper):not(.canvas-watch) .btn-vol-down {
   left: -14.5px !important;
   right: auto !important;
   top: 208px !important;
@@ -3347,7 +3455,7 @@ textarea::placeholder,
 
 /* Smartphone Hardware Right Side (Power / Lock Key - Matching Reference 1:1) */
 .m3-phone-canvas.canvas-phone .btn-power,
-.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-power {
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper):not(.canvas-watch) .btn-power {
   right: -14.5px !important;
   left: auto !important;
   top: 168px !important;
@@ -3364,7 +3472,7 @@ textarea::placeholder,
 }
 
 .m3-phone-canvas.canvas-phone .btn-vol-rocker,
-.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper) .btn-vol-rocker {
+.m3-phone-canvas:not(.canvas-tablet):not(.canvas-paper):not(.canvas-watch) .btn-vol-rocker {
   opacity: 0 !important;
   display: none !important;
 }
@@ -3468,8 +3576,8 @@ textarea::placeholder,
 
 .m3-phone-canvas.canvas-phone {
   width: 380px !important;
-  height: var(--phone-canvas-height, 844px) !important;
-  min-height: var(--phone-canvas-height, 844px) !important;
+  height: var(--phone-canvas-height, 770px) !important;
+  min-height: var(--phone-canvas-height, 770px) !important;
   border: 10px solid #000000 !important;
   border-radius: 56px !important;
   padding: 14px 16px !important;
@@ -3494,6 +3602,1151 @@ textarea::placeholder,
   border-radius: 9999px;
   z-index: 15;
   pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIC 3D SMARTWATCH HARDWARE MODEL (Apple Watch & Galaxy Watch)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Straps are hidden on Phone and Tablet, visible ONLY in Watch Mode */
+.watch-strap {
+  display: none;
+}
+
+.watch-mode .watch-strap {
+  display: block !important;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 190px !important;
+  height: 65px !important;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%) !important;
+  z-index: 1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  pointer-events: none !important;
+}
+
+/* Ribbed Texture and Highlight for Silicone Sport Band */
+.watch-mode .watch-strap::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 10px;
+  bottom: 10px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.watch-mode .watch-strap-top {
+  top: -42px !important;
+  border-radius: 20px 20px 0 0 !important;
+  border-bottom: none !important;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.25) !important;
+}
+
+.watch-mode .watch-strap-bottom {
+  bottom: -42px !important;
+  border-radius: 0 0 20px 20px !important;
+  border-top: none !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), inset 0 -2px 2px rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Smartwatch Curved Squircle Case */
+.m3-phone-canvas.canvas-watch {
+  width: 320px !important;
+  height: 390px !important;
+  min-width: 320px !important;
+  min-height: 390px !important;
+  max-width: 320px !important;
+  max-height: 390px !important;
+  border: 10px solid #090d16 !important;
+  border-radius: 54px !important;
+  padding: 8px 10px 6px 10px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: var(--m3-sys-color-background, #F0F4FA) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  box-shadow: 
+    0 0 0 1.5px #475569,
+    0 0 0 3px #1e293b,
+    0 0 0 7px #0f172a,
+    0 30px 70px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Watch Shape: Smart Band (Tall Vertical 1:1.9) */
+.m3-phone-canvas.canvas-watch.watch-shape-band {
+  width: 220px !important;
+  height: 418px !important;
+  min-width: 220px !important;
+  min-height: 418px !important;
+  max-width: 220px !important;
+  max-height: 418px !important;
+  border-radius: 44px !important;
+  border: 7px solid #090d16 !important;
+  padding: 8px 8px 6px 8px !important;
+}
+
+/* Watch Shape: Pill Capsule (Elongated Stadium 1:2.5) */
+.m3-phone-canvas.canvas-watch.watch-shape-capsule {
+  width: 195px !important;
+  height: 440px !important;
+  min-width: 195px !important;
+  min-height: 440px !important;
+  max-width: 195px !important;
+  max-height: 440px !important;
+  border-radius: 9999px !important;
+  border: 6.5px solid #090d16 !important;
+  padding: 24px 8px 18px 8px !important;
+}
+
+/* Pill Capsule Specific Geometry & Pagination Layout */
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-nav-bar {
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 3px !important;
+  margin-bottom: 4px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-day-selector {
+  padding: 2px 4px !important;
+  gap: 2.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-day-pill {
+  width: 19px !important;
+  height: 17px !important;
+  font-size: 8.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-page-selector {
+  padding: 1.5px 4px !important;
+  gap: 2.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-page-pill {
+  width: 18px !important;
+  height: 16px !important;
+  font-size: 8.5px !important;
+}
+
+/* Watch Shape: Round Circular (1:1) */
+.m3-phone-canvas.canvas-watch.watch-shape-round {
+  width: 340px !important;
+  height: 340px !important;
+  min-width: 340px !important;
+  min-height: 340px !important;
+  max-width: 340px !important;
+  max-height: 340px !important;
+  border-radius: 9999px !important;
+  border: 10px solid #090d16 !important;
+  padding: 30px 24px 26px 24px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+/* Round Watch Specific Geometry & Curvature Adaptations */
+.m3-phone-canvas.canvas-watch.watch-shape-round {
+  width: 340px !important;
+  height: 340px !important;
+  min-width: 340px !important;
+  min-height: 340px !important;
+  max-width: 340px !important;
+  max-height: 340px !important;
+  border-radius: 9999px !important;
+  border: 10px solid #090d16 !important;
+  padding: 22px 18px 18px 18px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round #phone-lock-header {
+  margin-bottom: 1px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round #lock-time {
+  font-size: 22px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round #lock-date {
+  font-size: 8px !important;
+  margin: 0 !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-nav-bar {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2.5px !important;
+  margin-bottom: 3px !important;
+  width: 100% !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-day-selector {
+  padding: 2px 5px !important;
+  gap: 2.5px !important;
+  max-width: 200px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-day-pill {
+  width: 20px !important;
+  height: 16px !important;
+  font-size: 8px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-page-selector {
+  padding: 1px 4px !important;
+  gap: 2px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-page-pill {
+  width: 17px !important;
+  height: 15px !important;
+  font-size: 8px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-glance-container {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  gap: 3.5px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-glance-card {
+  width: 88% !important;
+  max-width: 88% !important;
+  margin: 0 auto !important;
+  align-self: center !important;
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+}
+
+/* Explicit Density Heights on Round Watch */
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-1 .watch-glance-card {
+  height: 76px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-2 .watch-glance-card {
+  height: 56px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-glance-card {
+  height: 42px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-card-time-box {
+  width: 42px !important;
+  margin: 2px 0 2px 3px !important;
+  padding: 1px 2px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-card-time-num {
+  font-size: 9.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-card-time-sub {
+  font-size: 6.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-card-title {
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-type-badge {
+  font-size: 6.5px !important;
+  padding: 1px 4.5px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-3 .watch-venue-badge {
+  font-size: 6.5px !important;
+  padding: 1px 4.5px !important;
+  max-width: 90px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-cards-list.density-4 .watch-glance-card {
+  height: 34px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round #lock-trademark-footer {
+  font-size: 7px !important;
+  margin-top: 2px !important;
+  max-width: 160px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Hide Phone Hardware on Watch */
+.m3-phone-canvas.canvas-watch .phone-camera-dot,
+.m3-phone-canvas.canvas-watch .phone-nav-bar,
+.m3-phone-canvas.canvas-watch .side-btn {
+  display: none !important;
+}
+
+/* Smartwatch Controls: Hidden by default, visible on Watch */
+.watch-crown,
+.watch-side-button,
+.watch-speaker {
+  display: none;
+}
+
+.m3-phone-canvas.canvas-watch .watch-crown {
+  display: block !important;
+  position: absolute !important;
+  right: -23px !important;
+  top: 65px !important;
+  width: 10px !important;
+  height: 52px !important;
+  border-radius: 0 5px 5px 0 !important;
+  background: linear-gradient(90deg, #1e293b 0%, #475569 35%, #cbd5e1 75%, #f8fafc 90%, #334155 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-left: none !important;
+  box-shadow: 2.5px 2.5px 10px rgba(0, 0, 0, 0.7), inset 0 1px 1px #ffffff !important;
+}
+
+/* Digital Crown Orange Accent Ring */
+.m3-phone-canvas.canvas-watch .watch-crown::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  bottom: 0;
+  width: 2.5px;
+  background: #f97316;
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgba(249, 115, 22, 0.8);
+}
+
+/* Smartwatch Flush Side Button */
+.m3-phone-canvas.canvas-watch .watch-side-button {
+  display: block !important;
+  position: absolute !important;
+  right: -20px !important;
+  top: 135px !important;
+  width: 7px !important;
+  height: 38px !important;
+  border-radius: 0 3.5px 3.5px 0 !important;
+  background: linear-gradient(90deg, #0f172a 0%, #334155 45%, #64748b 85%, #94a3b8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-left: none !important;
+  box-shadow: 1.5px 1.5px 6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Smartwatch Microphone / Speaker Left Grille */
+.m3-phone-canvas.canvas-watch .watch-speaker {
+  display: block !important;
+  position: absolute !important;
+  left: -16px !important;
+  top: 95px !important;
+  width: 4px !important;
+  height: 28px !important;
+  border-radius: 3px 0 0 3px !important;
+  background: #020617 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-right: none !important;
+  box-shadow: -1px 1px 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ── Smart Band Hardware Specifics (No Crown/Speaker, Single Sleek Button, 120px Straps) ── */
+.m3-phone-canvas.canvas-watch.watch-shape-band .watch-crown,
+.m3-phone-canvas.canvas-watch.watch-shape-band .watch-speaker {
+  display: none !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-band .watch-side-button {
+  display: block !important;
+  position: absolute !important;
+  right: -13px !important;
+  top: 190px !important;
+  width: 6px !important;
+  height: 38px !important;
+  border-radius: 0 3px 3px 0 !important;
+  background: linear-gradient(90deg, #1e293b 0%, #475569 50%, #94a3b8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-left: none !important;
+  box-shadow: 1.5px 1.5px 5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.watch-mode .watch-strap.strap-band,
+.watch-mode:has(.watch-shape-band) .watch-strap {
+  width: 120px !important;
+}
+
+/* ── Pill Capsule Hardware Specifics (Full Touch, No Mechanical Buttons, 105px Straps) ── */
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-crown,
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-side-button,
+.m3-phone-canvas.canvas-watch.watch-shape-capsule .watch-speaker {
+  display: none !important;
+}
+
+.watch-mode .watch-strap.strap-capsule,
+.watch-mode:has(.watch-shape-capsule) .watch-strap {
+  width: 105px !important;
+}
+
+/* ── Round Watch Hardware Specifics (Dual Pushers) ── */
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-speaker {
+  display: none !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-crown {
+  display: block !important;
+  position: absolute !important;
+  right: -17px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 8px !important;
+  height: 38px !important;
+  border-radius: 0 4px 4px 0 !important;
+  background: linear-gradient(90deg, #1e293b 0%, #475569 35%, #cbd5e1 75%, #f8fafc 90%, #334155 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-left: none !important;
+  box-shadow: 2.5px 2.5px 10px rgba(0, 0, 0, 0.7), inset 0 1px 1px #ffffff !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-crown::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  left: 2px !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 2px !important;
+  background: #f97316 !important;
+  border-radius: 1px !important;
+  box-shadow: 0 0 4px rgba(249, 115, 22, 0.8) !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round .watch-side-button {
+  display: none !important;
+}
+
+.watch-mode .watch-strap.strap-round,
+.watch-mode:has(.watch-shape-round) .watch-strap {
+  width: 180px !important;
+}
+
+/* Watch Screen Clock Header Typography */
+.m3-phone-canvas.canvas-watch #phone-lock-header {
+  padding-top: 0px !important;
+  margin-bottom: 2px !important;
+  flex-shrink: 0 !important;
+}
+
+.m3-phone-canvas.canvas-watch #lock-time {
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+  color: #38BDF8 !important;
+  text-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+  margin-bottom: 0px !important;
+}
+
+.m3-phone-canvas.canvas-watch #lock-date {
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #0F172A !important;
+  margin-bottom: 0px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SMARTWATCH TODAY'S SCHEDULE GLANCE COMPLICATION VIEW
+   ═══════════════════════════════════════════════════════════════ */
+.watch-glance-container {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  position: relative;
+  z-index: 10;
+  gap: 3px;
+  padding: 0;
+  margin: 0;
+  font-family: var(--timetable-font-family) !important;
+}
+
+.canvas-watch .watch-glance-container,
+.canvas-watch .watch-card-title,
+.canvas-watch .watch-card-time-num,
+.canvas-watch .watch-card-time-sub,
+.canvas-watch .watch-type-badge,
+.canvas-watch .watch-venue-badge,
+.canvas-watch .watch-submeta-item,
+.canvas-watch .watch-day-pill,
+.canvas-watch .watch-page-pill,
+.canvas-watch .watch-empty-state,
+.canvas-watch #lock-date {
+  font-family: var(--timetable-font-family) !important;
+}
+
+.canvas-watch .watch-glance-container {
+  display: flex !important;
+}
+
+.canvas-watch #lock-timetable-container {
+  display: none !important;
+}
+
+/* Watch Navigation Row */
+.watch-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  margin: 0 auto 3px auto !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+/* Day Selector Floating Capsule Bar on Watch Screen */
+.watch-day-selector {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.98) !important;
+  padding: 2px 4px !important;
+  gap: 3px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+  width: fit-content !important;
+  flex-shrink: 0 !important;
+}
+
+/* Dynamic Page Selector Capsule (1, 2, 3...) */
+.watch-page-selector {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.98) !important;
+  padding: 2px 4px !important;
+  gap: 2.5px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+  flex-shrink: 0 !important;
+}
+
+.watch-page-selector.hidden {
+  display: none !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-page-pill {
+  width: 19px !important;
+  height: 20px !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #475569 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-page-pill:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #0F172A !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-page-pill.active {
+  background: var(--watch-primary-accent, var(--m3-sys-color-primary, #38BDF8)) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px var(--watch-primary-accent, rgba(56, 189, 248, 0.45)) !important;
+}
+
+/* Watch Cards Container (100% Non-Scrollable Auto-Fit Dynamic Density) */
+.watch-cards-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  width: 100%;
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden !important;
+  padding: 1px 2px 2px 2px;
+  box-sizing: border-box;
+  gap: 4px;
+}
+
+.watch-cards-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT & DARK MODE ADAPTIVE STYLING FOR SMARTWATCH
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base Watch Canvas Surface */
+.m3-phone-canvas.canvas-watch {
+  background-color: var(--m3-sys-color-background, #F0F4FA) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch,
+.theme-dark .m3-phone-canvas.canvas-watch {
+  background-color: var(--m3-sys-color-background, #0B0F19) !important;
+}
+
+/* Light Mode Watch Day Pills (Default) */
+.m3-phone-canvas.canvas-watch .watch-day-pill {
+  width: 24px !important;
+  height: 20px !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #475569 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-day-pill:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #0F172A !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-day-pill.active {
+  background: var(--watch-primary-accent, var(--m3-sys-color-primary, #38BDF8)) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px var(--watch-primary-accent, rgba(56, 189, 248, 0.45)) !important;
+}
+
+/* Material Design 3 Watch Cards (Clean Material You Tonal Surface Containers) */
+.m3-phone-canvas.canvas-watch .watch-glance-card {
+  position: relative !important;
+  background: var(--card-bg-gradient, #FFFFFF) !important;
+  border: 1px solid var(--card-accent-border, rgba(0, 0, 0, 0.08)) !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Full Flush Left Accent Color Cap wrapping the card's left curved edge */
+.m3-phone-canvas.canvas-watch .watch-card-accent-bar {
+  width: 6px !important;
+  flex-shrink: 0 !important;
+  background-color: var(--card-accent-color, #6366F1) !important;
+  box-shadow: 1px 0 8px var(--card-accent-color, rgba(99, 102, 241, 0.3)) !important;
+}
+
+/* Left Time Box Container */
+.m3-phone-canvas.canvas-watch .watch-card-time-box {
+  width: 48px !important;
+  flex-shrink: 0 !important;
+  background: var(--card-accent-bg, rgba(99, 102, 241, 0.12)) !important;
+  border: 1px solid var(--card-accent-border, rgba(99, 102, 241, 0.22)) !important;
+  border-radius: 11px !important;
+  margin: 3.5px 0 3.5px 5px !important;
+  padding: 2px 3px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1px !important;
+  box-sizing: border-box !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-card-time-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--card-accent-color, #6366F1) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-card-time-num {
+  font-size: 10.5px;
+  font-weight: 900 !important;
+  color: var(--card-accent-color, #6366F1) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.05 !important;
+  text-align: center !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-card-time-sub {
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  color: var(--card-accent-color, #6366F1) !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+/* Card Body Content Area */
+.m3-phone-canvas.canvas-watch .watch-card-content {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding: 3px 8px 3px 6.5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 1.5px !important;
+}
+
+/* Row 1: Title + Course Type */
+.m3-phone-canvas.canvas-watch .watch-card-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 3px !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-card-title {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #0F172A !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  letter-spacing: -0.01em !important;
+  flex: 1 1 auto !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-type-badge {
+  background: var(--card-accent-bg, rgba(99, 102, 241, 0.12)) !important;
+  color: var(--card-accent-color, #6366F1) !important;
+  border: 1px solid var(--card-accent-border, rgba(99, 102, 241, 0.25)) !important;
+  border-radius: 9999px !important;
+  padding: 1.5px 5.5px !important;
+  font-size: 7.5px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2.5px !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Row 2: Location/Venue Badge */
+.m3-phone-canvas.canvas-watch .watch-venue-badge {
+  background: var(--card-accent-bg, rgba(99, 102, 241, 0.1)) !important;
+  color: var(--card-accent-color, #6366F1) !important;
+  border: 1px solid var(--card-accent-border, rgba(99, 102, 241, 0.22)) !important;
+  border-radius: 9999px !important;
+  padding: 1.5px 5.5px !important;
+  font-size: 7px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2.5px !important;
+  max-width: 105px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1 !important;
+  width: fit-content !important;
+}
+
+/* Row 3: Group & Lecturer */
+.m3-phone-canvas.canvas-watch .watch-card-submeta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 7px !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+  line-height: 1 !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-submeta-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2.5px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DYNAMIC DENSITY AUTO-FIT SCALING (1 to 6 classes non-scrollable)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1 Class: Spacious Hero */
+.watch-cards-list.density-1 .watch-glance-card {
+  flex: 0 0 auto !important;
+  height: 110px !important;
+  margin: auto 0 !important;
+  border-radius: 18px !important;
+}
+.watch-cards-list.density-1 .watch-card-time-box {
+  width: 54px !important;
+}
+.watch-cards-list.density-1 .watch-card-title {
+  font-size: 13px !important;
+}
+.watch-cards-list.density-1 .watch-card-time-num {
+  font-size: 12px !important;
+}
+
+/* 2 Classes: Roomy */
+.watch-cards-list.density-2 .watch-glance-card {
+  max-height: 105px !important;
+  border-radius: 16px !important;
+}
+.watch-cards-list.density-2 .watch-card-title {
+  font-size: 12px !important;
+}
+
+/* 3 Classes: Standard */
+.watch-cards-list.density-3 .watch-glance-card {
+  max-height: 72px !important;
+  border-radius: 14px !important;
+}
+.watch-cards-list.density-3 .watch-card-title {
+  font-size: 11px !important;
+}
+
+/* 4 Classes: Compact */
+.watch-cards-list.density-4 .watch-glance-card {
+  max-height: 54px !important;
+  border-radius: 12px !important;
+}
+.watch-cards-list.density-4 .watch-card-time-box {
+  width: 42px !important;
+  margin: 2px 0 2px 4px !important;
+}
+.watch-cards-list.density-4 .watch-card-title {
+  font-size: 10px !important;
+}
+.watch-cards-list.density-4 .watch-card-time-num {
+  font-size: 9px !important;
+}
+
+/* 5+ Classes: Ultra-Compact Slim Capsules */
+.watch-cards-list.density-5 .watch-glance-card,
+.watch-cards-list.density-many .watch-glance-card {
+  max-height: 42px !important;
+  border-radius: 10px !important;
+}
+.watch-cards-list.density-5 .watch-card-time-box,
+.watch-cards-list.density-many .watch-card-time-box {
+  width: 38px !important;
+  margin: 1.5px 0 1.5px 3px !important;
+}
+.watch-cards-list.density-5 .watch-card-title,
+.watch-cards-list.density-many .watch-card-title {
+  font-size: 9px !important;
+}
+.watch-cards-list.density-5 .watch-card-time-num,
+.watch-cards-list.density-many .watch-card-time-num {
+  font-size: 8px !important;
+}
+
+/* Empty State on Watch */
+.m3-phone-canvas.canvas-watch .watch-empty-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 160px !important;
+  text-align: center !important;
+  color: #0F172A !important;
+  gap: 6px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  margin: 8px 4px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-empty-pill {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #6366F1 !important;
+  border-radius: 9999px !important;
+  padding: 3px 10px !important;
+  letter-spacing: 0.04em !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-empty-state div:nth-child(2) {
+  color: #0F172A !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE OVERRIDES (Strictly when user enables Dark Mode)
+   ═══════════════════════════════════════════════════════════════ */
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-day-selector,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-day-selector,
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-page-selector,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-page-selector {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-day-pill,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-day-pill,
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-page-pill,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-page-pill {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-day-pill:hover,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-day-pill:hover,
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-page-pill:hover,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-page-pill:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-day-pill.active,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-day-pill.active,
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-page-pill.active,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-page-pill.active {
+  background: var(--watch-primary-accent, #38BDF8) !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 10px var(--watch-primary-accent, rgba(56, 189, 248, 0.6)) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-glance-card,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-glance-card,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark {
+  background: var(--card-bg-gradient, rgba(15, 23, 42, 0.88)) !important;
+  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.22)) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px var(--card-accent-glow, transparent) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-box,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-box,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-box {
+  background: var(--card-accent-bg, rgba(255, 255, 255, 0.1)) !important;
+  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.25)) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-num,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-num,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-num {
+  color: var(--card-accent-color, #38BDF8) !important;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-sub,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-sub,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-sub {
+  color: #E2E8F0 !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-icon,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-icon,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-icon {
+  color: var(--card-accent-color, #38BDF8) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-title,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-title,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-title {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-type-badge,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-type-badge,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-type-badge {
+  background: var(--card-accent-bg, rgba(255, 255, 255, 0.14)) !important;
+  color: #FFFFFF !important;
+  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.28)) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-venue-badge,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-venue-badge,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-venue-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #F1F5F9 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-submeta,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-card-submeta,
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-submeta {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Light Mode Material You Cards */
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light {
+  background: var(--card-bg-gradient, #FFFFFF) !important;
+  border-color: var(--card-accent-border, rgba(0, 0, 0, 0.08)) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-title {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-time-num {
+  color: var(--card-accent-color, #0284C7) !important;
+  text-shadow: none !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-time-sub {
+  color: #475569 !important;
+  text-shadow: none !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-time-icon {
+  color: var(--card-accent-color, #0284C7) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-time-box {
+  background: var(--card-accent-bg, rgba(2, 132, 199, 0.1)) !important;
+  border-color: var(--card-accent-border, rgba(2, 132, 199, 0.2)) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-type-badge {
+  background: var(--card-accent-bg, rgba(2, 132, 199, 0.12)) !important;
+  color: var(--card-accent-color, #0284C7) !important;
+  border-color: var(--card-accent-border, rgba(2, 132, 199, 0.25)) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-venue-badge {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #334155 !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.m3-phone-canvas.canvas-watch .watch-glance-card.card-light .watch-card-submeta {
+  color: #64748B !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-empty-state,
+.theme-dark .m3-phone-canvas.canvas-watch .watch-empty-state {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch .watch-empty-state div:nth-child(2),
+.theme-dark .m3-phone-canvas.canvas-watch .watch-empty-state div:nth-child(2) {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .m3-phone-canvas.canvas-watch #lock-date,
+.theme-dark .m3-phone-canvas.canvas-watch #lock-date {
+  color: #E2E8F0 !important;
+  text-shadow: none !important;
+}
+
+#toggle-axis-mode.pill-toggle-group {
+  display: inline-flex !important;
+  flex-shrink: 0 !important;
+}
+
+#toggle-axis-mode .pill-btn {
+  padding: 3px 8px !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+}
+
+/* Neon Accent Swatches in Sidebar */
+.watch-accent-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background-color: var(--accent-hex) !important;
+  border: 2.5px solid transparent !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  position: relative !important;
+  outline: none !important;
+}
+
+.watch-accent-dot:hover {
+  transform: scale(1.15) !important;
+}
+
+.watch-accent-dot.active {
+  transform: scale(1.25) !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 0 14px var(--accent-hex), 0 3px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.m3-phone-canvas.canvas-watch #lock-trademark-footer {
+  font-size: 7.5px !important;
+  padding: 1px 4px !important;
+  margin-top: 3px !important;
 }
 
 .m3-phone-canvas.canvas-tablet {
@@ -4877,6 +6130,22 @@ body.dark-mode #user-status-text {
 
 .canvas-paper .phone-wallpaper-layer {
   border-radius: 16px !important;
+}
+
+.canvas-watch .phone-wallpaper-layer {
+  border-radius: 44px !important;
+}
+
+.canvas-watch.watch-shape-band .phone-wallpaper-layer {
+  border-radius: 37px !important;
+}
+
+.canvas-watch.watch-shape-capsule .phone-wallpaper-layer {
+  border-radius: 9999px !important;
+}
+
+.canvas-watch.watch-shape-round .phone-wallpaper-layer {
+  border-radius: 9999px !important;
 }
 
 .phone-camera-dot,
@@ -7234,7 +8503,8 @@ body.dark-mode #zoom-label-text {
    UNIVERSAL LIQUID GLASS SLIDING SEGMENTED SWITCHER & POPOVER
    Connected dynamically to LightGlass Studio (Thickness, Glare, Dispersion, Blur)
    ═══════════════════════════════════════════════════════════════ */
-#canvas-controls-popover {
+#canvas-controls-popover,
+#canvas-ratio-popover {
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.75)) 0%, rgba(255, 255, 255, 0.32) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.5)) 100%) !important;
   backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%) contrast(108%) brightness(1.06) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(220%) contrast(108%) brightness(1.06) !important;
@@ -7249,7 +8519,9 @@ body.dark-mode #zoom-label-text {
 }
 
 body.dark-mode #canvas-controls-popover,
-.theme-dark #canvas-controls-popover {
+body.dark-mode #canvas-ratio-popover,
+.theme-dark #canvas-controls-popover,
+.theme-dark #canvas-ratio-popover {
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.10 + 0.02)) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.15) 100%) !important;
   backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(190%) !important;
@@ -7432,6 +8704,35 @@ body.dark-mode .edit-course-time-format,
   backface-visibility: hidden !important;
 }
 
+/* Clean 4-Segment Equal-Width Device Type Capsule */
+#device-type-toggles {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  align-items: center !important;
+  gap: 2px !important;
+  width: 100% !important;
+  padding: 3px !important;
+  border-radius: 9999px !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+#device-type-toggles .capsule-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 5.5px 0 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  z-index: 2 !important;
+  cursor: pointer !important;
+  letter-spacing: 0.01em !important;
+}
+
 #device-type-toggles .capsule-btn:focus,
 .pill-toggle-group .pill-btn:focus,
 .capsule-group button:focus {
@@ -7457,16 +8758,69 @@ body.dark-mode .edit-course-time-format,
 .time-mode-btn.active,
 .support-tab-btn.active {
   background: transparent !important;
-  background-color: transparent !important;
-  color: #0F172A !important;
-  font-weight: 800 !important;
-  box-shadow: none !important;
-  transform: scale(1.02) !important;
 }
 
-#device-type-toggles .capsule-btn.active svg,
-.capsule-group button.active svg {
+/* Device Type 4-Segment Toggle Bar (Symmetric Text-Only Layout) */
+#device-type-toggles {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  padding: 3.5px !important;
+  gap: 3px !important;
+  background: rgba(241, 245, 249, 0.92) !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  border-radius: 9999px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+#device-type-toggles .capsule-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5.5px 2px !important;
+  border-radius: 9999px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #64748B !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+#device-type-toggles .capsule-btn:hover {
   color: #0F172A !important;
+}
+
+#device-type-toggles .capsule-btn.active {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.dark-mode #device-type-toggles,
+.theme-dark #device-type-toggles {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.dark-mode #device-type-toggles .capsule-btn,
+.theme-dark #device-type-toggles .capsule-btn {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode #device-type-toggles .capsule-btn:hover,
+.theme-dark #device-type-toggles .capsule-btn:hover {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #device-type-toggles .capsule-btn.active,
+.theme-dark #device-type-toggles .capsule-btn.active {
+  background: #1E293B !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
 
 body.dark-mode #device-type-toggles .capsule-btn,
@@ -8181,6 +9535,7 @@ body.theme-style-default #right-sidebar,
 body.theme-style-default #header-desktop-bar,
 body.theme-style-default #bottom-floating-pill-bar,
 body.theme-style-default #canvas-controls-popover,
+body.theme-style-default #canvas-ratio-popover,
 body.theme-style-default .mobile-export-dropdown,
 body.theme-style-default #mobile-export-dropdown,
 body.theme-style-default #btn-mobile-export-toggle,
@@ -8204,6 +9559,7 @@ body.theme-style-default.dark-mode #right-sidebar,
 body.theme-style-default.dark-mode #header-desktop-bar,
 body.theme-style-default.dark-mode #bottom-floating-pill-bar,
 body.theme-style-default.dark-mode #canvas-controls-popover,
+body.theme-style-default.dark-mode #canvas-ratio-popover,
 body.theme-style-default.dark-mode .mobile-export-dropdown,
 body.theme-style-default.dark-mode #mobile-export-dropdown,
 body.theme-style-default.dark-mode #btn-mobile-export-toggle,
