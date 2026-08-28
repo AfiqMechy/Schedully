@@ -101,53 +101,36 @@ class TimetableEngine {
    * Helper: Mobile-friendly download or native share sheet trigger
    */
   async downloadOrShareFile(blob, filename, mimeType) {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1280;
-
-    // 1. Native Web Share API (Mobile Safari iOS 15+ & Chrome Android)
-    if (isMobile && navigator.canShare) {
-      try {
-        const file = new File([blob], filename, { type: mimeType });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: filename,
-            text: `Schedully Schedule Export: ${filename}`
-          });
-          return;
-        }
-      } catch (shareErr) {
-        console.log("Web share cancelled or unsupported, using direct fallback:", shareErr);
-      }
-    }
-
-    // 2. Data URL fallback for Mobile browsers
-    if (isMobile) {
-      const reader = new FileReader();
-      reader.onloadend = function () {
-        const dataUrl = reader.result;
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = filename;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => document.body.removeChild(a), 150);
-      };
-      reader.readAsDataURL(blob);
+    try {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        if (document.body.contains(link)) document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 500);
       return;
+    } catch (e) {
+      console.warn("Direct blob download failed, trying data URL:", e);
     }
 
-    // 3. Desktop Blob URL download
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    }, 150);
+    // Data URL fallback
+    const reader = new FileReader();
+    reader.onloadend = function () {
+      const dataUrl = reader.result;
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (document.body.contains(a)) document.body.removeChild(a);
+      }, 500);
+    };
+    reader.readAsDataURL(blob);
   }
 
   /**

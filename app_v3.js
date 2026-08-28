@@ -408,11 +408,16 @@ class SchedullyApp {
     });
 
     // Apply 3 distinct tone colors for Wallpaper Background, Header, and Grid Surface
-    if (!this.userHasPickedBgColor) {
+    const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
+    if (!this.userHasPickedBgColor && !hasPhotoWallpaper) {
       this.phoneCanvas.style.backgroundColor = selectedTheme.defaultBg || selectedTheme.bg;
     }
     if (!this.userHasPickedHeaderColor) {
-      this.applyHeaderColor(selectedTheme.defaultHeader || selectedTheme.bottom);
+      if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
+        this.applyHeaderColor(this.wallpaperSwatches[0]);
+      } else {
+        this.applyHeaderColor(selectedTheme.defaultHeader || selectedTheme.bottom);
+      }
     }
     if (!this.userHasPickedSurfaceColor) {
       document.documentElement.style.setProperty('--m3-grid-surface-bg', selectedTheme.defaultSurface || selectedTheme.surface);
@@ -871,9 +876,9 @@ class SchedullyApp {
     }
     root.style.setProperty('--m3-header-custom-bg', colorVal);
 
-    // Auto-calculate luminance contrast for header & time text
-    const isDark = this.isColorDark(colorVal);
-    const headerTextColor = isDark ? '#FFFFFF' : '#0F172A';
+    // Auto-calculate luminance contrast for header & title text
+    const headerTextColor = this.getContrastColor(colorVal);
+    const isDark = (headerTextColor === '#FFFFFF');
     const headerOutline = isDark ? 'rgba(255, 255, 255, 0.22)' : 'var(--m3-sys-color-outline)';
 
     root.style.setProperty('--m3-header-text-color', headerTextColor);
@@ -1072,7 +1077,8 @@ class SchedullyApp {
 
     this.updateCanvasScreenRatio = () => {
       const phoneCanvas = document.getElementById('phone-canvas');
-      const ratioSection = document.getElementById('screen-ratio-section');
+      const ratioBtn = document.getElementById('btn-controls-ratio-toggle');
+      const ratioPopover = document.getElementById('canvas-ratio-popover');
       const badge = document.getElementById('current-ratio-badge');
       const toggles = document.getElementById('screen-ratio-toggles');
 
@@ -1080,18 +1086,82 @@ class SchedullyApp {
 
       const isPaper = phoneCanvas.classList.contains('canvas-paper');
       if (isPaper) {
-        if (ratioSection) ratioSection.classList.add('is-disabled-paper');
-        if (badge) badge.innerText = 'N/A (Print Paper)';
+        if (ratioBtn) {
+          ratioBtn.style.opacity = '0.35';
+          ratioBtn.style.pointerEvents = 'none';
+          ratioBtn.style.filter = 'grayscale(1)';
+        }
+        if (ratioPopover) ratioPopover.classList.add('hidden');
+        if (badge) badge.innerText = 'N/A (Paper)';
         return;
       } else {
-        if (ratioSection) ratioSection.classList.remove('is-disabled-paper');
+        if (ratioBtn) {
+          ratioBtn.style.opacity = '1';
+          ratioBtn.style.pointerEvents = 'auto';
+          ratioBtn.style.filter = 'none';
+        }
       }
 
       const isTablet = phoneCanvas.classList.contains('canvas-tablet');
+      const isWatch = phoneCanvas.classList.contains('canvas-watch');
       const ratio = this.currentScreenRatio || 'auto';
       const devScreen = getLocalDeviceScreenInfo();
 
-      if (isTablet) {
+      if (isWatch) {
+        // ⌚ SMARTWATCH & SMART BAND RATIOS (Generic non-branded presets)
+        let badgeLabel = 'Squircle (4:5)';
+        const straps = document.querySelectorAll('.watch-strap');
+        straps.forEach(s => s.classList.remove('strap-band', 'strap-capsule', 'strap-round', 'strap-squircle'));
+        phoneCanvas.classList.remove('watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
+
+        if (ratio === 'android' || ratio === 'band') {
+          phoneCanvas.classList.add('watch-shape-band');
+          straps.forEach(s => s.classList.add('strap-band'));
+          badgeLabel = 'Smart Band (1:1.9)';
+        } else if (ratio === 'ios' || ratio === 'capsule') {
+          phoneCanvas.classList.add('watch-shape-capsule');
+          straps.forEach(s => s.classList.add('strap-capsule'));
+          badgeLabel = 'Pill Capsule (1:2.5)';
+        } else if (ratio === 'standard' || ratio === 'round') {
+          phoneCanvas.classList.add('watch-shape-round');
+          straps.forEach(s => s.classList.add('strap-round'));
+          badgeLabel = 'Round (1:1)';
+        } else {
+          straps.forEach(s => s.classList.add('strap-squircle'));
+          badgeLabel = 'Squircle (4:5)';
+        }
+
+        if (badge) badge.innerText = badgeLabel;
+
+        // Smoothly adjust canvas wrapper dimensions and auto-center
+        if (typeof window.applyZoom === 'function') {
+          window.applyZoom(true);
+        }
+        if (typeof window.centerCanvasModel === 'function') {
+          window.centerCanvasModel(true);
+        }
+
+        // Smartwatch Mode Labels
+        if (toggles) {
+          const btnAutoTitle = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-title');
+          const btnAutoSub = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-sub');
+          const btnBandTitle = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-title');
+          const btnBandSub = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-sub');
+          const btnCapsuleTitle = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-title');
+          const btnCapsuleSub = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-sub');
+          const btnRoundTitle = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-title');
+          const btnRoundSub = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-sub');
+
+          if (btnAutoTitle) btnAutoTitle.innerText = 'Squircle';
+          if (btnAutoSub) btnAutoSub.innerText = '4:5';
+          if (btnBandTitle) btnBandTitle.innerText = 'Smart Band';
+          if (btnBandSub) btnBandSub.innerText = '1:1.9';
+          if (btnCapsuleTitle) btnCapsuleTitle.innerText = 'Pill Capsule';
+          if (btnCapsuleSub) btnCapsuleSub.innerText = '1:2.5';
+          if (btnRoundTitle) btnRoundTitle.innerText = 'Round';
+          if (btnRoundSub) btnRoundSub.innerText = '1:1';
+        }
+      } else if (isTablet) {
         // 🖥️ TABLET MODE RATIOS (iPad 4:3, Android Tablet 16:10 / 3:2, Widescreen 16:9)
         let targetTabletW = 920;
         let targetTabletH = 690; // Default iPad 4:3
@@ -1126,39 +1196,47 @@ class SchedullyApp {
 
         // Dynamic Tablet Mode Sublabels
         if (toggles) {
+          const btnAutoTitle = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-title');
+          const btnAutoSub = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-sub');
+          const btnAndroidTitle = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-title');
           const btnAndroid = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-sub');
           const btnIosTitle = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-title');
           const btnIos = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-sub');
+          const btnStdTitle = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-title');
           const btnStd = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-sub');
+          if (btnAutoTitle) btnAutoTitle.innerText = 'Auto';
+          if (btnAutoSub) btnAutoSub.innerText = 'Match';
+          if (btnAndroidTitle) btnAndroidTitle.innerText = 'Android';
           if (btnAndroid) btnAndroid.innerText = '16:10';
           if (btnIosTitle) btnIosTitle.innerText = 'iPad';
           if (btnIos) btnIos.innerText = '4:3';
+          if (btnStdTitle) btnStdTitle.innerText = 'Classic';
           if (btnStd) btnStd.innerText = '16:9';
         }
       } else {
-        // 📱 SMARTPHONE MODE RATIOS (Android 20:9, iOS 19.5:9, Classic 18:9)
-        let targetHeight = 844; // Exact 20:9 (380 * 20 / 9 = 844px)
+        // 📱 SMARTPHONE MODE RATIOS (Sleek Authentic Phone Chassis Preview)
+        let targetHeight = 770; // Authentic sleek smartphone proportion
         let badgeLabel = 'Auto (Match)';
 
         if (ratio === 'auto') {
           if (devScreen && devScreen.aspect > 1.4) {
-            targetHeight = Math.round(380 * devScreen.aspect);
+            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, devScreen.aspect)));
             badgeLabel = `Auto (${devScreen.ratioFormatted} Screen)`;
           } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
-            targetHeight = Math.round(380 * this.wallpaperAspect);
+            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, this.wallpaperAspect)));
             badgeLabel = `Auto (${(this.wallpaperAspect * 9).toFixed(1)}:9 Photo)`;
           } else {
-            targetHeight = 844;
+            targetHeight = 770;
             badgeLabel = 'Auto (20:9)';
           }
         } else if (ratio === 'android' || ratio === 'xiaomi') {
-          targetHeight = 844; // Exact 20:9
+          targetHeight = 775; // Sleek 20:9 flagship chassis preview
           badgeLabel = 'Android (20:9)';
         } else if (ratio === 'ios' || ratio === 'iphone') {
-          targetHeight = 823; // Exact 19.5:9
+          targetHeight = 765; // Sleek 19.5:9 iPhone chassis preview
           badgeLabel = 'iOS (19.5:9)';
         } else if (ratio === 'standard') {
-          targetHeight = 760; // Exact 18:9
+          targetHeight = 750; // Sleek 18:9 Classic chassis preview
           badgeLabel = '18:9 Classic';
         }
 
@@ -1167,13 +1245,21 @@ class SchedullyApp {
 
         // Restore Smartphone Mode Sublabels
         if (toggles) {
+          const btnAutoTitle = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-title');
+          const btnAutoSub = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-sub');
+          const btnAndroidTitle = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-title');
           const btnAndroid = toggles.querySelector('.ratio-card-btn[data-ratio="android"] .ratio-card-sub');
           const btnIosTitle = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-title');
           const btnIos = toggles.querySelector('.ratio-card-btn[data-ratio="ios"] .ratio-card-sub');
+          const btnStdTitle = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-title');
           const btnStd = toggles.querySelector('.ratio-card-btn[data-ratio="standard"] .ratio-card-sub');
+          if (btnAutoTitle) btnAutoTitle.innerText = 'Auto';
+          if (btnAutoSub) btnAutoSub.innerText = 'Match';
+          if (btnAndroidTitle) btnAndroidTitle.innerText = 'Android';
           if (btnAndroid) btnAndroid.innerText = '20:9';
           if (btnIosTitle) btnIosTitle.innerText = 'iOS';
           if (btnIos) btnIos.innerText = '19.5:9';
+          if (btnStdTitle) btnStdTitle.innerText = 'Classic';
           if (btnStd) btnStd.innerText = '18:9';
         }
       }
@@ -1187,9 +1273,30 @@ class SchedullyApp {
     };
 
     const ratioToggles = document.getElementById('screen-ratio-toggles');
+    const btnControlsRatioToggle = document.getElementById('btn-controls-ratio-toggle');
+    const canvasRatioPopover = document.getElementById('canvas-ratio-popover');
+    const btnCloseRatioPopover = document.getElementById('btn-close-ratio-popover');
+
+    if (btnControlsRatioToggle && canvasRatioPopover) {
+      btnControlsRatioToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        canvasRatioPopover.classList.toggle('hidden');
+      });
+    }
+
+    if (btnCloseRatioPopover && canvasRatioPopover) {
+      btnCloseRatioPopover.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        canvasRatioPopover.classList.add('hidden');
+      });
+    }
+
     if (ratioToggles) {
       ratioToggles.querySelectorAll('.pill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
           const r = btn.getAttribute('data-ratio');
           if (r) {
             this.currentScreenRatio = r;
@@ -1210,7 +1317,7 @@ class SchedullyApp {
     try {
       const savedWallpaper = localStorage.getItem('schedully_wallpaper_data');
       if (savedWallpaper) {
-        this.applyWallpaper(savedWallpaper, false);
+        this.applyWallpaper(savedWallpaper, true);
       }
     } catch (e) {}
 
@@ -1560,6 +1667,9 @@ class SchedullyApp {
         fontSelect.value = fontKey;
       }
       this.renderTimetableGrid();
+      if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+        this.renderWatchGlance();
+      }
       if (!skipSave) {
         this._stagePending();
       }
@@ -1729,8 +1839,9 @@ class SchedullyApp {
           const sat = (max === 0) ? 0 : (max - min) / max;
           const lum = (0.299 * r + 0.587 * g + 0.114 * b);
 
-          if (lum > 25 && lum < 235) {
-            const weight = (sat * 2.5) + 1;
+          // Prefer rich, vibrant, authentic tones directly from wallpaper pixels
+          if (lum > 25 && lum < 235 && sat > 0.12) {
+            const weight = (sat * 3.0) + 1.2;
             colorBuckets[key] = (colorBuckets[key] || 0) + weight;
           }
         }
@@ -1745,42 +1856,50 @@ class SchedullyApp {
             return hex.length === 1 ? '0' + hex : hex;
           }).join('');
 
-          const primaryHex = rgbToHex(dominantRgb[0], dominantRgb[1], dominantRgb[2]);
-
-          // Pick secondary color distinct from primary
-          let secondaryHex = primaryHex;
-          for (let i = 1; i < sorted.length; i++) {
-            const sRgb = parseRgb(sorted[i]);
-            const dist = Math.sqrt(
-              Math.pow(dominantRgb[0] - sRgb[0], 2) +
-              Math.pow(dominantRgb[1] - sRgb[1], 2) +
-              Math.pow(dominantRgb[2] - sRgb[2], 2)
-            );
-            if (dist > 65) {
-              secondaryHex = rgbToHex(sRgb[0], sRgb[1], sRgb[2]);
-              break;
+          // Extract distinct authentic colors directly from the wallpaper
+          const courseSwatches = [];
+          for (let i = 0; i < sorted.length && courseSwatches.length < 8; i++) {
+            const rgb = parseRgb(sorted[i]);
+            const hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+            const isDistinct = courseSwatches.every(picked => {
+              const pr = parseInt(picked.slice(1, 3), 16) || 0;
+              const pg = parseInt(picked.slice(3, 5), 16) || 0;
+              const pb = parseInt(picked.slice(5, 7), 16) || 0;
+              const d = Math.sqrt(Math.pow(rgb[0] - pr, 2) + Math.pow(rgb[1] - pg, 2) + Math.pow(rgb[2] - pb, 2));
+              return d >= 35;
+            });
+            if (isDistinct) {
+              courseSwatches.push(hex);
             }
           }
 
-          // Generate harmonious course swatches
-          const courseSwatches = [];
-          for (let i = 0; i < Math.min(sorted.length, 6); i++) {
-            const rgb = parseRgb(sorted[i]);
-            courseSwatches.push(rgbToHex(rgb[0], rgb[1], rgb[2]));
-          }
-          while (courseSwatches.length < 6) {
-            courseSwatches.push(primaryHex);
+          // If wallpaper has fewer distinct colors, generate harmonious shades from the extracted dominant
+          if (courseSwatches.length < 8 && courseSwatches.length > 0) {
+            const [br, bg, bb] = parseRgb(sorted[0]);
+            const multipliers = [0.8, 1.2, 0.65, 1.35, 0.5, 1.5];
+            for (const mult of multipliers) {
+              if (courseSwatches.length >= 8) break;
+              const vr = Math.min(255, Math.max(0, Math.round(br * mult)));
+              const vg = Math.min(255, Math.max(0, Math.round(bg * mult)));
+              const vb = Math.min(255, Math.max(0, Math.round(bb * mult)));
+              const vHex = rgbToHex(vr, vg, vb);
+              if (!courseSwatches.includes(vHex)) {
+                courseSwatches.push(vHex);
+              }
+            }
           }
 
-          // Auto-contrast Clock Color
+          const primaryHex = courseSwatches[0] || '#2563EB';
+
+          // Auto-contrast Clock Color (Pure neutral deep graphite or pure white)
           const avgTopLum = topPixelCount > 0 ? (topLuminanceSum / topPixelCount) : 128;
-          const clockColor = avgTopLum > 140 ? '#0F172A' : '#FFFFFF';
-          const clockShadow = avgTopLum > 140 ? 'none' : '0 2px 10px rgba(0,0,0,0.5)';
+          const clockColor = avgTopLum > 140 ? '#111827' : '#FFFFFF';
+          const clockShadow = avgTopLum > 140 ? 'none' : '0 2px 10px rgba(0,0,0,0.6)';
 
           // Adaptive UI Primary Color
           const isDarkPrimary = this.isColorDark(primaryHex);
           let uiPrimaryHex = primaryHex;
-          let onPrimaryHex = isDarkPrimary ? '#FFFFFF' : '#0F172A';
+          let onPrimaryHex = isDarkPrimary ? '#FFFFFF' : '#111827';
 
           // In dark mode, if the extracted color is dark, brighten/saturate for high contrast on dark UI
           if (this.currentMode === 'dark' && isDarkPrimary) {
@@ -1817,14 +1936,8 @@ class SchedullyApp {
 
           // Auto update class course colors to match photo palette
           this.classes.forEach((cls, idx) => {
-            if (forceOverrideAll || !cls.isManualCustomColor) {
-              cls.customColor = courseSwatches[idx % courseSwatches.length];
-              cls.color = courseSwatches[idx % courseSwatches.length];
-              delete cls.isManualCustomColor;
-              if (forceOverrideAll) {
-                delete cls.fontColor;
-              }
-            }
+            cls.customColor = courseSwatches[idx % courseSwatches.length];
+            cls.color = courseSwatches[idx % courseSwatches.length];
           });
 
           // Update Add A Course swatches with extracted wallpaper course swatches
@@ -2100,19 +2213,24 @@ class SchedullyApp {
         deviceMode = 'tablet';
       } else if (originalCanvas.classList.contains('canvas-paper')) {
         deviceMode = 'paper';
+      } else if (originalCanvas.classList.contains('canvas-watch')) {
+        deviceMode = 'watch';
       }
 
+      const isWatch = deviceMode === 'watch';
+      const isCapsuleOrBand = isWatch && (originalCanvas.classList.contains('watch-shape-capsule') || originalCanvas.classList.contains('watch-shape-band'));
+
       // Measure REAL rendered dimensions from original canvas (NO HARDCODED HEIGHTS!)
-      const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : 380));
-      const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : 760));
+      const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : (isCapsuleOrBand ? 200 : (isWatch ? 340 : 380))));
+      const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : (isCapsuleOrBand ? 490 : (isWatch ? 340 : 760))));
       const ratio = baseH / baseW;
 
-      // Detect if user switched device platform (phone <-> tablet <-> paper)
+      // Detect if user switched device platform (phone <-> tablet <-> paper <-> watch)
       const modeChanged = pipDevice.dataset.currentMode !== deviceMode;
       pipDevice.dataset.currentMode = deviceMode;
 
       // Update PiP Device Mode Class
-      pipDevice.classList.remove('mode-phone', 'mode-tablet', 'mode-paper');
+      pipDevice.classList.remove('mode-phone', 'mode-tablet', 'mode-paper', 'mode-watch');
       pipDevice.classList.add(`mode-${deviceMode}`);
 
       // Proportional width bounds
@@ -2120,10 +2238,11 @@ class SchedullyApp {
       let maxW = 240;
       if (deviceMode === 'tablet') { minW = 140; maxW = 320; }
       else if (deviceMode === 'paper') { minW = 90; maxW = 260; }
+      else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 65 : 95; maxW = 180; }
 
       let curW = pipDevice.offsetWidth;
-      if (modeChanged || !curW || curW < 50) {
-        curW = deviceMode === 'tablet' ? 200 : (deviceMode === 'paper' ? 135 : 125);
+      if (modeChanged || !curW || curW < 40) {
+        curW = deviceMode === 'tablet' ? 200 : (deviceMode === 'paper' ? 135 : (isCapsuleOrBand ? 75 : (isWatch ? 115 : 125)));
       }
       curW = Math.max(minW, Math.min(maxW, curW));
       const curH = Math.round(curW * ratio);
@@ -2131,25 +2250,24 @@ class SchedullyApp {
       pipDevice.style.width = `${curW}px`;
       pipDevice.style.height = `${curH}px`;
 
-      // Copy HTML and styles from main canvas
-      targetStage.innerHTML = originalCanvas.innerHTML;
-      // Strip IDs from clone to avoid collisions with main app
-      targetStage.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      // Clear targetStage and insert exact cloned live canvas
+      targetStage.innerHTML = '';
+      const clone = originalCanvas.cloneNode(true);
+      clone.id = 'pip-phone-canvas-clone';
+      // Suppress side hardware buttons inside mini PiP
+      clone.querySelectorAll('.side-btn').forEach(btn => btn.style.setProperty('display', 'none', 'important'));
 
-      targetStage.className = originalCanvas.className + ' pip-live-stage';
-      targetStage.style.cssText = originalCanvas.style.cssText;
-      targetStage.style.position = 'absolute';
-      targetStage.style.top = '0';
-      targetStage.style.left = '0';
-      targetStage.style.width = `${baseW}px`;
-      targetStage.style.height = `${baseH}px`;
-      targetStage.style.transformOrigin = 'top left';
-      targetStage.style.margin = '0';
-      targetStage.style.pointerEvents = 'none';
+      clone.style.position = 'absolute';
+      clone.style.top = '0';
+      clone.style.left = '0';
+      clone.style.width = `${baseW}px`;
+      clone.style.height = `${baseH}px`;
+      clone.style.transformOrigin = 'top left';
+      clone.style.transform = `scale(${curW / baseW})`;
+      clone.style.margin = '0';
+      clone.style.pointerEvents = 'none';
 
-      // 100% exact subpixel scale matching the miniature device viewport
-      const scale = curW / baseW;
-      targetStage.style.transform = `scale(${scale})`;
+      targetStage.appendChild(clone);
     };
     this.updateMobilePip = updateMobilePip;
 
@@ -2187,14 +2305,17 @@ class SchedullyApp {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
       const deviceMode = pipDevice.dataset.currentMode || 'phone';
-      const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : 380));
-      const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : 760));
+      const isWatch = deviceMode === 'watch';
+      const isCapsuleOrBand = isWatch && (originalCanvas.classList.contains('watch-shape-capsule') || originalCanvas.classList.contains('watch-shape-band'));
+      const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : (isCapsuleOrBand ? 200 : (isWatch ? 340 : 380))));
+      const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : (isCapsuleOrBand ? 490 : (isWatch ? 340 : 760))));
       const ratio = baseH / baseW;
 
       let minW = 80;
       let maxW = 240;
       if (deviceMode === 'tablet') { minW = 140; maxW = 320; }
       else if (deviceMode === 'paper') { minW = 90; maxW = 260; }
+      else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 65 : 95; maxW = 180; }
 
       const clampedW = Math.max(minW, Math.min(maxW, newWidth));
       const newH = Math.round(clampedW * ratio);
@@ -2458,6 +2579,7 @@ class SchedullyApp {
     this.setupFontFamilyEngine();
     this.setupCustomColorModalEngine();
     this.setupCourseListDelegation();
+    this.setupWatchGlanceEvents();
 
     if (this.courseSearchInput) {
       this.courseSearchInput.addEventListener('input', (e) => {
@@ -2788,6 +2910,20 @@ class SchedullyApp {
       });
     });
 
+    // Schedule Axis System Toggle (Clock Time vs Period System)
+    document.querySelectorAll('#toggle-axis-mode .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#toggle-axis-mode .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.axisMode = btn.getAttribute('data-val') || 'time';
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+          this.renderWatchGlance();
+        }
+        this._stagePending();
+      });
+    });
+
     // Course Card Corner Radius Steppers
     const cardRadiusValEl = document.getElementById('card-radius-val');
     const btnCardRadiusDec = document.getElementById('btn-card-radius-dec');
@@ -2847,6 +2983,7 @@ class SchedullyApp {
         }
         this.classes.forEach(c => c.displayTime = show);
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
       });
     });
 
@@ -2874,6 +3011,7 @@ class SchedullyApp {
           else this.quickTimePreviewBadge.innerText = 'Start Only';
         }
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
       });
     });
 
@@ -2884,6 +3022,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseType = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
         window.syncGlassSliders?.();
       });
     });
@@ -2895,6 +3034,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseRoom = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
         window.syncGlassSliders?.();
       });
     });
@@ -2906,6 +3046,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseLecturer = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
         window.syncGlassSliders?.();
       });
     });
@@ -2917,6 +3058,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalCourseGroup = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
         window.syncGlassSliders?.();
       });
     });
@@ -2928,6 +3070,7 @@ class SchedullyApp {
         btn.classList.add('active');
         this.globalAdaptiveColor = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
         window.syncGlassSliders?.();
       });
     });
@@ -3556,32 +3699,53 @@ class SchedullyApp {
         const wallpaperClass = hasWallpaper ? ' has-photo-wallpaper' : '';
 
         // Switch DOM classes & device mode instantly
+        const lockTimeEl = document.getElementById('lock-time');
+        if (lockTimeEl && device !== 'watch') {
+          lockTimeEl.style.removeProperty('color');
+          lockTimeEl.style.removeProperty('text-shadow');
+        }
+
         if (device === 'tablet') {
           this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
           if (wrapper) {
             wrapper.classList.add('tablet-mode');
-            wrapper.classList.remove('paper-mode');
+            wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
           }
           if (lockUIToggle) lockUIToggle.style.display = 'flex';
+        } else if (device === 'watch') {
+          this.phoneCanvas.className = `m3-phone-canvas canvas-watch${wallpaperClass}`;
+          if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE SMARTWATCH PREVIEW (1:1 / 410×502)';
+          if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '330px';
+          if (wrapper) {
+            wrapper.classList.add('watch-mode');
+            wrapper.classList.remove('tablet-mode', 'paper-mode', 'story-mode');
+          }
+          if (lockUIToggle) lockUIToggle.style.display = 'flex';
+          const watchPanel = document.getElementById('watch-layout-panel');
+          if (watchPanel) watchPanel.style.display = 'block';
         } else if (device === 'paper') {
           this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
           if (wrapper) {
             wrapper.classList.add('paper-mode');
-            wrapper.classList.remove('tablet-mode');
+            wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
           }
           if (lockUIToggle) lockUIToggle.style.display = 'none';
+          const watchPanel = document.getElementById('watch-layout-panel');
+          if (watchPanel) watchPanel.style.display = 'none';
         } else {
           this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
           if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
           if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
           if (wrapper) {
-            wrapper.classList.remove('tablet-mode', 'paper-mode');
+            wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
           }
           if (lockUIToggle) lockUIToggle.style.display = 'flex';
+          const watchPanel = document.getElementById('watch-layout-panel');
+          if (watchPanel) watchPanel.style.display = 'none';
         }
 
         // Reset inline screen size styles
@@ -3621,13 +3785,19 @@ class SchedullyApp {
     
     const getBaseModelDimensions = () => {
       const originalCanvas = document.getElementById('phone-canvas');
-      if (!originalCanvas) return { width: 380, height: 760 };
+      if (!originalCanvas) return { width: 380, height: 770 };
       if (originalCanvas.classList.contains('canvas-tablet')) return { width: 920, height: 690 };
+      if (originalCanvas.classList.contains('canvas-watch')) {
+        if (originalCanvas.classList.contains('watch-shape-band')) return { width: 220, height: 418 };
+        if (originalCanvas.classList.contains('watch-shape-capsule')) return { width: 195, height: 440 };
+        if (originalCanvas.classList.contains('watch-shape-round')) return { width: 340, height: 340 };
+        return { width: 320, height: 390 };
+      }
       if (originalCanvas.classList.contains('canvas-paper')) {
         const h = (originalCanvas.scrollHeight && originalCanvas.scrollHeight > 300) ? originalCanvas.scrollHeight : 540;
         return { width: 720, height: h };
       }
-      return { width: 380, height: 760 };
+      return { width: 380, height: 770 };
     };
 
     // Auto-center canvas helper ensuring the model (phone/tablet/paper) is always centered on both axes
@@ -3695,6 +3865,7 @@ class SchedullyApp {
       centerCanvasModel(smooth);
     };
     this.applyCanvasZoom = applyZoom;
+    window.applyZoom = applyZoom;
 
     if (btnZoomIn && btnZoomOut && zoomLabel && mainPhoneWrapper) {
       // Set initial zoom on page load (without animation on first paint)
@@ -3781,11 +3952,15 @@ class SchedullyApp {
     // Expandable Canvas Controls Popover Toggle
     const btnTogglePopover = document.getElementById('btn-toggle-canvas-popover');
     const canvasPopover = document.getElementById('canvas-controls-popover');
+    const canvasRatioPopover = document.getElementById('canvas-ratio-popover');
 
     if (btnTogglePopover && canvasPopover) {
       btnTogglePopover.addEventListener('click', (e) => {
         e.stopPropagation();
-        canvasPopover.classList.toggle('hidden');
+        const isHidden = canvasPopover.classList.toggle('hidden');
+        if (isHidden && canvasRatioPopover) {
+          canvasRatioPopover.classList.add('hidden');
+        }
         if (!canvasPopover.classList.contains('hidden')) {
           setTimeout(window.syncGlassSliders, 20);
           setTimeout(window.syncGlassSliders, 120);
@@ -3796,12 +3971,13 @@ class SchedullyApp {
       // Do NOT close when clicking sidebars, theme pickers, theme mode toggles, or bottom toolbar!
       document.addEventListener('click', (e) => {
         if (window.isTourActive) return;
-        const isClickInsidePopover = canvasPopover.contains(e.target);
+        const isClickInsidePopover = canvasPopover.contains(e.target) || (canvasRatioPopover && canvasRatioPopover.contains(e.target));
         const isClickOnToggle = btnTogglePopover.contains(e.target);
         const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
 
         if (!canvasPopover.classList.contains('hidden') && !isClickInsidePopover && !isClickOnToggle && !isClickOnThemeOrSidebar) {
           canvasPopover.classList.add('hidden');
+          if (canvasRatioPopover) canvasRatioPopover.classList.add('hidden');
         }
       });
     }
@@ -4481,9 +4657,9 @@ class SchedullyApp {
       alert("📊 Exported CSV File!");
     });
 
-    // Wallpaper export — Timetable Factory Original dom-to-image-more Engine
+    // Wallpaper export — Timetable Factory Proven dom-to-image-more SVG Engine (Schedully-Fixed)
     const exportWallpaper = (onComplete) => {
-      if (this.classes.length === 0) {
+      if (!this.classes || this.classes.length === 0) {
         alert("📊 Your schedule is empty! Please add courses first.");
         return;
       }
@@ -4491,13 +4667,16 @@ class SchedullyApp {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
 
-      // Determine true unconstrained native dimensions based on active device model
+      // Determine true unconstrained native dimensions based on active device model & aspect ratio
       let nativeW = 380;
       let nativeH = 844;
       const ratio = this.currentScreenRatio || 'auto';
       const devScreen = typeof getLocalDeviceScreenInfo === 'function' ? getLocalDeviceScreenInfo() : null;
+      const isWatch = originalCanvas.classList.contains('canvas-watch');
+      const isTablet = originalCanvas.classList.contains('canvas-tablet');
+      const isPaper = originalCanvas.classList.contains('canvas-paper');
 
-      if (originalCanvas.classList.contains('canvas-tablet')) {
+      if (isTablet) {
         if (ratio === 'ios' || ratio === 'iphone') {
           nativeW = 920; nativeH = 690; // Exact 4:3 (iPad Pro / Air)
         } else if (ratio === 'android' || ratio === 'xiaomi') {
@@ -4505,7 +4684,6 @@ class SchedullyApp {
         } else if (ratio === 'standard') {
           nativeW = 920; nativeH = 518; // Exact 16:9 Widescreen
         } else {
-          // Auto (Match)
           if (devScreen && devScreen.aspect <= 1.45) {
             nativeW = 920; nativeH = Math.round(920 / devScreen.aspect);
           } else if (this.wallpaperAspect && this.wallpaperAspect >= 0.5 && this.wallpaperAspect <= 0.85) {
@@ -4514,29 +4692,34 @@ class SchedullyApp {
             nativeW = 920; nativeH = 690;
           }
         }
-      } else if (originalCanvas.classList.contains('canvas-paper')) {
+      } else if (isWatch) {
+        if (originalCanvas.classList.contains('watch-shape-band') || ratio === 'android' || ratio === 'band') {
+          nativeW = 200; nativeH = 380; // Smart Band Format (1:1.9)
+        } else if (originalCanvas.classList.contains('watch-shape-capsule') || ratio === 'ios' || ratio === 'capsule') {
+          nativeW = 200; nativeH = 500; // Pill Capsule Format (1:2.5)
+        } else if (originalCanvas.classList.contains('watch-shape-round') || ratio === 'standard' || ratio === 'round') {
+          nativeW = 440; nativeH = 440; // Round Circular Format (1:1)
+        } else {
+          nativeW = 410; nativeH = 502; // Squircle Format (4:5)
+        }
+      } else if (isPaper) {
         nativeW = 720;
         nativeH = Math.max(480, originalCanvas.scrollHeight || 480);
       } else {
         // PHONE MODE: Mathematical 1:1 Aspect Ratio Export Engine
         nativeW = 380;
         if (ratio === 'android' || ratio === 'xiaomi') {
-          // Exact 20:9 -> 380 * (20/9) = 844.4px -> exported at 1140 x 2533 (1080 x 2400 / 1220 x 2712 1:1 match)
-          nativeH = 844;
+          nativeH = 844; // Exact 20:9
         } else if (ratio === 'ios' || ratio === 'iphone') {
-          // Exact 19.5:9 -> 380 * (19.5/9) = 823.3px -> exported at 1140 x 2470 (1179 x 2556 1:1 match)
-          nativeH = 823;
+          nativeH = 823; // Exact 19.5:9
         } else if (ratio === 'standard') {
-          // Exact 18:9 -> 380 * (18/9) = 760px -> exported at 1140 x 2280 (1080 x 2160 1:1 match)
-          nativeH = 760;
+          nativeH = 760; // Exact 18:9
         } else {
-          // Auto (Match)
-          if (devScreen && devScreen.aspect > 1.4) {
-            nativeH = Math.round(380 * devScreen.aspect);
-          } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
+          if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
             nativeH = Math.round(380 * this.wallpaperAspect);
           } else {
-            nativeH = 844; // Default 20:9
+            nativeH = originalCanvas.offsetHeight || 770;
+            nativeW = originalCanvas.offsetWidth || 380;
           }
         }
       }
@@ -4558,8 +4741,14 @@ class SchedullyApp {
 
       const clone = originalCanvas.cloneNode(true);
 
-      // Remove device-specific chassis classes that enforce rounded corners on inner layers
-      clone.classList.remove('canvas-phone', 'canvas-tablet', 'canvas-paper');
+      // Remove device chassis border radius so exported wallpaper is a clean 100% full rectangle
+      clone.style.setProperty('border', 'none', 'important');
+      clone.style.setProperty('border-width', '0px', 'important');
+      clone.style.setProperty('border-radius', '0px', 'important');
+      clone.style.setProperty('outline', 'none', 'important');
+      clone.style.setProperty('box-shadow', 'none', 'important');
+      clone.style.setProperty('margin', '0px', 'important');
+      clone.style.setProperty('overflow', 'hidden', 'important');
 
       // Force clone to full native dimensions (overriding any mobile responsive screen squishing)
       clone.style.setProperty('width', `${nativeW}px`, 'important');
@@ -4567,13 +4756,6 @@ class SchedullyApp {
       clone.style.setProperty('max-width', `${nativeW}px`, 'important');
       clone.style.setProperty('height', `${nativeH}px`, 'important');
       clone.style.setProperty('min-height', `${nativeH}px`, 'important');
-      clone.style.setProperty('border', 'none', 'important');
-      clone.style.setProperty('border-width', '0px', 'important');
-      clone.style.setProperty('outline', 'none', 'important');
-      clone.style.setProperty('border-radius', '0px', 'important');
-      clone.style.setProperty('box-shadow', 'none', 'important');
-      clone.style.setProperty('margin', '0px', 'important');
-      clone.style.setProperty('overflow', 'hidden', 'important');
 
       // Set exact blur CSS variable on clone so ::before edge-bleed blur renders identically
       const blurVal = this.bgBlurEnabled ? `${this.bgBlurIntensity || 12}px` : '0px';
@@ -4597,16 +4779,16 @@ class SchedullyApp {
         timetableContainer.style.setProperty('max-width', 'none', 'important');
       }
 
-      // Make clock, camera dot, nav bar, and physical bezel buttons invisible on exported wallpaper
-      ['.phone-camera-dot', '#phone-lock-header', '.phone-nav-bar'].forEach(sel => {
-        const el = clone.querySelector(sel);
-        if (el) {
-          el.style.visibility = 'hidden';
-          el.style.opacity = '0';
-        }
-      });
-      clone.querySelectorAll('.side-btn').forEach(btn => {
-        btn.style.setProperty('display', 'none', 'important');
+      // Hide clock/date lockscreen widget while preserving exact layout height & Y-positioning
+      const lockHeader = clone.querySelector('#phone-lock-header');
+      if (lockHeader) {
+        lockHeader.style.setProperty('visibility', 'hidden', 'important');
+        lockHeader.style.setProperty('opacity', '0', 'important');
+      }
+
+      // Completely remove hardware buttons, camera notch, straps, and nav bar from exported wallpaper
+      clone.querySelectorAll('.side-btn, .watch-strap, .watch-strap-top, .watch-strap-bottom, .phone-camera-dot, .phone-nav-bar, .phone-home-indicator, .phone-status-bar').forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
       });
 
       stagingContainer.appendChild(clone);
@@ -4614,18 +4796,24 @@ class SchedullyApp {
       // Render via domtoimage at 3x resolution with native bounds
       setTimeout(() => {
         const scale = 3;
-        window.domtoimage.toCanvas(clone, {
-          width: nativeW * scale,
-          height: nativeH * scale,
-          style: {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            width: `${nativeW}px`,
-            height: `${nativeH}px`,
-            minWidth: `${nativeW}px`,
-            maxWidth: `${nativeW}px`
-          }
-        }).then(canvas => {
+        const renderPromise = (window.domtoimage && typeof window.domtoimage.toCanvas === 'function')
+          ? window.domtoimage.toCanvas(clone, {
+              width: nativeW * scale,
+              height: nativeH * scale,
+              style: {
+                transform: `scale(${scale})`,
+                transformOrigin: 'top left',
+                width: `${nativeW}px`,
+                height: `${nativeH}px`,
+                minWidth: `${nativeW}px`,
+                maxWidth: `${nativeW}px`
+              }
+            })
+          : (typeof html2canvas === 'function'
+              ? html2canvas(clone, { scale, useCORS: true, allowTaint: true, backgroundColor: null })
+              : Promise.reject(new Error("No canvas render engine found")));
+
+        renderPromise.then(canvas => {
           if (document.body.contains(stagingContainer)) {
             document.body.removeChild(stagingContainer);
           }
@@ -6111,8 +6299,16 @@ class SchedullyApp {
 
   renderTimetableGrid() {
     const days = this.activeDays && this.activeDays.length > 0 ? this.activeDays : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const isWatch = (this.activeDevice === 'watch');
     const isPhone = (this.activeDevice === 'phone');
-    const timeColWidth = isPhone ? (days.length >= 6 ? '34px' : '40px') : '48px';
+
+    const lockTimeEl = document.getElementById('lock-time');
+    if (lockTimeEl && !isWatch) {
+      lockTimeEl.style.removeProperty('color');
+      lockTimeEl.style.removeProperty('text-shadow');
+    }
+
+    const timeColWidth = isWatch ? '28px' : (isPhone ? (days.length >= 6 ? '34px' : '40px') : '48px');
     // Use calc() instead of 1fr or minmax(0, 1fr) because html2canvas has bugs with minmax, 
     // and pure 1fr allows grid tracks to grow beyond container bounds if inner text is too long.
     this.universalTimetableGrid.style.gridTemplateColumns = `${timeColWidth} repeat(${days.length}, calc((100% - ${timeColWidth}) / ${days.length}))`;
@@ -6197,6 +6393,9 @@ class SchedullyApp {
       if (numSlots * baseRowH > maxAvailableH) {
         rowH = Math.max(22, Math.floor(maxAvailableH / numSlots));
       }
+    } else if (this.activeDevice === 'watch') {
+      const maxAvailableH = 205;
+      rowH = Math.max(16, Math.floor(maxAvailableH / numSlots));
     } else if (this.activeDevice === 'phone') {
       const maxAvailableH = 510;
       if (numSlots * baseRowH > maxAvailableH) {
@@ -6266,17 +6465,24 @@ class SchedullyApp {
           const modeKey = (this.currentMode === 'auto' ? (isDark ? 'dark' : 'light') : this.currentMode);
           const paletteGroup = THEME_PALETTES[modeKey] || THEME_PALETTES.light;
           const activePalette = paletteGroup[this.currentPalette] || paletteGroup.indigo;
-          const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper');
-          const courseSwatches = (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0)
+          const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
+          const activeWallpaperSwatches = (this.wallpaperSwatches && this.wallpaperSwatches.length > 0)
             ? this.wallpaperSwatches
+            : (this.presets && this.presets[this.activePresetKey]?.wallpaperSwatches);
+          const courseSwatches = (hasPhotoWallpaper && activeWallpaperSwatches && activeWallpaperSwatches.length > 0)
+            ? activeWallpaperSwatches
             : (activePalette.courseSwatches || ['#1D4ED8', '#2563EB', '#3B82F6', '#10B981']);
 
+          const uniqueCodes = [...new Set((this.classes || []).map(item => item.code))];
+          const codeIdx = uniqueCodes.indexOf(matched.code);
           const matchIdx = this.classes.indexOf(matched);
-          const adaptiveBg = courseSwatches[matchIdx % courseSwatches.length] || matched.customColor;
-          // Manual customColor is the BOSS: If user manually configured customColor on this course, use it 100%
-          const effectiveBg = (matched.customColor && (matched.isManualCustomColor || !this.globalAdaptiveColor))
-            ? matched.customColor
-            : (this.globalAdaptiveColor ? adaptiveBg : (matched.customColor || adaptiveBg));
+          const colorIdx = codeIdx >= 0 ? codeIdx : matchIdx;
+          const adaptiveBg = courseSwatches[colorIdx % courseSwatches.length] || '#3B82F6';
+          // When Adaptive Color is YES: Use adaptive theme/wallpaper palette without overwriting customColor
+          // When Adaptive Color is NO: Use user's manual/random customColor
+          const effectiveBg = (this.globalAdaptiveColor !== false)
+            ? adaptiveBg
+            : (matched.customColor || adaptiveBg);
 
           // Smart Auto-Contrast Font Color for Card Text (Manual fontColor is the BOSS)
           const autoContrastFont = this.getContrastColor(effectiveBg);
@@ -6316,16 +6522,21 @@ class SchedullyApp {
 
           // Dynamically compute adaptive max font size based on cell height
           const numDays = days.length;
+          const isWatch = (this.activeDevice === 'watch');
           const isPhone = (this.activeDevice === 'phone');
           const widthScale = (this.gridWidthVal || 100) / 100;
           
-          const fontFactor = isPhone ? (widthScale < 0.8 ? 38 : 46) : 60;
-          const maxAdaptiveFont = Math.min(16, Math.max(5.5, Math.round(fontFactor / numDays)));
-          const heightAdaptiveFont = Math.min(16, Math.max(6, Math.floor(cardHeightPx / (lineCount * 1.3))));
+          const fontFactor = isWatch ? 28 : (isPhone ? (widthScale < 0.8 ? 38 : 46) : 60);
+          const maxAdaptiveFont = Math.min(16, Math.max(4.5, Math.round(fontFactor / numDays)));
+          const heightAdaptiveFont = Math.min(16, Math.max(4.5, Math.floor(cardHeightPx / (lineCount * 1.2))));
           const effectiveMaxFont = Math.min(maxAdaptiveFont, heightAdaptiveFont);
 
-          const codeFontSize = Math.max(8.0, Math.min(this.gridFontSizeVal || 9, effectiveMaxFont));
-          const detailFontSize = Math.max(7.0, codeFontSize - 1.0);
+          const codeFontSize = isWatch
+            ? Math.min(7.5, Math.max(5.5, effectiveMaxFont))
+            : Math.max(8.0, Math.min(this.gridFontSizeVal || 9, effectiveMaxFont));
+          const detailFontSize = isWatch
+            ? Math.min(6.5, Math.max(4.8, codeFontSize - 0.8))
+            : Math.max(7.0, codeFontSize - 1.0);
 
           let timeDisplayText = formatStart;
           if (courseTimeMode === 'both') {
@@ -6376,6 +6587,352 @@ class SchedullyApp {
 
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
+    }
+
+    if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+      this.renderWatchGlance();
+    }
+  }
+
+  renderWatchGlance(selectedDay = null) {
+    const listContainer = document.getElementById('watch-cards-list');
+    if (!listContainer) return;
+
+    if (!selectedDay) {
+      const activePill = document.querySelector('.watch-day-pill.active');
+      selectedDay = activePill ? activePill.getAttribute('data-day') : 'Mon';
+    }
+
+    // Default watch feature settings
+    if (this.watchAccentColor === undefined) this.watchAccentColor = 'cyan';
+    if (this.watchShowRoom === undefined) this.watchShowRoom = true;
+    if (this.watchShowType === undefined) this.watchShowType = true;
+
+    const accentMap = {
+      cyan: { hex: '#38BDF8', glow: 'rgba(56, 189, 248, 0.55)' },
+      orange: { hex: '#FB923C', glow: 'rgba(251, 146, 60, 0.55)' },
+      emerald: { hex: '#34D399', glow: 'rgba(52, 211, 153, 0.55)' },
+      purple: { hex: '#C084FC', glow: 'rgba(192, 132, 252, 0.55)' },
+      rose: { hex: '#FB7185', glow: 'rgba(251, 113, 133, 0.55)' },
+      white: { hex: '#FFFFFF', glow: 'rgba(255, 255, 255, 0.55)' }
+    };
+    const activeAccent = accentMap[this.watchAccentColor] || accentMap.cyan;
+
+    // Apply accent glow to watch clock only when in watch mode, reset completely on phone/tablet
+    const lockTime = document.getElementById('lock-time');
+    if (lockTime) {
+      if (this.activeDevice === 'watch') {
+        lockTime.style.color = activeAccent.hex;
+        lockTime.style.textShadow = `0 0 16px ${activeAccent.glow}`;
+      } else {
+        lockTime.style.removeProperty('color');
+        lockTime.style.removeProperty('text-shadow');
+      }
+    }
+
+    // Filter classes for selected day
+    const dayClasses = (this.classes || [])
+      .filter(c => c.day && c.day.toLowerCase().startsWith(selectedDay.toLowerCase()))
+      .sort((a, b) => {
+        const [ah, am] = (a.startTime || '00:00').split(':').map(Number);
+        const [bh, bm] = (b.startTime || '00:00').split(':').map(Number);
+        return (ah * 60 + (am || 0)) - (bh * 60 + (bm || 0));
+      });
+
+    listContainer.innerHTML = '';
+    const classCount = dayClasses.length;
+
+    if (classCount === 0) {
+      const pageSelector = document.getElementById('watch-page-selector');
+      if (pageSelector) pageSelector.classList.add('hidden');
+      listContainer.className = `watch-cards-list density-0`;
+      listContainer.innerHTML = `
+        <div class="watch-empty-state">
+          <div class="watch-empty-pill">Free Schedule</div>
+          <div style="font-weight: 800; font-size: 13px; color: #0F172A;">No Classes on ${selectedDay}</div>
+          <div style="font-size: 10px; opacity: 0.7; color: #475569;">Enjoy your study break</div>
+        </div>
+      `;
+      return;
+    }
+
+    // Dynamic Pagination for Heavy Schedules (Curved dials: Round & Capsule paginate at 3 for optimal aesthetics)
+    const isCurvedDial = this.phoneCanvas?.classList.contains('watch-shape-capsule') || this.phoneCanvas?.classList.contains('watch-shape-round');
+    const maxPerWatchPage = isCurvedDial ? 3 : 4;
+    const totalPages = Math.ceil(classCount / maxPerWatchPage);
+    if (!this.currentWatchPage || this.currentWatchPage > totalPages) {
+      this.currentWatchPage = 1;
+    }
+
+    const pageSelector = document.getElementById('watch-page-selector');
+    if (pageSelector) {
+      if (totalPages > 1) {
+        pageSelector.classList.remove('hidden');
+        pageSelector.innerHTML = '';
+        for (let p = 1; p <= totalPages; p++) {
+          const pagePill = document.createElement('button');
+          pagePill.className = `watch-page-pill${p === this.currentWatchPage ? ' active' : ''}`;
+          pagePill.setAttribute('data-page', p);
+          pagePill.innerText = p;
+          pagePill.title = `Page ${p}`;
+          pagePill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.currentWatchPage = p;
+            this.renderWatchGlance(selectedDay);
+          });
+          pageSelector.appendChild(pagePill);
+        }
+      } else {
+        pageSelector.classList.add('hidden');
+      }
+    }
+
+    const startIdx = (this.currentWatchPage - 1) * maxPerWatchPage;
+    const displayedClasses = (totalPages > 1)
+      ? dayClasses.slice(startIdx, startIdx + maxPerWatchPage)
+      : dayClasses;
+
+    listContainer.className = `watch-cards-list density-${Math.min(displayedClasses.length, 4)}`;
+
+    // Adaptive Theme Palette / Wallpaper Swatches
+    const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper');
+    const isAppDark = document.body.classList.contains('dark-mode') || 
+                      document.documentElement.classList.contains('dark') || 
+                      this.currentMode === 'dark' || 
+                      (this.currentMode === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = isAppDark; // Synchronized directly with user's Light / Dark mode preference
+    const modeKey = isAppDark ? 'dark' : 'light';
+    const paletteGroup = THEME_PALETTES[modeKey] || THEME_PALETTES.light;
+    const activePalette = paletteGroup[this.currentPalette] || paletteGroup.indigo;
+    const courseSwatches = (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0)
+      ? this.wallpaperSwatches
+      : (activePalette.courseSwatches || ['#0284C7', '#818CF8', '#34D399', '#F472B6']);
+
+    const primaryAdaptive = (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0)
+      ? this.wallpaperSwatches[0]
+      : (activePalette.primary || courseSwatches[0] || '#38BDF8');
+
+    let pr = 56, pg = 189, pb = 248;
+    if (primaryAdaptive.startsWith('#') && primaryAdaptive.length === 7) {
+      pr = parseInt(primaryAdaptive.slice(1, 3), 16) || 56;
+      pg = parseInt(primaryAdaptive.slice(3, 5), 16) || 189;
+      pb = parseInt(primaryAdaptive.slice(5, 7), 16) || 248;
+    }
+
+    const selectorContainer = document.getElementById('watch-day-selector');
+    if (selectorContainer) {
+      selectorContainer.style.setProperty('--watch-primary-accent', primaryAdaptive);
+      if (!hasPhotoWallpaper) {
+        selectorContainer.style.background = activePalette.surface || (isDark ? '#111827' : '#FFFFFF');
+        selectorContainer.style.borderColor = activePalette.outline || (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)');
+      }
+    }
+    if (pageSelector) {
+      pageSelector.style.setProperty('--watch-primary-accent', primaryAdaptive);
+      if (!hasPhotoWallpaper) {
+        pageSelector.style.background = activePalette.surface || (isDark ? '#111827' : '#FFFFFF');
+        pageSelector.style.borderColor = activePalette.outline || (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)');
+      }
+    }
+    if (this.phoneCanvas) {
+      this.phoneCanvas.style.setProperty('--watch-primary-accent', primaryAdaptive);
+      if (!hasPhotoWallpaper) {
+        this.phoneCanvas.style.background = activePalette.bg || (isDark ? '#0B0F19' : '#F0F4FA');
+      }
+    }
+
+    const uniqueCodes = [...new Set((this.classes || []).map(item => item.code))];
+    displayedClasses.forEach((c, idx) => {
+      const codeIdx = uniqueCodes.indexOf(c.code);
+      const matchIdx = this.classes.indexOf(c);
+      const colorIdx = codeIdx >= 0 ? codeIdx : matchIdx;
+      
+      // Color handling: Adaptive Palette vs Custom / Randomized Color
+      const accent = (this.globalAdaptiveColor !== false)
+        ? (courseSwatches[colorIdx % courseSwatches.length] || primaryAdaptive)
+        : (c.customColor || courseSwatches[colorIdx % courseSwatches.length] || '#6366F1');
+      
+      // Time Formatting (Start Only, Start & End, End Only, or Off)
+      let showTime = (this.globalCardTimes !== false && c.displayTime !== false);
+      let timeBoxHtml = '';
+      if (showTime) {
+        let formatStart = c.startTime || '00:00';
+        let formatEnd = c.endTime || '00:00';
+        if (this.clockFormat === '12') {
+          const [sh, sm] = (c.startTime || '00:00').split(':').map(Number);
+          const [eh, em] = (c.endTime || '00:00').split(':').map(Number);
+          const displaySh = sh > 12 ? sh - 12 : (sh === 0 ? 12 : sh);
+          const displayEh = eh > 12 ? eh - 12 : (eh === 0 ? 12 : eh);
+          formatStart = `${String(displaySh).padStart(2, '0')}:${String(sm || 0).padStart(2, '0')}`;
+          formatEnd = `${String(displayEh).padStart(2, '0')}:${String(em || 0).padStart(2, '0')}`;
+        }
+        
+        let timeContentHtml = '';
+        if (this.axisMode === 'period') {
+          const periodNum = (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) ? c.periodNumber : (idx + 1);
+          timeContentHtml = `
+            <span class="watch-card-time-num" style="font-size: 11px; font-weight: 900; letter-spacing: 0.02em;">P${periodNum}</span>
+          `;
+        } else if (this.axisMode === 'both') {
+          const periodNum = (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) ? c.periodNumber : (idx + 1);
+          const mode = this.cardTimeDisplayType || 'start';
+          let timeSubHtml = '';
+          if (mode === 'both') {
+            timeSubHtml = `
+              <span class="watch-card-time-sub" style="font-size: 6px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;">${formatStart}</span>
+              <span class="watch-time-sep">-</span>
+              <span class="watch-card-time-sub" style="font-size: 6px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;">${formatEnd}</span>
+            `;
+          } else if (mode === 'end') {
+            timeSubHtml = `<span class="watch-card-time-sub" style="font-size: 7px; font-weight: 700; opacity: 0.95; line-height: 1;">${formatEnd}</span>`;
+          } else {
+            timeSubHtml = `<span class="watch-card-time-sub" style="font-size: 7px; font-weight: 700; opacity: 0.95; line-height: 1;">${formatStart}</span>`;
+          }
+
+          timeContentHtml = `
+            <span class="watch-card-time-num" style="font-size: 9px; font-weight: 900; line-height: 1;">P${periodNum}</span>
+            ${timeSubHtml}
+          `;
+        } else {
+          const mode = this.cardTimeDisplayType || 'start';
+          if (mode === 'both') {
+            timeContentHtml = `
+              <span class="watch-card-time-num" style="font-size: 8px; line-height: 1;">${formatStart}</span>
+              <span class="watch-time-sep">to</span>
+              <span class="watch-card-time-num" style="font-size: 8px; line-height: 1;">${formatEnd}</span>
+            `;
+          } else if (mode === 'end') {
+            timeContentHtml = `
+              <div class="watch-card-time-icon">
+                <svg width="9.5" height="9.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="watch-card-time-num">${formatEnd}</span>
+            `;
+          } else {
+            timeContentHtml = `
+              <div class="watch-card-time-icon">
+                <svg width="9.5" height="9.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="watch-card-time-num">${formatStart}</span>
+            `;
+          }
+        }
+
+        timeBoxHtml = `
+          <div class="watch-card-time-box">
+            ${timeContentHtml}
+          </div>
+        `;
+      }
+
+      // Type Badge (Top Right)
+      let typeBadgeHtml = '';
+      if (this.globalCourseType !== false && c.type) {
+        const isSeminar = c.type.toLowerCase().includes('seminar') || c.type.toLowerCase().includes('group');
+        const iconSvg = isSeminar
+          ? `<svg width="6.5" height="6.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+          : `<svg width="6.5" height="6.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`;
+        typeBadgeHtml = `<span class="watch-type-badge">${iconSvg} ${c.type}</span>`;
+      }
+
+      // Location / Venue Badge (Row 2)
+      let venueBadgeHtml = '';
+      if (this.globalCourseRoom !== false && c.room) {
+        const isOnline = c.room.toLowerCase().includes('online') || c.room.toLowerCase().includes('web') || c.room.toLowerCase().includes('zoom');
+        const venueIcon = isOnline
+          ? `<svg width="6.5" height="6.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`
+          : `<svg width="6.5" height="6.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>`;
+        venueBadgeHtml = `<span class="watch-venue-badge">${venueIcon} ${c.room}</span>`;
+      }
+
+      // Submeta: Group / Lecturer (Row 3)
+      const submetaItems = [];
+      if (this.globalCourseGroup !== false && (c.group || c.section)) {
+        submetaItems.push(`
+          <span class="watch-submeta-item">
+            <svg width="7.5" height="7.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${c.group || c.section}
+          </span>
+        `);
+      }
+      if (this.globalCourseLecturer !== false && c.lecturer) {
+        submetaItems.push(`
+          <span class="watch-submeta-item">
+            <svg width="7.5" height="7.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            ${c.lecturer}
+          </span>
+        `);
+      }
+
+      const submetaHtml = submetaItems.length > 0
+        ? `<div class="watch-card-submeta">${submetaItems.join('')}</div>`
+        : '';
+
+      let r = 99, g = 102, b = 241;
+      if (accent.startsWith('#') && accent.length === 7) {
+        r = parseInt(accent.slice(1, 3), 16) || 99;
+        g = parseInt(accent.slice(3, 5), 16) || 102;
+        b = parseInt(accent.slice(5, 7), 16) || 241;
+      }
+      // Material Design 3 Solid Surface Containers (100% Solid Non-Glass)
+      const accentBg = isDark ? `rgba(${r}, ${g}, ${b}, 0.25)` : `rgba(${r}, ${g}, ${b}, 0.16)`;
+      const accentBorder = isDark ? `rgba(${r}, ${g}, ${b}, 0.45)` : `rgba(${r}, ${g}, ${b}, 0.28)`;
+      const cardBgSolid = isDark ? '#1E293B' : '#FFFFFF';
+
+      // Adaptive Content Density: Adjust vertical layout dynamically based on which fields are present/missing
+      const hasRoom = Boolean(venueBadgeHtml);
+      const hasSubmeta = Boolean(submetaHtml);
+      const lineCount = 1 + (hasRoom ? 1 : 0) + (hasSubmeta ? 1 : 0);
+      const metaDensityClass = (lineCount === 1) ? 'meta-title-only' : ((lineCount === 2) ? 'meta-two-lines' : 'meta-full');
+
+      const card = document.createElement('div');
+      card.className = `watch-glance-card ${isDark ? 'card-dark' : 'card-light'} ${metaDensityClass}`;
+      card.style.setProperty('--card-accent-color', accent);
+      card.style.setProperty('--card-accent-bg', accentBg);
+      card.style.setProperty('--card-accent-border', accentBorder);
+      card.style.setProperty('--card-bg-gradient', cardBgSolid);
+      card.style.setProperty('--card-accent-glow', 'none');
+      card.innerHTML = `
+        <div class="watch-card-accent-bar"></div>
+        ${timeBoxHtml}
+        <div class="watch-card-content">
+          <div class="watch-card-title-row">
+            <div class="watch-card-title">${c.code} ${c.title ? `• ${c.title}` : ''}</div>
+            ${typeBadgeHtml}
+          </div>
+          ${venueBadgeHtml}
+          ${submetaHtml}
+        </div>
+      `;
+      listContainer.appendChild(card);
+    });
+  }
+
+  setupWatchGlanceEvents() {
+    const selectorContainer = document.getElementById('watch-day-selector');
+    if (selectorContainer) {
+      const days = (this.activeDays && this.activeDays.length > 0) ? this.activeDays : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      
+      const currentActivePill = selectorContainer.querySelector('.watch-day-pill.active');
+      const prevDay = currentActivePill ? currentActivePill.getAttribute('data-day') : null;
+      const activeDay = (prevDay && days.includes(prevDay)) ? prevDay : days[0];
+
+      selectorContainer.innerHTML = '';
+      days.forEach(d => {
+        const pill = document.createElement('button');
+        pill.className = `watch-day-pill${d === activeDay ? ' active' : ''}`;
+        pill.setAttribute('data-day', d);
+        pill.innerText = d.charAt(0);
+        pill.title = d;
+        pill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectorContainer.querySelectorAll('.watch-day-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          this.currentWatchPage = 1;
+          this.renderWatchGlance(d);
+        });
+        selectorContainer.appendChild(pill);
+      });
     }
   }
 
@@ -6951,6 +7508,16 @@ function initGlassSegmentedSliders() {
 
     group.addEventListener('pointerup', endDrag);
     group.addEventListener('pointercancel', endDrag);
+    group.addEventListener('scroll', () => {
+      updateGroupThumb(group, true);
+    }, { passive: true });
+
+    const groupButtons = Array.from(group.querySelectorAll('button, .pill-btn, .capsule-btn, .time-mode-btn, .support-tab-btn'));
+    groupButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
+    });
 
     updateGroupThumb(group, true);
   };
@@ -7377,43 +7944,54 @@ class SchedullyTourController {
         id: 'theme-menu',
         target: '#left-sidebar',
         title: 'Themes & Design Studio',
-        tag: 'Design Studio',
+        tag: 'Left Sidebar',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>',
         iconTheme: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25',
         badgeTheme: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25',
-        desc: 'Customize curated color palettes, auto-extract colors from wallpaper photos, and switch between solid M3 and optical Liquid Glass styles!',
+        desc: 'Customize curated color palettes, auto-extract colors from wallpaper photos, set fonts, blur intensity, table corners, and floating signatures!',
         position: 'right'
       },
       {
         id: 'controls',
-        target: '#floating-controls-container',
+        target: '#canvas-controls-popover',
         title: 'Display & Canvas Controls',
         tag: 'Canvas Controls',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>',
         iconTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
         badgeTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
-        desc: 'Switch between Smartphone, Tablet, and Paper device models, toggle UI overlays, set timetable title, and zoom smoothly!',
+        desc: 'Switch between Smartphone, Tablet, and Paper device models, toggle phone UI lockscreen elements, and edit your schedule title on the fly!',
+        position: 'top'
+      },
+      {
+        id: 'aspect-ratio',
+        target: '#canvas-ratio-popover',
+        title: 'Screen Aspect Ratio Presets',
+        tag: 'Aspect Ratio',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>',
+        iconTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
+        badgeTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
+        desc: 'Pick your hardware aspect ratio (Android 20:9, iOS 19.5:9, iPad 4:3, or Auto Match) for exact 1:1 fit with zero lockscreen cropping!',
         position: 'top'
       },
       {
         id: 'courses',
         target: '#right-sidebar',
-        title: 'Courses & Schedule List',
-        tag: 'Schedule Manager',
+        title: 'Course & Schedule Manager',
+        tag: 'Right Sidebar',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
         iconTheme: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
         badgeTheme: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
-        desc: 'Add, search, and edit courses effortlessly. Schedully automatically detects time overlaps and alerts you to resolve clashes in 1 tap!',
+        desc: 'Add, search & color-code courses, scan timetables from photos/PDF with AI OCR, customize active days & grid hours, and auto-resolve time clashes in 1 tap!',
         position: 'left'
       },
       {
         id: 'export',
         target: '#mobile-export-dropdown, #mobile-export-bar, #header-desktop-bar',
-        title: '4K HD Export & Sync',
-        tag: 'Instant Export',
+        title: '4K HD Export & Cloud Sync',
+        tag: 'Header Export',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>',
-        iconTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
-        badgeTheme: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25',
+        iconTheme: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/25',
+        badgeTheme: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/25',
         desc: 'Export crisp 4K lockscreen wallpapers, sync directly with Google & Apple Calendar (.ics), or generate print-ready PDFs and CSVs!',
         position: 'bottom'
       }
@@ -7495,6 +8073,7 @@ class SchedullyTourController {
     if (!step) return;
 
     const popover = document.getElementById('canvas-controls-popover');
+    const ratioPopover = document.getElementById('canvas-ratio-popover');
     const mobileExportDropdown = document.getElementById('mobile-export-dropdown');
     const mobileChevron = document.getElementById('mobile-export-chevron');
 
@@ -7504,6 +8083,7 @@ class SchedullyTourController {
         if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(false);
         if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
         if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
         if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
         if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
       } else if (step.id === 'controls') {
@@ -7515,18 +8095,38 @@ class SchedullyTourController {
           popover.style.visibility = 'visible';
           popover.style.opacity = '1';
         }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
+        if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
+        if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
+      } else if (step.id === 'aspect-ratio') {
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+        if (popover) {
+          popover.classList.remove('hidden');
+          popover.style.display = 'flex';
+          popover.style.visibility = 'visible';
+          popover.style.opacity = '1';
+        }
+        if (ratioPopover) {
+          ratioPopover.classList.remove('hidden');
+          ratioPopover.style.display = 'flex';
+          ratioPopover.style.visibility = 'visible';
+          ratioPopover.style.opacity = '1';
+        }
         if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
         if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
       } else if (step.id === 'courses') {
         if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
         if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(false);
         if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
         if (mobileExportDropdown) mobileExportDropdown.classList.add('hidden');
         if (mobileChevron) mobileChevron.classList.remove('mobile-export-chevron-open');
       } else if (step.id === 'export') {
         if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
         if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
         if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
         const mobileExportBar = document.getElementById('mobile-export-bar');
         if (mobileExportBar) mobileExportBar.style.display = 'flex';
         if (mobileExportDropdown) {
@@ -7548,8 +8148,23 @@ class SchedullyTourController {
           popover.style.visibility = 'visible';
           popover.style.opacity = '1';
         }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
+      } else if (step.id === 'aspect-ratio') {
+        if (popover) {
+          popover.classList.remove('hidden');
+          popover.style.display = 'flex';
+          popover.style.visibility = 'visible';
+          popover.style.opacity = '1';
+        }
+        if (ratioPopover) {
+          ratioPopover.classList.remove('hidden');
+          ratioPopover.style.display = 'flex';
+          ratioPopover.style.visibility = 'visible';
+          ratioPopover.style.opacity = '1';
+        }
       } else {
         if (popover) { popover.classList.add('hidden'); popover.style.display = ''; }
+        if (ratioPopover) { ratioPopover.classList.add('hidden'); ratioPopover.style.display = ''; }
       }
     }
 
@@ -7572,11 +8187,12 @@ class SchedullyTourController {
     if (title) title.textContent = step.title;
     if (desc) desc.textContent = step.desc;
 
-    // Update Dots
-    const dots = this.dotsContainer ? this.dotsContainer.querySelectorAll('.tour-dot') : [];
-    dots.forEach((dot, idx) => {
-      dot.className = `tour-dot w-2 h-2 rounded-full transition-all ${idx === this.currentStep ? 'bg-blue-600 w-4' : 'bg-slate-300 dark:bg-slate-700'}`;
-    });
+    // Dynamically update progress dots
+    if (this.dotsContainer) {
+      this.dotsContainer.innerHTML = this.steps.map((_, idx) => 
+        `<div class="tour-dot w-2 h-2 rounded-full transition-all ${idx === this.currentStep ? 'bg-blue-600 w-4' : 'bg-slate-300 dark:bg-slate-700'}"></div>`
+      ).join('');
+    }
 
     // Update Navigation Buttons
     if (this.btnPrev) {
@@ -7610,6 +8226,13 @@ class SchedullyTourController {
           popover.style.display = 'flex';
         }
         targetEl = document.querySelector(step.target);
+      } else if (step.id === 'aspect-ratio') {
+        const ratioPopover = document.getElementById('canvas-ratio-popover');
+        if (ratioPopover) {
+          ratioPopover.classList.remove('hidden');
+          ratioPopover.style.display = 'flex';
+        }
+        targetEl = ratioPopover || document.querySelector(step.target);
       } else {
         targetEl = document.querySelector(step.target);
       }
@@ -7723,9 +8346,14 @@ class SchedullyTourController {
     }
     const isMobile = window.innerWidth <= 1280;
     const popover = document.getElementById('canvas-controls-popover');
+    const ratioPopover = document.getElementById('canvas-ratio-popover');
     if (popover) {
       popover.classList.add('hidden');
       popover.style.display = '';
+    }
+    if (ratioPopover) {
+      ratioPopover.classList.add('hidden');
+      ratioPopover.style.display = '';
     }
     if (isMobile) {
       if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
