@@ -1220,23 +1220,23 @@ class SchedullyApp {
 
         if (ratio === 'auto') {
           if (devScreen && devScreen.aspect > 1.4) {
-            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, devScreen.aspect)));
-            badgeLabel = `Auto (${devScreen.ratioFormatted} Screen)`;
+            targetHeight = Math.round(380 * devScreen.aspect);
+            badgeLabel = `Auto (${devScreen.ratioFormatted || 'Screen'})`;
           } else if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
-            targetHeight = Math.round(380 * Math.min(2.05, Math.max(1.88, this.wallpaperAspect)));
+            targetHeight = Math.round(380 * this.wallpaperAspect);
             badgeLabel = `Auto (${(this.wallpaperAspect * 9).toFixed(1)}:9 Photo)`;
           } else {
-            targetHeight = 770;
+            targetHeight = 844; // Exact 20:9
             badgeLabel = 'Auto (20:9)';
           }
         } else if (ratio === 'android' || ratio === 'xiaomi') {
-          targetHeight = 775; // Sleek 20:9 flagship chassis preview
+          targetHeight = 844; // Exact 20:9 flagship chassis preview
           badgeLabel = 'Android (20:9)';
         } else if (ratio === 'ios' || ratio === 'iphone') {
-          targetHeight = 765; // Sleek 19.5:9 iPhone chassis preview
+          targetHeight = 823; // Exact 19.5:9 iPhone chassis preview
           badgeLabel = 'iOS (19.5:9)';
         } else if (ratio === 'standard') {
-          targetHeight = 750; // Sleek 18:9 Classic chassis preview
+          targetHeight = 760; // Exact 18:9 Classic chassis preview
           badgeLabel = '18:9 Classic';
         }
 
@@ -4680,11 +4680,10 @@ class SchedullyApp {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
 
-      // Determine true unconstrained native dimensions based on active device model & aspect ratio
-      let nativeW = 380;
-      let nativeH = 844;
+      // Sample live canvas dimensions directly to guarantee 100% preview match
+      let nativeW = originalCanvas.offsetWidth || 380;
+      let nativeH = originalCanvas.offsetHeight || 844;
       const ratio = this.currentScreenRatio || 'auto';
-      const devScreen = typeof getLocalDeviceScreenInfo === 'function' ? getLocalDeviceScreenInfo() : null;
       const isWatch = originalCanvas.classList.contains('canvas-watch');
       const isTablet = originalCanvas.classList.contains('canvas-tablet');
       const isPaper = originalCanvas.classList.contains('canvas-paper');
@@ -4697,13 +4696,8 @@ class SchedullyApp {
         } else if (ratio === 'standard') {
           nativeW = 920; nativeH = 518; // Exact 16:9 Widescreen
         } else {
-          if (devScreen && devScreen.aspect <= 1.45) {
-            nativeW = 920; nativeH = Math.round(920 / devScreen.aspect);
-          } else if (this.wallpaperAspect && this.wallpaperAspect >= 0.5 && this.wallpaperAspect <= 0.85) {
-            nativeW = 920; nativeH = Math.round(920 * this.wallpaperAspect);
-          } else {
-            nativeW = 920; nativeH = 690;
-          }
+          nativeW = originalCanvas.offsetWidth || 920;
+          nativeH = originalCanvas.offsetHeight || 690;
         }
       } else if (isWatch) {
         if (originalCanvas.classList.contains('watch-shape-band') || ratio === 'android' || ratio === 'band') {
@@ -4720,20 +4714,15 @@ class SchedullyApp {
         nativeH = Math.max(480, originalCanvas.scrollHeight || 480);
       } else {
         // PHONE MODE: Mathematical 1:1 Aspect Ratio Export Engine
-        nativeW = 380;
         if (ratio === 'android' || ratio === 'xiaomi') {
-          nativeH = 844; // Exact 20:9
+          nativeW = 380; nativeH = 844; // Exact 20:9
         } else if (ratio === 'ios' || ratio === 'iphone') {
-          nativeH = 823; // Exact 19.5:9
+          nativeW = 380; nativeH = 823; // Exact 19.5:9
         } else if (ratio === 'standard') {
-          nativeH = 760; // Exact 18:9
+          nativeW = 380; nativeH = 760; // Exact 18:9
         } else {
-          if (this.wallpaperAspect && this.wallpaperAspect > 1.2) {
-            nativeH = Math.round(380 * this.wallpaperAspect);
-          } else {
-            nativeH = originalCanvas.offsetHeight || 770;
-            nativeW = originalCanvas.offsetWidth || 380;
-          }
+          nativeW = originalCanvas.offsetWidth || 380;
+          nativeH = originalCanvas.offsetHeight || 844;
         }
       }
 
