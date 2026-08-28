@@ -2257,13 +2257,20 @@ class SchedullyApp {
       // Suppress side hardware buttons inside mini PiP
       clone.querySelectorAll('.side-btn').forEach(btn => btn.style.setProperty('display', 'none', 'important'));
 
+      // 100% exact subpixel scale matching the miniature device viewport
+      const scale = curW / baseW;
+
+      // Scale down blur radius for mini thumbnail to prevent GPU rasterization flicker/glitches
+      const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
+      clone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
+
       clone.style.position = 'absolute';
       clone.style.top = '0';
       clone.style.left = '0';
       clone.style.width = `${baseW}px`;
       clone.style.height = `${baseH}px`;
       clone.style.transformOrigin = 'top left';
-      clone.style.transform = `scale(${curW / baseW})`;
+      clone.style.transform = `scale(${scale})`;
       clone.style.margin = '0';
       clone.style.pointerEvents = 'none';
 
@@ -2311,11 +2318,11 @@ class SchedullyApp {
       const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : (isCapsuleOrBand ? 490 : (isWatch ? 340 : 760))));
       const ratio = baseH / baseW;
 
-      let minW = 80;
-      let maxW = 240;
-      if (deviceMode === 'tablet') { minW = 140; maxW = 320; }
-      else if (deviceMode === 'paper') { minW = 90; maxW = 260; }
-      else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 65 : 95; maxW = 180; }
+      let minW = 60;
+      let maxW = 260;
+      if (deviceMode === 'tablet') { minW = 120; maxW = 340; }
+      else if (deviceMode === 'paper') { minW = 80; maxW = 280; }
+      else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 55 : 85; maxW = 180; }
 
       const clampedW = Math.max(minW, Math.min(maxW, newWidth));
       const newH = Math.round(clampedW * ratio);
@@ -2323,10 +2330,16 @@ class SchedullyApp {
       pipDevice.style.width = `${clampedW}px`;
       pipDevice.style.height = `${newH}px`;
 
-      targetStage.style.width = `${baseW}px`;
-      targetStage.style.height = `${baseH}px`;
-      targetStage.style.transformOrigin = 'top left';
-      targetStage.style.transform = `scale(${clampedW / baseW})`;
+      const scale = clampedW / baseW;
+      const pipClone = targetStage.querySelector('#pip-phone-canvas-clone') || targetStage.firstElementChild;
+      if (pipClone) {
+        pipClone.style.width = `${baseW}px`;
+        pipClone.style.height = `${baseH}px`;
+        pipClone.style.transformOrigin = 'top left';
+        pipClone.style.transform = `scale(${scale})`;
+        const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
+        pipClone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
+      }
     };
 
     // 4. Top-Right Cross Button Minimizes to Action Ball (Matches exact PiP position)
@@ -4741,6 +4754,12 @@ class SchedullyApp {
 
       const clone = originalCanvas.cloneNode(true);
 
+      const cs = window.getComputedStyle(originalCanvas);
+      const padTop = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.borderTopWidth) || 0);
+      const padBottom = (parseFloat(cs.paddingBottom) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+      const padLeft = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.borderLeftWidth) || 0);
+      const padRight = (parseFloat(cs.paddingRight) || 0) + (parseFloat(cs.borderRightWidth) || 0);
+
       // Remove device chassis border radius so exported wallpaper is a clean 100% full rectangle
       clone.style.setProperty('border', 'none', 'important');
       clone.style.setProperty('border-width', '0px', 'important');
@@ -4748,6 +4767,7 @@ class SchedullyApp {
       clone.style.setProperty('outline', 'none', 'important');
       clone.style.setProperty('box-shadow', 'none', 'important');
       clone.style.setProperty('margin', '0px', 'important');
+      clone.style.setProperty('padding', `${padTop}px ${padRight}px ${padBottom}px ${padLeft}px`, 'important');
       clone.style.setProperty('overflow', 'hidden', 'important');
 
       // Force clone to full native dimensions (overriding any mobile responsive screen squishing)
