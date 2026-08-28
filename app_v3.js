@@ -6935,18 +6935,17 @@ class SchedullyApp {
         g = parseInt(accent.slice(3, 5), 16) || 102;
         b = parseInt(accent.slice(5, 7), 16) || 241;
       }
-      // Material Design 3 (Material You) Surface Container Tints using active theme palette
-      const surfaceBase = activePalette.surface || (isDark ? '#111827' : '#FFFFFF');
-      const accentBg = isDark ? `rgba(${r}, ${g}, ${b}, 0.22)` : `rgba(${r}, ${g}, ${b}, 0.12)`;
-      const accentBorder = isDark ? `rgba(${r}, ${g}, ${b}, 0.35)` : `rgba(${r}, ${g}, ${b}, 0.22)`;
-      const cardBgGradient = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${isDark ? '0.22' : '0.12'}) 0%, ${surfaceBase} 100%)`;
+      // Material Design 3 Solid Surface Containers (100% Solid Non-Glass)
+      const accentBg = isDark ? `rgba(${r}, ${g}, ${b}, 0.25)` : `rgba(${r}, ${g}, ${b}, 0.16)`;
+      const accentBorder = isDark ? `rgba(${r}, ${g}, ${b}, 0.45)` : `rgba(${r}, ${g}, ${b}, 0.28)`;
+      const cardBgSolid = isDark ? '#1E293B' : '#FFFFFF';
 
       const card = document.createElement('div');
       card.className = `watch-glance-card ${isDark ? 'card-dark' : 'card-light'}`;
       card.style.setProperty('--card-accent-color', accent);
       card.style.setProperty('--card-accent-bg', accentBg);
       card.style.setProperty('--card-accent-border', accentBorder);
-      card.style.setProperty('--card-bg-gradient', cardBgGradient);
+      card.style.setProperty('--card-bg-gradient', cardBgSolid);
       card.style.setProperty('--card-accent-glow', 'none');
       card.innerHTML = `
         <div class="watch-card-accent-bar"></div>

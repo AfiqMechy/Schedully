@@ -4148,36 +4148,32 @@ textarea::placeholder,
   flex-shrink: 0 !important;
 }
 
-/* Day Selector Floating Capsule Bar on Watch Screen */
+/* Day Selector Floating Solid Pill Bar on Watch Screen */
 .watch-day-selector {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  background: #FFFFFF !important;
   border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid #E2E8F0 !important;
   padding: 2px 4px !important;
   gap: 3px !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
   width: fit-content !important;
   flex-shrink: 0 !important;
 }
 
-/* Dynamic Page Selector Capsule (1, 2, 3...) */
+/* Dynamic Page Selector Solid Capsule (1, 2, 3...) */
 .watch-page-selector {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  background: #FFFFFF !important;
   border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid #E2E8F0 !important;
   padding: 2px 4px !important;
   gap: 2.5px !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
   flex-shrink: 0 !important;
 }
 
@@ -4232,7 +4228,7 @@ textarea::placeholder,
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   LIGHT & DARK MODE ADAPTIVE STYLING FOR SMARTWATCH
+   SOLID MATERIAL DESIGN 3 ADAPTIVE STYLING FOR SMARTWATCH
    ═══════════════════════════════════════════════════════════════ */
 
 /* Base Watch Canvas Surface */
@@ -4274,18 +4270,18 @@ body.dark-mode .m3-phone-canvas.canvas-watch,
   box-shadow: 0 2px 8px var(--watch-primary-accent, rgba(56, 189, 248, 0.45)) !important;
 }
 
-/* Material Design 3 Watch Cards (Clean Material You Tonal Surface Containers) */
+/* Material Design 3 Watch Cards (100% Solid Non-Glass Surface Containers) */
 .m3-phone-canvas.canvas-watch .watch-glance-card {
   position: relative !important;
-  background: var(--card-bg-gradient, #FFFFFF) !important;
-  border: 1px solid var(--card-accent-border, rgba(0, 0, 0, 0.08)) !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   border-radius: 16px !important;
   padding: 0 !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: stretch !important;
   overflow: hidden !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
   text-align: left !important;
   box-sizing: border-box !important;
   width: 100% !important;
@@ -4299,15 +4295,15 @@ body.dark-mode .m3-phone-canvas.canvas-watch,
   width: 6px !important;
   flex-shrink: 0 !important;
   background-color: var(--card-accent-color, #6366F1) !important;
-  box-shadow: 1px 0 8px var(--card-accent-color, rgba(99, 102, 241, 0.3)) !important;
+  box-shadow: 1px 0 6px var(--card-accent-color, rgba(99, 102, 241, 0.3)) !important;
 }
 
-/* Left Time Box Container */
+/* Left Time Box Container (Solid) */
 .m3-phone-canvas.canvas-watch .watch-card-time-box {
   width: 48px !important;
   flex-shrink: 0 !important;
-  background: var(--card-accent-bg, rgba(99, 102, 241, 0.12)) !important;
-  border: 1px solid var(--card-accent-border, rgba(99, 102, 241, 0.22)) !important;
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
   border-radius: 11px !important;
   margin: 3.5px 0 3.5px 5px !important;
   padding: 2px 3px !important;
@@ -4580,30 +4576,32 @@ body.dark-mode .m3-phone-canvas.canvas-watch .watch-page-pill.active,
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-glance-card,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-glance-card,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark {
-  background: var(--card-bg-gradient, rgba(15, 23, 42, 0.88)) !important;
-  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.22)) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px var(--card-accent-glow, transparent) !important;
+  background: #1E293B !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-box,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-box,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-box {
-  background: var(--card-accent-bg, rgba(255, 255, 255, 0.1)) !important;
-  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.25)) !important;
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-num,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-num,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-num {
-  color: var(--card-accent-color, #38BDF8) !important;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+  color: #FFFFFF !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-sub,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-card-time-sub,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-time-sub {
-  color: #E2E8F0 !important;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3) !important;
+  color: #94A3B8 !important;
+  font-weight: 800 !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-time-icon,
@@ -4616,24 +4614,59 @@ body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-title,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-card-title,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-card-title {
   color: #FFFFFF !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-type-badge,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-type-badge,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-type-badge {
-  background: var(--card-accent-bg, rgba(255, 255, 255, 0.14)) !important;
+  background: var(--card-accent-bg, rgba(255, 255, 255, 0.16)) !important;
   color: #FFFFFF !important;
-  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.28)) !important;
+  border-color: var(--card-accent-border, rgba(255, 255, 255, 0.25)) !important;
 }
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-venue-badge,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-venue-badge,
 .m3-phone-canvas.canvas-watch .watch-glance-card.card-dark .watch-venue-badge {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #F1F5F9 !important;
+  background: #334155 !important;
+  color: #F8FAFC !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PHOTO WALLPAPER CONTRAST & LEGIBILITY SHIELD FOR WATCHES
+   ═══════════════════════════════════════════════════════════════ */
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper #lock-date {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+}
+
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper #lock-time {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.9) !important;
+}
+
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-day-selector,
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-page-selector {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+}
+
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-day-pill,
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-page-pill {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-day-pill.active,
+.m3-phone-canvas.canvas-watch.has-photo-wallpaper .watch-page-pill.active {
+  background: var(--watch-primary-accent, #38BDF8) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+
 
 body.dark-mode .m3-phone-canvas.canvas-watch .watch-card-submeta,
 .theme-dark .m3-phone-canvas.canvas-watch .watch-card-submeta,
@@ -6181,23 +6214,31 @@ body.dark-mode #user-status-text {
 
 /* 1. DEFAULT STYLE (No border, pure clean floating typography with high-clarity contrast) */
 .phone-trademark-floating.style-default,
-.lock-trademark-footer.style-default {
+.lock-trademark-footer.style-default,
+#lock-trademark-footer.style-default,
+.m3-phone-canvas #lock-trademark-footer.style-default {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  padding: 3px 6px !important;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 0 6px rgba(255, 255, 255, 0.6);
+  padding: 2px 6px !important;
+  color: #0F172A !important;
+  text-shadow: none !important;
 }
 
 body.dark-mode .phone-trademark-floating.style-default,
 body.dark-mode .lock-trademark-footer.style-default,
+body.dark-mode #lock-trademark-footer.style-default,
 .theme-dark .phone-trademark-floating.style-default,
 .theme-dark .lock-trademark-footer.style-default,
-#phone-canvas.has-photo-wallpaper .phone-trademark-floating.style-default {
+.theme-dark #lock-trademark-footer.style-default,
+#phone-canvas.has-photo-wallpaper .phone-trademark-floating.style-default,
+.has-photo-wallpaper .phone-trademark-floating.style-default,
+.has-photo-wallpaper .lock-trademark-footer.style-default,
+.has-photo-wallpaper #lock-trademark-footer.style-default {
   color: #FFFFFF !important;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.7) !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.75) !important;
 }
 
 /* 2. ROUNDED STYLE (Pill Capsule Border & Frosted Backing) */
@@ -7450,7 +7491,7 @@ body.dark-mode .expandable-content::before {
   }
 }
 
-/* 6. Canvas Smooth Device Morph Animation */
+/* 6. Canvas Smooth Device Morph Animation & HD Sharp Rendering */
 #phone-canvas {
   transition: width 0.36s cubic-bezier(0.16, 1, 0.3, 1),
               height 0.36s cubic-bezier(0.16, 1, 0.3, 1),
@@ -7460,6 +7501,10 @@ body.dark-mode .expandable-content::before {
   will-change: width, height, transform;
   contain: none !important;
   overflow: visible !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  image-rendering: -webkit-optimize-contrast !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
