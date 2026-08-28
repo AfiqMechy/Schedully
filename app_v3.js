@@ -6940,8 +6940,14 @@ class SchedullyApp {
       const accentBorder = isDark ? `rgba(${r}, ${g}, ${b}, 0.45)` : `rgba(${r}, ${g}, ${b}, 0.28)`;
       const cardBgSolid = isDark ? '#1E293B' : '#FFFFFF';
 
+      // Adaptive Content Density: Adjust vertical layout dynamically based on which fields are present/missing
+      const hasRoom = Boolean(venueBadgeHtml);
+      const hasSubmeta = Boolean(submetaHtml);
+      const lineCount = 1 + (hasRoom ? 1 : 0) + (hasSubmeta ? 1 : 0);
+      const metaDensityClass = (lineCount === 1) ? 'meta-title-only' : ((lineCount === 2) ? 'meta-two-lines' : 'meta-full');
+
       const card = document.createElement('div');
-      card.className = `watch-glance-card ${isDark ? 'card-dark' : 'card-light'}`;
+      card.className = `watch-glance-card ${isDark ? 'card-dark' : 'card-light'} ${metaDensityClass}`;
       card.style.setProperty('--card-accent-color', accent);
       card.style.setProperty('--card-accent-bg', accentBg);
       card.style.setProperty('--card-accent-border', accentBorder);
