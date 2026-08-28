@@ -931,9 +931,12 @@ class SchedullyApp {
 
   updateTitleText(newText) {
     this.timetableTitleText = newText.trim() || 'Untitled';
-    this.lockTitleText.innerText = this.timetableTitleText;
-    this.inputTitleStage.value = newText;
-    this.inputTitleSidebar.value = newText;
+    if (this.lockTitleText) this.lockTitleText.innerText = this.timetableTitleText;
+    if (this.inputTitleStage) this.inputTitleStage.value = newText;
+    if (this.inputTitleSidebar) this.inputTitleSidebar.value = newText;
+    if (typeof this.updateMobilePip === 'function') {
+      this.updateMobilePip();
+    }
   }
 
   updateTrademarkText(newText) {
@@ -2807,8 +2810,11 @@ class SchedullyApp {
         document.querySelectorAll('#toggle-title .pill-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.showTitle = (btn.getAttribute('data-val') === 'yes');
-        this.lockGridTitle.style.display = this.showTitle ? 'block' : 'none';
+        if (this.lockGridTitle) {
+          this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
+        }
         this._stagePending();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -2997,6 +3003,8 @@ class SchedullyApp {
         this.classes.forEach(c => c.displayTime = show);
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -3025,6 +3033,8 @@ class SchedullyApp {
         }
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
+        window.syncGlassSliders?.();
       });
     });
 
@@ -3036,6 +3046,7 @@ class SchedullyApp {
         this.globalCourseType = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
         window.syncGlassSliders?.();
       });
     });
@@ -3048,6 +3059,7 @@ class SchedullyApp {
         this.globalCourseRoom = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
         window.syncGlassSliders?.();
       });
     });
@@ -3060,6 +3072,7 @@ class SchedullyApp {
         this.globalCourseLecturer = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
         window.syncGlassSliders?.();
       });
     });
@@ -3072,6 +3085,7 @@ class SchedullyApp {
         this.globalCourseGroup = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
         window.syncGlassSliders?.();
       });
     });
@@ -3084,6 +3098,7 @@ class SchedullyApp {
         this.globalAdaptiveColor = (btn.getAttribute('data-val') === 'yes');
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
         window.syncGlassSliders?.();
       });
     });
@@ -5055,7 +5070,9 @@ class SchedullyApp {
         document.querySelectorAll('#toggle-title .pill-btn').forEach(b => {
           b.classList.toggle('active', b.getAttribute('data-val') === (this.showTitle ? 'yes' : 'no'));
         });
-        if (this.lockGridTitle) this.lockGridTitle.style.display = this.showTitle ? 'block' : 'none';
+        if (this.lockGridTitle) {
+          this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
+        }
       }
       if (settings.titleText) {
         this.updateTitleText(settings.titleText);
@@ -5138,6 +5155,77 @@ class SchedullyApp {
       }
       if (settings.customHexColors && Array.isArray(settings.customHexColors)) {
         this.customHexColors = [...settings.customHexColors];
+      }
+
+      // 13. Card Format & Visibility Toggles
+      if (settings.globalCardTimes !== undefined) {
+        this.globalCardTimes = settings.globalCardTimes;
+        const toggleCardTimes = document.getElementById('toggle-quick-time') || document.getElementById('toggle-card-times');
+        if (toggleCardTimes) {
+          toggleCardTimes.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalCardTimes ? 'yes' : 'no'));
+          });
+        }
+        if (this.quickTimeSubmenu) this.quickTimeSubmenu.classList.toggle('hidden', !this.globalCardTimes);
+      }
+      if (settings.cardTimeDisplayType) {
+        this.cardTimeDisplayType = settings.cardTimeDisplayType;
+        const timeTypeGroup = document.getElementById('time-display-mode-group');
+        if (timeTypeGroup) {
+          timeTypeGroup.querySelectorAll('.time-mode-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-timemode') === this.cardTimeDisplayType);
+          });
+        }
+        if (this.quickTimePreviewBadge) {
+          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = 'Start & End';
+          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = 'End Only';
+          else this.quickTimePreviewBadge.innerText = 'Start Only';
+        }
+      }
+      if (settings.globalCourseType !== undefined) {
+        this.globalCourseType = settings.globalCourseType;
+        const toggleType = document.getElementById('toggle-quick-type');
+        if (toggleType) {
+          toggleType.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalCourseType ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.globalCourseRoom !== undefined) {
+        this.globalCourseRoom = settings.globalCourseRoom;
+        const toggleRoom = document.getElementById('toggle-quick-room');
+        if (toggleRoom) {
+          toggleRoom.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalCourseRoom ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.globalCourseLecturer !== undefined) {
+        this.globalCourseLecturer = settings.globalCourseLecturer;
+        const toggleLecturer = document.getElementById('toggle-quick-lecturer');
+        if (toggleLecturer) {
+          toggleLecturer.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalCourseLecturer ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.globalCourseGroup !== undefined) {
+        this.globalCourseGroup = settings.globalCourseGroup;
+        const toggleGroup = document.getElementById('toggle-quick-group');
+        if (toggleGroup) {
+          toggleGroup.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalCourseGroup ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.globalAdaptiveColor !== undefined) {
+        this.globalAdaptiveColor = settings.globalAdaptiveColor;
+        const toggleAdaptive = document.getElementById('toggle-quick-adaptive');
+        if (toggleAdaptive) {
+          toggleAdaptive.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (this.globalAdaptiveColor ? 'yes' : 'no'));
+          });
+        }
       }
 
       this.renderTimetableGrid();
@@ -5757,8 +5845,11 @@ class SchedullyApp {
 
   getPresetSettings() {
     return {
+      tableCornerStyle: this.tableCornerStyle || 'rounded',
+      tableCornerRadiusVal: this.tableCornerRadiusVal || 8,
       cardCornerStyle: this.cardCornerStyle || 'rounded',
       cardCornerRadiusVal: this.cardCornerRadiusVal || 8,
+      borderStyle: this.borderStyle || 'default',
       currentMode: this.currentMode || 'light',
       currentPalette: this.currentPalette || 'nord',
       customHexColors: this.customHexColors || null,
@@ -5785,7 +5876,16 @@ class SchedullyApp {
       screenRatio: this.currentScreenRatio || localStorage.getItem('schedully_screen_ratio') || 'auto',
       activeDevice: this.activeDevice || 'phone',
       showLockUI: this.showLockUI !== undefined ? this.showLockUI : true,
-      language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_user_lang') || 'en'))
+      language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_user_lang') || 'en')),
+
+      // Card Formats & Sub-options
+      globalCardTimes: this.globalCardTimes !== undefined ? this.globalCardTimes : true,
+      cardTimeDisplayType: this.cardTimeDisplayType || 'start',
+      globalCourseType: this.globalCourseType !== undefined ? this.globalCourseType : true,
+      globalCourseRoom: this.globalCourseRoom !== undefined ? this.globalCourseRoom : true,
+      globalCourseLecturer: this.globalCourseLecturer !== undefined ? this.globalCourseLecturer : true,
+      globalCourseGroup: this.globalCourseGroup !== undefined ? this.globalCourseGroup : true,
+      globalAdaptiveColor: this.globalAdaptiveColor !== undefined ? this.globalAdaptiveColor : true
     };
   }
 
@@ -5813,6 +5913,10 @@ class SchedullyApp {
     }
 
     this.markUnsaved();
+
+    if (typeof this.updateMobilePip === 'function') {
+      this.updateMobilePip();
+    }
 
     // Smart Debounced Cloud Auto-Save (3-Second Inactivity Timer)
     if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
