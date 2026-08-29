@@ -9210,8 +9210,7 @@ body.dark-mode #input-title-text-sidebar {
 .modal-card,
 .language-modal-card,
 .coffee-modal-card,
-.ocr-lang-card,
-#tour-popover-card {
+.ocr-lang-card {
   position: relative;
 }
 
@@ -9993,37 +9992,38 @@ body.theme-style-default #tour-popover-card::before {
 #interactive-tour-overlay {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 99999 !important;
-  background: rgba(11, 15, 23, 0.72) !important;
+  z-index: 99998 !important;
+  background: transparent !important;
   pointer-events: auto !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   contain: strict !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
 }
 
 #tour-spotlight-focus {
-  z-index: 100000 !important;
+  z-index: 99999 !important;
   position: fixed !important;
   pointer-events: none !important;
   border-radius: 24px !important;
   border: 2.5px solid #38BDF8 !important;
-  background: rgba(56, 189, 248, 0.05) !important;
+  background: transparent !important;
   box-shadow: 
-    0 0 0 4px rgba(56, 189, 248, 0.35),
+    0 0 0 9999px rgba(11, 15, 23, 0.72),
+    0 0 0 4px rgba(56, 189, 248, 0.40),
     0 0 35px rgba(56, 189, 248, 0.55),
-    inset 0 0 20px rgba(56, 189, 248, 0.20) !important;
+    inset 0 0 20px rgba(56, 189, 248, 0.10) !important;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               height 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: transform, width, height !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
+}
+
+.tour-highlighted-element {
+  z-index: 99999 !important;
 }
 
 /* ── Tour Popover Guide Card: Optical Liquid Glass Shader ── */
@@ -10036,8 +10036,6 @@ body.theme-style-default #tour-popover-card::before {
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               opacity 0.2s ease !important;
   will-change: transform, opacity !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
   contain: layout style;

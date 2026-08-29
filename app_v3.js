@@ -8540,27 +8540,52 @@ class SchedullyTourController {
 
     const applyPosition = () => {
       let targetEl = null;
+      const desktopBar = document.getElementById('header-desktop-bar');
+      const isDesktopHeader = (window.innerWidth > 1024 && desktopBar && desktopBar.offsetWidth > 0);
+
       if (step.id === 'export') {
-        const mobileDropdown = document.getElementById('mobile-export-dropdown');
-        if (isMobile && mobileDropdown) {
-          mobileDropdown.classList.remove('hidden');
-          mobileDropdown.style.display = 'block';
+        if (!isDesktopHeader) {
+          const mobileExportBar = document.getElementById('mobile-export-bar');
+          if (mobileExportBar) mobileExportBar.style.display = 'flex';
+          const mobileDropdown = document.getElementById('mobile-export-dropdown');
+          if (mobileDropdown) {
+            mobileDropdown.classList.remove('hidden');
+            mobileDropdown.style.display = 'block';
+            mobileDropdown.style.visibility = 'visible';
+            mobileDropdown.style.opacity = '1';
+          }
+          const chevron = document.getElementById('mobile-export-chevron');
+          if (chevron) chevron.classList.add('mobile-export-chevron-open');
+          targetEl = mobileDropdown || mobileExportBar;
+        } else {
+          targetEl = desktopBar;
         }
-        targetEl = isMobile ? (mobileDropdown || document.getElementById('mobile-export-bar')) : document.getElementById('header-desktop-bar');
       } else if (step.id === 'controls') {
         const popover = document.getElementById('canvas-controls-popover');
         if (popover) {
           popover.classList.remove('hidden');
           popover.style.display = 'flex';
+          popover.style.visibility = 'visible';
+          popover.style.opacity = '1';
         }
-        targetEl = document.querySelector(step.target);
+        targetEl = document.getElementById('canvas-controls-popover');
       } else if (step.id === 'aspect-ratio') {
         const ratioPopover = document.getElementById('canvas-ratio-popover');
         if (ratioPopover) {
           ratioPopover.classList.remove('hidden');
           ratioPopover.style.display = 'flex';
+          ratioPopover.style.visibility = 'visible';
+          ratioPopover.style.opacity = '1';
         }
-        targetEl = ratioPopover || document.querySelector(step.target);
+        targetEl = document.getElementById('canvas-ratio-popover');
+      } else if (step.id === 'theme-menu') {
+        targetEl = isMobile 
+          ? (document.querySelector('#left-sidebar .sidebar-accordion-section:first-child') || document.querySelector('#left-sidebar'))
+          : document.querySelector('#left-sidebar');
+      } else if (step.id === 'courses') {
+        targetEl = isMobile 
+          ? (document.querySelector('#right-sidebar .sidebar-accordion-section:first-child') || document.querySelector('#right-sidebar'))
+          : document.querySelector('#right-sidebar');
       } else {
         targetEl = document.querySelector(step.target);
       }
@@ -8578,20 +8603,24 @@ class SchedullyTourController {
       if (targetEl && this.focusBox && this.popoverCard) {
         let rect = targetEl.getBoundingClientRect();
         
-        // On mobile in export step, calculate combined box of trigger button + dropdown
-        if (step.id === 'export' && isMobile) {
+        // On mobile/tablet in export step, calculate exact full union bounding box
+        if (step.id === 'export' && !isDesktopHeader) {
           const toggleBtn = document.getElementById('btn-mobile-export-toggle');
           const dropdown = document.getElementById('mobile-export-dropdown');
           if (toggleBtn && dropdown) {
             const rBtn = toggleBtn.getBoundingClientRect();
             const rDrop = dropdown.getBoundingClientRect();
+            const minT = Math.min(rBtn.top, rDrop.top);
+            const minL = Math.min(rBtn.left, rDrop.left);
+            const maxR = Math.max(rBtn.right, rDrop.right);
+            const maxB = Math.max(rBtn.bottom, rDrop.bottom);
             rect = {
-              top: Math.min(rBtn.top, rDrop.top),
-              left: Math.min(rBtn.left, rDrop.left),
-              right: Math.max(rBtn.right, rDrop.right),
-              bottom: Math.max(rBtn.bottom, rDrop.bottom),
-              width: Math.max(rBtn.width, rDrop.width),
-              height: Math.max(rBtn.bottom, rDrop.bottom) - Math.min(rBtn.top, rDrop.top)
+              top: minT,
+              left: minL,
+              right: maxR,
+              bottom: maxB,
+              width: maxR - minL,
+              height: maxB - minT
             };
           }
         }
@@ -8599,67 +8628,86 @@ class SchedullyTourController {
         const pad = 6;
         const focusTop = Math.max(4, rect.top - pad);
         const focusLeft = Math.max(4, rect.left - pad);
-        const focusW = Math.min(window.innerWidth - 8, rect.width + pad * 2);
-        const focusH = Math.min(window.innerHeight - 8, rect.height + pad * 2);
+        const focusW = Math.min(window.innerWidth - 8, Math.max(40, rect.width + pad * 2));
+        const focusH = Math.min(window.innerHeight - 8, Math.max(40, rect.height + pad * 2));
 
-        this.focusBox.style.transform = `translate3d(${focusLeft}px, ${focusTop}px, 0)`;
-        this.focusBox.style.width = `${focusW}px`;
-        this.focusBox.style.height = `${focusH}px`;
+        this.focusBox.style.setProperty('transform', `translate3d(${focusLeft}px, ${focusTop}px, 0)`, 'important');
+        this.focusBox.style.setProperty('width', `${focusW}px`, 'important');
+        this.focusBox.style.setProperty('height', `${focusH}px`, 'important');
 
-        // Responsive Popover Card Placement - STRICT NON-OVERLAPPING
+        // Responsive Popover Card Placement - STRICT ZERO-COLLISION
         const cardW = Math.min(window.innerWidth - 32, 340);
         const cardH = this.popoverCard.offsetHeight || 220;
         let cardLeft = (window.innerWidth - cardW) / 2;
-        let cardTop = window.innerHeight - cardH - 20;
+        let cardTop = window.innerHeight - cardH - 24;
 
         if (window.innerWidth > 1024) {
-          // Large Desktop Studio Mode:
+          // Desktop Studio View:
           if (step.id === 'theme-menu') {
-            // Left sidebar: place guide card to the right of the sidebar
-            cardLeft = Math.min(rect.right + 24, window.innerWidth - cardW - 20);
-            cardTop = Math.max(70, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
+            cardLeft = rect.right + 24;
+            cardTop = Math.max(80, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
           } else if (step.id === 'courses') {
-            // Right sidebar: place guide card to the left of the sidebar
             cardLeft = Math.max(20, rect.left - cardW - 24);
-            cardTop = Math.max(70, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
+            cardTop = Math.max(80, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
           } else if (step.id === 'controls' || step.id === 'aspect-ratio') {
-            // Center popovers: place guide card safely BELOW the popovers so controls and canvas stay visible
+            // Popover is anchored near bottom -> Place guide card cleanly ABOVE the popover with 24px gap
             cardLeft = (window.innerWidth - cardW) / 2;
-            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 18);
+            if (rect.top - cardH - 24 >= 60) {
+              cardTop = rect.top - cardH - 24;
+            } else {
+              cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 24);
+            }
           } else if (step.id === 'export') {
-            // Header export: place guide card safely below the header bar
             cardLeft = Math.max(20, Math.min(window.innerWidth - cardW - 20, rect.left - (cardW - rect.width) / 2));
-            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 18);
+            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 24);
           }
         } else {
-          // Mobile & Tablet (< 1024px):
-          if (step.id === 'controls' || step.id === 'aspect-ratio' || step.id === 'export') {
-            // Target is in the upper half -> Place guide card below target
-            if (rect.bottom + cardH + 20 <= window.innerHeight) {
-              cardTop = rect.bottom + 14;
+          // Mobile & Tablet (<= 1024px / Drawer mode):
+          if (step.id === 'controls' || step.id === 'aspect-ratio') {
+            if (rect.top - cardH - 20 >= 16) {
+              cardTop = rect.top - cardH - 20;
             } else {
-              cardTop = Math.max(14, rect.top - cardH - 14);
+              cardTop = Math.min(window.innerHeight - cardH - 16, rect.bottom + 20);
             }
+            cardLeft = (window.innerWidth - cardW) / 2;
+          } else if (step.id === 'export') {
+            // Export menu is at the top of the mobile screen -> Place guide card cleanly BELOW it
+            cardTop = Math.min(window.innerHeight - cardH - 16, rect.bottom + 20);
+            cardLeft = (window.innerWidth - cardW) / 2;
           } else {
-            // Sidebar is open full screen or sheet -> Place guide card at the bottom with safe padding
-            cardTop = window.innerHeight - cardH - 20;
+            // Left or Right sidebar open on mobile: place card cleanly anchored at the bottom
+            cardTop = window.innerHeight - cardH - 24;
+            cardLeft = (window.innerWidth - cardW) / 2;
           }
-          cardLeft = (window.innerWidth - cardW) / 2;
         }
 
-        // Constrain strictly inside viewport bounds
-        cardLeft = Math.max(14, Math.min(window.innerWidth - cardW - 14, cardLeft));
-        cardTop = Math.max(14, Math.min(window.innerHeight - cardH - 14, cardTop));
+        // Enforce strict viewport boundaries
+        cardLeft = Math.max(16, Math.min(window.innerWidth - cardW - 16, cardLeft));
+        cardTop = Math.max(16, Math.min(window.innerHeight - cardH - 16, cardTop));
 
-        this.popoverCard.style.transform = `translate3d(${cardLeft}px, ${cardTop}px, 0)`;
-        this.popoverCard.style.width = `${cardW}px`;
+        this.popoverCard.style.setProperty('transform', `translate3d(${cardLeft}px, ${cardTop}px, 0)`, 'important');
+        this.popoverCard.style.setProperty('width', `${cardW}px`, 'important');
+
+        // Elevate focused target element above overlay
+        document.querySelectorAll('.tour-highlighted-element').forEach(el => {
+          el.classList.remove('tour-highlighted-element');
+        });
+        if (targetEl) {
+          targetEl.classList.add('tour-highlighted-element');
+        }
+        if (step.id === 'export' && !isDesktopHeader) {
+          const toggleBtn = document.getElementById('btn-mobile-export-toggle');
+          const dropdown = document.getElementById('mobile-export-dropdown');
+          if (toggleBtn) toggleBtn.classList.add('tour-highlighted-element');
+          if (dropdown) dropdown.classList.add('tour-highlighted-element');
+        }
       }
     };
 
-    // Calculate immediately and schedule smooth follow-ups after CSS panel animation completes
+    // Calculate immediately and schedule follow-ups as panel animations finish
     requestAnimationFrame(applyPosition);
     setTimeout(applyPosition, 80);
-    setTimeout(applyPosition, 280);
+    setTimeout(applyPosition, 260);
   }
 
   next() {
@@ -8681,6 +8729,9 @@ class SchedullyTourController {
 
   finish() {
     window.isTourActive = false;
+    document.querySelectorAll('.tour-highlighted-element').forEach(el => {
+      el.classList.remove('tour-highlighted-element');
+    });
     if (this.overlay) {
       this.overlay.classList.add('hidden');
     }
