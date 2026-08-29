@@ -241,6 +241,10 @@ class SchedullyApp {
 
     this.addCourseForm = document.getElementById('add-course-form');
     this.inputCourseCode = document.getElementById('input-course-code');
+    this.rowPeriodSelect = document.getElementById('row-period-select');
+    this.inputPeriodSelect = document.getElementById('input-period-select');
+    this.rowStartTime = document.getElementById('row-start-time');
+    this.rowEndTime = document.getElementById('row-end-time');
     this.inputStartTime = document.getElementById('input-start-time');
     this.inputEndTime = document.getElementById('input-end-time');
     this.inputType = document.getElementById('input-type');
@@ -2596,6 +2600,8 @@ class SchedullyApp {
     this.setupCustomColorModalEngine();
     this.setupCourseListDelegation();
     this.setupWatchGlanceEvents();
+    this.updateCourseFormMode();
+
 
     if (this.courseSearchInput) {
       this.courseSearchInput.addEventListener('input', (e) => {
@@ -2935,13 +2941,40 @@ class SchedullyApp {
         document.querySelectorAll('#toggle-axis-mode .pill-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.axisMode = btn.getAttribute('data-val') || 'time';
+        this.updateCourseFormMode();
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
           this.renderWatchGlance();
         }
         this._stagePending();
+        window.syncGlassSliders?.();
       });
     });
+
+    // Total Periods Dropdown Selector (4 to 12 Periods)
+    const totalPeriodsSelect = document.getElementById('grid-total-periods-select');
+    if (totalPeriodsSelect) {
+      totalPeriodsSelect.addEventListener('change', (e) => {
+        this.gridPeriodCount = parseInt(e.target.value, 10) || 6;
+        this.updateCourseFormMode();
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
+        window.syncGlassSliders?.();
+      });
+    }
+
+    // Period Preset Dropdown (9:00 AM 90m / 8:50 AM 90m / 8:30 AM 50m)
+    const periodPresetSelect = document.getElementById('grid-period-preset-select');
+    if (periodPresetSelect) {
+      periodPresetSelect.addEventListener('change', (e) => {
+        this.selectedOcrPeriodPreset = e.target.value;
+        this.updateCourseFormMode();
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch') this.renderWatchGlance();
+        this._stagePending();
+      });
+    }
 
     // Course Card Corner Radius Steppers
     const cardRadiusValEl = document.getElementById('card-radius-val');
@@ -4208,8 +4241,17 @@ class SchedullyApp {
       const code = this.inputCourseCode.value.trim().toUpperCase();
       if (!code) return;
 
-      const startTime = this.inputStartTime.value;
-      const endTime = this.inputEndTime.value;
+      let startTime = this.inputStartTime.value;
+      let endTime = this.inputEndTime.value;
+      let periodNumber = undefined;
+
+      if (this.axisMode === 'period' && this.inputPeriodSelect) {
+        const selOption = this.inputPeriodSelect.selectedOptions[0];
+        periodNumber = selOption ? parseInt(selOption.value, 10) : 1;
+        startTime = selOption ? (selOption.getAttribute('data-start') || '09:00') : '09:00';
+        endTime = selOption ? (selOption.getAttribute('data-end') || '10:30') : '10:30';
+      }
+
       const courseType = this.inputType.value.trim();
       const location = this.inputLocation.value.trim();
       const lecturer = this.inputLecturer ? this.inputLecturer.value.trim() : '';
@@ -4224,6 +4266,7 @@ class SchedullyApp {
           code: code,
           title: courseType ? `${code} (${courseType})` : code,
           day: day,
+          periodNumber: periodNumber,
           startTime: startTime,
           endTime: endTime,
           type: courseType,
@@ -4459,14 +4502,14 @@ class SchedullyApp {
       });
     }
 
-    // 2. Schedule Axis Mode Buttons (Period / Clock / Both)
-    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime, this.btnAxisBoth].filter(Boolean);
+    // 2. Schedule Axis Mode Buttons (Period / Clock)
+    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime].filter(Boolean);
     const presetContainer = document.getElementById('ocr-period-preset-container');
 
     const updatePresetVisibility = (mode) => {
       if (presetContainer) {
-        // Show presets when Clock or Both mode is selected (times matter)
-        if (mode === 'time' || mode === 'both') {
+        // Show presets when Clock mode is selected (times matter)
+        if (mode === 'time') {
           presetContainer.style.display = 'flex';
         } else {
           presetContainer.style.display = 'none';
@@ -4480,10 +4523,8 @@ class SchedullyApp {
         btn.classList.add('active');
         if (btn === this.btnAxisPeriod) {
           this.selectedOcrAxisMode = 'period';
-        } else if (btn === this.btnAxisTime) {
+        } else {
           this.selectedOcrAxisMode = 'time';
-        } else if (btn === this.btnAxisBoth) {
-          this.selectedOcrAxisMode = 'both';
         }
         updatePresetVisibility(this.selectedOcrAxisMode);
       });
@@ -5124,13 +5165,24 @@ class SchedullyApp {
         this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
       }
 
-      // 11. Axis Mode (Period / Time / Both) & Period Preset
+      // 11. Axis Mode (Time / Period) & Period Preset
       if (settings.axisMode) {
-        this.axisMode = settings.axisMode;
+        this.axisMode = (settings.axisMode === 'both' || settings.axisMode === 'period') ? 'period' : 'time';
         try { localStorage.setItem('schedully_axis_mode', this.axisMode); } catch (e) {}
+        document.querySelectorAll('#toggle-axis-mode .pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-val') === this.axisMode);
+        });
+        if (typeof this.updateCourseFormMode === 'function') this.updateCourseFormMode();
+      }
+      if (settings.gridPeriodCount) {
+        this.gridPeriodCount = settings.gridPeriodCount;
+        const totalPeriodsSelect = document.getElementById('grid-total-periods-select');
+        if (totalPeriodsSelect) totalPeriodsSelect.value = String(this.gridPeriodCount);
       }
       if (settings.selectedOcrPeriodPreset) {
         this.selectedOcrPeriodPreset = settings.selectedOcrPeriodPreset;
+        const presetSelect = document.getElementById('grid-period-preset-select');
+        if (presetSelect) presetSelect.value = this.selectedOcrPeriodPreset;
       }
 
       // 12. App-wide Cloud Preferences (Language, Time Mode, Screen Ratio, Device, Lock UI)
@@ -5871,6 +5923,7 @@ class SchedullyApp {
       gridStartHour: this.gridStartHour || 8,
       gridEndHour: this.gridEndHour || 20,
       axisMode: this.axisMode || 'time',
+      gridPeriodCount: this.gridPeriodCount || 6,
       selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900',
       timeDisplayMode: this.timeDisplayMode || localStorage.getItem('schedully_time_display_mode') || 'time',
       screenRatio: this.currentScreenRatio || localStorage.getItem('schedully_screen_ratio') || 'auto',
@@ -6294,7 +6347,7 @@ class SchedullyApp {
     }
 
     // Reset Segment Highlights — purely via .active class, CSS handles the styling
-    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime, this.btnAxisBoth].filter(Boolean);
+    const axisButtons = [this.btnAxisPeriod, this.btnAxisTime].filter(Boolean);
     axisButtons.forEach(b => b.classList.remove('active'));
     if (isPeriodBased && this.btnAxisPeriod) {
       this.btnAxisPeriod.classList.add('active');
@@ -6305,7 +6358,7 @@ class SchedullyApp {
     // Show/hide preset chips based on initial axis mode
     const presetContainer = document.getElementById('ocr-period-preset-container');
     if (presetContainer) {
-      presetContainer.style.display = (this.selectedOcrAxisMode === 'time' || this.selectedOcrAxisMode === 'both') ? 'flex' : 'none';
+      presetContainer.style.display = (this.selectedOcrAxisMode === 'time') ? 'flex' : 'none';
     }
 
     // Reset preset chip to first (9:00 AM)
@@ -6448,23 +6501,46 @@ class SchedullyApp {
     }
 
     const timeSlots = [];
-    if (this.axisMode === 'period' || this.axisMode === 'both') {
-      const isPeriodMode = (this.axisMode === 'period');
-      const maxPeriodFound = Math.max(6, ...this.classes.map(c => c.periodNumber || 0));
-      const periodCount = Math.min(8, Math.max(5, maxPeriodFound));
+    if (this.axisMode === 'period') {
+      const maxPeriodFound = Math.max(0, ...this.classes.map(c => c.periodNumber || 0));
+      const userPeriodCount = this.gridPeriodCount || 6;
+      const periodCount = Math.min(12, Math.max(userPeriodCount, maxPeriodFound));
       
       const currentLang = window.SchedullyI18n ? window.SchedullyI18n.currentLang : 'ja';
       const periodSuffix = (currentLang === 'ja') ? '限' : (currentLang === 'ko' ? '교시' : (currentLang === 'zh-cn' || currentLang === 'zh-tw' ? '节' : ''));
       
-      const defaultSchedule = {
-        1: { start: '09:00', end: '10:30' },
-        2: { start: '10:40', end: '12:10' },
-        3: { start: '13:00', end: '14:30' },
-        4: { start: '14:40', end: '16:10' },
-        5: { start: '16:20', end: '17:50' },
-        6: { start: '18:00', end: '19:30' },
-        7: { start: '19:40', end: '21:10' }
+      const activePresetKey = this.selectedOcrPeriodPreset || '90m-900';
+      const periodSchedules = {
+        '90m-900': {
+          1: { start: '09:00', end: '10:30' },
+          2: { start: '10:40', end: '12:10' },
+          3: { start: '13:00', end: '14:30' },
+          4: { start: '14:40', end: '16:10' },
+          5: { start: '16:20', end: '17:50' },
+          6: { start: '18:00', end: '19:30' },
+          7: { start: '19:40', end: '21:10' }
+        },
+        '90m-850': {
+          1: { start: '08:50', end: '10:20' },
+          2: { start: '10:30', end: '12:00' },
+          3: { start: '12:50', end: '14:20' },
+          4: { start: '14:30', end: '16:00' },
+          5: { start: '16:10', end: '17:40' },
+          6: { start: '17:50', end: '19:20' },
+          7: { start: '19:30', end: '21:00' }
+        },
+        '50m-school': {
+          1: { start: '08:30', end: '09:20' },
+          2: { start: '09:30', end: '10:20' },
+          3: { start: '10:40', end: '11:30' },
+          4: { start: '11:40', end: '12:30' },
+          5: { start: '13:30', end: '14:20' },
+          6: { start: '14:30', end: '15:20' },
+          7: { start: '15:30', end: '16:20' }
+        }
       };
+
+      const defaultSchedule = periodSchedules[activePresetKey] || periodSchedules['90m-900'];
 
       for (let p = 1; p <= periodCount; p++) {
         const slotData = defaultSchedule[p] || { start: `${p + 8}:00`, end: `${p + 9}:30` };
@@ -6473,7 +6549,7 @@ class SchedullyApp {
           period: p,
           hour: parseInt(slotData.start.split(':')[0], 10),
           topText: label,
-          bottomText: isPeriodMode ? '' : slotData.start,
+          bottomText: '',
           isPeriod: true
         });
       }
@@ -6880,31 +6956,77 @@ class SchedullyApp {
           formatEnd = `${String(displayEh).padStart(2, '0')}:${String(em || 0).padStart(2, '0')}`;
         }
         
+        let periodNum = (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) ? c.periodNumber : null;
+        if (!periodNum && c.startTime) {
+          const [sh, sm] = (c.startTime || '00:00').split(':').map(Number);
+          const startM = (sh * 60) + (sm || 0);
+          
+          const activePresetKey = this.selectedOcrPeriodPreset || '90m-900';
+          const periodSchedules = {
+            '90m-900': {
+              1: { startM: 9 * 60, endM: 10 * 60 + 30 },
+              2: { startM: 10 * 60 + 40, endM: 12 * 60 + 10 },
+              3: { startM: 13 * 60, endM: 14 * 60 + 30 },
+              4: { startM: 14 * 60 + 40, endM: 16 * 60 + 10 },
+              5: { startM: 16 * 60 + 20, endM: 17 * 60 + 50 },
+              6: { startM: 18 * 60, endM: 19 * 60 + 30 },
+              7: { startM: 19 * 60 + 40, endM: 21 * 60 + 10 }
+            },
+            '90m-850': {
+              1: { startM: 8 * 60 + 50, endM: 10 * 60 + 20 },
+              2: { startM: 10 * 60 + 30, endM: 12 * 60 },
+              3: { startM: 12 * 60 + 50, endM: 14 * 60 + 20 },
+              4: { startM: 14 * 60 + 30, endM: 16 * 60 },
+              5: { startM: 16 * 60 + 10, endM: 17 * 60 + 40 },
+              6: { startM: 17 * 60 + 50, endM: 19 * 60 + 20 },
+              7: { startM: 19 * 60 + 30, endM: 21 * 60 }
+            },
+            '50m-school': {
+              1: { startM: 8 * 60, endM: 8 * 60 + 50 },
+              2: { startM: 9 * 60, endM: 9 * 60 + 50 },
+              3: { startM: 10 * 60 + 10, endM: 11 * 60 },
+              4: { startM: 11 * 60 + 10, endM: 12 * 60 },
+              5: { startM: 13 * 60 + 30, endM: 14 * 60 + 20 },
+              6: { startM: 14 * 60 + 30, endM: 15 * 60 + 20 },
+              7: { startM: 15 * 60 + 40, endM: 16 * 60 + 30 },
+              8: { startM: 16 * 60 + 40, endM: 17 * 60 + 30 },
+              9: { startM: 18 * 60 + 30, endM: 19 * 60 + 20 },
+              10: { startM: 19 * 60 + 30, endM: 20 * 60 + 20 },
+              11: { startM: 20 * 60 + 30, endM: 21 * 60 + 20 },
+              12: { startM: 21 * 60 + 30, endM: 22 * 60 + 20 }
+            }
+          };
+
+          const activeSched = periodSchedules[activePresetKey] || periodSchedules['90m-900'];
+          for (const [p, slot] of Object.entries(activeSched)) {
+            if (Math.abs(startM - slot.startM) <= 35 || (startM >= slot.startM - 15 && startM <= slot.endM)) {
+              periodNum = parseInt(p, 10);
+              break;
+            }
+          }
+          if (!periodNum) {
+            let closestP = 1;
+            let closestDiff = Infinity;
+            for (const [p, slot] of Object.entries(activeSched)) {
+              const diff = Math.abs(startM - slot.startM);
+              if (diff < closestDiff) {
+                closestDiff = diff;
+                closestP = parseInt(p, 10);
+              }
+            }
+            periodNum = closestP;
+          }
+        }
+        if (!periodNum) {
+          const allDayIndex = (dayClasses && dayClasses.indexOf(c) >= 0) ? dayClasses.indexOf(c) : (startIdx + idx);
+          periodNum = allDayIndex + 1;
+        }
+
         let timeContentHtml = '';
         if (this.axisMode === 'period') {
-          const periodNum = (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) ? c.periodNumber : (idx + 1);
+          const fontSize = (periodNum >= 10) ? '9px' : '11px';
           timeContentHtml = `
-            <span class="watch-card-time-num" style="font-size: 11px; font-weight: 900; letter-spacing: 0.02em;">P${periodNum}</span>
-          `;
-        } else if (this.axisMode === 'both') {
-          const periodNum = (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) ? c.periodNumber : (idx + 1);
-          const mode = this.cardTimeDisplayType || 'start';
-          let timeSubHtml = '';
-          if (mode === 'both') {
-            timeSubHtml = `
-              <span class="watch-card-time-sub" style="font-size: 6px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;">${formatStart}</span>
-              <span class="watch-time-sep">-</span>
-              <span class="watch-card-time-sub" style="font-size: 6px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;">${formatEnd}</span>
-            `;
-          } else if (mode === 'end') {
-            timeSubHtml = `<span class="watch-card-time-sub" style="font-size: 7px; font-weight: 700; opacity: 0.95; line-height: 1;">${formatEnd}</span>`;
-          } else {
-            timeSubHtml = `<span class="watch-card-time-sub" style="font-size: 7px; font-weight: 700; opacity: 0.95; line-height: 1;">${formatStart}</span>`;
-          }
-
-          timeContentHtml = `
-            <span class="watch-card-time-num" style="font-size: 9px; font-weight: 900; line-height: 1;">P${periodNum}</span>
-            ${timeSubHtml}
+            <span class="watch-card-time-num" style="font-size: ${fontSize}; font-weight: 900; letter-spacing: -0.02em;">P${periodNum}</span>
           `;
         } else {
           const mode = this.cardTimeDisplayType || 'start';
@@ -7056,6 +7178,99 @@ class SchedullyApp {
       this._gridRenderPending = false;
       this.renderTimetableGrid();
     });
+  }
+
+  updateCourseFormMode() {
+    const isPeriod = (this.axisMode === 'period');
+    const activePresetKey = this.selectedOcrPeriodPreset || '90m-900';
+    const is50m = (activePresetKey === '50m-school');
+    const maxAllowedPeriods = is50m ? 12 : 7;
+    const minAllowedPeriods = 4;
+
+    // Clamp gridPeriodCount if switching from 50m to 90m
+    if (this.gridPeriodCount > maxAllowedPeriods) {
+      this.gridPeriodCount = maxAllowedPeriods;
+    } else if (this.gridPeriodCount < minAllowedPeriods) {
+      this.gridPeriodCount = minAllowedPeriods;
+    }
+
+    // 1. Update #grid-total-periods-select dropdown options dynamically based on preset
+    const totalPeriodsSelect = document.getElementById('grid-total-periods-select');
+    if (totalPeriodsSelect) {
+      let optHtml = '';
+      for (let count = minAllowedPeriods; count <= maxAllowedPeriods; count++) {
+        optHtml += `<option value="${count}" ${count === (this.gridPeriodCount || 6) ? 'selected' : ''}>${count} Periods</option>`;
+      }
+      totalPeriodsSelect.innerHTML = optHtml;
+      totalPeriodsSelect.value = String(this.gridPeriodCount || 6);
+    }
+
+    // 2. Add Course Form Rows & Period Dropdown Options
+    if (this.rowPeriodSelect) this.rowPeriodSelect.style.display = isPeriod ? 'flex' : 'none';
+    if (this.rowStartTime) this.rowStartTime.style.display = isPeriod ? 'none' : 'flex';
+    if (this.rowEndTime) this.rowEndTime.style.display = isPeriod ? 'none' : 'flex';
+
+    if (this.inputPeriodSelect && isPeriod) {
+      const periodSchedules = {
+        '90m-900': {
+          1: { start: '09:00', end: '10:30' },
+          2: { start: '10:40', end: '12:10' },
+          3: { start: '13:00', end: '14:30' },
+          4: { start: '14:40', end: '16:10' },
+          5: { start: '16:20', end: '17:50' },
+          6: { start: '18:00', end: '19:30' },
+          7: { start: '19:40', end: '21:10' }
+        },
+        '90m-850': {
+          1: { start: '08:50', end: '10:20' },
+          2: { start: '10:30', end: '12:00' },
+          3: { start: '12:50', end: '14:20' },
+          4: { start: '14:30', end: '16:00' },
+          5: { start: '16:10', end: '17:40' },
+          6: { start: '17:50', end: '19:20' },
+          7: { start: '19:30', end: '21:00' }
+        },
+        '50m-school': {
+          1: { start: '08:00', end: '08:50' },
+          2: { start: '09:00', end: '09:50' },
+          3: { start: '10:10', end: '11:00' },
+          4: { start: '11:10', end: '12:00' },
+          5: { start: '13:30', end: '14:20' },
+          6: { start: '14:30', end: '15:20' },
+          7: { start: '15:40', end: '16:30' },
+          8: { start: '16:40', end: '17:30' },
+          9: { start: '18:30', end: '19:20' },
+          10: { start: '19:30', end: '20:20' },
+          11: { start: '20:30', end: '21:20' },
+          12: { start: '21:30', end: '22:20' }
+        }
+      };
+
+      const defaultSchedule = periodSchedules[activePresetKey] || periodSchedules['90m-900'];
+      const totalPeriods = Math.max(minAllowedPeriods, Math.min(maxAllowedPeriods, this.gridPeriodCount || 6));
+      const currentVal = this.inputPeriodSelect.value || '1';
+
+      let html = '';
+      for (let p = 1; p <= totalPeriods; p++) {
+        const slot = defaultSchedule[p] || { start: `${p + 8}:00`, end: `${p + 9}:30` };
+        const label = `Period ${p} (${slot.start} - ${slot.end})`;
+        html += `<option value="${p}" data-start="${slot.start}" data-end="${slot.end}" ${String(p) === String(currentVal) ? 'selected' : ''}>${label}</option>`;
+      }
+      this.inputPeriodSelect.innerHTML = html;
+    }
+
+    // 3. Days & Time Layout Settings Rows
+    const rowGridStartTime = document.getElementById('row-grid-start-time');
+    const rowGridEndTime = document.getElementById('row-grid-end-time');
+    const rowGridClockType = document.getElementById('row-grid-clock-type');
+    const rowGridTotalPeriods = document.getElementById('row-grid-total-periods');
+    const rowGridPeriodPreset = document.getElementById('row-grid-period-preset');
+
+    if (rowGridStartTime) rowGridStartTime.style.display = isPeriod ? 'none' : 'flex';
+    if (rowGridEndTime) rowGridEndTime.style.display = isPeriod ? 'none' : 'flex';
+    if (rowGridClockType) rowGridClockType.style.display = isPeriod ? 'none' : 'flex';
+    if (rowGridTotalPeriods) rowGridTotalPeriods.style.display = isPeriod ? 'flex' : 'none';
+    if (rowGridPeriodPreset) rowGridPeriodPreset.style.display = isPeriod ? 'flex' : 'none';
   }
 
   setupCourseListDelegation() {
@@ -8381,58 +8596,70 @@ class SchedullyTourController {
           }
         }
 
-        const pad = 8;
-        
-        this.focusBox.style.top = `${Math.max(4, rect.top - pad)}px`;
-        this.focusBox.style.left = `${Math.max(4, rect.left - pad)}px`;
-        this.focusBox.style.width = `${Math.min(window.innerWidth - 8, rect.width + pad * 2)}px`;
-        this.focusBox.style.height = `${Math.min(window.innerHeight - 8, rect.height + pad * 2)}px`;
+        const pad = 6;
+        const focusTop = Math.max(4, rect.top - pad);
+        const focusLeft = Math.max(4, rect.left - pad);
+        const focusW = Math.min(window.innerWidth - 8, rect.width + pad * 2);
+        const focusH = Math.min(window.innerHeight - 8, rect.height + pad * 2);
 
-        // Responsive Popover Card Placement
+        this.focusBox.style.transform = `translate3d(${focusLeft}px, ${focusTop}px, 0)`;
+        this.focusBox.style.width = `${focusW}px`;
+        this.focusBox.style.height = `${focusH}px`;
+
+        // Responsive Popover Card Placement - STRICT NON-OVERLAPPING
         const cardW = Math.min(window.innerWidth - 32, 340);
         const cardH = this.popoverCard.offsetHeight || 220;
         let cardLeft = (window.innerWidth - cardW) / 2;
-        let cardTop = window.innerHeight - cardH - 24;
+        let cardTop = window.innerHeight - cardH - 20;
 
         if (window.innerWidth > 1024) {
-          // Large Desktop Studio Mode: Side-by-side positioning
-          if (step.position === 'right' && rect.right + cardW + 32 <= window.innerWidth) {
-            cardLeft = rect.right + 24;
-            cardTop = Math.max(20, Math.min(window.innerHeight - cardH - 20, rect.top + 30));
-          } else if (step.position === 'left' && rect.left - cardW - 24 >= 16) {
-            cardLeft = rect.left - cardW - 24;
-            cardTop = Math.max(20, Math.min(window.innerHeight - cardH - 20, rect.top + 30));
-          } else if (step.position === 'top') {
+          // Large Desktop Studio Mode:
+          if (step.id === 'theme-menu') {
+            // Left sidebar: place guide card to the right of the sidebar
+            cardLeft = Math.min(rect.right + 24, window.innerWidth - cardW - 20);
+            cardTop = Math.max(70, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
+          } else if (step.id === 'courses') {
+            // Right sidebar: place guide card to the left of the sidebar
+            cardLeft = Math.max(20, rect.left - cardW - 24);
+            cardTop = Math.max(70, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
+          } else if (step.id === 'controls' || step.id === 'aspect-ratio') {
+            // Center popovers: place guide card safely BELOW the popovers so controls and canvas stay visible
             cardLeft = (window.innerWidth - cardW) / 2;
-            cardTop = Math.max(20, rect.top - cardH - 16);
-          } else {
-            cardLeft = (window.innerWidth - cardW) / 2;
-            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 20);
+            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 18);
+          } else if (step.id === 'export') {
+            // Header export: place guide card safely below the header bar
+            cardLeft = Math.max(20, Math.min(window.innerWidth - cardW - 20, rect.left - (cardW - rect.width) / 2));
+            cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 18);
           }
         } else {
-          // Smartphone & Tablet (< 1024px): Guaranteed centered, bottom-docked card
-          cardLeft = (window.innerWidth - cardW) / 2;
-          if (step.id === 'controls') {
-            cardTop = Math.max(16, rect.top - cardH - 16);
+          // Mobile & Tablet (< 1024px):
+          if (step.id === 'controls' || step.id === 'aspect-ratio' || step.id === 'export') {
+            // Target is in the upper half -> Place guide card below target
+            if (rect.bottom + cardH + 20 <= window.innerHeight) {
+              cardTop = rect.bottom + 14;
+            } else {
+              cardTop = Math.max(14, rect.top - cardH - 14);
+            }
           } else {
-            cardTop = window.innerHeight - cardH - 24;
+            // Sidebar is open full screen or sheet -> Place guide card at the bottom with safe padding
+            cardTop = window.innerHeight - cardH - 20;
           }
+          cardLeft = (window.innerWidth - cardW) / 2;
         }
 
-        // Constrain strictly inside viewport
-        cardLeft = Math.max(16, Math.min(window.innerWidth - cardW - 16, cardLeft));
-        cardTop = Math.max(16, Math.min(window.innerHeight - cardH - 16, cardTop));
+        // Constrain strictly inside viewport bounds
+        cardLeft = Math.max(14, Math.min(window.innerWidth - cardW - 14, cardLeft));
+        cardTop = Math.max(14, Math.min(window.innerHeight - cardH - 14, cardTop));
 
-        this.popoverCard.style.top = `${cardTop}px`;
-        this.popoverCard.style.left = `${cardLeft}px`;
+        this.popoverCard.style.transform = `translate3d(${cardLeft}px, ${cardTop}px, 0)`;
         this.popoverCard.style.width = `${cardW}px`;
       }
     };
 
     // Calculate immediately and schedule smooth follow-ups after CSS panel animation completes
     requestAnimationFrame(applyPosition);
-    setTimeout(applyPosition, 120);
-    setTimeout(applyPosition, 360);
+    setTimeout(applyPosition, 80);
+    setTimeout(applyPosition, 280);
   }
 
   next() {

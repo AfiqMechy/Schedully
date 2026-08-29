@@ -9991,53 +9991,63 @@ body.theme-style-default #tour-popover-card::before {
    INTERACTIVE SPOTLIGHT TOUR ONBOARDING STYLES
    ═══════════════════════════════════════════════════════════════ */
 #interactive-tour-overlay {
+  position: fixed !important;
+  inset: 0 !important;
   z-index: 99999 !important;
-  pointer-events: none !important;
+  background: rgba(11, 15, 23, 0.72) !important;
+  pointer-events: auto !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  contain: strict !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
 }
 
 #tour-spotlight-focus {
-  z-index: 99999 !important;
+  z-index: 100000 !important;
+  position: fixed !important;
   pointer-events: none !important;
-  border-radius: 28px !important;
-  border: 2px solid #38BDF8 !important;
-  background: transparent !important;
+  border-radius: 24px !important;
+  border: 2.5px solid #38BDF8 !important;
+  background: rgba(56, 189, 248, 0.05) !important;
   box-shadow: 
-    0 0 0 9999px rgba(11, 15, 23, 0.78),
-    0 0 50px 10px rgba(56, 189, 248, 0.6),
-    inset 0 0 30px rgba(56, 189, 248, 0.25) !important;
-  transition: top 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              left 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              width 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: top, left, width, height !important;
+    0 0 0 4px rgba(56, 189, 248, 0.35),
+    0 0 35px rgba(56, 189, 248, 0.55),
+    inset 0 0 20px rgba(56, 189, 248, 0.20) !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, width, height !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
 }
 
 /* ── Tour Popover Guide Card: Optical Liquid Glass Shader ── */
 #tour-popover-card {
-  z-index: 100000 !important;
+  z-index: 100001 !important;
   pointer-events: auto !important;
-  position: relative !important;
-  transition: top 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              left 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               opacity 0.2s ease !important;
-  will-change: top, left !important;
+  will-change: transform, opacity !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
+  contain: layout style;
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.85)) 0%, rgba(255, 255, 255, 0.48) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.6)) 100%) !important;
   backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(230%) contrast(110%) brightness(1.08) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(230%) contrast(110%) brightness(1.08) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
   box-shadow: 
     0 24px 60px -10px rgba(15, 23, 42, 0.25),
-    0 4px 16px -2px rgba(15, 23, 42, 0.10),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.1) calc(var(--glass-thickness, 20px) * 0.15) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 1.2)),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.05),
-    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
-    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+    0 4px 16px -2px rgba(15, 23, 42, 0.10) !important;
 }
 
 body.dark-mode #tour-popover-card,

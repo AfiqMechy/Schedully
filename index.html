@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260828_pip_title_sync_v327">
+<link rel="stylesheet" href="styles.css?v=20260829_matched_preset_limits_v338">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -1117,8 +1117,17 @@
                   </div>
                 </div>
 
-                <!-- Start Time -->
+                <!-- Schedule System (Time vs Period) -->
                 <div class="opt-row margin-top-xs">
+                  <span class="opt-label" data-i18n="systemType">System</span>
+                  <div class="pill-toggle-group" id="toggle-axis-mode">
+                    <button type="button" class="pill-btn active" data-val="time">TIME</button>
+                    <button type="button" class="pill-btn" data-val="period">PERIOD</button>
+                  </div>
+                </div>
+
+                <!-- Start Time (Shown in Time Mode) -->
+                <div class="opt-row margin-top-xs" id="row-grid-start-time">
                   <span class="opt-label" data-i18n="startTime">Start Time</span>
                   <select id="grid-start-time" class="m3-input-time opt-input">
                     <option value="05:00">05:00 AM</option>
@@ -1132,8 +1141,8 @@
                   </select>
                 </div>
 
-                <!-- End Time -->
-                <div class="opt-row">
+                <!-- End Time (Shown in Time Mode) -->
+                <div class="opt-row" id="row-grid-end-time">
                   <span class="opt-label" data-i18n="endTime">End Time</span>
                   <select id="grid-end-time" class="m3-input-time opt-input">
                     <option value="12:00">12:00 PM</option>
@@ -1151,8 +1160,8 @@
                   </select>
                 </div>
 
-                <!-- Clock Type -->
-                <div class="opt-row margin-top-xs">
+                <!-- Clock Type (Shown in Time Mode) -->
+                <div class="opt-row margin-top-xs" id="row-grid-clock-type">
                   <span class="opt-label" data-i18n="clockFormat">Clock Type</span>
                   <div class="pill-toggle-group" id="toggle-clock-type">
                     <button type="button" class="pill-btn active" data-val="12">12-HOUR</button>
@@ -1160,14 +1169,30 @@
                   </div>
                 </div>
 
-                <!-- Schedule System (Time vs Both vs Period) -->
-                <div class="opt-row margin-top-xs">
-                  <span class="opt-label" data-i18n="systemType">System</span>
-                  <div class="pill-toggle-group" id="toggle-axis-mode">
-                    <button type="button" class="pill-btn active" data-val="time">TIME</button>
-                    <button type="button" class="pill-btn" data-val="both">BOTH</button>
-                    <button type="button" class="pill-btn" data-val="period">PERIOD</button>
-                  </div>
+                <!-- Total Periods (Shown in Period Mode) -->
+                <div class="opt-row margin-top-xs" id="row-grid-total-periods" style="display: none;">
+                  <span class="opt-label">Total Periods</span>
+                  <select id="grid-total-periods-select" class="m3-input-time opt-input">
+                    <option value="4">4 Periods</option>
+                    <option value="5">5 Periods</option>
+                    <option value="6" selected>6 Periods</option>
+                    <option value="7">7 Periods</option>
+                    <option value="8">8 Periods</option>
+                    <option value="9">9 Periods</option>
+                    <option value="10">10 Periods</option>
+                    <option value="11">11 Periods</option>
+                    <option value="12">12 Periods</option>
+                  </select>
+                </div>
+
+                <!-- Period Time Preset (Shown in Period Mode) -->
+                <div class="opt-row margin-top-xs" id="row-grid-period-preset" style="display: none;">
+                  <span class="opt-label">Slot Duration</span>
+                  <select id="grid-period-preset-select" class="m3-input-time opt-input">
+                    <option value="90m-900" selected>9:00 AM · 90 min (Uni)</option>
+                    <option value="90m-850">8:50 AM · 90 min (Early)</option>
+                    <option value="50m-school">8:30 AM · 50 min (School)</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -1315,8 +1340,27 @@
                   </div>
                 </div>
 
-                <!-- Start Time -->
-                <div class="form-row">
+                <!-- Period Selector (Shown in Period Mode) -->
+                <div class="form-row" id="row-period-select" style="display: none;">
+                  <label for="input-period-select">Period</label>
+                  <select id="input-period-select" class="m3-input-time">
+                    <option value="1" data-start="09:00" data-end="10:30" selected>Period 1 (09:00 - 10:30)</option>
+                    <option value="2" data-start="10:40" data-end="12:10">Period 2 (10:40 - 12:10)</option>
+                    <option value="3" data-start="13:00" data-end="14:30">Period 3 (01:00 - 02:30)</option>
+                    <option value="4" data-start="14:40" data-end="16:10">Period 4 (02:40 - 04:10)</option>
+                    <option value="5" data-start="16:20" data-end="17:50">Period 5 (04:20 - 05:50)</option>
+                    <option value="6" data-start="18:00" data-end="19:30">Period 6 (06:00 - 07:30)</option>
+                    <option value="7" data-start="19:40" data-end="21:10">Period 7 (07:40 - 09:10)</option>
+                    <option value="8" data-start="21:20" data-end="22:50">Period 8 (09:20 - 10:50)</option>
+                    <option value="9" data-start="08:00" data-end="08:50">Period 9</option>
+                    <option value="10" data-start="09:00" data-end="09:50">Period 10</option>
+                    <option value="11" data-start="10:00" data-end="10:50">Period 11</option>
+                    <option value="12" data-start="11:00" data-end="11:50">Period 12</option>
+                  </select>
+                </div>
+
+                <!-- Start Time (Shown in Time Mode) -->
+                <div class="form-row" id="row-start-time">
                   <label data-i18n="startTime" for="input-start-time">Start Time</label>
                   <select id="input-start-time" class="m3-input-time">
                     <option value="08:00">08:00 AM</option>
@@ -1331,8 +1375,8 @@
                   </select>
                 </div>
 
-                <!-- End Time -->
-                <div class="form-row">
+                <!-- End Time (Shown in Time Mode) -->
+                <div class="form-row" id="row-end-time">
                   <label data-i18n="endTime" for="input-end-time">End Time</label>
                   <select id="input-end-time" class="m3-input-time">
                     <option value="09:00">09:00 AM</option>
@@ -2258,15 +2302,12 @@
         </label>
 
         <!-- Axis Mode Segments — JS sets .active on open based on detected type -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50">
-          <button id="btn-axis-period" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use period numbers (1st, 2nd…) on the time axis">
+        <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50">
+          <button id="btn-axis-period" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use period numbers (1, 2, 3...) on the time axis">
             Periods
           </button>
-          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use clock times (09:00, 10:30…) on the time axis">
+          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use clock times (09:00, 10:30...) on the time axis">
             Clock
-          </button>
-          <button id="btn-axis-both" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Show both period numbers and clock times side by side">
-            Both
           </button>
         </div>
 
@@ -2446,13 +2487,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260828_pip_title_sync_v327"></script>
+  <script src="app_v3.js?v=20260829_matched_preset_limits_v338"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260828_pip_title_sync_v327').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260829_matched_preset_limits_v338').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
