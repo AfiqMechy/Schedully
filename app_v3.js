@@ -6593,18 +6593,18 @@ class SchedullyApp {
       }
     }
 
-    this.universalTimetableGrid.innerHTML = '';
+    const gridFragment = document.createDocumentFragment();
 
     const corner = document.createElement('div');
     corner.className = 'exact-grid-cell-header';
     corner.innerText = '';
-    this.universalTimetableGrid.appendChild(corner);
+    gridFragment.appendChild(corner);
 
     days.forEach(d => {
       const headerCell = document.createElement('div');
       headerCell.className = 'exact-grid-cell-header';
       headerCell.innerText = window.SchedullyI18n ? window.SchedullyI18n.getDayName(d) : d;
-      this.universalTimetableGrid.appendChild(headerCell);
+      gridFragment.appendChild(headerCell);
     });
 
     timeSlots.forEach(tObj => {
@@ -6613,7 +6613,7 @@ class SchedullyApp {
       timeCell.style.height = `${rowH}px`;
       timeCell.style.boxSizing = 'border-box';
       timeCell.innerHTML = `<span>${tObj.topText}</span>${tObj.bottomText ? `<span>${tObj.bottomText}</span>` : ''}`;
-      this.universalTimetableGrid.appendChild(timeCell);
+      gridFragment.appendChild(timeCell);
 
       days.forEach(day => {
         const slotCell = document.createElement('div');
@@ -6771,9 +6771,12 @@ class SchedullyApp {
           slotCell.appendChild(cardElement);
         });
 
-        this.universalTimetableGrid.appendChild(slotCell);
+        gridFragment.appendChild(slotCell);
       });
     });
+
+    this.universalTimetableGrid.innerHTML = '';
+    this.universalTimetableGrid.appendChild(gridFragment);
 
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
@@ -8098,7 +8101,8 @@ function initThemeStyleEngine() {
   const glassPresetsSection = document.getElementById('liquid-glass-presets-section');
 
   const applyThemeStyle = (style) => {
-    const isDefault = style === 'default';
+    const isDefault = style !== 'glass';
+    const effectiveStyle = isDefault ? 'default' : 'glass';
     
     if (isDefault) {
       document.body.classList.add('theme-style-default');
@@ -8117,7 +8121,7 @@ function initThemeStyleEngine() {
     }
 
     try {
-      localStorage.setItem('schedully_theme_style', style);
+      localStorage.setItem('schedully_theme_style', effectiveStyle);
     } catch (e) {}
   };
   window.applyThemeStyle = applyThemeStyle;
@@ -8129,9 +8133,9 @@ function initThemeStyleEngine() {
     btnGlass.addEventListener('click', () => applyThemeStyle('glass'));
   }
 
-  // Restore saved theme style on load (default to 'glass')
+  // Restore saved theme style on load (Strictly default to 'default')
   try {
-    const savedStyle = localStorage.getItem('schedully_theme_style') || 'glass';
+    const savedStyle = localStorage.getItem('schedully_theme_style') || 'default';
     applyThemeStyle(savedStyle);
   } catch (e) {}
 }

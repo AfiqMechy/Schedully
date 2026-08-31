@@ -151,13 +151,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260831_mobile_60fps_speed_v347">
+<link rel="stylesheet" href="styles.css?v=20260831_perf_boost_v353">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 </head>
-<body class="text-gray-800 h-screen overflow-hidden flex">
+<body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
 <!-- SVG Optical Glass Refraction & Chromatic Dispersion Filter -->
 <svg style="position: absolute; width: 0; height: 0; pointer-events: none; overflow: hidden;" aria-hidden="true">
@@ -452,12 +452,12 @@
               <div class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60 dark:border-white/10 flex flex-col gap-2">
                 <div class="flex items-center justify-between">
                   <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-200">Theme Style</span>
-                  <span id="active-theme-style-label" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Glass</span>
+                  <span id="active-theme-style-label" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Default</span>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2 mt-1" id="theme-style-switcher-group">
                   <!-- Default (Solid Material 3 Expressive) -->
-                  <button type="button" id="btn-theme-style-default" class="theme-style-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-theme-style="default">
+                  <button type="button" id="btn-theme-style-default" class="theme-style-btn active flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-theme-style="default">
                     <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect>
                       <path stroke-linecap="round" stroke-width="2" d="M3 9h18M9 21V9"></path>
@@ -465,7 +465,7 @@
                     <span>Default</span>
                   </button>
                   <!-- Glass (Liquid Glass) -->
-                  <button type="button" id="btn-theme-style-glass" class="theme-style-btn active flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-theme-style="glass">
+                  <button type="button" id="btn-theme-style-glass" class="theme-style-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-theme-style="glass">
                     <svg class="w-4 h-4 text-purple-500 dark:text-purple-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
                     </svg>
@@ -554,7 +554,7 @@
               </div>
 
               <!-- Liquid Glass Optical Presets (Crystal, Frosted, Fluid, Prism) -->
-              <div id="liquid-glass-presets-section" class="theme-picker-section margin-top-sm pt-2.5 border-t border-gray-100/60 dark:border-white/10 flex flex-col gap-2 transition-all duration-300">
+              <div id="liquid-glass-presets-section" class="theme-picker-section disabled-preset-section margin-top-sm pt-2.5 border-t border-gray-100/60 dark:border-white/10 flex flex-col gap-2 transition-all duration-300">
                 <div class="flex items-center justify-between">
                   <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-200">Liquid Glass Style</span>
                   <span id="active-glass-preset-label" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Crystal</span>
@@ -2487,13 +2487,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260831_mobile_60fps_speed_v347"></script>
+  <script src="app_v3.js?v=20260831_perf_boost_v353"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260831_mobile_60fps_speed_v347').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260831_perf_boost_v353').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

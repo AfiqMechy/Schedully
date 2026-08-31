@@ -7910,9 +7910,9 @@ body.dark-mode .mobile-export-divider,
   transform: translateY(-1px);
 }
 
-/* Primary Glowing Liquid Blue Download Button */
-#header-desktop-bar #btn-download-hd,
-#btn-download-hd {
+/* Primary Glowing Liquid Blue Download Button (Glass Style Only) */
+body.theme-style-glass #header-desktop-bar #btn-download-hd,
+body.theme-style-glass #btn-download-hd {
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 60%, #1D4ED8 100%) !important;
   color: #FFFFFF !important;
   border: 1px solid rgba(255, 255, 255, 0.45) !important;
@@ -7922,12 +7922,12 @@ body.dark-mode .mobile-export-divider,
     0 6px 16px -2px rgba(37, 99, 235, 0.4) !important;
 }
 
-#header-desktop-bar #btn-download-hd svg,
-#header-desktop-bar #btn-download-hd span {
+body.theme-style-glass #header-desktop-bar #btn-download-hd svg,
+body.theme-style-glass #header-desktop-bar #btn-download-hd span {
   color: #FFFFFF !important;
 }
 
-#header-desktop-bar #btn-download-hd:hover {
+body.theme-style-glass #header-desktop-bar #btn-download-hd:hover {
   background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 60%, #2563EB 100%) !important;
   transform: translateY(-1px) scale(1.02) !important;
   box-shadow: 
@@ -9764,6 +9764,53 @@ body.theme-style-default.dark-mode .btn-guide-tour {
   box-shadow: none !important;
 }
 
+/* ── Adaptive Auth Login Button in Default Style ── */
+body.theme-style-default .btn-adaptive-auth {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+  border: 1px solid #1D4ED8 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default .btn-adaptive-auth .auth-icon-circle {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+body.theme-style-default .btn-adaptive-auth:hover {
+  background: #1D4ED8 !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35) !important;
+  transform: none !important;
+}
+
+body.theme-style-default.dark-mode .btn-adaptive-auth {
+  background: #3B82F6 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #2563EB !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default.dark-mode .btn-adaptive-auth .auth-icon-circle {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+body.theme-style-default.dark-mode .btn-adaptive-auth:hover {
+  background: #2563EB !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+  transform: none !important;
+}
+
 /* ── Mobile Export Options in Default Style ── */
 body.theme-style-default .mobile-export-option:not(.mobile-export-primary) {
   background: #F8FAFC !important;
@@ -9824,13 +9871,48 @@ body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-prim
 }
 
 body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  background: #2563EB !important;
   border: 1px solid #3B82F6 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
+/* ── Top Header Desktop Bar in Default Style ── */
+body.theme-style-default #header-desktop-bar button:not(#btn-download-hd) {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+
+body.theme-style-default.dark-mode #header-desktop-bar button:not(#btn-download-hd) {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  color: #F8FAFC !important;
+}
+
 /* ── Bottom Floating Pill Bar & Buttons in Default Style ── */
+body.theme-style-default #bottom-floating-pill-bar .flex.items-center.bg-white {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+body.theme-style-default.dark-mode #bottom-floating-pill-bar .flex.items-center.bg-white {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
 body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd) {
   background: #F1F5F9 !important;
   border: 1px solid #E2E8F0 !important;
@@ -9847,6 +9929,55 @@ body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-the
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   color: #F8FAFC !important;
+}
+
+/* ── Primary Action Buttons (Controls, Download Image) in Default Style ── */
+body.theme-style-default .btn-theme-primary,
+body.theme-style-default #btn-download-hd,
+body.theme-style-default #header-desktop-bar #btn-download-hd,
+body.theme-style-default #btn-download-hd-mobile,
+body.theme-style-default #btn-toggle-canvas-popover {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+  border: 1px solid #1D4ED8 !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default .btn-theme-primary:hover,
+body.theme-style-default #btn-download-hd:hover,
+body.theme-style-default #header-desktop-bar #btn-download-hd:hover,
+body.theme-style-default #btn-download-hd-mobile:hover,
+body.theme-style-default #btn-toggle-canvas-popover:hover {
+  background: #1D4ED8 !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35) !important;
+}
+
+body.theme-style-default.dark-mode .btn-theme-primary,
+body.theme-style-default.dark-mode #btn-download-hd,
+body.theme-style-default.dark-mode #header-desktop-bar #btn-download-hd,
+body.theme-style-default.dark-mode #btn-download-hd-mobile,
+body.theme-style-default.dark-mode #btn-toggle-canvas-popover {
+  background: #3B82F6 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #2563EB !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default.dark-mode .btn-theme-primary:hover,
+body.theme-style-default.dark-mode #btn-download-hd:hover,
+body.theme-style-default.dark-mode #header-desktop-bar #btn-download-hd:hover,
+body.theme-style-default.dark-mode #btn-download-hd-mobile:hover,
+body.theme-style-default.dark-mode #btn-toggle-canvas-popover:hover {
+  background: #2563EB !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* ── Search Input, Preset Input & Controls in Default Style ── */
@@ -9924,7 +10055,17 @@ body.theme-style-default #btn-clear-all {
   border: 1px solid #FECACA !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.08) !important;
   color: #DC2626 !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default #btn-clear-all:hover {
+  background: #FCA5A5 !important;
+  border-color: #F87171 !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.18) !important;
+  transform: none !important;
 }
 
 body.theme-style-default.dark-mode #btn-clear-all {
@@ -9932,7 +10073,17 @@ body.theme-style-default.dark-mode #btn-clear-all {
   border: 1px solid rgba(220, 38, 38, 0.3) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   color: #FCA5A5 !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default.dark-mode #btn-clear-all:hover {
+  background: rgba(220, 38, 38, 0.25) !important;
+  border-color: rgba(220, 38, 38, 0.5) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  transform: none !important;
 }
 
 body.theme-style-default #btn-schedule-settings-toggle,
@@ -9941,6 +10092,15 @@ body.theme-style-default #btn-preset-menu-trigger {
   border: 1px solid #E2E8F0 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+
+body.theme-style-default #btn-schedule-settings-toggle:hover,
+body.theme-style-default #btn-preset-menu-trigger:hover {
+  background: #E2E8F0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+  transform: none !important;
 }
 
 body.theme-style-default.dark-mode #btn-schedule-settings-toggle,
@@ -9949,6 +10109,15 @@ body.theme-style-default.dark-mode #btn-preset-menu-trigger {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default.dark-mode #btn-schedule-settings-toggle:hover,
+body.theme-style-default.dark-mode #btn-preset-menu-trigger:hover {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  transform: none !important;
 }
 
 /* ── Inner Theme Panels & Toggles in Default Style ── */
@@ -10177,8 +10346,10 @@ body.theme-style-default.dark-mode #tour-popover-card,
 
   /* 4. Rendering Isolation & Layout Containment */
   .class-card-item,
+  .class-item-card,
   .sidebar-accordion-section {
     contain: content !important;
+    content-visibility: auto;
   }
 
   /* 5. Disable heavy mouse sheen reflections on touchscreens */
@@ -10188,6 +10359,19 @@ body.theme-style-default.dark-mode #tour-popover-card,
   .exact-course-card::after {
     display: none !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL SMOOTH COMPOSITING & SCROLL PERFORMANCE
+   ═══════════════════════════════════════════════════════════════ */
+#added-classes-list .class-item-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 85px;
+}
+
+#canvas-scroll-area,
+.sidebar-content {
+  overscroll-behavior-y: contain;
 }
 
 
