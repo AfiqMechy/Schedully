@@ -3765,72 +3765,83 @@ class SchedullyApp {
         const hasWallpaper = !!localStorage.getItem('schedully_wallpaper_data');
         const wallpaperClass = hasWallpaper ? ' has-photo-wallpaper' : '';
 
-        // Switch DOM classes & device mode instantly
-        const lockTimeEl = document.getElementById('lock-time');
-        if (lockTimeEl && device !== 'watch') {
-          lockTimeEl.style.removeProperty('color');
-          lockTimeEl.style.removeProperty('text-shadow');
-        }
+        // Micro-crossfade for instantaneous smooth model morphing without layout jitter
+        this.phoneCanvas.style.opacity = '0.92';
+        this.phoneCanvas.style.transform = 'scale(0.985)';
 
-        if (device === 'tablet') {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
-          if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
-          if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
-          if (wrapper) {
-            wrapper.classList.add('tablet-mode');
-            wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
+        requestAnimationFrame(() => {
+          // Switch DOM classes & device mode instantly
+          const lockTimeEl = document.getElementById('lock-time');
+          if (lockTimeEl && device !== 'watch') {
+            lockTimeEl.style.removeProperty('color');
+            lockTimeEl.style.removeProperty('text-shadow');
           }
-          if (lockUIToggle) lockUIToggle.style.display = 'flex';
-        } else if (device === 'watch') {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-watch${wallpaperClass}`;
-          if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE SMARTWATCH PREVIEW (1:1 / 410×502)';
-          if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '330px';
-          if (wrapper) {
-            wrapper.classList.add('watch-mode');
-            wrapper.classList.remove('tablet-mode', 'paper-mode', 'story-mode');
+
+          if (device === 'tablet') {
+            this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
+            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
+            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
+            if (wrapper) {
+              wrapper.classList.add('tablet-mode');
+              wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
+            }
+            if (lockUIToggle) lockUIToggle.style.display = 'flex';
+          } else if (device === 'watch') {
+            this.phoneCanvas.className = `m3-phone-canvas canvas-watch${wallpaperClass}`;
+            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE SMARTWATCH PREVIEW (1:1 / 410×502)';
+            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '330px';
+            if (wrapper) {
+              wrapper.classList.add('watch-mode');
+              wrapper.classList.remove('tablet-mode', 'paper-mode', 'story-mode');
+            }
+            if (lockUIToggle) lockUIToggle.style.display = 'flex';
+            const watchPanel = document.getElementById('watch-layout-panel');
+            if (watchPanel) watchPanel.style.display = 'block';
+          } else if (device === 'paper') {
+            this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
+            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
+            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
+            if (wrapper) {
+              wrapper.classList.add('paper-mode');
+              wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
+            }
+            if (lockUIToggle) lockUIToggle.style.display = 'none';
+            const watchPanel = document.getElementById('watch-layout-panel');
+            if (watchPanel) watchPanel.style.display = 'none';
+          } else {
+            this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
+            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
+            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
+            if (wrapper) {
+              wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
+            }
+            if (lockUIToggle) lockUIToggle.style.display = 'flex';
+            const watchPanel = document.getElementById('watch-layout-panel');
+            if (watchPanel) watchPanel.style.display = 'none';
           }
-          if (lockUIToggle) lockUIToggle.style.display = 'flex';
-          const watchPanel = document.getElementById('watch-layout-panel');
-          if (watchPanel) watchPanel.style.display = 'block';
-        } else if (device === 'paper') {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
-          if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
-          if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
-          if (wrapper) {
-            wrapper.classList.add('paper-mode');
-            wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
+
+          // Reset inline screen size styles
+          this.phoneCanvas.style.width = '';
+          this.phoneCanvas.style.height = '';
+
+          // Update Screen Aspect Ratio engine for current device
+          if (typeof this.updateCanvasScreenRatio === 'function') {
+            this.updateCanvasScreenRatio();
           }
-          if (lockUIToggle) lockUIToggle.style.display = 'none';
-          const watchPanel = document.getElementById('watch-layout-panel');
-          if (watchPanel) watchPanel.style.display = 'none';
-        } else {
-          this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
-          if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
-          if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
-          if (wrapper) {
-            wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
+
+          // 3. Render grid synchronously
+          this.renderTimetableGrid();
+
+          // 4. Smoothly update scaled wrapper footprint and auto-center
+          if (typeof applyZoom === 'function') {
+            applyZoom(true);
           }
-          if (lockUIToggle) lockUIToggle.style.display = 'flex';
-          const watchPanel = document.getElementById('watch-layout-panel');
-          if (watchPanel) watchPanel.style.display = 'none';
-        }
 
-        // Reset inline screen size styles
-        this.phoneCanvas.style.width = '';
-        this.phoneCanvas.style.height = '';
-
-        // Update Screen Aspect Ratio engine for current device
-        if (typeof this.updateCanvasScreenRatio === 'function') {
-          this.updateCanvasScreenRatio();
-        }
-
-        // 3. Render grid synchronously
-        this.renderTimetableGrid();
-
-        // 4. Smoothly update scaled wrapper footprint and auto-center
-        if (typeof applyZoom === 'function') {
-          applyZoom(true);
-        }
+          requestAnimationFrame(() => {
+            this.phoneCanvas.style.opacity = '';
+            this.phoneCanvas.style.transform = '';
+          });
+        });
       });
     });
 

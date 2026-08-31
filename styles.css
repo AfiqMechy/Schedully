@@ -3564,14 +3564,10 @@ textarea::placeholder,
   will-change: transform, width, height, border-radius;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              border-width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              border-color 0.35s ease, 
-              padding 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              box-shadow 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              background 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.25s ease, 
+              border-color 0.25s ease, 
+              background 0.25s ease;
 }
 
 .m3-phone-canvas.canvas-phone {
@@ -7606,12 +7602,10 @@ body.dark-mode .expandable-content::before {
 
 /* 6. Canvas Smooth Device Morph Animation & HD Sharp Rendering */
 #phone-canvas {
-  transition: width 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-              border-radius 0.3s ease,
-              box-shadow 0.3s ease;
-  will-change: width, height, transform;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease;
+  will-change: transform;
   contain: none !important;
   overflow: visible !important;
   -webkit-font-smoothing: antialiased !important;
