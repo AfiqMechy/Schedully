@@ -4109,8 +4109,8 @@ textarea::placeholder,
   font-weight: 900 !important;
   letter-spacing: -0.04em !important;
   line-height: 1 !important;
-  color: #38BDF8 !important;
-  text-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+  color: #0F172A !important;
+  text-shadow: none !important;
   margin-bottom: 0px !important;
 }
 
@@ -4119,7 +4119,7 @@ textarea::placeholder,
   font-weight: 800 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
-  color: #0F172A !important;
+  color: #475569 !important;
   margin-bottom: 0px !important;
 }
 
@@ -4844,8 +4844,16 @@ body.dark-mode .m3-phone-canvas.canvas-watch .watch-empty-state div:nth-child(2)
   color: #FFFFFF !important;
 }
 
+body.dark-mode .m3-phone-canvas.canvas-watch #lock-time,
+.theme-dark .m3-phone-canvas.canvas-watch #lock-time,
+.dark .m3-phone-canvas.canvas-watch #lock-time {
+  color: #FFFFFF !important;
+  text-shadow: none !important;
+}
+
 body.dark-mode .m3-phone-canvas.canvas-watch #lock-date,
-.theme-dark .m3-phone-canvas.canvas-watch #lock-date {
+.theme-dark .m3-phone-canvas.canvas-watch #lock-date,
+.dark .m3-phone-canvas.canvas-watch #lock-date {
   color: #E2E8F0 !important;
   text-shadow: none !important;
 }
@@ -10132,6 +10140,54 @@ body.theme-style-default.dark-mode #tour-popover-card,
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE & SMARTPHONE ULTRA-SMOOTH 60FPS PERFORMANCE PROFILE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* 1. Optimize Mobile Backdrops & Filter Radii for GPU efficiency */
+  .liquid-glass,
+  .m3-lock-timetable-container,
+  .mobile-export-dropdown,
+  .modal-card {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* 2. Sub-elements and small buttons don't need heavy independent blur layers on mobile */
+  .pill-btn,
+  .capsule-btn,
+  .dock-icon-circle,
+  .card-expand-header,
+  .exact-course-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 3. Smooth Hardware-Accelerated Scrolling */
+  #left-sidebar,
+  #right-sidebar,
+  #canvas-scroll-area,
+  .sidebar-content,
+  .mobile-export-dropdown {
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+  }
+
+  /* 4. Rendering Isolation & Layout Containment */
+  .class-card-item,
+  .sidebar-accordion-section {
+    contain: content !important;
+  }
+
+  /* 5. Disable heavy mouse sheen reflections on touchscreens */
+  .liquid-glass::after,
+  .pill-btn::after,
+  .capsule-btn::after,
+  .exact-course-card::after {
+    display: none !important;
+  }
 }
 
 

@@ -2208,80 +2208,86 @@ class SchedullyApp {
     let isPipMinimized = false;
     const isSmartphone = () => window.innerWidth <= 640;
 
-    // 1. Synchronize PiP Content & Real Dimensions from Live Canvas
+    // 1. Synchronize PiP Content & Real Dimensions from Live Canvas (High-Performance RAF Throttled)
+    let pipRafId = null;
     const updateMobilePip = () => {
       if (!isSmartphone()) return;
-      const originalCanvas = document.getElementById('phone-canvas');
-      if (!originalCanvas || !targetStage) return;
+      if (pipWidget.classList.contains('hidden') && (!pipBubble || pipBubble.classList.contains('hidden'))) return;
 
-      // Determine active device platform mode
-      let deviceMode = 'phone';
-      if (originalCanvas.classList.contains('canvas-tablet')) {
-        deviceMode = 'tablet';
-      } else if (originalCanvas.classList.contains('canvas-paper')) {
-        deviceMode = 'paper';
-      } else if (originalCanvas.classList.contains('canvas-watch')) {
-        deviceMode = 'watch';
-      }
+      if (pipRafId) cancelAnimationFrame(pipRafId);
+      pipRafId = requestAnimationFrame(() => {
+        const originalCanvas = document.getElementById('phone-canvas');
+        if (!originalCanvas || !targetStage) return;
 
-      const isWatch = deviceMode === 'watch';
-      const isCapsuleOrBand = isWatch && (originalCanvas.classList.contains('watch-shape-capsule') || originalCanvas.classList.contains('watch-shape-band'));
+        // Determine active device platform mode
+        let deviceMode = 'phone';
+        if (originalCanvas.classList.contains('canvas-tablet')) {
+          deviceMode = 'tablet';
+        } else if (originalCanvas.classList.contains('canvas-paper')) {
+          deviceMode = 'paper';
+        } else if (originalCanvas.classList.contains('canvas-watch')) {
+          deviceMode = 'watch';
+        }
 
-      // Measure REAL rendered dimensions from original canvas (NO HARDCODED HEIGHTS!)
-      const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : (isCapsuleOrBand ? 200 : (isWatch ? 340 : 380))));
-      const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : (isCapsuleOrBand ? 490 : (isWatch ? 340 : 760))));
-      const ratio = baseH / baseW;
+        const isWatch = deviceMode === 'watch';
+        const isCapsuleOrBand = isWatch && (originalCanvas.classList.contains('watch-shape-capsule') || originalCanvas.classList.contains('watch-shape-band'));
 
-      // Detect if user switched device platform (phone <-> tablet <-> paper <-> watch)
-      const modeChanged = pipDevice.dataset.currentMode !== deviceMode;
-      pipDevice.dataset.currentMode = deviceMode;
+        // Measure REAL rendered dimensions from original canvas (NO HARDCODED HEIGHTS!)
+        const baseW = originalCanvas.offsetWidth || (deviceMode === 'tablet' ? 920 : (deviceMode === 'paper' ? 720 : (isCapsuleOrBand ? 200 : (isWatch ? 340 : 380))));
+        const baseH = originalCanvas.offsetHeight || (deviceMode === 'tablet' ? 690 : (deviceMode === 'paper' ? 480 : (isCapsuleOrBand ? 490 : (isWatch ? 340 : 760))));
+        const ratio = baseH / baseW;
 
-      // Update PiP Device Mode Class
-      pipDevice.classList.remove('mode-phone', 'mode-tablet', 'mode-paper', 'mode-watch');
-      pipDevice.classList.add(`mode-${deviceMode}`);
+        // Detect if user switched device platform (phone <-> tablet <-> paper <-> watch)
+        const modeChanged = pipDevice.dataset.currentMode !== deviceMode;
+        pipDevice.dataset.currentMode = deviceMode;
 
-      // Proportional width bounds
-      let minW = 80;
-      let maxW = 240;
-      if (deviceMode === 'tablet') { minW = 140; maxW = 320; }
-      else if (deviceMode === 'paper') { minW = 90; maxW = 260; }
-      else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 65 : 95; maxW = 180; }
+        // Update PiP Device Mode Class
+        pipDevice.classList.remove('mode-phone', 'mode-tablet', 'mode-paper', 'mode-watch');
+        pipDevice.classList.add(`mode-${deviceMode}`);
 
-      let curW = pipDevice.offsetWidth;
-      if (modeChanged || !curW || curW < 40) {
-        curW = deviceMode === 'tablet' ? 200 : (deviceMode === 'paper' ? 135 : (isCapsuleOrBand ? 75 : (isWatch ? 115 : 125)));
-      }
-      curW = Math.max(minW, Math.min(maxW, curW));
-      const curH = Math.round(curW * ratio);
+        // Proportional width bounds
+        let minW = 80;
+        let maxW = 240;
+        if (deviceMode === 'tablet') { minW = 140; maxW = 320; }
+        else if (deviceMode === 'paper') { minW = 90; maxW = 260; }
+        else if (deviceMode === 'watch') { minW = isCapsuleOrBand ? 65 : 95; maxW = 180; }
 
-      pipDevice.style.width = `${curW}px`;
-      pipDevice.style.height = `${curH}px`;
+        let curW = pipDevice.offsetWidth;
+        if (modeChanged || !curW || curW < 40) {
+          curW = deviceMode === 'tablet' ? 200 : (deviceMode === 'paper' ? 135 : (isCapsuleOrBand ? 75 : (isWatch ? 115 : 125)));
+        }
+        curW = Math.max(minW, Math.min(maxW, curW));
+        const curH = Math.round(curW * ratio);
 
-      // Clear targetStage and insert exact cloned live canvas
-      targetStage.innerHTML = '';
-      const clone = originalCanvas.cloneNode(true);
-      clone.id = 'pip-phone-canvas-clone';
-      // Suppress side hardware buttons inside mini PiP
-      clone.querySelectorAll('.side-btn').forEach(btn => btn.style.setProperty('display', 'none', 'important'));
+        pipDevice.style.width = `${curW}px`;
+        pipDevice.style.height = `${curH}px`;
 
-      // 100% exact subpixel scale matching the miniature device viewport
-      const scale = curW / baseW;
+        // Clear targetStage and insert exact cloned live canvas
+        targetStage.innerHTML = '';
+        const clone = originalCanvas.cloneNode(true);
+        clone.id = 'pip-phone-canvas-clone';
+        // Suppress side hardware buttons inside mini PiP
+        clone.querySelectorAll('.side-btn').forEach(btn => btn.style.setProperty('display', 'none', 'important'));
 
-      // Scale down blur radius for mini thumbnail to prevent GPU rasterization flicker/glitches
-      const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
-      clone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
+        // 100% exact subpixel scale matching the miniature device viewport
+        const scale = curW / baseW;
 
-      clone.style.position = 'absolute';
-      clone.style.top = '0';
-      clone.style.left = '0';
-      clone.style.width = `${baseW}px`;
-      clone.style.height = `${baseH}px`;
-      clone.style.transformOrigin = 'top left';
-      clone.style.transform = `scale(${scale})`;
-      clone.style.margin = '0';
-      clone.style.pointerEvents = 'none';
+        // Scale down blur radius for mini thumbnail to prevent GPU rasterization flicker/glitches
+        const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
+        clone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
 
-      targetStage.appendChild(clone);
+        clone.style.position = 'absolute';
+        clone.style.top = '0';
+        clone.style.left = '0';
+        clone.style.width = `${baseW}px`;
+        clone.style.height = `${baseH}px`;
+        clone.style.transformOrigin = 'top left';
+        clone.style.transform = `scale(${scale})`;
+        clone.style.margin = '0';
+        clone.style.pointerEvents = 'none';
+
+        targetStage.appendChild(clone);
+      });
     };
     this.updateMobilePip = updateMobilePip;
 
@@ -4728,11 +4734,6 @@ class SchedullyApp {
 
     // Wallpaper export — Timetable Factory Proven dom-to-image-more SVG Engine (Schedully-Fixed)
     const exportWallpaper = (onComplete) => {
-      if (!this.classes || this.classes.length === 0) {
-        alert("📊 Your schedule is empty! Please add courses first.");
-        return;
-      }
-
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
 
@@ -6807,16 +6808,16 @@ class SchedullyApp {
     };
     const activeAccent = accentMap[this.watchAccentColor] || accentMap.cyan;
 
-    // Apply accent glow to watch clock only when in watch mode, reset completely on phone/tablet
+    // Adaptive watch clock font: Black in light mode, White in dark mode or wallpaper
     const lockTime = document.getElementById('lock-time');
+    const lockDate = document.getElementById('lock-date');
     if (lockTime) {
-      if (this.activeDevice === 'watch') {
-        lockTime.style.color = activeAccent.hex;
-        lockTime.style.textShadow = `0 0 16px ${activeAccent.glow}`;
-      } else {
-        lockTime.style.removeProperty('color');
-        lockTime.style.removeProperty('text-shadow');
-      }
+      lockTime.style.removeProperty('color');
+      lockTime.style.removeProperty('text-shadow');
+    }
+    if (lockDate) {
+      lockDate.style.removeProperty('color');
+      lockDate.style.removeProperty('text-shadow');
     }
 
     // Filter classes for selected day
@@ -7925,6 +7926,7 @@ function updateGlassSheen(clientX, clientY, targetEl) {
 // Mouse / Pointer Move - Strictly RAF Throttled with Direct Target Fast-Path
 document.addEventListener('pointermove', (e) => {
   if (document.body.classList.contains('theme-style-default')) return;
+  if (e.pointerType === 'touch' || window.innerWidth <= 1024) return;
   lastPointerEvent = e;
   if (!pointerRafId) {
     pointerRafId = requestAnimationFrame(() => {
