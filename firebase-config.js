@@ -142,6 +142,9 @@ class SchedullyFirebaseService {
         presets: userData.presets || {},
         activePreset: userData.activePreset || 'default',
         settings: userData.settings || {},
+        language: userData.language || userData.settings?.language || 'en',
+        activeDevice: userData.activeDevice || userData.settings?.activeDevice || 'phone',
+        zoomScale: userData.zoomScale || userData.settings?.zoomScale || 0.85,
         updatedAt: new Date().toISOString(),
         userEmail: this.currentUser.email,
         displayName: this.currentUser.displayName

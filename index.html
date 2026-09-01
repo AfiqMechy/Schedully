@@ -79,7 +79,7 @@
 <meta name="application-name" content="Schedully">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- i18n Localization Engine -->
-<script src="i18n.js"></script>
+<script src="i18n.js?v=20260901_toggle_text_fit_v366"></script>
 <!-- html2canvas & jsPDF -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260831_smooth_model_swap_v354">
+<link rel="stylesheet" href="styles.css?v=20260901_toggle_text_fit_v366">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -304,14 +304,14 @@
                   <span class="dock-icon-label" data-i18n="paletteAndMode">Palette &amp; Mode</span>
                 </button>
 
-                <!-- 2. Photo Wallpaper -->
-                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-wallpaper" data-dock-key="wallpaper" data-dock-label="Wallpaper">
+                <!-- 2. Photo Wallpaper & Background -->
+                <button class="dock-icon-btn" type="button" data-dock-target="sub-content-theme-wallpaper" data-dock-key="wallpaper" data-dock-label="Wallpaper & Background">
                   <div class="dock-icon-circle">
                     <svg class="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
                       <path d="M4 4h7V2H4c-1.1 0-2 .9-2 2v7h2V4zm6 9l-4 5h12l-3-4-2.03 2.71L10 13zm7-9c1.1 0 2 .9 2 2v7h2V4c0-1.1-.9-2-2-2h-7v2h7zM4 13H2v7c0 1.1.9 2 2 2h7v-2H4v-7zm16 7h-7v2h7c1.1 0 2-.9 2-2v-7h-2v7z"/>
                     </svg>
                   </div>
-                  <span class="dock-icon-label" data-i18n="wallpaper">Wallpaper</span>
+                  <span class="dock-icon-label" data-i18n="wallpaper">Wallpaper &amp; Background</span>
                 </button>
 
                 <!-- 3. Blur & Opacity -->
@@ -475,18 +475,18 @@
               </div>
             </div>
 
-            <!-- 2. Photo Wallpaper Sub-Content -->
+            <!-- 2. Photo Wallpaper & Background Sub-Content -->
             <div class="sub-accordion-content hidden" id="sub-content-theme-wallpaper">
-              <!-- Photo Wallpaper -->
+              <!-- Wallpaper & Background -->
               <div class="theme-picker-section">
                 <div class="flex items-center justify-between mb-2">
-                  <label class="picker-label mb-0 text-xs font-bold text-gray-800">Photo Wallpaper</label>
+                  <label class="picker-label mb-0 text-xs font-bold text-gray-800 dark:text-gray-200">Wallpaper &amp; Background</label>
                 </div>
                 
                 <div class="flex flex-col gap-2">
                   <!-- Upload Dropzone Button (Shown when no wallpaper is set) -->
                   <div id="wallpaper-upload-container">
-                    <label for="wallpaper-image-input" class="cursor-pointer flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-blue-500 bg-white/70 hover:bg-blue-50/50 transition-all text-xs font-bold text-gray-700">
+                    <label for="wallpaper-image-input" class="cursor-pointer flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-blue-500 bg-white/70 hover:bg-blue-50/50 transition-all text-xs font-bold text-gray-700 dark:text-gray-200 dark:border-gray-600 dark:bg-slate-800/70">
                       <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                       <span id="wallpaper-upload-label">Import Wallpaper</span>
                       <input type="file" id="wallpaper-image-input" accept="image/*" class="hidden">
@@ -512,12 +512,13 @@
                         </button>
                       </div>
                     </div>
-                    <!-- Resync Colors button (only exists and shows when wallpaper is active) -->
-                    <button id="btn-resync-wallpaper-colors" type="button" class="btn-resync-wallpaper">
-                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                      <span>Colors Resync</span>
-                    </button>
                   </div>
+
+                  <!-- Resync Colors button (ALWAYS ACCESSIBLE: Resyncs Wallpaper Palette or Default Theme Colors) -->
+                  <button id="btn-resync-wallpaper-colors" type="button" class="btn-resync-wallpaper" title="Resync default theme colors or extract from wallpaper">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>Colors Resync</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1733,7 +1734,7 @@
         <svg class="w-3.5 h-3.5 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
         </svg>
-        <span class="text-[10.5px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase">SCREEN ASPECT RATIO</span>
+        <span class="text-[10.5px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase" data-i18n="screenAspectRatio">SCREEN ASPECT RATIO</span>
       </div>
       <button type="button" id="btn-close-ratio-popover" class="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Ratio Menu">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1945,20 +1946,20 @@
             <div id="preset-action-dropdown" class="hidden absolute right-0 top-full mt-1.5 z-50 w-44 rounded-2xl p-1.5 flex flex-col gap-0.5 animate-in fade-in zoom-in-95">
               <button id="menu-btn-add-preset" type="button" class="preset-menu-item preset-menu-add w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                <span>New Preset</span>
+                <span data-i18n="newPreset">New Preset</span>
               </button>
               <button id="menu-btn-rename-preset" type="button" class="preset-menu-item preset-menu-rename w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                <span>Rename</span>
+                <span data-i18n="rename">Rename</span>
               </button>
               <button id="menu-btn-reset-preset" type="button" class="preset-menu-item preset-menu-reset w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span>Reset Preset</span>
+                <span data-i18n="resetPreset">Reset Preset</span>
               </button>
               <div class="preset-menu-divider h-[1px] my-0.5"></div>
               <button id="menu-btn-delete-preset" type="button" class="preset-menu-item preset-menu-delete w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                <span>Delete Preset</span>
+                <span data-i18n="deletePreset">Delete Preset</span>
               </button>
             </div>
           </div>
@@ -1970,67 +1971,67 @@
   <!-- Display Time with Sub-menu -->
   <div class="flex flex-col gap-2">
     <div class="opt-row">
-      <span class="opt-label text-xs font-bold text-gray-800">Display Time</span>
+      <span class="opt-label text-xs font-bold text-gray-800" data-i18n="displayTime">Display Time</span>
       <div class="pill-toggle-group" id="toggle-quick-time">
-        <button type="button" class="pill-btn active" data-val="yes">YES</button>
-        <button type="button" class="pill-btn" data-val="no">NO</button>
+        <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+        <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
       </div>
     </div>
 
     <!-- Sub-menu for Display Time: Start Time, Start & End, End Time -->
     <div id="quick-time-submenu" class="quick-time-submenu-box flex flex-col gap-2 transition-all">
       <div class="flex items-center justify-between">
-        <span class="submenu-header-label">Card Time Format</span>
-        <span id="quick-time-preview-badge" class="quick-time-badge">Start Only</span>
+        <span class="submenu-header-label" data-i18n="cardTimeFormat">Card Time Format</span>
+        <span id="quick-time-preview-badge" class="quick-time-badge" data-i18n="startOnly">Start Only</span>
       </div>
       <div class="time-display-mode-container" id="time-display-mode-group">
-        <button type="button" class="time-mode-btn active" data-timemode="start">Start Only</button>
-        <button type="button" class="time-mode-btn" data-timemode="both">Start &amp; End</button>
-        <button type="button" class="time-mode-btn" data-timemode="end">End Only</button>
+        <button type="button" class="time-mode-btn active" data-timemode="start" data-i18n="startOnly">Start Only</button>
+        <button type="button" class="time-mode-btn" data-timemode="both" data-i18n="startAndEnd">Start &amp; End</button>
+        <button type="button" class="time-mode-btn" data-timemode="end" data-i18n="endOnly">End Only</button>
       </div>
     </div>
   </div>
 
   <div class="opt-row">
-    <span class="opt-label text-xs font-bold text-gray-800">Course Type</span>
+    <span class="opt-label text-xs font-bold text-gray-800" data-i18n="courseType">Course Type</span>
     <div class="pill-toggle-group" id="toggle-quick-type">
-      <button type="button" class="pill-btn active" data-val="yes">YES</button>
-      <button type="button" class="pill-btn" data-val="no">NO</button>
+      <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+      <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
     </div>
   </div>
 
   <div class="opt-row">
-    <span class="opt-label text-xs font-bold text-gray-800">Location</span>
+    <span class="opt-label text-xs font-bold text-gray-800" data-i18n="location">Location</span>
     <div class="pill-toggle-group" id="toggle-quick-room">
-      <button type="button" class="pill-btn active" data-val="yes">YES</button>
-      <button type="button" class="pill-btn" data-val="no">NO</button>
+      <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+      <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
     </div>
   </div>
 
   <div class="opt-row">
-    <span class="opt-label text-xs font-bold text-gray-800">Lecturer</span>
+    <span class="opt-label text-xs font-bold text-gray-800" data-i18n="lecturer">Lecturer</span>
     <div class="pill-toggle-group" id="toggle-quick-lecturer">
-      <button type="button" class="pill-btn active" data-val="yes">YES</button>
-      <button type="button" class="pill-btn" data-val="no">NO</button>
+      <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+      <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
     </div>
   </div>
 
   <div class="opt-row">
-    <span class="opt-label text-xs font-bold text-gray-800">Group</span>
+    <span class="opt-label text-xs font-bold text-gray-800" data-i18n="group">Group</span>
     <div class="pill-toggle-group" id="toggle-quick-group">
-      <button type="button" class="pill-btn active" data-val="yes">YES</button>
-      <button type="button" class="pill-btn" data-val="no">NO</button>
+      <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+      <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
     </div>
   </div>
 
   <div class="opt-row">
     <div>
-      <span class="opt-label text-xs font-bold text-gray-800">Adaptive Color</span>
-      <p class="text-[10px] text-gray-500 font-medium mt-0.5">(Turn OFF to use custom/random colors)</p>
+      <span class="opt-label text-xs font-bold text-gray-800" data-i18n="adaptiveColor">Adaptive Color</span>
+      <p class="text-[10px] text-gray-500 font-medium mt-0.5" data-i18n="adaptiveColorDesc">(Turn OFF to use custom/random colors)</p>
     </div>
     <div class="pill-toggle-group" id="toggle-quick-adaptive">
-      <button type="button" class="pill-btn active" data-val="yes">YES</button>
-      <button type="button" class="pill-btn" data-val="no">NO</button>
+      <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
+      <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
     </div>
   </div>
 </div>
@@ -2344,7 +2345,7 @@
   <div id="coffee-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="coffee-modal-card rounded-3xl shadow-2xl border max-w-xs w-full p-5 animate-scaleIn flex flex-col items-center text-center gap-3.5">
       <div class="w-full flex items-center justify-between">
-        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-100/70 dark:bg-amber-500/15 px-2.5 py-1 rounded-full">☕ Support Creator</span>
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-100/70 dark:bg-amber-500/15 px-2.5 py-1 rounded-full" data-i18n="supportCreator">☕ Support Creator</span>
         <button id="btn-close-coffee-modal" type="button" class="btn-close-modal p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
@@ -2361,16 +2362,16 @@
       </div>
 
       <div>
-        <h3 class="coffee-title font-extrabold text-base leading-tight">Support Schedully</h3>
-        <p class="coffee-desc text-xs font-medium mt-1 leading-relaxed">
+        <h3 class="coffee-title font-extrabold text-base leading-tight" data-i18n="supportSchedully">Support Schedully</h3>
+        <p class="coffee-desc text-xs font-medium mt-1 leading-relaxed" data-i18n="supportDesc">
           Schedully is free! Pick your preferred way to fuel future updates:
         </p>
       </div>
 
       <!-- Payment Method Switcher Tabs -->
       <div class="pill-toggle-group w-full flex rounded-xl p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60" id="support-payment-tabs">
-        <button id="btn-tab-bmc" type="button" class="support-tab-btn active flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="bmc">☕ Buy Me a Coffee</button>
-        <button id="btn-tab-tng" type="button" class="support-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="tng">📱 Touch 'n Go QR</button>
+        <button id="btn-tab-bmc" type="button" class="support-tab-btn active flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="bmc" data-i18n="tabBmc">☕ Buy Me a Coffee</button>
+        <button id="btn-tab-tng" type="button" class="support-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="tng" data-i18n="tabTng">📱 Touch 'n Go QR</button>
       </div>
 
       <!-- Tab 1: Buy Me a Coffee -->
@@ -2379,9 +2380,9 @@
           <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
             <path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.054-.305-.16-.628-.418-.802-.27-.183-.628-.159-.928-.159H7.256c-.3 0-.658-.024-.928.159-.258.174-.364.497-.418.802-.067.377-.127.755-.192 1.133-.035.206-.079.429-.231.572-.15.143-.373.172-.57.241-.613.216-.882.781-1.001 1.379l-.132.666c-.07.352-.109.709-.109 1.068 0 2.822 1.776 5.234 4.316 6.183.743 1.954 2.502 3.393 4.629 3.655v2.222H7.256c-.414 0-.75.336-.75.75s.336.75.75.75h9.488c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-1.364v-2.222c2.127-.262 3.886-1.701 4.629-3.655 2.54-.949 4.316-3.361 4.316-6.183 0-.359-.039-.716-.109-1.068zM5.385 8.167c.058-.291.192-.477.387-.545.195-.068.423-.027.604.109.181.136.273.344.313.565.04.221.04.448.04.673 0 .736.082 1.455.238 2.148-1.008-.667-1.582-1.748-1.582-2.95z"/>
           </svg>
-          <span>Open Buy Me a Coffee</span>
+          <span data-i18n="openBmc">Open Buy Me a Coffee</span>
         </a>
-        <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">Supports Card, Apple Pay, Google Pay, PayPal</p>
+        <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium" data-i18n="bmcNote">Supports Card, Apple Pay, Google Pay, PayPal</p>
       </div>
 
       <!-- Tab 2: Touch 'n Go / DuitNow QR -->
@@ -2395,7 +2396,7 @@
           <div class="w-48 h-48 rounded-2xl bg-white p-2 shadow-xs border border-slate-100 flex items-center justify-center overflow-hidden">
             <img id="tng-qr-image" src="tng_qr.png" alt="Touch 'n Go DuitNow QR" class="w-full h-full object-contain rounded-xl">
           </div>
-          <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 text-center">Scan with Touch 'n Go or any Banking App</p>
+          <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 text-center" data-i18n="tngScanNote">Scan with Touch 'n Go or any Banking App</p>
         </div>
       </div>
 
@@ -2487,13 +2488,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260831_smooth_model_swap_v354"></script>
+  <script src="app_v3.js?v=20260901_toggle_text_fit_v366"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260831_smooth_model_swap_v354').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260901_toggle_text_fit_v366').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

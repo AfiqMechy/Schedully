@@ -156,7 +156,7 @@ class SchedullyApp {
 
     this.selectedColor = '#1D4ED8';
     this.newCourseFontColor = '#FFFFFF';
-    this.activeDevice = 'phone';
+    this.activeDevice = localStorage.getItem('schedully_active_device') || 'phone';
 
     this.currentMode = localStorage.getItem('schedully_theme_mode') || 'auto';
     this.currentPalette = localStorage.getItem('schedully_theme_palette') || 'indigo';
@@ -189,8 +189,14 @@ class SchedullyApp {
     this.gridFontSizeVal = 9;
     this.gridYPosVal = 0;
 
+    const storedZoom = parseFloat(localStorage.getItem('schedully_zoom_scale'));
+    this.zoomScale = !isNaN(storedZoom) && storedZoom >= 0.3 && storedZoom <= 2.0 
+      ? storedZoom 
+      : (window.innerWidth < 1024 ? 1.0 : 0.85);
+
     this.initDOMElements();
     this.bindEvents();
+    this.switchDevice(this.activeDevice, false);
     this.initPresets();
 
     this.applyThemeEngine();
@@ -363,6 +369,105 @@ class SchedullyApp {
     if (!this.phoneLockHeader) return;
     const contrastFont = this.getContrastColor(bgHex);
     this.phoneLockHeader.style.color = contrastFont;
+  }
+
+  switchDevice(device, save = true) {
+    if (!device) return;
+    this.activeDevice = device;
+
+    document.querySelectorAll('#device-type-toggles [data-device]').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-device') === device);
+    });
+
+    if (typeof window.syncGlassSliders === 'function') {
+      window.syncGlassSliders();
+    }
+
+    if (!this.phoneCanvas) this.phoneCanvas = document.getElementById('phone-canvas');
+    if (!this.stageDeviceLabel) this.stageDeviceLabel = document.getElementById('stage-device-label');
+    if (!this.stageTitleBar) this.stageTitleBar = document.getElementById('stage-title-bar');
+
+    const lockUIToggle = document.getElementById('toggle-lock-ui');
+    const wrapper = document.getElementById('main-phone-wrapper');
+    const hasWallpaper = !!localStorage.getItem('schedully_wallpaper_data');
+    const wallpaperClass = hasWallpaper ? ' has-photo-wallpaper' : '';
+
+    const lockTimeEl = document.getElementById('lock-time');
+    if (lockTimeEl && device !== 'watch') {
+      lockTimeEl.style.removeProperty('color');
+      lockTimeEl.style.removeProperty('text-shadow');
+    }
+
+    if (this.phoneCanvas) {
+      if (device === 'tablet') {
+        this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
+        if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
+        if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
+        if (wrapper) {
+          wrapper.classList.add('tablet-mode');
+          wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
+        }
+        if (lockUIToggle) lockUIToggle.style.display = 'flex';
+        const watchPanel = document.getElementById('watch-layout-panel');
+        if (watchPanel) watchPanel.style.display = 'none';
+      } else if (device === 'watch') {
+        this.phoneCanvas.className = `m3-phone-canvas canvas-watch${wallpaperClass}`;
+        if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE SMARTWATCH PREVIEW (1:1 / 410×502)';
+        if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '330px';
+        if (wrapper) {
+          wrapper.classList.add('watch-mode');
+          wrapper.classList.remove('tablet-mode', 'paper-mode', 'story-mode');
+        }
+        if (lockUIToggle) lockUIToggle.style.display = 'flex';
+        const watchPanel = document.getElementById('watch-layout-panel');
+        if (watchPanel) watchPanel.style.display = 'block';
+      } else if (device === 'paper') {
+        this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
+        if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
+        if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
+        if (wrapper) {
+          wrapper.classList.add('paper-mode');
+          wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
+        }
+        if (lockUIToggle) lockUIToggle.style.display = 'none';
+        const watchPanel = document.getElementById('watch-layout-panel');
+        if (watchPanel) watchPanel.style.display = 'none';
+      } else {
+        this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
+        if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
+        if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
+        if (wrapper) {
+          wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
+        }
+        if (lockUIToggle) lockUIToggle.style.display = 'flex';
+        const watchPanel = document.getElementById('watch-layout-panel');
+        if (watchPanel) watchPanel.style.display = 'none';
+      }
+
+      this.phoneCanvas.style.width = '';
+      this.phoneCanvas.style.height = '';
+    }
+
+    if (typeof this.updateCanvasScreenRatio === 'function') {
+      this.updateCanvasScreenRatio();
+    }
+
+    if (typeof this.renderTimetableGrid === 'function') {
+      this.renderTimetableGrid();
+    }
+
+    if (typeof window.applyZoom === 'function') {
+      window.applyZoom(false);
+    }
+
+    if (save) {
+      try {
+        localStorage.setItem('schedully_active_device', device);
+      } catch (e) {}
+      if (typeof this._stagePending === 'function') {
+        this._stagePending();
+      }
+    }
   }
 
   applyThemeEngine() {
@@ -1140,14 +1245,6 @@ class SchedullyApp {
 
         if (badge) badge.innerText = badgeLabel;
 
-        // Smoothly adjust canvas wrapper dimensions and auto-center
-        if (typeof window.applyZoom === 'function') {
-          window.applyZoom(true);
-        }
-        if (typeof window.centerCanvasModel === 'function') {
-          window.centerCanvasModel(true);
-        }
-
         // Smartwatch Mode Labels
         if (toggles) {
           const btnAutoTitle = toggles.querySelector('.ratio-card-btn[data-ratio="auto"] .ratio-card-title');
@@ -1349,6 +1446,8 @@ class SchedullyApp {
       e.preventDefault();
       e.stopPropagation();
 
+      if (window.soundFX) window.soundFX.play('palette');
+
       this.userHasPickedBgColor = false;
       this.userHasPickedHeaderColor = false;
       this.userHasPickedSurfaceColor = false;
@@ -1360,8 +1459,8 @@ class SchedullyApp {
         b.classList.toggle('active', b.getAttribute('data-val') === 'yes');
       });
 
-      // Clear all manual overrides on all classes so they strictly re-sync with the wallpaper theme
-      this.classes.forEach(c => {
+      // Clear all manual overrides on all classes so they strictly re-sync with the palette/wallpaper theme
+      (this.classes || []).forEach(c => {
         delete c.customColor;
         delete c.isManualCustomColor;
         delete c.fontColor;
@@ -1375,7 +1474,21 @@ class SchedullyApp {
       }
 
       this.renderAll();
+      if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
+        this.renderWatchGlance();
+      }
       this._stagePending();
+
+      // Subtle icon rotation without changing button label or adding tick icon
+      const icon = resyncBtn.querySelector('svg');
+      if (icon) {
+        icon.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        icon.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+          icon.style.transition = 'none';
+          icon.style.transform = '';
+        }, 480);
+      }
     });
   }
 
@@ -3066,9 +3179,10 @@ class SchedullyApp {
         if (this.quickTimeSubmenu) this.quickTimeSubmenu.classList.remove('hidden');
 
         if (this.quickTimePreviewBadge) {
-          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = 'Start & End';
-          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = 'End Only';
-          else this.quickTimePreviewBadge.innerText = 'Start Only';
+          const i18n = window.SchedullyI18n;
+          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('startAndEnd') : 'Start & End');
+          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('endOnly') : 'End Only');
+          else this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('startOnly') : 'Start Only');
         }
         this.renderTimetableGrid();
         if (this.activeDevice === 'watch') this.renderWatchGlance();
@@ -3740,108 +3854,15 @@ class SchedullyApp {
       }
     });
 
-    // Segmented Capsule Switcher
-    document.querySelectorAll('.capsule-btn').forEach(btn => {
+    // Device Platform Switching Logic
+    document.querySelectorAll('#device-type-toggles [data-device]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         if (window._globalDragSuppressUntil && Date.now() < window._globalDragSuppressUntil && !e._isProgrammaticDrag) {
           return;
         }
-        document.querySelectorAll('.capsule-btn').forEach(b => {
-          b.classList.remove('active');
-          b.style.backgroundColor = '';
-          b.style.color = '';
-        });
-        btn.classList.add('active');
-        const device = btn.getAttribute('data-device') || 'phone';
-        this.activeDevice = device;
-
-        // Instantly glide the glass slider thumb with a single RAF
-        if (typeof window.syncGlassSliders === 'function') {
-          requestAnimationFrame(window.syncGlassSliders);
-        }
-
-        const lockUIToggle = document.getElementById('toggle-lock-ui');
-        const wrapper = document.getElementById('main-phone-wrapper');
-        const hasWallpaper = !!localStorage.getItem('schedully_wallpaper_data');
-        const wallpaperClass = hasWallpaper ? ' has-photo-wallpaper' : '';
-
-        // Micro-crossfade for instantaneous smooth model morphing without layout jitter
-        this.phoneCanvas.style.opacity = '0.92';
-        this.phoneCanvas.style.transform = 'scale(0.985)';
-
-        requestAnimationFrame(() => {
-          // Switch DOM classes & device mode instantly
-          const lockTimeEl = document.getElementById('lock-time');
-          if (lockTimeEl && device !== 'watch') {
-            lockTimeEl.style.removeProperty('color');
-            lockTimeEl.style.removeProperty('text-shadow');
-          }
-
-          if (device === 'tablet') {
-            this.phoneCanvas.className = `m3-phone-canvas canvas-tablet${wallpaperClass}`;
-            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE TABLET LOCKSCREEN PREVIEW';
-            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
-            if (wrapper) {
-              wrapper.classList.add('tablet-mode');
-              wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
-            }
-            if (lockUIToggle) lockUIToggle.style.display = 'flex';
-          } else if (device === 'watch') {
-            this.phoneCanvas.className = `m3-phone-canvas canvas-watch${wallpaperClass}`;
-            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE SMARTWATCH PREVIEW (1:1 / 410×502)';
-            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '330px';
-            if (wrapper) {
-              wrapper.classList.add('watch-mode');
-              wrapper.classList.remove('tablet-mode', 'paper-mode', 'story-mode');
-            }
-            if (lockUIToggle) lockUIToggle.style.display = 'flex';
-            const watchPanel = document.getElementById('watch-layout-panel');
-            if (watchPanel) watchPanel.style.display = 'block';
-          } else if (device === 'paper') {
-            this.phoneCanvas.className = `m3-phone-canvas canvas-paper${wallpaperClass}`;
-            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PAPER PREVIEW';
-            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
-            if (wrapper) {
-              wrapper.classList.add('paper-mode');
-              wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
-            }
-            if (lockUIToggle) lockUIToggle.style.display = 'none';
-            const watchPanel = document.getElementById('watch-layout-panel');
-            if (watchPanel) watchPanel.style.display = 'none';
-          } else {
-            this.phoneCanvas.className = `m3-phone-canvas canvas-phone${wallpaperClass}`;
-            if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
-            if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
-            if (wrapper) {
-              wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
-            }
-            if (lockUIToggle) lockUIToggle.style.display = 'flex';
-            const watchPanel = document.getElementById('watch-layout-panel');
-            if (watchPanel) watchPanel.style.display = 'none';
-          }
-
-          // Reset inline screen size styles
-          this.phoneCanvas.style.width = '';
-          this.phoneCanvas.style.height = '';
-
-          // Update Screen Aspect Ratio engine for current device
-          if (typeof this.updateCanvasScreenRatio === 'function') {
-            this.updateCanvasScreenRatio();
-          }
-
-          // 3. Render grid synchronously
-          this.renderTimetableGrid();
-
-          // 4. Smoothly update scaled wrapper footprint and auto-center
-          if (typeof applyZoom === 'function') {
-            applyZoom(true);
-          }
-
-          requestAnimationFrame(() => {
-            this.phoneCanvas.style.opacity = '';
-            this.phoneCanvas.style.transform = '';
-          });
-        });
+        const targetBtn = e.target.closest('[data-device]');
+        const device = targetBtn ? (targetBtn.getAttribute('data-device') || 'phone') : (btn.getAttribute('data-device') || 'phone');
+        this.switchDevice(device, true);
       });
     });
 
@@ -3901,17 +3922,15 @@ class SchedullyApp {
     };
     window.centerCanvasModel = centerCanvasModel;
 
-    // Default zoom scale: 1.0 (100%) on mobile for 1:1 scale & smooth horizontal swiping, 0.85 (85%) on desktop
-    let currentZoomScale = window.innerWidth < 1024 ? 1.0 : 0.85;
-    
     const applyZoom = (smooth = true) => {
       const scalerContainer = document.getElementById('canvas-scaler-container');
       const wrapper = document.getElementById('main-phone-wrapper');
       if (!scalerContainer || !wrapper || !zoomLabel) return;
 
+      const scale = this.zoomScale || 0.85;
       const dims = getBaseModelDimensions();
-      const visualW = Math.round(dims.width * currentZoomScale);
-      const visualH = Math.round(dims.height * currentZoomScale);
+      const visualW = Math.round(dims.width * scale);
+      const visualH = Math.round(dims.height * scale);
 
       // Scaler footprint container defines the exact scaled pixel boundary for 100% boundary panning & center flex
       scalerContainer.style.transition = smooth ? 'width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
@@ -3929,7 +3948,7 @@ class SchedullyApp {
       wrapper.style.top = '0';
       wrapper.style.left = '0';
       wrapper.style.transformOrigin = '0 0';
-      wrapper.style.transform = `scale(${currentZoomScale})`;
+      wrapper.style.transform = `scale(${scale})`;
       wrapper.style.flexShrink = '0';
 
       const phoneCanvas = document.getElementById('phone-canvas');
@@ -3937,8 +3956,12 @@ class SchedullyApp {
         phoneCanvas.style.transform = 'none';
       }
 
-      const displayPercent = Math.round(currentZoomScale * 100);
+      const displayPercent = Math.round(scale * 100);
       zoomLabel.innerText = `${displayPercent}%`;
+
+      try {
+        localStorage.setItem('schedully_zoom_scale', String(scale));
+      } catch (e) {}
 
       centerCanvasModel(smooth);
     };
@@ -3950,18 +3973,20 @@ class SchedullyApp {
       applyZoom(false);
 
       btnZoomIn.addEventListener('click', () => {
-        if (currentZoomScale < 1.5) {
-          currentZoomScale = Math.min(1.5, Math.round((currentZoomScale + 0.15) * 100) / 100);
+        if (this.zoomScale < 1.5) {
+          this.zoomScale = Math.min(1.5, Math.round((this.zoomScale + 0.15) * 100) / 100);
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
+          this._stagePending();
         }
       });
 
       btnZoomOut.addEventListener('click', () => {
-        if (currentZoomScale > 0.4) {
-          currentZoomScale = Math.max(0.4, Math.round((currentZoomScale - 0.15) * 100) / 100);
+        if (this.zoomScale > 0.4) {
+          this.zoomScale = Math.max(0.4, Math.round((this.zoomScale - 0.15) * 100) / 100);
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
+          this._stagePending();
         }
       });
 
@@ -5217,6 +5242,19 @@ class SchedullyApp {
           this.updateCanvasScreenRatio();
         }
       }
+      if (settings.activeDevice) {
+        this.switchDevice(settings.activeDevice, false);
+      }
+      if (settings.zoomScale) {
+        const parsedZoom = parseFloat(settings.zoomScale);
+        if (!isNaN(parsedZoom) && parsedZoom >= 0.3 && parsedZoom <= 2.0) {
+          this.zoomScale = parsedZoom;
+          try { localStorage.setItem('schedully_zoom_scale', String(this.zoomScale)); } catch (e) {}
+          if (typeof this.applyCanvasZoom === 'function') {
+            this.applyCanvasZoom(false);
+          }
+        }
+      }
       if (settings.customHexColors && Array.isArray(settings.customHexColors)) {
         this.customHexColors = [...settings.customHexColors];
       }
@@ -5241,9 +5279,10 @@ class SchedullyApp {
           });
         }
         if (this.quickTimePreviewBadge) {
-          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = 'Start & End';
-          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = 'End Only';
-          else this.quickTimePreviewBadge.innerText = 'Start Only';
+          const i18n = window.SchedullyI18n;
+          if (this.cardTimeDisplayType === 'both') this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('startAndEnd') : 'Start & End');
+          else if (this.cardTimeDisplayType === 'end') this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('endOnly') : 'End Only');
+          else this.quickTimePreviewBadge.innerText = (i18n ? i18n.t('startOnly') : 'Start Only');
         }
       }
       if (settings.globalCourseType !== undefined) {
@@ -5332,6 +5371,10 @@ class SchedullyApp {
         } else {
           this.removeWallpaper(true);
         }
+      }
+      const savedDevice = localStorage.getItem('schedully_active_device');
+      if (savedDevice) {
+        this.switchDevice(savedDevice, false);
       }
     } catch (e) {}
     this.updatePresetSelectDropdown();
@@ -5866,6 +5909,23 @@ class SchedullyApp {
               if (!data.wallpaper) this.removeWallpaper();
             }
 
+            if (data.language && window.SchedullyI18n && typeof window.SchedullyI18n.setLanguage === 'function') {
+              window.SchedullyI18n.setLanguage(data.language);
+            }
+            if (data.activeDevice) {
+              this.switchDevice(data.activeDevice, false);
+            }
+            if (data.zoomScale) {
+              const parsedZoom = parseFloat(data.zoomScale);
+              if (!isNaN(parsedZoom) && parsedZoom >= 0.3 && parsedZoom <= 2.0) {
+                this.zoomScale = parsedZoom;
+                try { localStorage.setItem('schedully_zoom_scale', String(this.zoomScale)); } catch (e) {}
+                if (typeof this.applyCanvasZoom === 'function') {
+                  this.applyCanvasZoom(false);
+                }
+              }
+            }
+
             // Restore schedule classes
             if (Array.isArray(data.classes)) {
               this.classes = data.classes;
@@ -5939,9 +5999,10 @@ class SchedullyApp {
       selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900',
       timeDisplayMode: this.timeDisplayMode || localStorage.getItem('schedully_time_display_mode') || 'time',
       screenRatio: this.currentScreenRatio || localStorage.getItem('schedully_screen_ratio') || 'auto',
-      activeDevice: this.activeDevice || 'phone',
+      activeDevice: this.activeDevice || localStorage.getItem('schedully_active_device') || 'phone',
+      zoomScale: this.zoomScale || 0.85,
       showLockUI: this.showLockUI !== undefined ? this.showLockUI : true,
-      language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_user_lang') || 'en')),
+      language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_language') || 'en')),
 
       // Card Formats & Sub-options
       globalCardTimes: this.globalCardTimes !== undefined ? this.globalCardTimes : true,
@@ -6050,7 +6111,10 @@ class SchedullyApp {
       presets: this.presets,
       activePreset: this.activePresetKey,
       wallpaper: currentWallpaper,
-      settings: currentSettings
+      settings: currentSettings,
+      language: currentSettings.language,
+      activeDevice: currentSettings.activeDevice,
+      zoomScale: currentSettings.zoomScale
     });
 
     if (ok) {
@@ -6793,7 +6857,7 @@ class SchedullyApp {
       this.updateMobilePip();
     }
 
-    if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+    if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
       this.renderWatchGlance();
     }
   }
@@ -8656,7 +8720,7 @@ class SchedullyTourController {
         const cardW = Math.min(window.innerWidth - 32, 340);
         const cardH = this.popoverCard.offsetHeight || 220;
         let cardLeft = (window.innerWidth - cardW) / 2;
-        let cardTop = window.innerHeight - cardH - 24;
+        let cardTop = window.innerHeight - cardH - 20;
 
         if (window.innerWidth > 1024) {
           // Desktop Studio View:
@@ -8667,7 +8731,6 @@ class SchedullyTourController {
             cardLeft = Math.max(20, rect.left - cardW - 24);
             cardTop = Math.max(80, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
           } else if (step.id === 'controls' || step.id === 'aspect-ratio') {
-            // Popover is anchored near bottom -> Place guide card cleanly ABOVE the popover with 24px gap
             cardLeft = (window.innerWidth - cardW) / 2;
             if (rect.top - cardH - 24 >= 60) {
               cardTop = rect.top - cardH - 24;
@@ -8679,22 +8742,24 @@ class SchedullyTourController {
             cardTop = Math.min(window.innerHeight - cardH - 20, rect.bottom + 24);
           }
         } else {
-          // Mobile & Tablet (<= 1024px / Drawer mode):
-          if (step.id === 'controls' || step.id === 'aspect-ratio') {
-            if (rect.top - cardH - 20 >= 16) {
-              cardTop = rect.top - cardH - 20;
+          // Mobile & Tablet (<= 1024px / Smartphone / Tablet Drawers):
+          cardLeft = (window.innerWidth - cardW) / 2;
+          const targetCenterY = rect.top + (rect.height / 2);
+          
+          if (targetCenterY > window.innerHeight / 2) {
+            // Target is in bottom half -> Place tour card in top half (above target)
+            if (rect.top - cardH - 16 >= 16) {
+              cardTop = rect.top - cardH - 16;
             } else {
-              cardTop = Math.min(window.innerHeight - cardH - 16, rect.bottom + 20);
+              cardTop = 16;
             }
-            cardLeft = (window.innerWidth - cardW) / 2;
-          } else if (step.id === 'export') {
-            // Export menu is at the top of the mobile screen -> Place guide card cleanly BELOW it
-            cardTop = Math.min(window.innerHeight - cardH - 16, rect.bottom + 20);
-            cardLeft = (window.innerWidth - cardW) / 2;
           } else {
-            // Left or Right sidebar open on mobile: place card cleanly anchored at the bottom
-            cardTop = window.innerHeight - cardH - 24;
-            cardLeft = (window.innerWidth - cardW) / 2;
+            // Target is in top half -> Place tour card in bottom half (below target)
+            if (rect.bottom + cardH + 16 <= window.innerHeight - 16) {
+              cardTop = rect.bottom + 16;
+            } else {
+              cardTop = window.innerHeight - cardH - 16;
+            }
           }
         }
 
