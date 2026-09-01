@@ -465,7 +465,7 @@ class SchedullyApp {
         localStorage.setItem('schedully_active_device', device);
       } catch (e) {}
       if (typeof this._stagePending === 'function') {
-        this._stagePending();
+        this._stagePending(true);
       }
     }
   }
@@ -3805,6 +3805,7 @@ class SchedullyApp {
         document.querySelectorAll('.theme-mode-dot').forEach(d => d.classList.remove('active'));
         dot.classList.add('active');
         this.currentMode = dot.getAttribute('data-mode');
+        try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
         this.applyThemeEngine();
         const wallpaperData = localStorage.getItem('schedully_wallpaper_data');
         if (wallpaperData) {
@@ -3977,7 +3978,7 @@ class SchedullyApp {
           this.zoomScale = Math.min(1.5, Math.round((this.zoomScale + 0.15) * 100) / 100);
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
-          this._stagePending();
+          this._stagePending(true);
         }
       });
 
@@ -3986,7 +3987,7 @@ class SchedullyApp {
           this.zoomScale = Math.max(0.4, Math.round((this.zoomScale - 0.15) * 100) / 100);
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
-          this._stagePending();
+          this._stagePending(true);
         }
       });
 
@@ -3995,10 +3996,23 @@ class SchedullyApp {
       });
     }
 
+    // Flush pending changes before page unloads or tab becomes hidden
+    window.addEventListener('beforeunload', () => {
+      if (this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
+        this.saveToCloud();
+      }
+    });
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
+        this.saveToCloud();
+      }
+    });
+
     if (btnThemeToggle) {
       btnThemeToggle.addEventListener('click', () => {
         if (window.soundFX) window.soundFX.play('toggle');
         this.currentMode = this.currentMode === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
         document.querySelectorAll('.theme-mode-dot').forEach(d => {
           d.classList.toggle('active', d.getAttribute('data-mode') === this.currentMode);
         });
@@ -4007,7 +4021,7 @@ class SchedullyApp {
         if (wallpaperData) {
           this.extractColorsFromImage(wallpaperData);
         }
-        this._stagePending();
+        this._stagePending(true);
       });
     }
 
@@ -5376,6 +5390,13 @@ class SchedullyApp {
       if (savedDevice) {
         this.switchDevice(savedDevice, false);
       }
+      const storedZoom = parseFloat(localStorage.getItem('schedully_zoom_scale'));
+      if (!isNaN(storedZoom) && storedZoom >= 0.3 && storedZoom <= 2.0) {
+        this.zoomScale = storedZoom;
+        if (typeof this.applyCanvasZoom === 'function') {
+          this.applyCanvasZoom(false);
+        }
+      }
     } catch (e) {}
     this.updatePresetSelectDropdown();
   }
@@ -5915,6 +5936,11 @@ class SchedullyApp {
             if (data.activeDevice) {
               this.switchDevice(data.activeDevice, false);
             }
+            if (data.currentMode || data.settings?.currentMode) {
+              this.currentMode = data.currentMode || data.settings?.currentMode;
+              try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
+              this.applyThemeEngine();
+            }
             if (data.zoomScale) {
               const parsedZoom = parseFloat(data.zoomScale);
               if (!isNaN(parsedZoom) && parsedZoom >= 0.3 && parsedZoom <= 2.0) {
@@ -6015,7 +6041,7 @@ class SchedullyApp {
     };
   }
 
-  _stagePending() {
+  _stagePending(immediate = false) {
     if (!this.presets) this.presets = {};
     if (!this.activePresetKey) this.activePresetKey = 'default';
     const currentSettings = this.getPresetSettings();
@@ -6034,6 +6060,8 @@ class SchedullyApp {
       localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
       localStorage.setItem('schedully_axis_mode', this.axisMode || 'time');
+      localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
+      localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
@@ -6044,13 +6072,20 @@ class SchedullyApp {
       this.updateMobilePip();
     }
 
-    // Smart Debounced Cloud Auto-Save (3-Second Inactivity Timer)
     if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
-    this._autoSaveTimer = setTimeout(() => {
+
+    if (immediate) {
       if (window.schedullyFirebase?.currentUser && this._hasUnsavedCloudChanges) {
         this.saveToCloud();
       }
-    }, 3000);
+    } else {
+      // Ultra-fast 400ms Debounced Cloud Auto-Save (never drops fast user edits)
+      this._autoSaveTimer = setTimeout(() => {
+        if (window.schedullyFirebase?.currentUser && this._hasUnsavedCloudChanges) {
+          this.saveToCloud();
+        }
+      }, 400);
+    }
   }
 
   saveToLocal() {
@@ -6072,6 +6107,8 @@ class SchedullyApp {
       localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
       localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
+      localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
+      localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }

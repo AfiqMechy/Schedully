@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Schedully i18n Comprehensive Localization Engine
  * Supports: EN, EN-SLANG, FR, ZH-CN, ZH-TW, KO, JA, MS, ID, ES
  */
@@ -1482,7 +1482,7 @@ window.SchedullyI18n = {
     } catch (e) {}
     this.applyTranslations();
     if (window.schedullyApp && typeof window.schedullyApp._stagePending === 'function') {
-      window.schedullyApp._stagePending();
+      window.schedullyApp._stagePending(true);
     }
   },
 
