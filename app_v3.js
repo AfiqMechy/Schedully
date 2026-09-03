@@ -2729,24 +2729,27 @@ class SchedullyApp {
     this.updateCourseFormMode();
 
 
-    // Floating Circular Course Search Controls
+    // Floating Circular Course Search Controls (Fluid iOS Single-Widget Morph)
     const openFloatingSearch = () => {
       if (!this.courseSearchContainer) return;
-      if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.add('hidden');
-      this.courseSearchContainer.classList.remove('hidden', 'closing');
-      setTimeout(() => {
-        if (this.courseSearchInput) this.courseSearchInput.focus();
-      }, 50);
+      this.courseSearchContainer.classList.remove('is-collapsed');
+      this.courseSearchContainer.classList.add('is-expanded');
+      if (this.courseSearchInput) {
+        this.courseSearchInput.removeAttribute('tabindex');
+        setTimeout(() => {
+          this.courseSearchInput.focus();
+        }, 120);
+      }
     };
 
     const closeFloatingSearch = () => {
       if (!this.courseSearchContainer) return;
-      this.courseSearchContainer.classList.add('closing');
-      setTimeout(() => {
-        this.courseSearchContainer.classList.add('hidden');
-        this.courseSearchContainer.classList.remove('closing');
-        if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.remove('hidden');
-      }, 200);
+      this.courseSearchContainer.classList.remove('is-expanded');
+      this.courseSearchContainer.classList.add('is-collapsed');
+      if (this.courseSearchInput) {
+        this.courseSearchInput.setAttribute('tabindex', '-1');
+        this.courseSearchInput.blur();
+      }
     };
 
     if (this.btnFloatingCourseSearch) {
@@ -7784,7 +7787,6 @@ class SchedullyApp {
     if (this.classes.length === 0) {
       if (emptyStateWrapper) emptyStateWrapper.style.display = 'flex';
       if (this.courseSearchDock) this.courseSearchDock.classList.add('hidden');
-      if (this.courseSearchContainer) this.courseSearchContainer.classList.add('hidden');
       return;
     }
     if (emptyStateWrapper) emptyStateWrapper.style.display = 'none';

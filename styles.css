@@ -10833,7 +10833,7 @@ body.dark-mode .class-item-card.highlight-target-course,
 }
 
 /* ==========================================================================
-   FLOATING CIRCULAR COURSE SEARCH BUTTON & EXPANDABLE SEARCH PILL
+   FLOATING CIRCULAR COURSE SEARCH BUTTON & EXPANDABLE SEARCH PILL (FLUID iOS MORPH)
    ========================================================================== */
 #course-search-dock {
   position: absolute;
@@ -10843,134 +10843,114 @@ body.dark-mode .class-item-card.highlight-target-course,
   pointer-events: auto;
 }
 
-/* White Circular Floating Trigger Button (iOS style) */
-.floating-course-search-btn {
-  width: 44px;
+/* Single Morphing Container: Circle (44px) <-> Pill (up to 290px) */
+.course-search-widget {
+  position: relative;
   height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 9999px !important;
-  background: #FFFFFF !important;
-  color: #1E293B !important;
-  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 9999px;
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.95);
   box-shadow: 
     0 4px 14px -2px rgba(15, 23, 42, 0.12),
     0 10px 25px -4px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1px 0 #FFFFFF !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer;
-  outline: none;
-  padding: 0 !important;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, opacity 0.2s ease;
+    inset 0 1px 1px 0 #FFFFFF;
+  overflow: hidden;
+  box-sizing: border-box;
+  transform-origin: right center;
+  transition: width 0.36s cubic-bezier(0.175, 0.885, 0.32, 1.15),
+              box-shadow 0.28s ease,
+              background-color 0.2s ease,
+              border-color 0.2s ease;
 }
 
-.floating-course-search-btn:hover {
+/* Collapsed State: Pure 44x44 Circle */
+.course-search-widget.is-collapsed {
+  width: 44px;
+  min-width: 44px;
+  cursor: pointer;
+}
+
+.course-search-widget.is-collapsed:hover {
   transform: scale(1.08) translateY(-1px);
   box-shadow: 
     0 6px 18px -2px rgba(15, 23, 42, 0.16),
-    0 14px 30px -4px rgba(15, 23, 42, 0.10) !important;
+    0 14px 30px -4px rgba(15, 23, 42, 0.10);
 }
 
-.floating-course-search-btn:active {
+.course-search-widget.is-collapsed:active {
   transform: scale(0.92);
 }
 
-.floating-course-search-btn svg {
-  color: #334155 !important;
-  stroke: #334155 !important;
-  width: 20px;
-  height: 20px;
-  transition: transform 0.2s ease;
-}
-
-/* Glass Theme Variant for White Circular Trigger Button */
-body.theme-style-glass .floating-course-search-btn {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.75) 100%) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+/* Expanded State: Smooth Spring Pill up to 290px */
+.course-search-widget.is-expanded {
+  width: min(290px, calc(100vw - 36px));
   box-shadow: 
-    0 8px 24px -4px rgba(15, 23, 42, 0.12),
-    inset 0 1.5px 2px 0 #FFFFFF,
-    inset calc(var(--glass-dispersion, 7) * 0.25px) 0 2px rgba(96, 165, 250, 0.35),
-    inset calc(var(--glass-dispersion, 7) * -0.25px) 0 2px rgba(244, 114, 182, 0.3) !important;
-}
-
-/* Indicator dot for active search filter */
-.floating-course-search-btn.has-query::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 9999px;
-  background: #3B82F6;
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
-}
-
-/* iOS Spring Expandable Search Pill */
-.course-search-expandable {
-  display: flex;
-  align-items: center;
-  position: relative;
-  width: calc(100% - 10px);
-  width: min(290px, calc(100vw - 40px));
-  height: 44px;
-  background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  border-radius: 9999px;
-  box-shadow: 
-    0 10px 30px -4px rgba(15, 23, 42, 0.14),
+    0 12px 32px -4px rgba(15, 23, 42, 0.16),
     0 4px 12px rgba(15, 23, 42, 0.06),
     inset 0 1px 1px #FFFFFF;
-  animation: iosSearchExpand 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
-  transform-origin: right center;
-  box-sizing: border-box;
 }
 
-body.theme-style-glass .course-search-expandable {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.82) 100%) !important;
-  backdrop-filter: blur(24px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 
-    0 16px 36px -6px rgba(15, 23, 42, 0.16),
-    inset 0 1.5px 2px 0 #FFFFFF !important;
+/* Trigger Button: Fills widget when collapsed, hidden when expanded */
+.search-widget-trigger-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 0 !important;
+  z-index: 2;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
-@keyframes iosSearchExpand {
-  0% {
-    opacity: 0;
-    width: 44px;
-    transform: scale(0.7) translateX(12px);
-  }
-  60% {
-    transform: scale(1.02) translateX(-2px);
-  }
-  100% {
-    opacity: 1;
-    width: min(290px, calc(100vw - 40px));
-    transform: scale(1) translateX(0);
-  }
+.search-widget-trigger-btn svg {
+  width: 20px;
+  height: 20px;
+  color: #334155 !important;
+  stroke: #334155 !important;
 }
 
-.course-search-expandable.closing {
-  animation: iosSearchCollapse 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.course-search-widget.is-expanded .search-widget-trigger-btn {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5) rotate(45deg);
 }
 
-@keyframes iosSearchCollapse {
-  0% {
-    opacity: 1;
-    transform: scale(1) translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.6) translateX(14px);
-  }
+.course-search-widget.is-collapsed .search-widget-trigger-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Expanded Content: Input & Controls */
+.search-widget-expanded-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
+}
+
+.course-search-widget.is-expanded .search-widget-expanded-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.course-search-widget.is-collapsed .search-widget-expanded-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease 0s;
 }
 
 .search-floating-input {
@@ -10986,6 +10966,7 @@ body.theme-style-glass .course-search-expandable {
   font-weight: 600 !important;
   color: #0F172A !important;
   height: 100% !important;
+  width: 100% !important;
 }
 
 .search-floating-input::placeholder {
@@ -10993,46 +10974,57 @@ body.theme-style-glass .course-search-expandable {
   font-weight: 500 !important;
 }
 
-/* Dark Mode - White-tinted / Frosted Glass in Dark Mode */
-body.dark-mode .floating-course-search-btn,
-.theme-dark .floating-course-search-btn {
+/* Active Search Indicator Dot on Circular Button */
+.course-search-widget.is-collapsed .search-widget-trigger-btn.has-query::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: #3B82F6;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
+}
+
+/* ==========================================================================
+   THEME STYLES (GLASS & DARK MODE)
+   ========================================================================== */
+
+/* Glass Light Theme */
+body.theme-style-glass .course-search-widget {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.78) 100%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 8px 24px -4px rgba(15, 23, 42, 0.12),
+    inset 0 1.5px 2px 0 #FFFFFF,
+    inset calc(var(--glass-dispersion, 7) * 0.25px) 0 2px rgba(96, 165, 250, 0.35),
+    inset calc(var(--glass-dispersion, 7) * -0.25px) 0 2px rgba(244, 114, 182, 0.3) !important;
+}
+
+body.theme-style-glass .course-search-widget.is-expanded {
+  box-shadow: 
+    0 16px 36px -6px rgba(15, 23, 42, 0.16),
+    inset 0 1.5px 2px 0 #FFFFFF !important;
+}
+
+/* Dark Mode - Solid */
+body.dark-mode .course-search-widget,
+.theme-dark .course-search-widget {
   background: #1E293B !important;
-  color: #F8FAFC !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
     0 6px 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.15) !important;
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
 }
 
-body.dark-mode .floating-course-search-btn svg,
-.theme-dark .floating-course-search-btn svg {
+body.dark-mode .search-widget-trigger-btn svg,
+.theme-dark .search-widget-trigger-btn svg {
   color: #F8FAFC !important;
   stroke: #F8FAFC !important;
-}
-
-body.dark-mode.theme-style-glass .floating-course-search-btn,
-.theme-dark.theme-style-glass .floating-course-search-btn {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
-  backdrop-filter: blur(24px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-}
-
-body.dark-mode .course-search-expandable,
-.theme-dark .course-search-expandable {
-  background: #1E293B !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 
-    0 16px 40px -6px rgba(0, 0, 0, 0.7),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
-}
-
-body.dark-mode.theme-style-glass .course-search-expandable,
-.theme-dark.theme-style-glass .course-search-expandable {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.94) 100%) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 body.dark-mode .search-floating-input,
@@ -11043,4 +11035,13 @@ body.dark-mode .search-floating-input,
 body.dark-mode .search-floating-input::placeholder,
 .theme-dark .search-floating-input::placeholder {
   color: #64748B !important;
+}
+
+/* Dark Mode - Glass */
+body.dark-mode.theme-style-glass .course-search-widget,
+.theme-dark.theme-style-glass .course-search-widget {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.94) 100%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
 }
