@@ -233,6 +233,7 @@ class SchedullyApp {
     this.ocrFileInput = document.getElementById('ocr-file-input');
     this.ocrLoadingBar = document.getElementById('ocr-loading-bar');
     this.ocrLoadingText = document.getElementById('ocr-loading-text');
+    this.aiScanOverlay = document.getElementById('ai-scan-fullscreen-overlay');
     
     const inputApiKey = document.getElementById('input-api-key');
     if (inputApiKey) {
@@ -1408,6 +1409,9 @@ class SchedullyApp {
               localStorage.setItem('schedully_screen_ratio', r);
             } catch (e) {}
             this.updateCanvasScreenRatio();
+            if (typeof window.applyZoom === 'function') {
+              window.applyZoom(false);
+            }
             this._stagePending();
           }
         });
@@ -4356,6 +4360,7 @@ class SchedullyApp {
             const scanErrorAlert = document.getElementById('scan-error-alert');
             if (scanErrorAlert) scanErrorAlert.classList.add('hidden');
 
+            if (this.aiScanOverlay) this.aiScanOverlay.classList.add('active');
             this.ocrLoadingBar.classList.remove('hidden');
             let extracted = [];
             try {
@@ -4415,6 +4420,7 @@ class SchedullyApp {
                 }
               }
             } finally {
+              if (this.aiScanOverlay) this.aiScanOverlay.classList.remove('active');
               this.ocrLoadingBar.classList.add('hidden');
               e.target.value = '';
             }
@@ -6888,6 +6894,11 @@ class SchedullyApp {
             overflow: hidden;
             border-radius: ${this.cardCornerStyle === 'sharp' ? '0px' : (this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) + 'px'};
           `;
+          cardElement.setAttribute('data-id', matched.id);
+          cardElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.highlightCourseInScheduleList(matched.id);
+          });
           cardElement.innerHTML = cardContentHTML;
           slotCell.appendChild(cardElement);
         });
@@ -7264,6 +7275,11 @@ class SchedullyApp {
           ${submetaHtml}
         </div>
       `;
+      card.setAttribute('data-id', c.id);
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.highlightCourseInScheduleList(c.id);
+      });
       listContainer.appendChild(card);
     });
   }
@@ -7591,6 +7607,60 @@ class SchedullyApp {
 
     container.addEventListener('input', handleFieldUpdate);
     container.addEventListener('change', handleFieldUpdate);
+  }
+
+  highlightCourseInScheduleList(courseId) {
+    if (!courseId) return;
+
+    // 1. If right sidebar is collapsed, expand it so the user sees the card
+    const rightSidebar = document.getElementById('right-sidebar');
+    if (rightSidebar && rightSidebar.classList.contains('sidebar-collapsed-right')) {
+      if (typeof this.toggleRightSidebar === 'function') {
+        this.toggleRightSidebar(false);
+      } else {
+        rightSidebar.classList.remove('sidebar-collapsed-right');
+      }
+    }
+
+    // 2. If search filter is active and hides this course, clear search filter so it's visible
+    if (this.searchQuery) {
+      if (this.courseSearchInput) this.courseSearchInput.value = '';
+      this.searchQuery = '';
+      this.clearSearchBtn?.classList.add('hidden');
+      this.renderClassList();
+    }
+
+    // 3. Find the card in the schedule list
+    const container = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
+    if (!container) return;
+
+    const targetCard = container.querySelector(`.class-item-card[data-id="${courseId}"]`);
+    if (!targetCard) return;
+
+    // 4. Auto-expand the course editor accordion
+    const editor = targetCard.querySelector('.class-card-editor');
+    const arrow = targetCard.querySelector('.class-expand-arrow');
+    if (editor && editor.classList.contains('hidden')) {
+      editor.classList.remove('hidden');
+      if (arrow) arrow.classList.add('open');
+      requestAnimationFrame(() => window.syncGlassSliders?.());
+    }
+
+    // 5. Scroll smoothly into view
+    targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // 6. Trigger spring pulse animation and haptic feedback
+    targetCard.classList.remove('highlight-target-course');
+    void targetCard.offsetWidth; // Force reflow
+    targetCard.classList.add('highlight-target-course');
+
+    if (navigator.vibrate) {
+      try { navigator.vibrate(18); } catch (e) {}
+    }
+
+    setTimeout(() => {
+      targetCard.classList.remove('highlight-target-course');
+    }, 1800);
   }
 
   renderClassList() {
