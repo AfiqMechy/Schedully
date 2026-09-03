@@ -29,8 +29,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEY in Vercel Environment Variables.' });
     }
 
-    // 1. DYNAMICALLY DISCOVER SUPPORTED MODELS
-    let targetModelName = 'gemini-3.6-flash';
+    // 1. DYNAMICALLY DISCOVER SUPPORTED MODELS (Default to active production model)
+    let candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    let targetModelName = 'gemini-2.5-flash';
     try {
       const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
         method: 'GET',
@@ -43,21 +44,27 @@ export default async function handler(req, res) {
           m.supportedGenerationMethods.includes('generateContent') &&
           m.name.includes('gemini')
         );
-        let bestModel = validModels.find(m => m.name.includes('3.6-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('3.7-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.5-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.0-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('3.5-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.5-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('2.0-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('1.5-flash'));
-        if (!bestModel) bestModel = validModels.find(m => m.name.includes('flash'));
-        if (!bestModel && validModels.length > 0) bestModel = validModels[0];
-        if (bestModel) targetModelName = bestModel.name.replace('models/', '');
+        const sorted = [];
+        const pushIf = (filterFn) => {
+          validModels.filter(filterFn).forEach(m => {
+            const cleanName = m.name.replace('models/', '');
+            if (!sorted.includes(cleanName)) sorted.push(cleanName);
+          });
+        };
+        // Priority order: 2.5-flash first, then 2.0-flash, then 1.5-flash, then any flash/gemini
+        pushIf(m => m.name.includes('2.5-flash'));
+        pushIf(m => m.name.includes('2.0-flash'));
+        pushIf(m => m.name.includes('1.5-flash'));
+        pushIf(m => m.name.includes('flash'));
+        pushIf(m => m.name.includes('gemini'));
+
+        if (sorted.length > 0) {
+          candidateModels = sorted;
+          targetModelName = sorted[0];
+        }
       }
     } catch (e) {
-      console.warn("Failed to list models, using fallback gemini-2.0-flash", e);
+      console.warn("Failed to list models, using fallback gemini-2.5-flash", e);
     }
 
     const promptText = `CRITICAL SYSTEM COMMAND:
@@ -150,25 +157,42 @@ Output ONLY valid JSON matching this schema. Do NOT wrap in markdown explanation
       }
     };
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    let data = null;
+    let successfulModel = targetModelName;
+    let lastError = null;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify(payload)
-    });
+    for (const model of candidateModels) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(payload)
+        });
 
-    const data = await response.json();
+        const resJson = await response.json();
+        if (resJson.error) {
+          lastError = resJson.error.message || `Model ${model} returned error ${response.status}`;
+          console.warn(`[Vercel api/scan] Model ${model} failed:`, lastError);
+          continue;
+        }
 
-    if (data.error) {
-      return res.status(500).json({ error: data.error.message || `Gemini API Error (${targetModelName})` });
+        if (resJson.candidates && resJson.candidates[0] && resJson.candidates[0].content) {
+          data = resJson;
+          successfulModel = model;
+          break;
+        }
+      } catch (callErr) {
+        lastError = callErr.message;
+        console.warn(`[Vercel api/scan] Call to ${model} threw error:`, callErr);
+      }
     }
 
-    if (!data.candidates || !data.candidates[0]) {
-      return res.status(500).json({ error: `No candidates returned (${targetModelName})` });
+    if (!data) {
+      return res.status(500).json({ error: lastError || 'All Gemini models failed to process the timetable.' });
     }
 
     let rawJSON = data.candidates[0].content.parts[0].text;

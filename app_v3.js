@@ -4396,14 +4396,23 @@ class SchedullyApp {
                 this.importClassesDirectly(extracted);
               }
             } catch (err) {
-              console.error("Scanner Error:", err);
+              console.error("Scanner Error (Internal):", err);
               const scanErrorAlert = document.getElementById('scan-error-alert');
               const scanErrorTitle = document.getElementById('scan-error-title');
               const scanErrorDesc = document.getElementById('scan-error-desc');
               if (scanErrorAlert) {
                 scanErrorAlert.classList.remove('hidden');
-                if (scanErrorTitle) scanErrorTitle.innerText = "Scanning Failed";
-                if (scanErrorDesc) scanErrorDesc.innerText = err.message || "The scanner could not recognize valid timetable text.";
+                if (scanErrorTitle) scanErrorTitle.innerText = "Scanning Temporarily Unavailable";
+                
+                const rawMsg = (err && err.message) ? err.message : '';
+                // Friendly, polished messaging for public users
+                if (rawMsg.includes('429') || rawMsg.toLowerCase().includes('quota') || rawMsg.toLowerCase().includes('rate limit')) {
+                  if (scanErrorDesc) scanErrorDesc.innerText = "High server traffic right now. Please wait a moment and try again.";
+                } else if (rawMsg.toLowerCase().includes('clear') || rawMsg.toLowerCase().includes('unreadable')) {
+                  if (scanErrorDesc) scanErrorDesc.innerText = "Could not detect timetable text. Please ensure the image is clear and well-lit.";
+                } else {
+                  if (scanErrorDesc) scanErrorDesc.innerText = "AI timetable scanner is undergoing quick maintenance. Please try again shortly.";
+                }
               }
             } finally {
               this.ocrLoadingBar.classList.add('hidden');

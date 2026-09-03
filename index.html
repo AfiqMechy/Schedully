@@ -2153,7 +2153,7 @@
   </div>
 
 <script src="timetable_engine.js"></script>
-<script src="ocr_parser.js"></script>
+<script src="ocr_parser.js?v=20260903_v369"></script>
 <script src="ics_csv_parser_v3.js"></script>
   <!-- Firebase Project Credentials Setup Modal -->
   <div id="firebase-config-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -2488,13 +2488,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260901_instant_cloud_v368"></script>
+  <script src="app_v3.js?v=20260903_v369"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260901_instant_cloud_v368').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260903_v369').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

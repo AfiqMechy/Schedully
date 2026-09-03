@@ -24,15 +24,17 @@ class OCRTimetableParser {
 
     // 1. Try Vercel Serverless Function First (/api/scan with secure process.env.GEMINI_API_KEY)
     onProgress("Analyzing timetable with AI Vision Scanner...");
+    let serverlessErrorMessage = null;
     try {
       const response = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Data, mimeType })
+        body: JSON.stringify({ base64Data, mimeType, apiKey: apiKey || '' })
       });
 
-      if (response.ok) {
-        const resData = await response.json();
+      const resData = await response.json().catch(() => null);
+
+      if (response.ok && resData) {
         if (resData.success && (resData.data || resData.courses)) {
           const courses = Array.isArray(resData.data) ? resData.data : (resData.courses || []);
           if (courses.length > 0) {
@@ -43,12 +45,16 @@ class OCRTimetableParser {
             };
           }
         }
+      } else if (resData && resData.error) {
+        serverlessErrorMessage = resData.error;
+        console.warn("/api/scan returned error:", serverlessErrorMessage);
       }
     } catch (apiErr) {
+      serverlessErrorMessage = apiErr.message;
       console.warn("/api/scan endpoint unavailable, checking client key...", apiErr);
     }
 
-    // 2. Direct Client-Side Gemini Vision Call (if key is in localStorage)
+    // 2. Direct Client-Side Gemini Vision Call (if key is in localStorage or passed)
     let effectiveApiKey = (
       apiKey ||
       localStorage.getItem('schedully_gemini_api_key') ||
@@ -66,21 +72,23 @@ class OCRTimetableParser {
         }
       } catch (directErr) {
         console.warn("Direct Gemini Vision scan failed:", directErr);
+        throw directErr;
       }
     }
 
     // 3. Fallback: If no serverless response and direct scan failed
-    throw new Error("Unable to analyze timetable image with AI. Please ensure the image is clear and try again.");
+    if (serverlessErrorMessage) {
+      throw new Error(`AI Scanner Error: ${serverlessErrorMessage}`);
+    }
+    throw new Error("Unable to analyze timetable image with AI. Please ensure your Gemini API key is valid or check your Vercel GEMINI_API_KEY environment variable.");
   }
 
   /**
-   * Direct Browser-to-Google Gemini Vision Call with Gemini 3.6 Flash Priority
+   * Direct Browser-to-Google Gemini Vision Call with Active Production Priority
    */
   async scanDirectGemini(base64Data, mimeType, apiKey, onProgress) {
-    // Exact priority order based on active Google AI models
+    // Active production models priority order
     let candidateModels = [
-      'gemini-3.6-flash',
-      'gemini-3.7-flash',
       'gemini-2.5-flash',
       'gemini-2.0-flash',
       'gemini-1.5-flash'
@@ -101,9 +109,8 @@ class OCRTimetableParser {
           const pushIf = (filterFn) => {
             apiModels.filter(filterFn).forEach(m => { if (!sorted.includes(m)) sorted.push(m); });
           };
-          pushIf(m => m === 'gemini-3.6-flash' || m.includes('3.6-flash'));
-          pushIf(m => m.includes('3.7-flash'));
-          pushIf(m => m.includes('2.5-flash') || m.includes('2.0-flash'));
+          pushIf(m => m.includes('2.5-flash'));
+          pushIf(m => m.includes('2.0-flash'));
           pushIf(m => m.includes('1.5-flash'));
           pushIf(m => m.includes('flash'));
           pushIf(m => m.includes('gemini'));
@@ -187,6 +194,7 @@ OUTPUT JSON FORMAT ONLY:
   ]
 }`;
 
+    let lastErrorMsg = null;
     for (const model of candidateModels) {
       onProgress(`Scanning with ${model}...`);
       try {
@@ -221,6 +229,12 @@ OUTPUT JSON FORMAT ONLY:
 
         if (!res.ok) {
           const errText = await res.text();
+          try {
+            const errJson = JSON.parse(errText);
+            lastErrorMsg = errJson.error?.message || errText;
+          } catch (_) {
+            lastErrorMsg = errText;
+          }
           console.warn(`Model ${model} returned error ${res.status}:`, errText);
           continue;
         }
@@ -241,10 +255,14 @@ OUTPUT JSON FORMAT ONLY:
           }
         }
       } catch (err) {
+        lastErrorMsg = err.message;
         console.warn(`Attempt with ${model} failed:`, err);
       }
     }
 
+    if (lastErrorMsg) {
+      throw new Error(`Gemini API Error: ${lastErrorMsg}`);
+    }
     throw new Error("Unable to extract timetable with available Gemini models. Please verify your image.");
   }
 }
