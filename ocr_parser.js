@@ -123,76 +123,68 @@ class OCRTimetableParser {
     }
 
     const promptText = `CRITICAL SYSTEM COMMAND:
-You are an expert universal academic timetable vision parser.
-Analyze this timetable image and extract ALL scheduled classes/courses into clean structured JSON.
+You are an expert universal academic timetable vision OCR parser.
+Your highest priority is 100% EXACT VERBATIM ACCURACY. You must transcribe course names, subject titles, codes, and details EXACTLY character-for-character as written in the uploaded image.
 
-1. MULTILINGUAL & SCRIPT SUPPORT:
-- Support ANY language: English, Malay/Bahasa Melayu, Japanese, Chinese, Korean, Arabic, French, German, Spanish, Indonesian, Russian, etc.
-- Detect "detectedLanguage" (e.g. "Malay", "Japanese", "English", "Chinese", "Korean", "Arabic", "French").
-- Set "hasNonEnglishText": true if non-English characters or non-English course names are present.
-- Detect "isPeriodBased": true if the timetable uses period numbers (1, 2, 3, 4, 5, 6 / 1限, 2限 / 1교시 / 第1节) instead of explicit clock hours on the left axis.
+ABSOLUTE STRICT RULES:
+1. 100% EXACT VERBATIM SUBJECT / COURSE NAMES:
+   - Extract the course name EXACTLY word-for-word, letter-for-letter, character-for-character as printed on the timetable.
+   - NEVER abbreviate, summarize, truncate, simplify, paraphrase, or alter subject names (e.g. if the image says "PENGURUSAN SUMBER MANUSIA DALAM ORGANISASI", do NOT shorten to "HRM" or "Pengurusan Sumber Manusia"; write "PENGURUSAN SUMBER MANUSIA DALAM ORGANISASI" 100% verbatim).
+   - Preserve exact spelling, casing, punctuation, roman numerals, and special characters (e.g., "I", "II", "(A)", "LAB", "TUTORIAL", "&", "-", "/").
+   - If a subject name spans multiple lines inside a table cell, combine them cleanly with spaces in natural reading order.
+   - Do NOT invent or guess missing words. If text is partially cropped or includes section codes, capture all legible characters accurately.
 
-2. DAYS PARSING:
-- Normalize days to standard 3-letter English: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
-- Day translations:
-  * Malay/Indonesian: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun
-  * Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun
-  * Chinese: 星期一/周一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun
-  * Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun
-  * Arabic: الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat
+2. DUAL-LANGUAGE AND COURSE CODES:
+   - "title": MUST BE THE EXACT 100% VERBATIM SUBJECT NAME as printed on the image.
+   - "originalTitle": Same exact verbatim subject name as printed on the image.
+   - "code": The official course code printed next to or above/below the title (e.g. "BBSB3103", "CS101", "SE302"). If NO separate alphanumeric code is printed, reuse the verbatim title or native abbreviation.
+   - "originalCode": Native shorthand or code if present.
+   - "translatedTitle": Optional English translation ONLY if the original language is non-English (e.g. Japanese, Chinese, Arabic). For English or Malay timetables, set to the same verbatim title.
+   - "translatedCode": Standard Latin alphanumeric code or the course code.
 
-3. TIME SLOTS & PERIODS:
-- If clock times are explicitly visible on the image, extract "startTime" and "endTime" in 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "18:00").
-- If period numbers are used (1 to 6 without explicit clock times):
-  * Set "periodNumber": 1, 2, 3, 4, 5, 6...
-  * Use standard university period slots for default fallback:
-    * 1: 09:00 - 10:30
-    * 2: 10:40 - 12:10
-    * 3: 13:00 - 14:30
-    * 4: 14:40 - 16:10
-    * 5: 16:20 - 17:50
-    * 6: 18:00 - 19:30
+3. DAYS & TIME RECOGNITION:
+   - Map columns or rows to standard English day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
+     * Malay/Indo: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun.
+     * Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun.
+     * Chinese: 星期一/周一/週一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun.
+     * Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun.
+     * Arabic (RTL): Note right-to-left order! الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat.
+   - "startTime" and "endTime": 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "16:30"). Read the time header/ruler carefully.
+   - If period numbers are used instead of clock times (e.g. 1 to 6 / 1限, 2限):
+     * Set "periodNumber": 1, 2, 3, 4, 5, 6...
+     * Fallback standard university periods: 1: 09:00-10:30, 2: 10:40-12:10, 3: 13:00-14:30, 4: 14:40-16:10, 5: 16:20-17:50, 6: 18:00-19:30.
 
-4. COURSE ATTRIBUTES (DUAL-LANGUAGE):
-For each class:
-- "originalTitle": Full course title in native language
-- "originalCode": Native course code or abbreviation
-- "translatedTitle": English translation of the course name
-- "translatedCode": Standard Latin alphanumeric code (e.g. "CS101", "AERO-1", "DSA", "MATH201")
-- "title": Default course title
-- "code": Default course code
-- "day": "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
-- "startTime": "HH:MM"
-- "endTime": "HH:MM"
-- "periodNumber": 1 | 2 | 3 | 4 | 5 | 6 (if period-based)
-- "type": "Lecture" | "Tutorial" | "Lab" | "Class"
-- "room": Room / Venue / Hall if visible
-- "lecturer": Lecturer / Professor name if visible
+4. METADATA:
+   - "room": Room / Venue / Lab / Hall if indicated in the cell (or "").
+   - "lecturer": Lecturer / Instructor / Professor name if indicated (or "").
+   - "group": Class section / Section / Group / OCC (e.g. "G1", "SEC 02", "T1") if printed (or "").
+   - "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio".
 
-OUTPUT JSON FORMAT ONLY:
+OUTPUT STRICT JSON SCHEMA ONLY:
 {
-  "detectedLanguage": "Japanese",
-  "hasNonEnglishText": true,
-  "isPeriodBased": true,
+  "detectedLanguage": "English",
+  "hasNonEnglishText": false,
+  "isPeriodBased": false,
   "courses": [
     {
-      "originalTitle": "MSLC 定期トレーニング",
-      "originalCode": "MSLC",
-      "translatedTitle": "MSLC Regular Training",
-      "translatedCode": "MSLC-1",
-      "title": "MSLC 定期トレーニング",
-      "code": "MSLC",
+      "title": "EXACT 100% VERBATIM SUBJECT NAME",
+      "code": "EXACT COURSE CODE",
+      "originalTitle": "EXACT 100% VERBATIM SUBJECT NAME",
+      "originalCode": "EXACT COURSE CODE",
+      "translatedTitle": "EXACT 100% VERBATIM SUBJECT NAME",
+      "translatedCode": "EXACT COURSE CODE",
       "day": "Mon",
-      "startTime": "09:00",
-      "endTime": "10:30",
-      "periodNumber": 1,
+      "startTime": "08:00",
+      "endTime": "10:00",
       "type": "Lecture",
-      "room": "",
-      "lecturer": "",
-      "group": ""
+      "room": "DK1",
+      "lecturer": "Dr. Aminah",
+      "group": "G1"
     }
   ]
-}`;
+}
+
+Respond ONLY with valid JSON. No conversational wrapper or markdown backticks outside the json.`;
 
     let lastErrorMsg = null;
     for (const model of candidateModels) {
@@ -208,7 +200,7 @@ OUTPUT JSON FORMAT ONLY:
           }],
           generationConfig: {
             maxOutputTokens: 8192,
-            temperature: 0.1,
+            temperature: 0.0,
             responseMimeType: "application/json"
           }
         };
