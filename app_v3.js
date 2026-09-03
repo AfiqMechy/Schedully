@@ -7610,9 +7610,9 @@ class SchedullyApp {
   }
 
   highlightCourseInScheduleList(courseId) {
-    if (!courseId) return;
+    if (courseId === undefined || courseId === null) return;
 
-    // 1. If right sidebar is collapsed, expand it so the user sees the card
+    // 1. If right sidebar is collapsed, automatically expand it so the schedule list is visible
     const rightSidebar = document.getElementById('right-sidebar');
     if (rightSidebar && rightSidebar.classList.contains('sidebar-collapsed-right')) {
       if (typeof this.toggleRightSidebar === 'function') {
@@ -7622,7 +7622,7 @@ class SchedullyApp {
       }
     }
 
-    // 2. If search filter is active and hides this course, clear search filter so it's visible
+    // 2. If search filter is active and hides this course, clear search filter so all courses are visible
     if (this.searchQuery) {
       if (this.courseSearchInput) this.courseSearchInput.value = '';
       this.searchQuery = '';
@@ -7630,37 +7630,88 @@ class SchedullyApp {
       this.renderClassList();
     }
 
-    // 3. Find the card in the schedule list
+    // 3. Find the card container
     const container = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
     if (!container) return;
 
-    const targetCard = container.querySelector(`.class-item-card[data-id="${courseId}"]`);
-    if (!targetCard) return;
+    // 4. Locate target card by ID (with fallback matching by code, title, and day)
+    let targetCard = null;
+    const allCards = container.querySelectorAll('.class-item-card');
+    
+    // Primary match: exact or string-converted data-id
+    allCards.forEach(card => {
+      if (String(card.getAttribute('data-id')) === String(courseId)) {
+        targetCard = card;
+      }
+    });
 
-    // 4. Auto-expand the course editor accordion
-    const editor = targetCard.querySelector('.class-card-editor');
-    const arrow = targetCard.querySelector('.class-expand-arrow');
-    if (editor && editor.classList.contains('hidden')) {
-      editor.classList.remove('hidden');
-      if (arrow) arrow.classList.add('open');
-      requestAnimationFrame(() => window.syncGlassSliders?.());
+    // Secondary match fallback: match by course properties if course object is provided or looked up
+    if (!targetCard && this.classes && Array.isArray(this.classes)) {
+      const matchedObj = this.classes.find(c => String(c.id) === String(courseId));
+      if (matchedObj) {
+        allCards.forEach(card => {
+          const cardId = card.getAttribute('data-id');
+          const cObj = this.classes.find(x => String(x.id) === String(cardId));
+          if (cObj && cObj.code === matchedObj.code && cObj.day === matchedObj.day && cObj.startTime === matchedObj.startTime) {
+            targetCard = card;
+          }
+        });
+      }
     }
 
-    // 5. Scroll smoothly into view
-    targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!targetCard) return;
 
-    // 6. Trigger spring pulse animation and haptic feedback
+    // 5. ACCORDION ISOLATION: Collapse ALL other course cards so only the target course expands
+    allCards.forEach(card => {
+      if (card !== targetCard) {
+        const otherEditor = card.querySelector('.class-card-editor');
+        const otherArrow = card.querySelector('.class-expand-arrow');
+        if (otherEditor && !otherEditor.classList.contains('hidden')) {
+          otherEditor.classList.add('hidden');
+        }
+        if (otherArrow && otherArrow.classList.contains('open')) {
+          otherArrow.classList.remove('open');
+        }
+        card.classList.remove('highlight-target-course');
+      }
+    });
+
+    // 6. Expand ONLY the clicked target card
+    const editor = targetCard.querySelector('.class-card-editor');
+    const arrow = targetCard.querySelector('.class-expand-arrow');
+    if (editor) {
+      editor.classList.remove('hidden');
+    }
+    if (arrow) {
+      arrow.classList.add('open');
+    }
+    requestAnimationFrame(() => window.syncGlassSliders?.());
+
+    // 7. CONTAINER-LOCAL SMOOTH SCROLL: Scroll container without jarring page/window jumps
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = targetCard.getBoundingClientRect();
+    const currentScroll = container.scrollTop;
+    const scrollDelta = cardRect.top - containerRect.top - 16;
+    container.scrollTo({
+      top: Math.max(0, currentScroll + scrollDelta),
+      behavior: 'smooth'
+    });
+
+    // 8. Trigger tactile spring pulse animation and haptic feedback
     targetCard.classList.remove('highlight-target-course');
-    void targetCard.offsetWidth; // Force reflow
+    void targetCard.offsetWidth; // Force CSS reflow to restart keyframe
     targetCard.classList.add('highlight-target-course');
 
     if (navigator.vibrate) {
-      try { navigator.vibrate(18); } catch (e) {}
+      try { navigator.vibrate(22); } catch (e) {}
     }
 
-    setTimeout(() => {
+    // Auto-remove highlight class after animation settles
+    if (targetCard._highlightTimer) clearTimeout(targetCard._highlightTimer);
+    targetCard._highlightTimer = setTimeout(() => {
       targetCard.classList.remove('highlight-target-course');
-    }, 1800);
+      targetCard._highlightTimer = null;
+    }, 2000);
   }
 
   renderClassList() {
@@ -7758,102 +7809,108 @@ class SchedullyApp {
         </div>
 
         <div class="class-card-editor hidden">
-          <div class="editor-row">
-            <label>${lblCourseCode}:</label>
-            <input type="text" class="m3-input edit-code" value="${c.code}">
-          </div>
-
-          <div class="editor-row">
-            <label>Display Time:</label>
-            <div class="pill-toggle-group edit-display-time">
-              <button type="button" class="pill-btn ${c.displayTime !== false ? 'active' : ''}" data-val="yes">YES</button>
-              <button type="button" class="pill-btn ${c.displayTime === false ? 'active' : ''}" data-val="no">NO</button>
+          <!-- Top Control Strip: Display Time & Time Mode Selector -->
+          <div class="editor-swatch-dock" style="margin-bottom: 2px;">
+            <div class="flex items-center gap-2">
+              <span class="editor-swatch-title">${i18n ? i18n.get('displayTime') : 'Display Time'}:</span>
+              <div class="pill-toggle-group edit-display-time">
+                <button type="button" class="pill-btn ${c.displayTime !== false ? 'active' : ''}" data-val="yes" style="padding: 2px 8px; font-size: 10px;">YES</button>
+                <button type="button" class="pill-btn ${c.displayTime === false ? 'active' : ''}" data-val="no" style="padding: 2px 8px; font-size: 10px;">NO</button>
+              </div>
+            </div>
+            <div class="time-display-mode-container edit-course-time-format ${c.displayTime === false ? 'hidden' : ''}" style="margin: 0; padding: 2px;">
+              <button type="button" class="time-mode-btn ${(!c.timeFormat || c.timeFormat === 'start') ? 'active' : ''}" data-timemode="start" style="padding: 2px 6px; font-size: 9.5px;">Start</button>
+              <button type="button" class="time-mode-btn ${c.timeFormat === 'both' ? 'active' : ''}" data-timemode="both" style="padding: 2px 6px; font-size: 9.5px;">Both</button>
+              <button type="button" class="time-mode-btn ${c.timeFormat === 'end' ? 'active' : ''}" data-timemode="end" style="padding: 2px 6px; font-size: 9.5px;">End</button>
             </div>
           </div>
 
-          <div class="editor-row-stack edit-time-format-row ${c.displayTime === false ? 'hidden' : ''}" style="margin-top: -4px;">
-            <div class="flex items-center justify-between w-full mb-1">
-              <span class="submenu-header-label font-bold text-[10px] uppercase text-slate-400">Card Time Format</span>
-              <span class="quick-time-badge font-bold text-[10px] edit-course-time-badge">${c.timeFormat === 'both' ? 'Start & End' : (c.timeFormat === 'end' ? 'End Only' : 'Start Only')}</span>
+          <!-- Dual Column Grid: Code & Day -->
+          <div class="editor-grid-2col">
+            <div class="editor-field-cell" style="grid-column: span 1;">
+              <label>${lblCourseCode}</label>
+              <input type="text" class="m3-input edit-code" value="${c.code}" placeholder="e.g. CS101">
             </div>
-            <div class="time-display-mode-container edit-course-time-format w-full">
-              <button type="button" class="time-mode-btn ${(!c.timeFormat || c.timeFormat === 'start') ? 'active' : ''}" data-timemode="start">Start Only</button>
-              <button type="button" class="time-mode-btn ${c.timeFormat === 'both' ? 'active' : ''}" data-timemode="both">Start &amp; End</button>
-              <button type="button" class="time-mode-btn ${c.timeFormat === 'end' ? 'active' : ''}" data-timemode="end">End Only</button>
+            <div class="editor-field-cell" style="grid-column: span 1;">
+              <label>${lblDay}</label>
+              <select class="m3-input-time edit-day">
+                <option value="Mon" ${c.day && c.day.startsWith('Mon') ? 'selected' : ''}>${i18n ? i18n.getDayName('Mon') : 'Mon'}</option>
+                <option value="Tue" ${c.day && c.day.startsWith('Tue') ? 'selected' : ''}>${i18n ? i18n.getDayName('Tue') : 'Tue'}</option>
+                <option value="Wed" ${c.day && c.day.startsWith('Wed') ? 'selected' : ''}>${i18n ? i18n.getDayName('Wed') : 'Wed'}</option>
+                <option value="Thu" ${c.day && c.day.startsWith('Thu') ? 'selected' : ''}>${i18n ? i18n.getDayName('Thu') : 'Thu'}</option>
+                <option value="Fri" ${c.day && c.day.startsWith('Fri') ? 'selected' : ''}>${i18n ? i18n.getDayName('Fri') : 'Fri'}</option>
+              </select>
             </div>
           </div>
 
-          <div class="editor-row">
-            <label>${lblDay}:</label>
-            <select class="m3-input-time edit-day">
-              <option value="Mon" ${c.day && c.day.startsWith('Mon') ? 'selected' : ''}>${i18n ? i18n.getDayName('Mon') : 'Mon'}</option>
-              <option value="Tue" ${c.day && c.day.startsWith('Tue') ? 'selected' : ''}>${i18n ? i18n.getDayName('Tue') : 'Tue'}</option>
-              <option value="Wed" ${c.day && c.day.startsWith('Wed') ? 'selected' : ''}>${i18n ? i18n.getDayName('Wed') : 'Wed'}</option>
-              <option value="Thu" ${c.day && c.day.startsWith('Thu') ? 'selected' : ''}>${i18n ? i18n.getDayName('Thu') : 'Thu'}</option>
-              <option value="Fri" ${c.day && c.day.startsWith('Fri') ? 'selected' : ''}>${i18n ? i18n.getDayName('Fri') : 'Fri'}</option>
-            </select>
+          <!-- Dual Column Grid: Start Time & End Time -->
+          <div class="editor-grid-2col">
+            <div class="editor-field-cell">
+              <label>${lblStart}</label>
+              <select class="m3-input-time edit-start">
+                <option value="08:00" ${c.startTime === '08:00' ? 'selected' : ''}>08:00 AM</option>
+                <option value="09:00" ${c.startTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
+                <option value="10:00" ${c.startTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
+                <option value="11:00" ${c.startTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
+                <option value="12:00" ${c.startTime === '12:00' ? 'selected' : ''}>12:00 PM</option>
+                <option value="13:00" ${c.startTime === '13:00' ? 'selected' : ''}>01:00 PM</option>
+                <option value="14:00" ${c.startTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
+                <option value="15:00" ${c.startTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
+                <option value="16:00" ${c.startTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
+              </select>
+            </div>
+            <div class="editor-field-cell">
+              <label>${lblEnd}</label>
+              <select class="m3-input-time edit-end">
+                <option value="09:00" ${c.endTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
+                <option value="10:00" ${c.endTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
+                <option value="11:00" ${c.endTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
+                <option value="12:00" ${c.endTime === '12:00' ? 'selected' : ''}>12:00 PM</option>
+                <option value="13:00" ${c.endTime === '13:00' ? 'selected' : ''}>01:00 PM</option>
+                <option value="14:00" ${c.endTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
+                <option value="15:00" ${c.endTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
+                <option value="16:00" ${c.endTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
+                <option value="17:00" ${c.endTime === '17:00' ? 'selected' : ''}>05:00 PM</option>
+              </select>
+            </div>
           </div>
 
-          <div class="editor-row">
-            <label>${lblStart}:</label>
-            <select class="m3-input-time edit-start">
-              <option value="08:00" ${c.startTime === '08:00' ? 'selected' : ''}>08:00 AM</option>
-              <option value="09:00" ${c.startTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
-              <option value="10:00" ${c.startTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
-              <option value="11:00" ${c.startTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
-              <option value="12:00" ${c.startTime === '12:00' ? 'selected' : ''}>12:00 PM</option>
-              <option value="13:00" ${c.startTime === '13:00' ? 'selected' : ''}>01:00 PM</option>
-              <option value="14:00" ${c.startTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
-              <option value="15:00" ${c.startTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
-              <option value="16:00" ${c.startTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
-            </select>
+          <!-- Dual Column Grid: Type & Room -->
+          <div class="editor-grid-2col">
+            <div class="editor-field-cell">
+              <label>${lblType}</label>
+              <input type="text" class="m3-input edit-type" value="${c.type || ''}" placeholder="e.g. Lecture">
+            </div>
+            <div class="editor-field-cell">
+              <label>${lblRoom}</label>
+              <input type="text" class="m3-input edit-room" value="${c.room || ''}" placeholder="e.g. Hall A">
+            </div>
           </div>
 
-          <div class="editor-row">
-            <label>${lblEnd}:</label>
-            <select class="m3-input-time edit-end">
-              <option value="09:00" ${c.endTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
-              <option value="10:00" ${c.endTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
-              <option value="11:00" ${c.endTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
-              <option value="12:00" ${c.endTime === '12:00' ? 'selected' : ''}>12:00 PM</option>
-              <option value="13:00" ${c.endTime === '13:00' ? 'selected' : ''}>01:00 PM</option>
-              <option value="14:00" ${c.endTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
-              <option value="15:00" ${c.endTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
-              <option value="16:00" ${c.endTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
-              <option value="17:00" ${c.endTime === '17:00' ? 'selected' : ''}>05:00 PM</option>
-            </select>
+          <!-- Dual Column Grid: Lecturer & Group -->
+          <div class="editor-grid-2col">
+            <div class="editor-field-cell">
+              <label>${lblLecturer}</label>
+              <input type="text" class="m3-input edit-lecturer" value="${c.lecturer || ''}" placeholder="Instructor">
+            </div>
+            <div class="editor-field-cell">
+              <label>${lblGroup}</label>
+              <input type="text" class="m3-input edit-group" value="${c.group || ''}" placeholder="e.g. G1 / Sec 2">
+            </div>
           </div>
 
-          <div class="editor-row">
-            <label>${lblType}:</label>
-            <input type="text" class="m3-input edit-type" value="${c.type || ''}" placeholder="">
-          </div>
-
-          <div class="editor-row">
-            <label>${lblRoom}:</label>
-            <input type="text" class="m3-input edit-room" value="${c.room || ''}" placeholder="">
-          </div>
-
-          <div class="editor-row">
-            <label>${lblLecturer}:</label>
-            <input type="text" class="m3-input edit-lecturer" value="${c.lecturer || ''}" placeholder="">
-          </div>
-
-          <div class="editor-row">
-            <label>${lblGroup}:</label>
-            <input type="text" class="m3-input edit-group" value="${c.group || ''}" placeholder="">
-          </div>
-
-          <div class="editor-row-stack">
-            <label>Grid Colour Swatch:</label>
-            <div class="swatch-grid mini-swatch-grid">
+          <!-- Compact Swatch Dock: Grid Swatch -->
+          <div class="editor-swatch-dock">
+            <span class="editor-swatch-title">Course Color:</span>
+            <div class="mini-swatch-grid">
               ${swatchBtnsHTML}
             </div>
           </div>
 
-          <div class="editor-row-stack">
-            <label>Font Colour Swatch:</label>
-            <div class="swatch-grid mini-swatch-grid">
+          <!-- Compact Swatch Dock: Font Swatch -->
+          <div class="editor-swatch-dock">
+            <span class="editor-swatch-title">Text Color:</span>
+            <div class="mini-swatch-grid">
               ${fontSwatchBtnsHTML}
             </div>
           </div>
