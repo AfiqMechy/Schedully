@@ -1,4 +1,4 @@
-const CACHE_NAME = 'schedully-cache-v376';
+const CACHE_NAME = 'schedully-cache-v377';
 const ASSETS = [
   '/',
   '/index.html',

@@ -7809,19 +7809,26 @@ class SchedullyApp {
         </div>
 
         <div class="class-card-editor hidden">
-          <!-- Top Control Strip: Display Time & Time Mode Selector -->
-          <div class="editor-swatch-dock" style="margin-bottom: 2px;">
-            <div class="flex items-center gap-2">
-              <span class="editor-swatch-title">${i18n ? i18n.get('displayTime') : 'Display Time'}:</span>
+          <!-- Display Time Row & Nested Format Submenu -->
+          <div class="editor-field-cell" style="gap: 6px;">
+            <div class="editor-row" style="margin: 0;">
+              <span class="editor-swatch-title" style="font-size: 11px;">${i18n ? i18n.get('displayTime') : 'Display Time'}</span>
               <div class="pill-toggle-group edit-display-time">
-                <button type="button" class="pill-btn ${c.displayTime !== false ? 'active' : ''}" data-val="yes" style="padding: 2px 8px; font-size: 10px;">YES</button>
-                <button type="button" class="pill-btn ${c.displayTime === false ? 'active' : ''}" data-val="no" style="padding: 2px 8px; font-size: 10px;">NO</button>
+                <button type="button" class="pill-btn ${c.displayTime !== false ? 'active' : ''}" data-val="yes">YES</button>
+                <button type="button" class="pill-btn ${c.displayTime === false ? 'active' : ''}" data-val="no">NO</button>
               </div>
             </div>
-            <div class="time-display-mode-container edit-course-time-format ${c.displayTime === false ? 'hidden' : ''}" style="margin: 0; padding: 2px;">
-              <button type="button" class="time-mode-btn ${(!c.timeFormat || c.timeFormat === 'start') ? 'active' : ''}" data-timemode="start" style="padding: 2px 6px; font-size: 9.5px;">Start</button>
-              <button type="button" class="time-mode-btn ${c.timeFormat === 'both' ? 'active' : ''}" data-timemode="both" style="padding: 2px 6px; font-size: 9.5px;">Both</button>
-              <button type="button" class="time-mode-btn ${c.timeFormat === 'end' ? 'active' : ''}" data-timemode="end" style="padding: 2px 6px; font-size: 9.5px;">End</button>
+
+            <div class="quick-time-submenu-box edit-time-format-row ${c.displayTime === false ? 'hidden' : ''}" style="padding: 6px 8px; border-radius: 10px; margin-top: 2px;">
+              <div class="flex items-center justify-between w-full mb-1">
+                <span class="submenu-header-label" style="font-size: 9.5px;">${i18n ? i18n.get('cardTimeFormat') : 'Card Time Format'}</span>
+                <span class="quick-time-badge edit-course-time-badge" style="font-size: 9.5px; padding: 1px 6px;">${c.timeFormat === 'both' ? 'Start & End' : (c.timeFormat === 'end' ? 'End Only' : 'Start Only')}</span>
+              </div>
+              <div class="time-display-mode-container edit-course-time-format w-full">
+                <button type="button" class="time-mode-btn ${(!c.timeFormat || c.timeFormat === 'start') ? 'active' : ''}" data-timemode="start">Start Only</button>
+                <button type="button" class="time-mode-btn ${c.timeFormat === 'both' ? 'active' : ''}" data-timemode="both">Start &amp; End</button>
+                <button type="button" class="time-mode-btn ${c.timeFormat === 'end' ? 'active' : ''}" data-timemode="end">End Only</button>
+              </div>
             </div>
           </div>
 
