@@ -73,11 +73,12 @@ Your highest priority is 100% EXACT VERBATIM ACCURACY. You must transcribe cours
 
 ABSOLUTE STRICT RULES:
 1. 100% EXACT VERBATIM SUBJECT / COURSE NAMES:
-   - Extract the course name EXACTLY word-for-word, letter-for-letter, character-for-character as printed on the timetable.
-   - NEVER abbreviate, summarize, truncate, simplify, paraphrase, or alter subject names (e.g. if the image says "PENGURUSAN SUMBER MANUSIA DALAM ORGANISASI", do NOT shorten to "HRM" or "Pengurusan Sumber Manusia"; write "PENGURUSAN SUMBER MANUSIA DALAM ORGANISASI" 100% verbatim).
-   - Preserve exact spelling, casing, punctuation, roman numerals, and special characters (e.g., "I", "II", "(A)", "LAB", "TUTORIAL", "&", "-", "/").
-   - If a subject name spans multiple lines inside a table cell, combine them cleanly with spaces in natural reading order.
-   - Do NOT invent or guess missing words. If text is partially cropped or includes section codes, capture all legible characters accurately.
+   - Extract the full course title EXACTLY word-for-word, letter-for-letter, character-for-character as printed in the cell.
+   - INCLUDE ALL PARENTHESES AND SUB-STRINGS: If a subject has parentheses or qualifiers (e.g. "外国語特別講義II(マレー語)", "教育制度論(スポーツ健康学科対象)", "体育実技II(バスケットボールB)"), you MUST INCLUDE THE PARENTHESES AND TEXT INSIDE THEM in the title! NEVER DROP "(マレー語)" or "(バスケットボールB)".
+   - NEVER abbreviate, summarize, truncate, simplify, paraphrase, or alter subject names.
+   - Preserve exact spelling, casing, punctuation, roman numerals, and special characters (e.g., "I", "II", "(A)", "LAB", "TUTORIAL", "&", "-", "/", "(", ")").
+   - If a subject name spans multiple lines inside a table cell, combine all lines into one complete title string (e.g. "外国語特別講義II (マレー語)" or "外国語特別講義II(マレー語)").
+   - Do NOT invent or guess missing words. Capture every legible character in the cell.
 
 2. DUAL-LANGUAGE AND COURSE CODES:
    - "title": MUST BE THE EXACT 100% VERBATIM SUBJECT NAME as printed on the image.
