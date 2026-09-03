@@ -296,31 +296,35 @@ body.dark-mode .m3-right-sidebar {
     display: none !important;
   }
 
-  /* ── 3 ADAPTIVE FLOATING PILL BUTTONS AT TOP OF MOBILE SCREEN ── */
+  /* ── 3 ADAPTIVE FLOATING PILL BUTTONS AT TOP OF MOBILE SCREEN (Symmetrical & Equal Ratio) ── */
   #btn-expand-left-floating,
   #btn-expand-right-floating,
   #btn-mobile-export-toggle {
-    height: clamp(34px, 4.8dvh, 40px) !important;
-    padding: 0 clamp(8px, 2.5vw, 16px) !important;
-    font-size: clamp(11px, 2.8vw, 13px) !important;
+    height: clamp(34px, 4.4dvh, 38px) !important;
+    min-height: clamp(34px, 4.4dvh, 38px) !important;
+    max-height: clamp(34px, 4.4dvh, 38px) !important;
+    padding: 0 clamp(10px, 2.8vw, 16px) !important;
+    font-size: clamp(11px, 2.7vw, 12.5px) !important;
     font-weight: 800 !important;
     color: #0F172A !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: clamp(4px, 1.5vw, 7px) !important;
+    gap: clamp(4px, 1.4vw, 6px) !important;
     border-radius: 9999px !important;
     box-sizing: border-box !important;
     touch-action: manipulation !important;
     white-space: nowrap !important;
+    max-width: 29vw !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
     transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
   }
 
   #btn-expand-left-floating svg,
   #btn-expand-right-floating svg,
   #btn-mobile-export-toggle svg {
-    width: clamp(13px, 3.2vw, 15px) !important;
-    height: clamp(13px, 3.2vw, 15px) !important;
+    width: clamp(13px, 3vw, 15px) !important;
+    height: clamp(13px, 3vw, 15px) !important;
     flex-shrink: 0 !important;
     color: #0F172A !important;
     stroke: currentColor !important;
@@ -343,10 +347,8 @@ body.dark-mode .m3-right-sidebar {
   #btn-expand-left-floating {
     position: fixed !important;
     top: max(12px, env(safe-area-inset-top, 12px)) !important;
-    left: max(8px, env(safe-area-inset-left, 8px)) !important;
-    max-width: 29vw !important;
+    left: max(10px, env(safe-area-inset-left, 10px)) !important;
     z-index: 9999 !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
   }
   #btn-expand-left-floating span {
     overflow: hidden !important;
@@ -364,17 +366,20 @@ body.dark-mode .m3-right-sidebar {
     z-index: 9999 !important;
     justify-content: center !important;
     width: auto !important;
-    max-width: 36vw !important;
+    max-width: 32vw !important;
+  }
+  #btn-mobile-export-toggle span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   /* Right: Schedule Floating Button */
   #btn-expand-right-floating {
     position: fixed !important;
     top: max(12px, env(safe-area-inset-top, 12px)) !important;
-    right: max(8px, env(safe-area-inset-right, 8px)) !important;
-    max-width: 32vw !important;
+    right: max(10px, env(safe-area-inset-right, 10px)) !important;
     z-index: 9999 !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
   }
   #btn-expand-right-floating span {
     overflow: hidden !important;
@@ -8035,15 +8040,15 @@ body.dark-mode .mobile-export-divider,
   min-width: 0 !important;
   max-width: 160px !important;
   border-radius: 9999px !important;
-  padding: 6px 16px !important;
+  padding: 0 16px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   cursor: pointer !important;
   box-sizing: border-box !important;
   flex: 0 0 auto !important;
-  align-self: flex-start !important;
+  white-space: nowrap !important;
 }
 
 #btn-expand-left-floating {
