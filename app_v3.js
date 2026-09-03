@@ -274,6 +274,9 @@ class SchedullyApp {
     this.btnClearAll = document.getElementById('btn-clear-all');
     this.universalTimetableGrid = document.getElementById('universal-timetable-grid');
     this.classListContainer = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
+    this.courseSearchDock = document.getElementById('course-search-dock');
+    this.btnFloatingCourseSearch = document.getElementById('btn-floating-course-search');
+    this.btnCloseCourseSearch = document.getElementById('btn-close-course-search');
     this.courseSearchContainer = document.getElementById('course-search-container');
     this.courseSearchInput = document.getElementById('course-search-input');
     this.clearSearchBtn = document.getElementById('clear-search-btn');
@@ -2726,6 +2729,40 @@ class SchedullyApp {
     this.updateCourseFormMode();
 
 
+    // Floating Circular Course Search Controls
+    const openFloatingSearch = () => {
+      if (!this.courseSearchContainer) return;
+      if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.add('hidden');
+      this.courseSearchContainer.classList.remove('hidden', 'closing');
+      setTimeout(() => {
+        if (this.courseSearchInput) this.courseSearchInput.focus();
+      }, 50);
+    };
+
+    const closeFloatingSearch = () => {
+      if (!this.courseSearchContainer) return;
+      this.courseSearchContainer.classList.add('closing');
+      setTimeout(() => {
+        this.courseSearchContainer.classList.add('hidden');
+        this.courseSearchContainer.classList.remove('closing');
+        if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.remove('hidden');
+      }, 200);
+    };
+
+    if (this.btnFloatingCourseSearch) {
+      this.btnFloatingCourseSearch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openFloatingSearch();
+      });
+    }
+
+    if (this.btnCloseCourseSearch) {
+      this.btnCloseCourseSearch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeFloatingSearch();
+      });
+    }
+
     if (this.courseSearchInput) {
       this.courseSearchInput.addEventListener('input', (e) => {
         this.searchQuery = e.target.value.toLowerCase().trim();
@@ -2736,7 +2773,27 @@ class SchedullyApp {
             this.clearSearchBtn.classList.add('hidden');
           }
         }
+        if (this.btnFloatingCourseSearch) {
+          if (this.searchQuery.length > 0) {
+            this.btnFloatingCourseSearch.classList.add('has-query');
+          } else {
+            this.btnFloatingCourseSearch.classList.remove('has-query');
+          }
+        }
         this.renderClassList(); // Re-render to filter classes
+      });
+
+      this.courseSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (this.courseSearchInput.value) {
+            this.courseSearchInput.value = '';
+            this.searchQuery = '';
+            if (this.clearSearchBtn) this.clearSearchBtn.classList.add('hidden');
+            if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.remove('has-query');
+            this.renderClassList();
+          }
+          closeFloatingSearch();
+        }
       });
     }
 
@@ -2746,7 +2803,9 @@ class SchedullyApp {
           this.courseSearchInput.value = '';
           this.searchQuery = '';
           this.clearSearchBtn.classList.add('hidden');
+          if (this.btnFloatingCourseSearch) this.btnFloatingCourseSearch.classList.remove('has-query');
           this.renderClassList();
+          this.courseSearchInput.focus();
         }
       });
     }
@@ -7724,11 +7783,12 @@ class SchedullyApp {
     const emptyStateWrapper = document.getElementById('empty-state-wrapper');
     if (this.classes.length === 0) {
       if (emptyStateWrapper) emptyStateWrapper.style.display = 'flex';
+      if (this.courseSearchDock) this.courseSearchDock.classList.add('hidden');
       if (this.courseSearchContainer) this.courseSearchContainer.classList.add('hidden');
       return;
     }
     if (emptyStateWrapper) emptyStateWrapper.style.display = 'none';
-    if (this.courseSearchContainer) this.courseSearchContainer.classList.remove('hidden');
+    if (this.courseSearchDock) this.courseSearchDock.classList.remove('hidden');
 
     let resolvedMode = this.currentMode;
     if (resolvedMode === 'auto') {
