@@ -1686,34 +1686,35 @@
         <div id="universal-timetable-grid" class="m3-lock-grid-exact">
           <!-- Dynamically populated by JS -->
         </div>
-
-        <!-- Quick Time Nudge & Swap Action Bar (Appears when a course card is selected) -->
-        <div id="grid-course-action-pill" class="hidden absolute z-30 flex items-center gap-1 p-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-2xl border border-gray-200/80 dark:border-white/15 transition-all">
-          <button id="btn-nudge-time-minus" type="button" class="action-pill-btn" title="Shift Earlier">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-            <span id="nudge-label-minus">-30m</span>
-          </button>
-          <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
-          <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Shift Later">
-            <span id="nudge-label-plus">+30m</span>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-          </button>
-          <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
-          <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
-            <span data-i18n="edit">Edit</span>
-          </button>
-          <button id="btn-nudge-cancel" type="button" class="action-pill-icon-btn text-gray-400 hover:text-gray-700 dark:hover:text-white" title="Deselect">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-
-        <!-- Swap / Reschedule Toast with Undo -->
-        <div id="grid-swap-toast" class="hidden absolute bottom-2 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-3 py-1.5 bg-slate-900/90 text-white dark:bg-white/90 dark:text-slate-900 backdrop-blur-md rounded-full shadow-xl text-xs font-bold transition-all">
-          <span id="grid-swap-toast-msg">Course moved</span>
-          <button id="btn-grid-swap-undo" type="button" class="px-2 py-0.5 rounded-full bg-blue-600 text-white dark:bg-blue-500 text-[10px] font-extrabold hover:bg-blue-700 transition-all">Undo</button>
-        </div>
       </div>
+
+      <!-- Quick Time Nudge & Swap Action Bar (Appears when a course card is selected, floats above canvas freely) -->
+      <div id="grid-course-action-pill" class="hidden absolute z-30 flex items-center gap-1 p-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-2xl border border-gray-200/80 dark:border-white/15 transition-all">
+        <button id="btn-nudge-time-minus" type="button" class="action-pill-btn" title="Shift Earlier">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          <span id="nudge-label-minus">-30m</span>
+        </button>
+        <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+        <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Shift Later">
+          <span id="nudge-label-plus">+30m</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+        <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
+          <span data-i18n="edit">Edit</span>
+        </button>
+        <button id="btn-nudge-cancel" type="button" class="action-pill-icon-btn text-gray-400 hover:text-gray-700 dark:hover:text-white" title="Deselect">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Swap / Reschedule Toast with Undo -->
+      <div id="grid-swap-toast" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-3 py-1.5 bg-slate-900/90 text-white dark:bg-white/90 dark:text-slate-900 backdrop-blur-md rounded-full shadow-xl text-xs font-bold transition-all">
+        <span id="grid-swap-toast-msg">Course moved</span>
+        <button id="btn-grid-swap-undo" type="button" class="px-2 py-0.5 rounded-full bg-blue-600 text-white dark:bg-blue-500 text-[10px] font-extrabold hover:bg-blue-700 transition-all">Undo</button>
+      </div>
+
 
       <!-- Smartwatch Today's Schedule Glance View (Active in Watch Mode) -->
       <div id="watch-glance-container" class="watch-glance-container" style="display: none;">
@@ -1750,11 +1751,11 @@
 
 </div>
 
-<!-- Floating Mobile-Friendly Controls Container -->
-<div id="floating-controls-container" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-3 z-30">
+<!-- Floating Mobile-Friendly Controls Container: 2-Row Stacked Pills + Popover Windows -->
+<div id="floating-controls-container" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 z-30 pointer-events-none">
   
   <!-- Window 2: Separate Floating Aspect Ratio Popover Window (Floats above Controls Window) -->
-  <div id="canvas-ratio-popover" class="hidden rounded-3xl p-4 flex flex-col items-center gap-3 min-w-[320px] max-w-[92vw] shadow-2xl transition-all">
+  <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3 min-w-[320px] max-w-[92vw] shadow-2xl transition-all mb-1">
     <!-- Popover Header -->
     <div class="flex items-center justify-between w-full border-b border-white/20 pb-2 px-1">
       <div class="flex items-center gap-1.5">
@@ -1825,7 +1826,7 @@
   </div>
 
   <!-- Window 1: Main Canvas Controls Popover Window -->
-  <div id="canvas-controls-popover" class="hidden rounded-3xl p-4 flex flex-col items-center gap-3.5 min-w-[320px] max-w-[92vw] transition-all">
+  <div id="canvas-controls-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3.5 min-w-[320px] max-w-[92vw] transition-all mb-1">
     <!-- Popover Header with Aspect Ratio Toggle Button -->
     <div class="flex items-center justify-between w-full border-b border-white/20 pb-2.5 px-1">
       <span id="stage-device-label" class="text-[10px] font-extrabold tracking-wider text-slate-600 uppercase">LIVE PHONE LOCKSCREEN PREVIEW</span>
@@ -1878,60 +1879,65 @@
     </div>
   </div>
 
-  <!-- Bottom Floating Capsule Pill Bar -->
-  <div id="bottom-floating-pill-bar" class="flex items-center gap-3 p-1.5 bg-white/90 backdrop-blur-md border border-gray-200/90 rounded-full shadow-xl">
     
-    <!-- Capsule 0: History Undo & Redo Controls -->
-    <div class="flex items-center bg-white border border-gray-200 rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
-      <button id="btn-history-undo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 10h10a5 5 0 015 5v2m0 0l-3.5-3.5M18 17l3.5-3.5M3 10l4-4m-4 4l4 4"/>
-        </svg>
-      </button>
-      <div class="w-[1px] h-3.5 bg-gray-200 mx-0.5 opacity-60"></div>
-      <button id="btn-history-redo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Redo (Ctrl+Y)" disabled>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 10H11a5 5 0 00-5 5v2m0 0l3.5-3.5M6 17l-3.5-3.5M21 10l-4-4m4 4l-4 4"/>
-        </svg>
-      </button>
+    <!-- Top Pill: Undo & Redo Only -->
+    <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-lg transition-all">
+      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
+        <button id="btn-history-undo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 14 4 9l5-5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>
+          </svg>
+        </button>
+        <div class="w-[1px] h-3.5 bg-gray-200 dark:bg-slate-600 mx-0.5 opacity-60"></div>
+        <button id="btn-history-redo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Redo (Ctrl+Y)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m15 14 5-5-5-5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
-    <!-- Capsule 1: Zoom & Randomize Controls -->
-    <div class="flex items-center bg-white border border-gray-200 rounded-full shadow-xs p-0.5 gap-0.5">
-      <button id="btn-zoom-out" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors" title="Zoom Out">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      </button>
-      <span id="zoom-label-text" class="text-xs font-extrabold text-gray-800 px-1 w-10 text-center">100%</span>
-      <button id="btn-zoom-in" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors" title="Zoom In">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    <!-- Bottom Floating Capsule Pill Bar: Zoom, Theme Colors, Light/Dark Mode, Controls -->
+    <div id="bottom-floating-pill-bar" class="pointer-events-auto flex items-center gap-2.5 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-xl transition-all">
+      
+      <!-- Capsule 1: Zoom & Randomize Theme Controls -->
+      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5 gap-0.5">
+        <button id="btn-zoom-out" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom Out">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+        <span id="zoom-label-text" class="text-xs font-extrabold text-gray-800 dark:text-gray-100 px-1 w-10 text-center">100%</span>
+        <button id="btn-zoom-in" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom In">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+
+        <div class="w-[1px] h-4 bg-gray-200 dark:bg-slate-600 mx-0.5 opacity-60"></div>
+
+        <button id="btn-randomize-theme" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Randomize Overall Theme Palette">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+
+        <button id="btn-randomize-course-colors" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Randomize Course Card Colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+      </div>
+
+      <!-- Capsule 2: Theme Toggle (Dark / Light Mode) -->
+      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5">
+        <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Toggle Light/Dark Theme">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+      </div>
+
+      <!-- Capsule 3: Expandable Controls Button -->
+      <button id="btn-toggle-canvas-popover" class="btn-theme-primary flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-extrabold active:scale-95 transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span data-i18n="controls">Controls</span>
       </button>
 
-      <div class="w-[1px] h-4 bg-gray-200 mx-0.5 opacity-60"></div>
-
-      <button id="btn-randomize-theme" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors" title="Randomize Overall Theme Palette">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      </button>
-
-      <button id="btn-randomize-course-colors" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors" title="Randomize Course Card Colors">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      </button>
     </div>
-
-    <!-- Capsule 2: Theme Toggle -->
-    <div class="flex items-center bg-white border border-gray-200 rounded-full shadow-xs p-0.5">
-      <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 adaptive-icon-btn rounded-full transition-colors" title="Toggle Light/Dark Theme">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      </button>
-    </div>
-
-    <!-- Capsule 3: Expandable Controls Button -->
-    <button id="btn-toggle-canvas-popover" class="btn-theme-primary flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-extrabold active:scale-95 transition-all shadow-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      <span data-i18n="controls">Controls</span>
-    </button>
-
   </div>
-</div>
 </main>
 <!-- END: Center Workspace -->
 <!-- BEGIN: Right Sidebar Schedule List -->
@@ -2517,7 +2523,7 @@
       <!-- Step Badge & Close/Skip -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span id="tour-step-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Step 1 of 5</span>
+          <span id="tour-step-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Step 1 of 6</span>
           <span id="tour-feature-tag" class="text-xs font-bold text-slate-500 dark:text-slate-400">✨ Quick Guide</span>
         </div>
         <button id="btn-tour-skip" type="button" class="text-xs font-extrabold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer">Skip</button>
@@ -2545,6 +2551,7 @@
           <div class="tour-dot w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700 transition-all"></div>
           <div class="tour-dot w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700 transition-all"></div>
           <div class="tour-dot w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700 transition-all"></div>
+          <div class="tour-dot w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700 transition-all"></div>
         </div>
 
         <!-- Next / Back Buttons -->
@@ -2559,13 +2566,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260904_v388"></script>
+  <script src="app_v3.js?v=20260904_v402"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260904_v388').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260904_v402').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

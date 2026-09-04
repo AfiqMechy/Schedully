@@ -7265,7 +7265,7 @@ class SchedullyApp {
   }
 
   positionNudgeActionPill(courseId) {
-    if (!this.gridCourseActionPill || !this.lockTimetableContainer) return;
+    if (!this.gridCourseActionPill || !this.phoneCanvas) return;
     const cardEl = this.universalTimetableGrid?.querySelector(`.exact-course-card[data-id="${courseId}"]`);
     if (!cardEl) return;
 
@@ -7277,20 +7277,20 @@ class SchedullyApp {
     if (labelPlus) labelPlus.innerText = isPeriodMode ? '+1' : '+30m';
 
     const cardRect = cardEl.getBoundingClientRect();
-    const containerRect = this.lockTimetableContainer.getBoundingClientRect();
+    const canvasRect = this.phoneCanvas.getBoundingClientRect();
     const scale = this.zoomScale || 1;
 
-    // Account for zoom scale on phone canvas container
-    let leftPos = ((cardRect.left - containerRect.left) / scale) + ((cardRect.width / scale) / 2);
-    let topPos = ((cardRect.top - containerRect.top) / scale) - 38;
+    // Position relative to #phone-canvas coordinates
+    let leftPos = ((cardRect.left - canvasRect.left) / scale) + ((cardRect.width / scale) / 2);
+    let topPos = ((cardRect.top - canvasRect.top) / scale) - 38;
 
-    // Clamp leftPos to keep pill inside container boundary (approx half pill width = 85px)
-    const containerWidth = containerRect.width / scale;
-    leftPos = Math.max(90, Math.min(containerWidth - 90, leftPos));
+    // Clamp leftPos within phone-canvas boundaries (pill width ~ 200px -> half width ~ 105px)
+    const canvasWidth = canvasRect.width / scale;
+    leftPos = Math.max(105, Math.min(canvasWidth - 105, leftPos));
 
-    // Boundary check so pill doesn't render above container
-    if (topPos < 4) {
-      topPos = ((cardRect.bottom - containerRect.top) / scale) + 8;
+    // Boundary check so pill doesn't render off the top edge of phone canvas
+    if (topPos < 10) {
+      topPos = ((cardRect.bottom - canvasRect.top) / scale) + 8;
     }
 
     this.gridCourseActionPill.style.left = `${leftPos}px`;
@@ -9195,71 +9195,85 @@ class SoundEffectsEngine {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(3200, now);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(filter);
+      filter.connect(this.ctx.destination);
 
       if (type === 'click') {
-        // Apple-style woody tactile mechanical tick
+        // Crisp, refined macOS/iOS tactile glass click (subtle, non-childish)
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(1400, now);
-        osc.frequency.exponentialRampToValueAtTime(320, now + 0.045);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+        osc.frequency.setValueAtTime(1600, now);
+        osc.frequency.exponentialRampToValueAtTime(480, now + 0.022);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
         osc.start(now);
-        osc.stop(now + 0.05);
+        osc.stop(now + 0.025);
       } else if (type === 'toggle') {
-        // Subtle soft bubble pop / toggle
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(450, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.07);
-        gain.gain.setValueAtTime(0.09, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+        // Understated, elegant tactile haptic tap
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(820, now);
+        osc.frequency.exponentialRampToValueAtTime(540, now + 0.028);
+        gain.gain.setValueAtTime(0.045, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
         osc.start(now);
-        osc.stop(now + 0.08);
+        osc.stop(now + 0.03);
       } else if (type === 'preset' || type === 'glass') {
-        // Shimmering optical glass bell chime (dual harmonic)
+        // Luxury understated acoustic glass tap
         const osc2 = this.ctx.createOscillator();
         const gain2 = this.ctx.createGain();
         osc2.connect(gain2);
-        gain2.connect(this.ctx.destination);
+        gain2.connect(filter);
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(1174.66, now); // D6
-        gain.gain.setValueAtTime(0.07, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc.frequency.setValueAtTime(2093, now); // C7 pure high tone
+        gain.gain.setValueAtTime(0.035, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
         osc.start(now);
-        osc.stop(now + 0.25);
+        osc.stop(now + 0.1);
 
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1760, now + 0.02); // A6
-        gain2.gain.setValueAtTime(0.05, now + 0.02);
-        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-        osc2.start(now + 0.02);
-        osc2.stop(now + 0.3);
+        osc2.frequency.setValueAtTime(1046.5, now); // C6 sub-body
+        gain2.gain.setValueAtTime(0.025, now);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+        osc2.start(now);
+        osc2.stop(now + 0.07);
       } else if (type === 'zoom') {
-        // Subtle pneumatic zoom glide tick
+        // Modern ultra-short micro-tick
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.035);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.015);
+        gain.gain.setValueAtTime(0.03, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
         osc.start(now);
-        osc.stop(now + 0.04);
+        osc.stop(now + 0.018);
       } else if (type === 'success') {
-        // Celebratory export chime
-        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-          const noteOsc = this.ctx.createOscillator();
-          const noteGain = this.ctx.createGain();
-          noteOsc.connect(noteGain);
-          noteGain.connect(this.ctx.destination);
-          noteOsc.type = 'triangle';
-          noteOsc.frequency.setValueAtTime(freq, now + idx * 0.06);
-          noteGain.gain.setValueAtTime(0.06, now + idx * 0.06);
-          noteGain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.06 + 0.22);
-          noteOsc.start(now + idx * 0.06);
-          noteOsc.stop(now + idx * 0.06 + 0.25);
-        });
+        // Minimalist high-end two-tone completion chime
+        const note1 = this.ctx.createOscillator();
+        const g1 = this.ctx.createGain();
+        note1.connect(g1);
+        g1.connect(filter);
+        note1.type = 'sine';
+        note1.frequency.setValueAtTime(1174.66, now); // D6
+        g1.gain.setValueAtTime(0.04, now);
+        g1.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+        note1.start(now);
+        note1.stop(now + 0.13);
+
+        const note2 = this.ctx.createOscillator();
+        const g2 = this.ctx.createGain();
+        note2.connect(g2);
+        g2.connect(filter);
+        note2.type = 'sine';
+        note2.frequency.setValueAtTime(1760, now + 0.07); // A6
+        g2.gain.setValueAtTime(0.045, now + 0.07);
+        g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        note2.start(now + 0.07);
+        note2.stop(now + 0.24);
       }
     } catch (e) {}
   }
@@ -9285,6 +9299,17 @@ class SchedullyTourController {
         position: 'right'
       },
       {
+        id: 'floating-toolbar',
+        target: '#floating-undo-redo-row, #bottom-floating-pill-bar',
+        title: 'Floating Action & History Toolbar',
+        tag: 'Action Pills',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 014 4v1a4 4 0 01-4 4H3M7 6L3 10l4 4M21 14h-2M21 8h-4M21 18h-4"/></svg>',
+        iconTheme: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/25',
+        badgeTheme: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/25',
+        desc: 'Quickly Undo & Redo your layout changes, zoom the canvas in/out, toggle Dark/Light mode, and shuffle overall theme and course colors on the fly!',
+        position: 'top'
+      },
+      {
         id: 'controls',
         target: '#canvas-controls-popover',
         title: 'Display & Canvas Controls',
@@ -9292,7 +9317,7 @@ class SchedullyTourController {
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>',
         iconTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
         badgeTheme: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
-        desc: 'Switch between Smartphone, Tablet, and Paper device models, toggle phone UI lockscreen elements, and edit your schedule title on the fly!',
+        desc: 'Switch between Smartphone, Tablet, Watch, and Paper device models, toggle phone UI lockscreen elements, and edit your schedule title!',
         position: 'top'
       },
       {
@@ -9608,27 +9633,48 @@ class SchedullyTourController {
       if (targetEl && this.focusBox && this.popoverCard) {
         let rect = targetEl.getBoundingClientRect();
         
-        // On mobile/tablet in export step, calculate exact full union bounding box
-        if (step.id === 'export' && !isDesktopHeader) {
-          const toggleBtn = document.getElementById('btn-mobile-export-toggle');
-          const dropdown = document.getElementById('mobile-export-dropdown');
-          if (toggleBtn && dropdown) {
-            const rBtn = toggleBtn.getBoundingClientRect();
-            const rDrop = dropdown.getBoundingClientRect();
-            const minT = Math.min(rBtn.top, rDrop.top);
-            const minL = Math.min(rBtn.left, rDrop.left);
-            const maxR = Math.max(rBtn.right, rDrop.right);
-            const maxB = Math.max(rBtn.bottom, rDrop.bottom);
-            rect = {
-              top: minT,
-              left: minL,
-              right: maxR,
-              bottom: maxB,
-              width: maxR - minL,
-              height: maxB - minT
-            };
-          }
+      if (step.id === 'floating-toolbar') {
+        const undoPill = document.getElementById('floating-undo-redo-row');
+        const bottomBar = document.getElementById('bottom-floating-pill-bar');
+        const container = document.getElementById('floating-controls-container');
+        if (undoPill && bottomBar) {
+          const rUndo = undoPill.getBoundingClientRect();
+          const rBottom = bottomBar.getBoundingClientRect();
+          const minT = Math.min(rUndo.top, rBottom.top);
+          const minL = Math.min(rUndo.left, rBottom.left);
+          const maxR = Math.max(rUndo.right, rBottom.right);
+          const maxB = Math.max(rUndo.bottom, rBottom.bottom);
+          rect = {
+            top: minT,
+            left: minL,
+            right: maxR,
+            bottom: maxB,
+            width: maxR - minL,
+            height: maxB - minT
+          };
+        } else if (container) {
+          rect = container.getBoundingClientRect();
         }
+      } else if (step.id === 'export' && !isDesktopHeader) {
+        const toggleBtn = document.getElementById('btn-mobile-export-toggle');
+        const dropdown = document.getElementById('mobile-export-dropdown');
+        if (toggleBtn && dropdown) {
+          const rBtn = toggleBtn.getBoundingClientRect();
+          const rDrop = dropdown.getBoundingClientRect();
+          const minT = Math.min(rBtn.top, rDrop.top);
+          const minL = Math.min(rBtn.left, rDrop.left);
+          const maxR = Math.max(rBtn.right, rDrop.right);
+          const maxB = Math.max(rBtn.bottom, rDrop.bottom);
+          rect = {
+            top: minT,
+            left: minL,
+            right: maxR,
+            bottom: maxB,
+            width: maxR - minL,
+            height: maxB - minT
+          };
+        }
+      }
 
         const pad = 6;
         const focusTop = Math.max(4, rect.top - pad);
@@ -9654,6 +9700,9 @@ class SchedullyTourController {
           } else if (step.id === 'courses') {
             cardLeft = Math.max(20, rect.left - cardW - 24);
             cardTop = Math.max(80, Math.min(window.innerHeight - cardH - 30, rect.top + 20));
+          } else if (step.id === 'floating-toolbar') {
+            cardLeft = (window.innerWidth - cardW) / 2;
+            cardTop = Math.max(24, rect.top - cardH - 24);
           } else if (step.id === 'controls' || step.id === 'aspect-ratio') {
             cardLeft = (window.innerWidth - cardW) / 2;
             if (rect.top - cardH - 24 >= 60) {
@@ -9670,7 +9719,10 @@ class SchedullyTourController {
           cardLeft = (window.innerWidth - cardW) / 2;
           const targetCenterY = rect.top + (rect.height / 2);
           
-          if (targetCenterY > window.innerHeight / 2) {
+          if (step.id === 'floating-toolbar') {
+            // Guarantee tour card floats well above undo/redo & bottom floating toolbar
+            cardTop = Math.max(16, rect.top - cardH - 20);
+          } else if (targetCenterY > window.innerHeight / 2) {
             // Target is in bottom half -> Place tour card in top half (above target)
             if (rect.top - cardH - 16 >= 16) {
               cardTop = rect.top - cardH - 16;
@@ -9698,7 +9750,14 @@ class SchedullyTourController {
         document.querySelectorAll('.tour-highlighted-element').forEach(el => {
           el.classList.remove('tour-highlighted-element');
         });
-        if (targetEl) {
+        if (step.id === 'floating-toolbar') {
+          const undoPill = document.getElementById('floating-undo-redo-row');
+          const bottomBar = document.getElementById('bottom-floating-pill-bar');
+          const container = document.getElementById('floating-controls-container');
+          if (undoPill) undoPill.classList.add('tour-highlighted-element');
+          if (bottomBar) bottomBar.classList.add('tour-highlighted-element');
+          if (container) container.classList.add('tour-highlighted-element');
+        } else if (targetEl) {
           targetEl.classList.add('tour-highlighted-element');
         }
         if (step.id === 'export' && !isDesktopHeader) {

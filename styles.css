@@ -7905,6 +7905,7 @@ main > header > *,
 }
 
 .liquid-glass,
+#floating-undo-redo-row,
 #bottom-floating-pill-bar,
 #header-desktop-bar,
 #btn-expand-left-floating,
@@ -8127,6 +8128,7 @@ body.theme-style-glass #header-desktop-bar #btn-download-hd:hover {
 
 /* DARK MODE GLASS TOP BARS & BUTTONS */
 body.dark-mode .liquid-glass,
+body.dark-mode #floating-undo-redo-row,
 body.dark-mode #bottom-floating-pill-bar,
 body.dark-mode #header-desktop-bar,
 body.dark-mode #btn-expand-left-floating,
@@ -8134,6 +8136,7 @@ body.dark-mode #btn-expand-right-floating,
 body.dark-mode #btn-mobile-export-toggle,
 body.dark-mode #btn-schedule-settings-toggle,
 .theme-dark .liquid-glass,
+.theme-dark #floating-undo-redo-row,
 .theme-dark #bottom-floating-pill-bar,
 .theme-dark #header-desktop-bar,
 .theme-dark #btn-expand-left-floating,
@@ -8764,8 +8767,9 @@ body.dark-mode .stepper-input,
   color: #FFFFFF !important;
 }
 
-/* ── Bottom Floating Pill Bar Controls (Pure Physical Liquid Glass) ── */
-#bottom-floating-pill-bar .flex.items-center.bg-white {
+/* ── Bottom Floating Pill Bar & Undo/Redo Controls (Pure Physical Liquid Glass) ── */
+#bottom-floating-pill-bar .flex.items-center.bg-white,
+#floating-undo-redo-row #history-undo-redo-capsule {
   background: rgba(255, 255, 255, 0.22) !important;
   backdrop-filter: blur(14px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(190%) !important;
@@ -8776,13 +8780,16 @@ body.dark-mode .stepper-input,
 }
 
 body.dark-mode #bottom-floating-pill-bar .flex.items-center.bg-white,
-.theme-dark #bottom-floating-pill-bar .flex.items-center.bg-white {
+body.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
+.theme-dark #bottom-floating-pill-bar .flex.items-center.bg-white,
+.theme-dark #floating-undo-redo-row #history-undo-redo-capsule {
   background: rgba(255, 255, 255, 0.04) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
 }
 
-#bottom-floating-pill-bar button:not(.btn-theme-primary) {
+#bottom-floating-pill-bar button:not(.btn-theme-primary),
+#floating-undo-redo-row button {
   width: 26px !important;
   height: 26px !important;
   min-width: 26px !important;
@@ -8802,19 +8809,23 @@ body.dark-mode #bottom-floating-pill-bar .flex.items-center.bg-white,
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease !important;
 }
 
-#bottom-floating-pill-bar button:not(.btn-theme-primary):hover {
+#bottom-floating-pill-bar button:not(.btn-theme-primary):hover,
+#floating-undo-redo-row button:hover {
   transform: scale(1.08) !important;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.35) 100%) !important;
   border-color: rgba(147, 197, 253, 0.9) !important;
   box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 1), 0 4px 10px rgba(37, 99, 235, 0.12) !important;
 }
 
-#bottom-floating-pill-bar button:not(.btn-theme-primary):active {
+#bottom-floating-pill-bar button:not(.btn-theme-primary):active,
+#floating-undo-redo-row button:active {
   transform: scale(0.9) !important;
 }
 
 body.dark-mode #bottom-floating-pill-bar button:not(.btn-theme-primary),
-.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary) {
+body.dark-mode #floating-undo-redo-row button,
+.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary),
+.theme-dark #floating-undo-redo-row button {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
   color: #FFFFFF !important;
@@ -8824,13 +8835,17 @@ body.dark-mode #bottom-floating-pill-bar button:not(.btn-theme-primary),
 }
 
 body.dark-mode #bottom-floating-pill-bar button:not(.btn-theme-primary):hover,
-.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary):hover {
+body.dark-mode #floating-undo-redo-row button:hover,
+.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary):hover,
+.theme-dark #floating-undo-redo-row button:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
   border-color: rgba(147, 197, 253, 0.35) !important;
 }
 
 body.dark-mode #bottom-floating-pill-bar button:not(.btn-theme-primary) svg,
-.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary) svg {
+body.dark-mode #floating-undo-redo-row button svg,
+.theme-dark #bottom-floating-pill-bar button:not(.btn-theme-primary) svg,
+.theme-dark #floating-undo-redo-row button svg {
   color: #FFFFFF !important;
 }
 
@@ -9926,6 +9941,7 @@ body.dark-mode .theme-style-btn.active,
 body.theme-style-default #left-sidebar,
 body.theme-style-default #right-sidebar,
 body.theme-style-default #header-desktop-bar,
+body.theme-style-default #floating-undo-redo-row,
 body.theme-style-default #bottom-floating-pill-bar,
 body.theme-style-default #canvas-controls-popover,
 body.theme-style-default #canvas-ratio-popover,
@@ -9950,6 +9966,7 @@ body.theme-style-default .ocr-lang-card {
 body.theme-style-default.dark-mode #left-sidebar,
 body.theme-style-default.dark-mode #right-sidebar,
 body.theme-style-default.dark-mode #header-desktop-bar,
+body.theme-style-default.dark-mode #floating-undo-redo-row,
 body.theme-style-default.dark-mode #bottom-floating-pill-bar,
 body.theme-style-default.dark-mode #canvas-controls-popover,
 body.theme-style-default.dark-mode #canvas-ratio-popover,
@@ -10141,7 +10158,8 @@ body.theme-style-default.dark-mode #bottom-floating-pill-bar .flex.items-center.
   box-shadow: none !important;
 }
 
-body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd) {
+body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd),
+body.theme-style-default #floating-undo-redo-row button {
   background: #F1F5F9 !important;
   border: 1px solid #E2E8F0 !important;
   backdrop-filter: none !important;
@@ -10150,7 +10168,8 @@ body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover
   color: #0F172A !important;
 }
 
-body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd) {
+body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd),
+body.theme-style-default.dark-mode #floating-undo-redo-row button {
   background: #0F172A !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: none !important;
@@ -10355,11 +10374,14 @@ body.theme-style-default .pill-toggle-group,
 body.theme-style-default .capsule-group,
 body.theme-style-default #device-type-toggles,
 body.theme-style-default #toggle-lock-ui,
-body.theme-style-default #toggle-show-table {
+body.theme-style-default #toggle-show-table,
+body.theme-style-default #floating-undo-redo-row #history-undo-redo-capsule,
+body.theme-style-default #bottom-floating-pill-bar > div {
   background: #F1F5F9 !important;
   border: 1px solid #E2E8F0 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
 body.theme-style-default.dark-mode .theme-card-inner,
@@ -10368,17 +10390,21 @@ body.theme-style-default.dark-mode .pill-toggle-group,
 body.theme-style-default.dark-mode .capsule-group,
 body.theme-style-default.dark-mode #device-type-toggles,
 body.theme-style-default.dark-mode #toggle-lock-ui,
-body.theme-style-default.dark-mode #toggle-show-table {
+body.theme-style-default.dark-mode #toggle-show-table,
+body.theme-style-default.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
+body.theme-style-default.dark-mode #bottom-floating-pill-bar > div {
   background: #0B0F17 !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 /* ── Disable specific glass glare overlay layers in Default Style ── */
 body.theme-style-default #left-sidebar::before,
 body.theme-style-default #right-sidebar::before,
 body.theme-style-default #header-desktop-bar::before,
+body.theme-style-default #floating-undo-redo-row::before,
 body.theme-style-default #bottom-floating-pill-bar::before,
 body.theme-style-default #canvas-controls-popover::before,
 body.theme-style-default #mobile-export-dropdown::before,
@@ -10428,7 +10454,14 @@ body.theme-style-default #tour-popover-card::before {
 }
 
 .tour-highlighted-element {
-  z-index: 99999 !important;
+  z-index: 100002 !important;
+  position: relative;
+}
+
+#floating-controls-container.tour-highlighted-element,
+#floating-undo-redo-row.tour-highlighted-element,
+#bottom-floating-pill-bar.tour-highlighted-element {
+  z-index: 100002 !important;
 }
 
 /* ── Tour Popover Guide Card: Optical Liquid Glass Shader ── */
@@ -11244,6 +11277,46 @@ body.dark-mode .action-pill-icon-btn:hover,
   pointer-events: none;
 }
 
+/* Dark mode and active theme support for history pill */
+body.dark-mode #floating-undo-redo-row,
+.theme-dark #floating-undo-redo-row,
+.dark #floating-undo-redo-row {
+  background: rgba(15, 23, 42, 0.90) !important;
+  border-color: rgba(51, 65, 85, 0.90) !important;
+}
+
+body.dark-mode #history-undo-redo-capsule,
+.theme-dark #history-undo-redo-capsule,
+.dark #history-undo-redo-capsule {
+  background: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode #history-undo-redo-capsule button,
+.theme-dark #history-undo-redo-capsule button,
+.dark #history-undo-redo-capsule button {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode #history-undo-redo-capsule button svg,
+.theme-dark #history-undo-redo-capsule button svg,
+.dark #history-undo-redo-capsule button svg {
+  stroke: #F8FAFC !important;
+}
+
+body.dark-mode #history-undo-redo-capsule button:not([disabled]):hover,
+.theme-dark #history-undo-redo-capsule button:not([disabled]):hover,
+.dark #history-undo-redo-capsule button:not([disabled]):hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #history-undo-redo-capsule button[disabled],
+.theme-dark #history-undo-redo-capsule button[disabled],
+.dark #history-undo-redo-capsule button[disabled] {
+  opacity: 0.25 !important;
+}
+
 /* Swap / Move Feedback Toast Floating Bar */
 #grid-swap-toast {
   max-width: min(92%, 260px) !important;
@@ -11263,9 +11336,140 @@ body.dark-mode .action-pill-icon-btn:hover,
   display: inline-block !important;
 }
 
-body.dark-mode #history-undo-redo-capsule button:not([disabled]):hover,
-.theme-dark #history-undo-redo-capsule button:not([disabled]):hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #FFFFFF;
+/* Floating 2-Row Stacked Toolbar Controls (Fully Connected to Liquid Glass Style Presets: Crystal, Frosted, Fluid, Prism) */
+#floating-undo-redo-row,
+#bottom-floating-pill-bar {
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.55 + 0.12)) 0%,
+    rgba(255, 255, 255, calc(var(--glass-surface-glare-mult, 0.38) * 0.65)) 50%,
+    rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.45)) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) !important;
+  border: 1.5px solid var(--glass-border-color, rgba(255, 255, 255, 0.85)) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(15, 23, 42, 0.20),
+    0 8px 24px -2px rgba(15, 23, 42, 0.08),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.14) 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.04),
+    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
+    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
 }
+
+#bottom-floating-pill-bar {
+  max-width: calc(100vw - 24px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#bottom-floating-pill-bar::-webkit-scrollbar {
+  display: none;
+}
+
+#floating-undo-redo-row:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 26px 65px -10px rgba(15, 23, 42, 0.26),
+    inset 0 1.5px 3px 0 rgba(255, 255, 255, 1) !important;
+}
+
+/* Inner Capsules High-Gloss Styling */
+#floating-undo-redo-row #history-undo-redo-capsule,
+#bottom-floating-pill-bar > div {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.6 + 0.1)) 0%,
+    rgba(255, 255, 255, 0.20) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) * 0.7)) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) * 0.7)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.85),
+    0 2px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Dark Mode Liquid Glass Treatment (Deep Optical Obsidian / Prism / Frosted) */
+body.dark-mode #floating-undo-redo-row,
+.theme-dark #floating-undo-redo-row,
+.dark #floating-undo-redo-row,
+body.dark-mode #bottom-floating-pill-bar,
+.theme-dark #bottom-floating-pill-bar,
+.dark #bottom-floating-pill-bar {
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(30, 41, 59, calc(var(--glass-glare-factor, 0.9) * 0.55 + 0.15)) 0%,
+    rgba(15, 23, 42, 0.50) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  border: 1.5px solid var(--glass-border-color, rgba(255, 255, 255, 0.22)) !important;
+  box-shadow: 
+    0 28px 70px -10px rgba(0, 0, 0, 0.85),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.14) 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.5),
+    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
+    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+}
+
+body.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
+.theme-dark #floating-undo-redo-row #history-undo-redo-capsule,
+.dark #floating-undo-redo-row #history-undo-redo-capsule,
+body.dark-mode #bottom-floating-pill-bar > div,
+.theme-dark #bottom-floating-pill-bar > div,
+.dark #bottom-floating-pill-bar > div {
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.45) 0%, rgba(15, 23, 42, 0.35) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.2), 0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Floating Controls & Ratio Popovers - Always Top Layer Above Pills */
+#canvas-controls-popover,
+#canvas-ratio-popover {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+  margin-bottom: 8px !important;
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.85 + 0.12)) 0%,
+    rgba(255, 255, 255, 0.72) 45%,
+    rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.65)) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+  border: 1.5px solid var(--glass-border-color, rgba(255, 255, 255, 0.95)) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(15, 23, 42, 0.25),
+    0 4px 16px -2px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+    inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
+    inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+}
+
+body.dark-mode #canvas-controls-popover,
+.theme-dark #canvas-controls-popover,
+.dark #canvas-controls-popover,
+body.dark-mode #canvas-ratio-popover,
+.theme-dark #canvas-ratio-popover,
+.dark #canvas-ratio-popover {
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(30, 41, 59, 0.88) 0%,
+    rgba(15, 23, 42, 0.82) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 14px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 14px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    0 28px 70px -10px rgba(0, 0, 0, 0.85),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+
+
+
+
+
 
