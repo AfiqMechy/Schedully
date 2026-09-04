@@ -281,6 +281,16 @@ class SchedullyApp {
     this.courseSearchInput = document.getElementById('course-search-input');
     this.clearSearchBtn = document.getElementById('clear-search-btn');
     this.searchQuery = '';
+    this.activeSwapCourseId = null;
+    this.lastSwapUndoState = null;
+    this.gridCourseActionPill = document.getElementById('grid-course-action-pill');
+    this.gridSwapToast = document.getElementById('grid-swap-toast');
+    this.gridSwapToastMsg = document.getElementById('grid-swap-toast-msg');
+    this.btnGridSwapUndo = document.getElementById('btn-grid-swap-undo');
+    this.btnNudgeTimeMinus = document.getElementById('btn-nudge-time-minus');
+    this.btnNudgeTimePlus = document.getElementById('btn-nudge-time-plus');
+    this.btnNudgeEditCard = document.getElementById('btn-nudge-edit-card');
+    this.btnNudgeCancel = document.getElementById('btn-nudge-cancel');
     this.phoneCanvas = document.getElementById('phone-canvas');
     this.lockTime = document.getElementById('lock-time');
     this.lockDate = document.getElementById('lock-date');
@@ -2812,6 +2822,53 @@ class SchedullyApp {
         }
       });
     }
+
+    // Quick Time Nudge & Swap Action Bar Controls
+    if (this.btnNudgeTimeMinus) {
+      this.btnNudgeTimeMinus.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.nudgeSelectedCourseTime(-30);
+      });
+    }
+
+    if (this.btnNudgeTimePlus) {
+      this.btnNudgeTimePlus.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.nudgeSelectedCourseTime(30);
+      });
+    }
+
+    if (this.btnNudgeEditCard) {
+      this.btnNudgeEditCard.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.activeSwapCourseId) {
+          const cId = this.activeSwapCourseId;
+          this.deselectSwapCourse();
+          this.highlightCourseInScheduleList(cId);
+        }
+      });
+    }
+
+    if (this.btnNudgeCancel) {
+      this.btnNudgeCancel.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.deselectSwapCourse();
+      });
+    }
+
+    if (this.btnGridSwapUndo) {
+      this.btnGridSwapUndo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.undoLastCourseSwap();
+      });
+    }
+
+    // Dismiss course selection when clicking anywhere outside canvas grid
+    document.addEventListener('click', (e) => {
+      if (this.activeSwapCourseId && !e.target.closest('#universal-timetable-grid') && !e.target.closest('#grid-course-action-pill')) {
+        this.deselectSwapCourse();
+      }
+    });
 
     // Expandable Card Accordions
     this.headerTheme.addEventListener('click', (e) => {
@@ -6957,12 +7014,103 @@ class SchedullyApp {
             border-radius: ${this.cardCornerStyle === 'sharp' ? '0px' : (this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) + 'px'};
           `;
           cardElement.setAttribute('data-id', matched.id);
+          cardElement.setAttribute('draggable', 'true');
+
+          // Highlight active selection if currently selected for move/swap
+          if (this.activeSwapCourseId && String(this.activeSwapCourseId) === String(matched.id)) {
+            cardElement.classList.add('selected-for-swap');
+          }
+
+          // Card Drag Events
+          cardElement.addEventListener('dragstart', (e) => {
+            e.stopPropagation();
+            this.handleCardDragStart(e, matched);
+          });
+
+          cardElement.addEventListener('dragend', (e) => {
+            e.stopPropagation();
+            this.handleCardDragEnd(e);
+          });
+
+          // Drop on another course card -> triggers swap
+          cardElement.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cardElement.classList.add('swap-target-hover');
+          });
+
+          cardElement.addEventListener('dragleave', (e) => {
+            e.stopPropagation();
+            cardElement.classList.remove('swap-target-hover');
+          });
+
+          cardElement.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cardElement.classList.remove('swap-target-hover');
+            const sourceId = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
+            if (sourceId && String(sourceId) !== String(matched.id)) {
+              this.swapCoursesDirectly(sourceId, matched.id);
+            }
+          });
+
+          // Card Click: Select for Swap, perform Swap if another card selected, and show Nudge Action Bar
           cardElement.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.highlightCourseInScheduleList(matched.id);
+            if (this.activeSwapCourseId) {
+              if (String(this.activeSwapCourseId) === String(matched.id)) {
+                // Tapped same card -> deselect
+                this.deselectSwapCourse();
+              } else {
+                // Tapped another card -> perform swap!
+                const prevId = this.activeSwapCourseId;
+                this.deselectSwapCourse();
+                this.swapCoursesDirectly(prevId, matched.id);
+              }
+            } else {
+              // Select card for Swap / Nudge
+              this.selectCourseForSwap(matched.id, cardElement);
+            }
           });
+
           cardElement.innerHTML = cardContentHTML;
           slotCell.appendChild(cardElement);
+        });
+
+        // Slot Cell Drag Over & Drop Handling
+        slotCell.setAttribute('data-day', day);
+        slotCell.setAttribute('data-hour', tObj.hour);
+
+        if (this.activeSwapCourseId && matchesInCell.length === 0) {
+          slotCell.classList.add('slot-swap-candidate');
+        }
+
+        slotCell.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          slotCell.classList.add('slot-drag-over');
+        });
+
+        slotCell.addEventListener('dragleave', (e) => {
+          slotCell.classList.remove('slot-drag-over');
+        });
+
+        slotCell.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slotCell.classList.remove('slot-drag-over');
+          const sourceId = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
+          if (sourceId) {
+            this.moveCourseToSlot(sourceId, day, tObj.hour);
+          }
+        });
+
+        // Slot Cell Click: If a course is selected for swap, tapping empty slot moves it here!
+        slotCell.addEventListener('click', (e) => {
+          if (this.activeSwapCourseId && e.target === slotCell) {
+            e.stopPropagation();
+            const sourceId = this.activeSwapCourseId;
+            this.deselectSwapCourse();
+            this.moveCourseToSlot(sourceId, day, tObj.hour);
+          }
         });
 
         gridFragment.appendChild(slotCell);
@@ -6978,6 +7126,273 @@ class SchedullyApp {
 
     if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
       this.renderWatchGlance();
+    }
+  }
+
+  // =========================================================================
+  // INTERACTIVE GRID DRAG-AND-DROP, TAP-TO-SWAP & TIME NUDGE ENGINE
+  // =========================================================================
+
+  handleCardDragStart(e, course) {
+    if (!e.dataTransfer) return;
+    e.dataTransfer.setData('text/plain', String(course.id));
+    e.dataTransfer.effectAllowed = 'move';
+    const cardEl = e.currentTarget;
+    if (cardEl) {
+      cardEl.classList.add('is-dragging');
+    }
+    this.deselectSwapCourse();
+  }
+
+  handleCardDragEnd(e) {
+    const cardEl = e.currentTarget;
+    if (cardEl) {
+      cardEl.classList.remove('is-dragging');
+    }
+    document.querySelectorAll('.exact-grid-cell-slot.slot-drag-over').forEach(cell => {
+      cell.classList.remove('slot-drag-over');
+    });
+    document.querySelectorAll('.exact-course-card.swap-target-hover').forEach(card => {
+      card.classList.remove('swap-target-hover');
+    });
+  }
+
+  selectCourseForSwap(courseId, cardElement) {
+    this.activeSwapCourseId = courseId;
+    const course = this.classes.find(c => String(c.id) === String(courseId));
+    if (!course) return;
+
+    // Haptic feedback
+    if (navigator.vibrate) {
+      try { navigator.vibrate(18); } catch (err) {}
+    }
+
+    // Re-render grid to show candidate slots & active highlight
+    this.requestGridRender();
+
+    // Position & show Quick Time Nudge Action Pill
+    setTimeout(() => {
+      this.positionNudgeActionPill(courseId);
+    }, 50);
+  }
+
+  deselectSwapCourse() {
+    this.activeSwapCourseId = null;
+    if (this.gridCourseActionPill) {
+      this.gridCourseActionPill.classList.add('hidden');
+    }
+    this.requestGridRender();
+  }
+
+  positionNudgeActionPill(courseId) {
+    if (!this.gridCourseActionPill || !this.lockTimetableContainer) return;
+    const cardEl = this.universalTimetableGrid?.querySelector(`.exact-course-card[data-id="${courseId}"]`);
+    if (!cardEl) return;
+
+    const cardRect = cardEl.getBoundingClientRect();
+    const containerRect = this.lockTimetableContainer.getBoundingClientRect();
+
+    const leftPos = (cardRect.left - containerRect.left) + (cardRect.width / 2);
+    let topPos = (cardRect.top - containerRect.top) - 38;
+
+    // Boundary check so pill doesn't render above container
+    if (topPos < 4) {
+      topPos = (cardRect.bottom - containerRect.top) + 8;
+    }
+
+    this.gridCourseActionPill.style.left = `${leftPos}px`;
+    this.gridCourseActionPill.style.top = `${topPos}px`;
+    this.gridCourseActionPill.classList.remove('hidden');
+  }
+
+  moveCourseToSlot(courseId, targetDay, targetHour) {
+    const course = this.classes.find(c => String(c.id) === String(courseId));
+    if (!course) return;
+
+    const [sh, sm] = course.startTime.split(':').map(Number);
+    const [eh, em] = course.endTime.split(':').map(Number);
+    const durationMinutes = ((eh * 60) + (em || 0)) - ((sh * 60) + (sm || 0));
+
+    // Save undo state
+    this.lastSwapUndoState = {
+      type: 'move',
+      courseId: course.id,
+      prevDay: course.day,
+      prevStart: course.startTime,
+      prevEnd: course.endTime
+    };
+
+    // Calculate new start & end time preserving duration
+    const newStartH = targetHour;
+    const newStartM = sm || 0;
+    const newStartTotalM = (newStartH * 60) + newStartM;
+    const newEndTotalM = newStartTotalM + Math.max(15, durationMinutes);
+
+    const formatTimeStr = (totalM) => {
+      const h = Math.min(23, Math.floor(totalM / 60)).toString().padStart(2, '0');
+      const m = (totalM % 60).toString().padStart(2, '0');
+      return `${h}:${m}`;
+    };
+
+    course.day = targetDay;
+    course.startTime = formatTimeStr(newStartTotalM);
+    course.endTime = formatTimeStr(newEndTotalM);
+
+    this.showSwapToast(`Moved ${course.code} to ${targetDay} ${course.startTime}`);
+    this.onCourseScheduleChanged();
+  }
+
+  swapCoursesDirectly(courseId1, courseId2) {
+    const c1 = this.classes.find(c => String(c.id) === String(courseId1));
+    const c2 = this.classes.find(c => String(c.id) === String(courseId2));
+    if (!c1 || !c2) return;
+
+    // Save undo state
+    this.lastSwapUndoState = {
+      type: 'swap',
+      c1: { id: c1.id, day: c1.day, start: c1.startTime, end: c1.endTime },
+      c2: { id: c2.id, day: c2.day, start: c2.startTime, end: c2.endTime }
+    };
+
+    // Swap day and start times; adjust end times to keep original course durations
+    const c1Dur = this.getCourseDurationMinutes(c1);
+    const c2Dur = this.getCourseDurationMinutes(c2);
+
+    const c1NewDay = c2.day;
+    const c1NewStart = c2.startTime;
+    const c2NewDay = c1.day;
+    const c2NewStart = c1.startTime;
+
+    c1.day = c1NewDay;
+    c1.startTime = c1NewStart;
+    c1.endTime = this.calcEndTimeFromStart(c1NewStart, c1Dur);
+
+    c2.day = c2NewDay;
+    c2.startTime = c2NewStart;
+    c2.endTime = this.calcEndTimeFromStart(c2NewStart, c2Dur);
+
+    this.showSwapToast(`Swapped ${c1.code} and ${c2.code}`);
+    this.onCourseScheduleChanged();
+  }
+
+  nudgeSelectedCourseTime(offsetMinutes) {
+    if (!this.activeSwapCourseId) return;
+    const course = this.classes.find(c => String(c.id) === String(this.activeSwapCourseId));
+    if (!course) return;
+
+    const [sh, sm] = course.startTime.split(':').map(Number);
+    const [eh, em] = course.endTime.split(':').map(Number);
+    const startM = (sh * 60) + (sm || 0);
+    const endM = (eh * 60) + (em || 0);
+    const duration = Math.max(15, endM - startM);
+
+    const newStartM = Math.max(0, Math.min(23 * 60, startM + offsetMinutes));
+    const newEndM = newStartM + duration;
+
+    // Save undo state
+    this.lastSwapUndoState = {
+      type: 'nudge',
+      courseId: course.id,
+      prevStart: course.startTime,
+      prevEnd: course.endTime
+    };
+
+    const formatTimeStr = (totalM) => {
+      const h = Math.min(23, Math.floor(totalM / 60)).toString().padStart(2, '0');
+      const m = (totalM % 60).toString().padStart(2, '0');
+      return `${h}:${m}`;
+    };
+
+    course.startTime = formatTimeStr(newStartM);
+    course.endTime = formatTimeStr(newEndM);
+
+    this.showSwapToast(`Shifted ${course.code} ${offsetMinutes > 0 ? '+30m' : '-30m'} (${course.startTime})`);
+    this.onCourseScheduleChanged();
+    setTimeout(() => {
+      this.positionNudgeActionPill(course.id);
+    }, 60);
+  }
+
+  undoLastCourseSwap() {
+    if (!this.lastSwapUndoState) return;
+    const state = this.lastSwapUndoState;
+
+    if (state.type === 'move') {
+      const c = this.classes.find(x => String(x.id) === String(state.courseId));
+      if (c) {
+        c.day = state.prevDay;
+        c.startTime = state.prevStart;
+        c.endTime = state.prevEnd;
+      }
+    } else if (state.type === 'swap') {
+      const c1 = this.classes.find(x => String(x.id) === String(state.c1.id));
+      const c2 = this.classes.find(x => String(x.id) === String(state.c2.id));
+      if (c1) {
+        c1.day = state.c1.day;
+        c1.startTime = state.c1.start;
+        c1.endTime = state.c1.end;
+      }
+      if (c2) {
+        c2.day = state.c2.day;
+        c2.startTime = state.c2.start;
+        c2.endTime = state.c2.end;
+      }
+    } else if (state.type === 'nudge') {
+      const c = this.classes.find(x => String(x.id) === String(state.courseId));
+      if (c) {
+        c.startTime = state.prevStart;
+        c.endTime = state.prevEnd;
+      }
+    }
+
+    this.lastSwapUndoState = null;
+    this.hideSwapToast();
+    this.deselectSwapCourse();
+    this.onCourseScheduleChanged();
+  }
+
+  getCourseDurationMinutes(c) {
+    const [sh, sm] = (c.startTime || '08:00').split(':').map(Number);
+    const [eh, em] = (c.endTime || '10:00').split(':').map(Number);
+    return Math.max(15, ((eh * 60) + (em || 0)) - ((sh * 60) + (sm || 0)));
+  }
+
+  calcEndTimeFromStart(startTimeStr, durationMinutes) {
+    const [sh, sm] = startTimeStr.split(':').map(Number);
+    const startM = (sh * 60) + (sm || 0);
+    const endM = startM + durationMinutes;
+    const h = Math.min(23, Math.floor(endM / 60)).toString().padStart(2, '0');
+    const m = (endM % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  onCourseScheduleChanged() {
+    // Haptic feedback
+    if (navigator.vibrate) {
+      try { navigator.vibrate(24); } catch (err) {}
+    }
+    this.savePresets();
+    this.saveState();
+    this.renderClassList();
+    this.requestGridRender();
+    if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
+      this.checkClashes();
+    }
+  }
+
+  showSwapToast(msg) {
+    if (!this.gridSwapToast) return;
+    if (this.gridSwapToastMsg) this.gridSwapToastMsg.innerText = msg;
+    this.gridSwapToast.classList.remove('hidden');
+    if (this._swapToastTimer) clearTimeout(this._swapToastTimer);
+    this._swapToastTimer = setTimeout(() => {
+      this.hideSwapToast();
+    }, 4500);
+  }
+
+  hideSwapToast() {
+    if (this.gridSwapToast) {
+      this.gridSwapToast.classList.add('hidden');
     }
   }
 

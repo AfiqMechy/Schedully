@@ -151,7 +151,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260903_v381">
+<link rel="stylesheet" href="styles.css?v=20260904_v382">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -1677,7 +1677,7 @@
       </div>
 
       <!-- Lockscreen Timetable Container (Phone & Tablet) -->
-      <div id="lock-timetable-container" class="m3-lock-timetable-container">
+      <div id="lock-timetable-container" class="m3-lock-timetable-container relative">
         <div id="lock-grid-title" class="lock-grid-title-bar">
           <span id="lock-title-text">Untitled</span>
         </div>
@@ -1685,6 +1685,33 @@
         <!-- Lockscreen Weekly Grid -->
         <div id="universal-timetable-grid" class="m3-lock-grid-exact">
           <!-- Dynamically populated by JS -->
+        </div>
+
+        <!-- Quick Time Nudge & Swap Action Bar (Appears when a course card is selected) -->
+        <div id="grid-course-action-pill" class="hidden absolute z-30 flex items-center gap-1 p-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-2xl border border-gray-200/80 dark:border-white/15 transition-all">
+          <button id="btn-nudge-time-minus" type="button" class="action-pill-btn" title="Nudge 30m Earlier">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <span>-30m</span>
+          </button>
+          <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+          <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Nudge 30m Later">
+            <span>+30m</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+          <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
+            <span data-i18n="edit">Edit</span>
+          </button>
+          <button id="btn-nudge-cancel" type="button" class="action-pill-icon-btn text-gray-400 hover:text-gray-700 dark:hover:text-white" title="Deselect">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Swap / Reschedule Toast with Undo -->
+        <div id="grid-swap-toast" class="hidden absolute bottom-2 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-3 py-1.5 bg-slate-900/90 text-white dark:bg-white/90 dark:text-slate-900 backdrop-blur-md rounded-full shadow-xl text-xs font-bold transition-all">
+          <span id="grid-swap-toast-msg">Course moved</span>
+          <button id="btn-grid-swap-undo" type="button" class="px-2 py-0.5 rounded-full bg-blue-600 text-white dark:bg-blue-500 text-[10px] font-extrabold hover:bg-blue-700 transition-all">Undo</button>
         </div>
       </div>
 
@@ -2517,13 +2544,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260903_v381"></script>
+  <script src="app_v3.js?v=20260904_v382"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260903_v381').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260904_v382').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
