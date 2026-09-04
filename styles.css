@@ -11119,7 +11119,8 @@ body.dark-mode.theme-style-glass .course-search-widget,
 }
 
 #lock-timetable-container {
-  overflow: visible !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
 }
 
 .action-pill-btn {
@@ -11241,6 +11242,25 @@ body.dark-mode .action-pill-icon-btn:hover,
   opacity: 0.35 !important;
   cursor: not-allowed !important;
   pointer-events: none;
+}
+
+/* Swap / Move Feedback Toast Floating Bar */
+#grid-swap-toast {
+  max-width: min(92%, 260px) !important;
+  white-space: nowrap !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  padding: 4px 10px !important;
+  z-index: 50 !important;
+}
+
+#grid-swap-toast-msg {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 175px !important;
+  display: inline-block !important;
 }
 
 body.dark-mode #history-undo-redo-capsule button:not([disabled]):hover,
