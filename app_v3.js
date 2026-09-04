@@ -7278,13 +7278,15 @@ class SchedullyApp {
 
     const cardRect = cardEl.getBoundingClientRect();
     const containerRect = this.lockTimetableContainer.getBoundingClientRect();
+    const scale = this.zoomScale || 1;
 
-    const leftPos = (cardRect.left - containerRect.left) + (cardRect.width / 2);
-    let topPos = (cardRect.top - containerRect.top) - 40;
+    // Account for zoom scale on phone canvas container
+    const leftPos = ((cardRect.left - containerRect.left) / scale) + ((cardRect.width / scale) / 2);
+    let topPos = ((cardRect.top - containerRect.top) / scale) - 38;
 
     // Boundary check so pill doesn't render above container
     if (topPos < 4) {
-      topPos = (cardRect.bottom - containerRect.top) + 8;
+      topPos = ((cardRect.bottom - containerRect.top) / scale) + 8;
     }
 
     this.gridCourseActionPill.style.left = `${leftPos}px`;
