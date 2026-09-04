@@ -7215,12 +7215,10 @@ class SchedullyApp {
     }
 
     // Re-render grid to show candidate slots & active highlight
-    this.requestGridRender();
+    this.renderTimetableGrid();
 
-    // Position & show Quick Time Nudge Action Pill
-    setTimeout(() => {
-      this.positionNudgeActionPill(courseId);
-    }, 50);
+    // Position & show Quick Time Nudge Action Pill immediately
+    this.positionNudgeActionPill(courseId);
   }
 
   deselectSwapCourse() {
@@ -7420,9 +7418,7 @@ class SchedullyApp {
 
       this.showSwapToast(`Shifted ${course.code} to Period ${newPeriod}`);
       this.onCourseScheduleChanged();
-      setTimeout(() => {
-        this.positionNudgeActionPill(course.id);
-      }, 60);
+      this.positionNudgeActionPill(course.id);
       return;
     }
 
@@ -7456,9 +7452,7 @@ class SchedullyApp {
 
     this.showSwapToast(`Shifted ${course.code} ${offsetMinutes > 0 ? '+30m' : '-30m'} (${course.startTime})`);
     this.onCourseScheduleChanged();
-    setTimeout(() => {
-      this.positionNudgeActionPill(course.id);
-    }, 60);
+    this.positionNudgeActionPill(course.id);
   }
 
   undoLastCourseSwap() {
@@ -7591,10 +7585,9 @@ class SchedullyApp {
       try { navigator.vibrate(18); } catch (err) {}
     }
 
-    this.savePresets();
-    this.saveState();
+    this._stagePending();
+    this.renderTimetableGrid();
     this.renderClassList();
-    this.requestGridRender();
     if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
       this.checkClashes();
     }
@@ -7624,10 +7617,9 @@ class SchedullyApp {
       try { navigator.vibrate(18); } catch (err) {}
     }
 
-    this.savePresets();
-    this.saveState();
+    this._stagePending();
+    this.renderTimetableGrid();
     this.renderClassList();
-    this.requestGridRender();
     if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
       this.checkClashes();
     }
@@ -7639,10 +7631,9 @@ class SchedullyApp {
       try { navigator.vibrate(24); } catch (err) {}
     }
     this.updateHistoryButtonUI();
-    this.savePresets();
-    this.saveState();
+    this._stagePending();
+    this.renderTimetableGrid();
     this.renderClassList();
-    this.requestGridRender();
     if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
       this.checkClashes();
     }
