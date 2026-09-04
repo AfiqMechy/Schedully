@@ -11113,6 +11113,13 @@ body.dark-mode.theme-style-glass .course-search-widget,
   transform: translate(-50%, 0);
   font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif !important;
   transition: left 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.12s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  z-index: 50 !important;
+  white-space: nowrap !important;
+  max-width: calc(100% - 16px) !important;
+}
+
+#lock-timetable-container {
+  overflow: visible !important;
 }
 
 .action-pill-btn {

@@ -7281,8 +7281,12 @@ class SchedullyApp {
     const scale = this.zoomScale || 1;
 
     // Account for zoom scale on phone canvas container
-    const leftPos = ((cardRect.left - containerRect.left) / scale) + ((cardRect.width / scale) / 2);
+    let leftPos = ((cardRect.left - containerRect.left) / scale) + ((cardRect.width / scale) / 2);
     let topPos = ((cardRect.top - containerRect.top) / scale) - 38;
+
+    // Clamp leftPos to keep pill inside container boundary (approx half pill width = 85px)
+    const containerWidth = containerRect.width / scale;
+    leftPos = Math.max(90, Math.min(containerWidth - 90, leftPos));
 
     // Boundary check so pill doesn't render above container
     if (topPos < 4) {
