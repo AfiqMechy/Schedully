@@ -6667,21 +6667,35 @@ body.dark-mode .grid-swap-toast-pill,
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
 }
 
-/* Solid Default Theme Override for Swap Toast */
+/* Solid Default Theme Override for Swap Toast (Matching Bottom Pill Bar Styling) */
 body.theme-style-default .grid-swap-toast-pill {
-  background: #0F172A !important;
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.theme-style-default #grid-swap-toast-msg {
+  color: #0F172A !important;
+}
+
+body.theme-style-default.dark-mode .grid-swap-toast-pill,
+body.theme-style-default .dark .grid-swap-toast-pill,
+body.theme-style-default.theme-dark .grid-swap-toast-pill {
+  background: #1E293B !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid #334155 !important;
   color: #F8FAFC !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
 }
 
-body.theme-style-default.dark-mode .grid-swap-toast-pill {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #0F172A !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+body.theme-style-default.dark-mode #grid-swap-toast-msg,
+body.theme-style-default .dark #grid-swap-toast-msg,
+body.theme-style-default.theme-dark #grid-swap-toast-msg {
+  color: #F8FAFC !important;
 }
 
 .btn-grid-swap-undo {
