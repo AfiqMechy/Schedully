@@ -1709,13 +1709,6 @@
         </button>
       </div>
 
-      <!-- Swap / Reschedule Toast with Undo -->
-      <div id="grid-swap-toast" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-3 py-1.5 bg-slate-900/90 text-white dark:bg-white/90 dark:text-slate-900 backdrop-blur-md rounded-full shadow-xl text-xs font-bold transition-all">
-        <span id="grid-swap-toast-msg">Course moved</span>
-        <button id="btn-grid-swap-undo" type="button" class="px-2 py-0.5 rounded-full bg-blue-600 text-white dark:bg-blue-500 text-[10px] font-extrabold hover:bg-blue-700 transition-all">Undo</button>
-      </div>
-
-
       <!-- Smartwatch Today's Schedule Glance View (Active in Watch Mode) -->
       <div id="watch-glance-container" class="watch-glance-container" style="display: none;">
         <!-- Navigation Row: Day Selector + Dynamic Page Capsule -->
@@ -1879,6 +1872,13 @@
     </div>
   </div>
 
+  <!-- Row 0: Dedicated Floating Notification Pill Slot (Directly above Undo / Redo Row) -->
+  <div id="floating-notification-row" class="pointer-events-auto flex items-center justify-center w-full min-h-[0px] transition-all">
+    <div id="grid-swap-toast" class="grid-swap-toast-pill hidden">
+      <span id="grid-swap-toast-msg">Course moved</span>
+      <button id="btn-grid-swap-undo" type="button" class="btn-grid-swap-undo">Undo</button>
+    </div>
+  </div>
     
     <!-- Top Pill: Undo & Redo Only -->
     <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-lg transition-all">
@@ -2566,13 +2566,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260904_v402"></script>
+  <script src="app_v3.js?v=20260904_v404"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260904_v402').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260904_v404').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

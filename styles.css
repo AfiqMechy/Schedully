@@ -6606,6 +6606,124 @@ body.theme-style-default.dark-mode .lock-trademark-footer.style-squared {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
+/* Floating Timetable Swap/Edit Toast Notification Pill (Slot above Undo/Redo row) */
+#floating-notification-row {
+  margin-bottom: 2px;
+  z-index: 40;
+}
+
+.grid-swap-toast-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto;
+  padding: 5px 14px;
+  border-radius: 9999px !important;
+  z-index: 45;
+  pointer-events: auto;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.7 + 0.2)) 0%,
+    rgba(255, 255, 255, 0.75) 45%,
+    rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.65)) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(200%) !important;
+  border: 1.5px solid var(--glass-border-color, rgba(255, 255, 255, 0.9)) !important;
+  color: #0F172A !important;
+  box-shadow: 
+    0 16px 36px -4px rgba(15, 23, 42, 0.22),
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+    inset calc(var(--glass-dispersion, 7) * 0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.35)),
+    inset calc(var(--glass-dispersion, 7) * -0.35px) 0 calc(var(--glass-dispersion, 7) * 0.6px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.28)) !important;
+  animation: swapToastPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.grid-swap-toast-pill.hidden {
+  display: none !important;
+}
+
+body.dark-mode .grid-swap-toast-pill,
+.theme-dark .grid-swap-toast-pill,
+.dark .grid-swap-toast-pill {
+  background: linear-gradient(
+    calc(180deg + var(--glass-glare-angle, -45deg)),
+    rgba(30, 41, 59, 0.90) 0%,
+    rgba(15, 23, 42, 0.85) 100%
+  ) !important;
+  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 10px)) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+  box-shadow: 
+    0 20px 42px -4px rgba(0, 0, 0, 0.75),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Solid Default Theme Override for Swap Toast */
+body.theme-style-default .grid-swap-toast-pill {
+  background: #0F172A !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #334155 !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.theme-style-default.dark-mode .grid-swap-toast-pill {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+.btn-grid-swap-undo {
+  padding: 3px 9px;
+  border-radius: 9999px !important;
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-grid-swap-undo:hover {
+  background: #1D4ED8 !important;
+  transform: scale(1.05);
+}
+
+.btn-grid-swap-undo:active {
+  transform: scale(0.95);
+}
+
+body.theme-style-default.dark-mode .btn-grid-swap-undo {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+@keyframes swapToastPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
   background: #FFFFFF !important;
   border: 1.5px solid rgba(0, 0, 0, 0.08) !important;
