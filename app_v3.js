@@ -214,6 +214,7 @@ class SchedullyApp {
 
     // this.loadFromLocal();
     this.renderAll();
+    this.updateHistoryButtonUI();
   }
 
   initDOMElements() {
@@ -283,6 +284,11 @@ class SchedullyApp {
     this.searchQuery = '';
     this.activeSwapCourseId = null;
     this.lastSwapUndoState = null;
+    this.historyUndoStack = [];
+    this.historyRedoStack = [];
+    this._isPerformingHistoryAction = false;
+    this.btnHistoryUndo = document.getElementById('btn-history-undo');
+    this.btnHistoryRedo = document.getElementById('btn-history-redo');
     this.gridCourseActionPill = document.getElementById('grid-course-action-pill');
     this.gridSwapToast = document.getElementById('grid-swap-toast');
     this.gridSwapToastMsg = document.getElementById('grid-swap-toast-msg');
@@ -2863,6 +2869,42 @@ class SchedullyApp {
       });
     }
 
+    // History Floating Undo & Redo Capsule Controls
+    if (this.btnHistoryUndo) {
+      this.btnHistoryUndo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.undoGlobalHistory();
+      });
+    }
+
+    if (this.btnHistoryRedo) {
+      this.btnHistoryRedo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.redoGlobalHistory();
+      });
+    }
+
+    // Keyboard Shortcuts: Ctrl+Z / Cmd+Z for Undo, Ctrl+Y or Ctrl+Shift+Z / Cmd+Shift+Z for Redo
+    document.addEventListener('keydown', (e) => {
+      // Don't intercept if user is typing in a text input or textarea
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+        return;
+      }
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+      if (modKey && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          this.redoGlobalHistory();
+        } else {
+          this.undoGlobalHistory();
+        }
+      } else if (modKey && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        this.redoGlobalHistory();
+      }
+    });
+
     // Dismiss course selection when clicking anywhere outside canvas grid
     document.addEventListener('click', (e) => {
       if (this.activeSwapCourseId && !e.target.closest('#universal-timetable-grid') && !e.target.closest('#grid-course-action-pill')) {
@@ -4438,6 +4480,8 @@ class SchedullyApp {
 
       const checkedDays = Array.from(document.querySelectorAll('input[name="day"]:checked')).map(cb => cb.value);
       const daysToCreate = checkedDays.length > 0 ? checkedDays : ['Mon'];
+
+      this.recordHistoryState();
 
       daysToCreate.forEach((day, idx) => {
         this.classes.push({
@@ -7079,6 +7123,9 @@ class SchedullyApp {
 
         // Slot Cell Drag Over & Drop Handling
         slotCell.setAttribute('data-day', day);
+        if (tObj.isPeriod) {
+          slotCell.setAttribute('data-period', tObj.period);
+        }
         slotCell.setAttribute('data-hour', tObj.hour);
 
         if (this.activeSwapCourseId && matchesInCell.length === 0) {
@@ -7099,17 +7146,17 @@ class SchedullyApp {
           slotCell.classList.remove('slot-drag-over');
           const sourceId = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
           if (sourceId) {
-            this.moveCourseToSlot(sourceId, day, tObj.hour);
+            this.moveCourseToSlot(sourceId, day, tObj);
           }
         });
 
         // Slot Cell Click: If a course is selected for swap, tapping empty slot moves it here!
         slotCell.addEventListener('click', (e) => {
-          if (this.activeSwapCourseId && e.target === slotCell) {
+          if (this.activeSwapCourseId && (e.target === slotCell || e.target.classList.contains('exact-grid-cell-slot'))) {
             e.stopPropagation();
             const sourceId = this.activeSwapCourseId;
             this.deselectSwapCourse();
-            this.moveCourseToSlot(sourceId, day, tObj.hour);
+            this.moveCourseToSlot(sourceId, day, tObj);
           }
         });
 
@@ -7184,16 +7231,58 @@ class SchedullyApp {
     this.requestGridRender();
   }
 
+  getPeriodTimeSlot(periodNumber) {
+    const activePresetKey = this.selectedOcrPeriodPreset || '90m-900';
+    const periodSchedules = {
+      '90m-900': {
+        1: { start: '09:00', end: '10:30' },
+        2: { start: '10:40', end: '12:10' },
+        3: { start: '13:00', end: '14:30' },
+        4: { start: '14:40', end: '16:10' },
+        5: { start: '16:20', end: '17:50' },
+        6: { start: '18:00', end: '19:30' },
+        7: { start: '19:40', end: '21:10' }
+      },
+      '90m-850': {
+        1: { start: '08:50', end: '10:20' },
+        2: { start: '10:30', end: '12:00' },
+        3: { start: '12:50', end: '14:20' },
+        4: { start: '14:30', end: '16:00' },
+        5: { start: '16:10', end: '17:40' },
+        6: { start: '17:50', end: '19:20' },
+        7: { start: '19:30', end: '21:00' }
+      },
+      '50m-school': {
+        1: { start: '08:30', end: '09:20' },
+        2: { start: '09:30', end: '10:20' },
+        3: { start: '10:40', end: '11:30' },
+        4: { start: '11:40', end: '12:30' },
+        5: { start: '13:30', end: '14:20' },
+        6: { start: '14:30', end: '15:20' },
+        7: { start: '15:30', end: '16:20' }
+      }
+    };
+    const defaultSchedule = periodSchedules[activePresetKey] || periodSchedules['90m-900'];
+    return defaultSchedule[periodNumber] || { start: `${periodNumber + 8}:00`, end: `${periodNumber + 9}:30` };
+  }
+
   positionNudgeActionPill(courseId) {
     if (!this.gridCourseActionPill || !this.lockTimetableContainer) return;
     const cardEl = this.universalTimetableGrid?.querySelector(`.exact-course-card[data-id="${courseId}"]`);
     if (!cardEl) return;
 
+    // Update labels depending on whether timetable is in period mode or standard time mode
+    const isPeriodMode = (this.axisMode === 'period');
+    const labelMinus = document.getElementById('nudge-label-minus');
+    const labelPlus = document.getElementById('nudge-label-plus');
+    if (labelMinus) labelMinus.innerText = isPeriodMode ? '-1' : '-30m';
+    if (labelPlus) labelPlus.innerText = isPeriodMode ? '+1' : '+30m';
+
     const cardRect = cardEl.getBoundingClientRect();
     const containerRect = this.lockTimetableContainer.getBoundingClientRect();
 
     const leftPos = (cardRect.left - containerRect.left) + (cardRect.width / 2);
-    let topPos = (cardRect.top - containerRect.top) - 38;
+    let topPos = (cardRect.top - containerRect.top) - 40;
 
     // Boundary check so pill doesn't render above container
     if (topPos < 4) {
@@ -7205,9 +7294,11 @@ class SchedullyApp {
     this.gridCourseActionPill.classList.remove('hidden');
   }
 
-  moveCourseToSlot(courseId, targetDay, targetHour) {
+  moveCourseToSlot(courseId, targetDay, slotTarget) {
     const course = this.classes.find(c => String(c.id) === String(courseId));
     if (!course) return;
+
+    this.recordHistoryState();
 
     const [sh, sm] = course.startTime.split(':').map(Number);
     const [eh, em] = course.endTime.split(':').map(Number);
@@ -7219,26 +7310,42 @@ class SchedullyApp {
       courseId: course.id,
       prevDay: course.day,
       prevStart: course.startTime,
-      prevEnd: course.endTime
+      prevEnd: course.endTime,
+      prevPeriod: course.periodNumber
     };
 
-    // Calculate new start & end time preserving duration
-    const newStartH = targetHour;
-    const newStartM = sm || 0;
-    const newStartTotalM = (newStartH * 60) + newStartM;
-    const newEndTotalM = newStartTotalM + Math.max(15, durationMinutes);
+    const isTargetPeriod = slotTarget && (slotTarget.isPeriod || typeof slotTarget.period === 'number');
 
-    const formatTimeStr = (totalM) => {
-      const h = Math.min(23, Math.floor(totalM / 60)).toString().padStart(2, '0');
-      const m = (totalM % 60).toString().padStart(2, '0');
-      return `${h}:${m}`;
-    };
+    if (isTargetPeriod) {
+      const targetPeriod = slotTarget.period;
+      course.day = targetDay;
+      course.periodNumber = targetPeriod;
+      const periodSlot = this.getPeriodTimeSlot(targetPeriod);
+      course.startTime = periodSlot.start;
+      course.endTime = periodSlot.end;
+      this.showSwapToast(`Moved ${course.code} to ${targetDay} (Period ${targetPeriod})`);
+    } else {
+      const targetHour = (typeof slotTarget === 'object' && slotTarget.hour !== undefined) ? slotTarget.hour : Number(slotTarget);
+      const newStartH = targetHour;
+      const newStartM = sm || 0;
+      const newStartTotalM = (newStartH * 60) + newStartM;
+      const newEndTotalM = newStartTotalM + Math.max(15, durationMinutes);
 
-    course.day = targetDay;
-    course.startTime = formatTimeStr(newStartTotalM);
-    course.endTime = formatTimeStr(newEndTotalM);
+      const formatTimeStr = (totalM) => {
+        const h = Math.min(23, Math.floor(totalM / 60)).toString().padStart(2, '0');
+        const m = (totalM % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+      };
 
-    this.showSwapToast(`Moved ${course.code} to ${targetDay} ${course.startTime}`);
+      course.day = targetDay;
+      course.startTime = formatTimeStr(newStartTotalM);
+      course.endTime = formatTimeStr(newEndTotalM);
+      if (course.periodNumber !== undefined && this.axisMode !== 'period') {
+        delete course.periodNumber;
+      }
+      this.showSwapToast(`Moved ${course.code} to ${targetDay} ${course.startTime}`);
+    }
+
     this.onCourseScheduleChanged();
   }
 
@@ -7247,39 +7354,80 @@ class SchedullyApp {
     const c2 = this.classes.find(c => String(c.id) === String(courseId2));
     if (!c1 || !c2) return;
 
+    this.recordHistoryState();
+
     // Save undo state
     this.lastSwapUndoState = {
       type: 'swap',
-      c1: { id: c1.id, day: c1.day, start: c1.startTime, end: c1.endTime },
-      c2: { id: c2.id, day: c2.day, start: c2.startTime, end: c2.endTime }
+      c1: { id: c1.id, day: c1.day, start: c1.startTime, end: c1.endTime, period: c1.periodNumber },
+      c2: { id: c2.id, day: c2.day, start: c2.startTime, end: c2.endTime, period: c2.periodNumber }
     };
 
-    // Swap day and start times; adjust end times to keep original course durations
+    // Swap day, start times, and period numbers
     const c1Dur = this.getCourseDurationMinutes(c1);
     const c2Dur = this.getCourseDurationMinutes(c2);
 
     const c1NewDay = c2.day;
     const c1NewStart = c2.startTime;
+    const c1NewPeriod = c2.periodNumber;
+
     const c2NewDay = c1.day;
     const c2NewStart = c1.startTime;
+    const c2NewPeriod = c1.periodNumber;
 
     c1.day = c1NewDay;
     c1.startTime = c1NewStart;
+    c1.periodNumber = c1NewPeriod;
     c1.endTime = this.calcEndTimeFromStart(c1NewStart, c1Dur);
 
     c2.day = c2NewDay;
     c2.startTime = c2NewStart;
+    c2.periodNumber = c2NewPeriod;
     c2.endTime = this.calcEndTimeFromStart(c2NewStart, c2Dur);
 
     this.showSwapToast(`Swapped ${c1.code} and ${c2.code}`);
     this.onCourseScheduleChanged();
   }
 
-  nudgeSelectedCourseTime(offsetMinutes) {
+  nudgeSelectedCourseTime(offsetUnits) {
     if (!this.activeSwapCourseId) return;
     const course = this.classes.find(c => String(c.id) === String(this.activeSwapCourseId));
     if (!course) return;
 
+    this.recordHistoryState();
+
+    // PERIOD MODE NUDGE
+    if (this.axisMode === 'period') {
+      const currentPeriod = course.periodNumber || 1;
+      const userPeriodCount = this.gridPeriodCount || 6;
+      const delta = offsetUnits > 0 ? 1 : -1;
+      const newPeriod = Math.max(1, Math.min(userPeriodCount, currentPeriod + delta));
+
+      if (newPeriod === currentPeriod) return; // reached edge
+
+      this.lastSwapUndoState = {
+        type: 'nudgePeriod',
+        courseId: course.id,
+        prevPeriod: course.periodNumber,
+        prevStart: course.startTime,
+        prevEnd: course.endTime
+      };
+
+      course.periodNumber = newPeriod;
+      const periodSlot = this.getPeriodTimeSlot(newPeriod);
+      course.startTime = periodSlot.start;
+      course.endTime = periodSlot.end;
+
+      this.showSwapToast(`Shifted ${course.code} to Period ${newPeriod}`);
+      this.onCourseScheduleChanged();
+      setTimeout(() => {
+        this.positionNudgeActionPill(course.id);
+      }, 60);
+      return;
+    }
+
+    // STANDARD TIME MODE NUDGE (offset in minutes, e.g. +30 or -30)
+    const offsetMinutes = offsetUnits;
     const [sh, sm] = course.startTime.split(':').map(Number);
     const [eh, em] = course.endTime.split(':').map(Number);
     const startM = (sh * 60) + (sm || 0);
@@ -7323,6 +7471,7 @@ class SchedullyApp {
         c.day = state.prevDay;
         c.startTime = state.prevStart;
         c.endTime = state.prevEnd;
+        if (state.prevPeriod !== undefined) c.periodNumber = state.prevPeriod;
       }
     } else if (state.type === 'swap') {
       const c1 = this.classes.find(x => String(x.id) === String(state.c1.id));
@@ -7331,15 +7480,24 @@ class SchedullyApp {
         c1.day = state.c1.day;
         c1.startTime = state.c1.start;
         c1.endTime = state.c1.end;
+        if (state.c1.period !== undefined) c1.periodNumber = state.c1.period;
       }
       if (c2) {
         c2.day = state.c2.day;
         c2.startTime = state.c2.start;
         c2.endTime = state.c2.end;
+        if (state.c2.period !== undefined) c2.periodNumber = state.c2.period;
       }
     } else if (state.type === 'nudge') {
       const c = this.classes.find(x => String(x.id) === String(state.courseId));
       if (c) {
+        c.startTime = state.prevStart;
+        c.endTime = state.prevEnd;
+      }
+    } else if (state.type === 'nudgePeriod') {
+      const c = this.classes.find(x => String(x.id) === String(state.courseId));
+      if (c) {
+        c.periodNumber = state.prevPeriod;
         c.startTime = state.prevStart;
         c.endTime = state.prevEnd;
       }
@@ -7366,11 +7524,121 @@ class SchedullyApp {
     return `${h}:${m}`;
   }
 
+  // =========================================================================
+  // GLOBAL UNDO & REDO HISTORY ENGINE
+  // =========================================================================
+
+  recordHistoryState() {
+    if (this._isPerformingHistoryAction) return;
+    const snapshot = JSON.stringify(this.classes);
+    // Don't record if state is identical to top of stack
+    if (this.historyUndoStack.length > 0 && this.historyUndoStack[this.historyUndoStack.length - 1] === snapshot) {
+      return;
+    }
+    this.historyUndoStack.push(snapshot);
+    // Limit stack size to 30 to conserve memory
+    if (this.historyUndoStack.length > 30) {
+      this.historyUndoStack.shift();
+    }
+    // Any new action clears redo stack
+    this.historyRedoStack = [];
+    this.updateHistoryButtonUI();
+  }
+
+  updateHistoryButtonUI() {
+    if (this.btnHistoryUndo) {
+      if (this.historyUndoStack.length > 0) {
+        this.btnHistoryUndo.removeAttribute('disabled');
+        this.btnHistoryUndo.classList.remove('opacity-40', 'cursor-not-allowed');
+      } else {
+        this.btnHistoryUndo.setAttribute('disabled', 'true');
+        this.btnHistoryUndo.classList.add('opacity-40', 'cursor-not-allowed');
+      }
+    }
+
+    if (this.btnHistoryRedo) {
+      if (this.historyRedoStack.length > 0) {
+        this.btnHistoryRedo.removeAttribute('disabled');
+        this.btnHistoryRedo.classList.remove('opacity-40', 'cursor-not-allowed');
+      } else {
+        this.btnHistoryRedo.setAttribute('disabled', 'true');
+        this.btnHistoryRedo.classList.add('opacity-40', 'cursor-not-allowed');
+      }
+    }
+  }
+
+  undoGlobalHistory() {
+    if (this.historyUndoStack.length === 0) return;
+
+    this._isPerformingHistoryAction = true;
+    const currentSnapshot = JSON.stringify(this.classes);
+    this.historyRedoStack.push(currentSnapshot);
+
+    const previousSnapshot = this.historyUndoStack.pop();
+    try {
+      this.classes = JSON.parse(previousSnapshot);
+    } catch (e) {
+      console.error('Error parsing undo state:', e);
+    }
+
+    this._isPerformingHistoryAction = false;
+    this.updateHistoryButtonUI();
+    this.deselectSwapCourse();
+    this.showSwapToast('Action Undone');
+
+    // Haptic feedback
+    if (navigator.vibrate) {
+      try { navigator.vibrate(18); } catch (err) {}
+    }
+
+    this.savePresets();
+    this.saveState();
+    this.renderClassList();
+    this.requestGridRender();
+    if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
+      this.checkClashes();
+    }
+  }
+
+  redoGlobalHistory() {
+    if (this.historyRedoStack.length === 0) return;
+
+    this._isPerformingHistoryAction = true;
+    const currentSnapshot = JSON.stringify(this.classes);
+    this.historyUndoStack.push(currentSnapshot);
+
+    const nextSnapshot = this.historyRedoStack.pop();
+    try {
+      this.classes = JSON.parse(nextSnapshot);
+    } catch (e) {
+      console.error('Error parsing redo state:', e);
+    }
+
+    this._isPerformingHistoryAction = false;
+    this.updateHistoryButtonUI();
+    this.deselectSwapCourse();
+    this.showSwapToast('Action Redone');
+
+    // Haptic feedback
+    if (navigator.vibrate) {
+      try { navigator.vibrate(18); } catch (err) {}
+    }
+
+    this.savePresets();
+    this.saveState();
+    this.renderClassList();
+    this.requestGridRender();
+    if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
+      this.checkClashes();
+    }
+  }
+
   onCourseScheduleChanged() {
     // Haptic feedback
     if (navigator.vibrate) {
       try { navigator.vibrate(24); } catch (err) {}
     }
+    this.updateHistoryButtonUI();
     this.savePresets();
     this.saveState();
     this.renderClassList();
@@ -7910,8 +8178,10 @@ class SchedullyApp {
       if (delBtn) {
         e.preventDefault();
         e.stopPropagation();
+        this.recordHistoryState();
         this.classes = this.classes.filter(x => String(x.id) !== String(courseId));
         this.renderAll();
+        this.updateHistoryButtonUI();
         this._stagePending();
         return;
       }
