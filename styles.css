@@ -3352,64 +3352,174 @@ textarea::placeholder,
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PERIOD SYSTEM & AXIS MODE CONTROLS (OCR MODAL & SETTINGS)
+/* ═══════════════════════════════════════════════════════════════
+   OCR LANGUAGE & PERIOD MODAL (Refined UI: Flat & Glass, Light & Dark)
    ═══════════════════════════════════════════════════════════════ */
+
+/* Segment container bar */
+.ocr-segment-bar {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+body.dark-mode .ocr-segment-bar,
+.theme-dark .ocr-segment-bar {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Axis mode toggle buttons */
 .axis-mode-btn {
   cursor: pointer;
   user-select: none;
   font-family: var(--font-sans, inherit);
+  color: #64748b;
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+body.dark-mode .axis-mode-btn,
+.theme-dark .axis-mode-btn {
+  color: #94a3b8;
 }
 
 .axis-mode-btn.active {
   background: #ffffff !important;
   color: #2563eb !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
-.dark .axis-mode-btn.active {
+.dark .axis-mode-btn.active,
+body.dark-mode .axis-mode-btn.active,
+.theme-dark .axis-mode-btn.active {
   background: #0f172a !important;
   color: #60a5fa !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
+/* Language choice cards */
+.ocr-choice-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.ocr-choice-btn .ocr-choice-icon-wrap {
+  background: rgba(0, 0, 0, 0.05);
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+.ocr-choice-btn .ocr-choice-title {
+  color: #1e293b;
+}
+.ocr-choice-btn .ocr-choice-desc {
+  color: #64748b;
+}
+
+/* Dark mode default state */
+body.dark-mode .ocr-choice-btn,
+.theme-dark .ocr-choice-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .ocr-choice-btn .ocr-choice-icon-wrap,
+.theme-dark .ocr-choice-btn .ocr-choice-icon-wrap {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+body.dark-mode .ocr-choice-btn .ocr-choice-title,
+.theme-dark .ocr-choice-btn .ocr-choice-title {
+  color: #f1f5f9;
+}
+body.dark-mode .ocr-choice-btn .ocr-choice-desc,
+.theme-dark .ocr-choice-btn .ocr-choice-desc {
+  color: #94a3b8;
+}
+
+/* Hover state */
+.ocr-choice-btn:hover {
+  background: rgba(37, 99, 235, 0.04);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+body.dark-mode .ocr-choice-btn:hover,
+.theme-dark .ocr-choice-btn:hover {
+  background: rgba(96, 165, 250, 0.06);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+/* Active selected state */
+.ocr-choice-btn.active {
+  background: rgba(37, 99, 235, 0.06) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 1px #2563eb, 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+}
+.ocr-choice-btn.active .ocr-choice-icon-wrap {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+.ocr-choice-btn.active .ocr-choice-title {
+  color: #2563eb !important;
+}
+.ocr-choice-btn.active .ocr-choice-desc {
+  color: #3b82f6 !important;
+}
+
+/* Dark mode active selected state */
+body.dark-mode .ocr-choice-btn.active,
+.theme-dark .ocr-choice-btn.active {
+  background: rgba(37, 99, 235, 0.18) !important;
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 1px #60a5fa, 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+body.dark-mode .ocr-choice-btn.active .ocr-choice-icon-wrap,
+.theme-dark .ocr-choice-btn.active .ocr-choice-icon-wrap {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+body.dark-mode .ocr-choice-btn.active .ocr-choice-title,
+.theme-dark .ocr-choice-btn.active .ocr-choice-title {
+  color: #93c5fd !important;
+}
+body.dark-mode .ocr-choice-btn.active .ocr-choice-desc,
+.theme-dark .ocr-choice-btn.active .ocr-choice-desc {
+  color: #bfdbfe !important;
+}
+
+/* Period preset chips */
 .period-preset-chip {
   cursor: pointer;
   user-select: none;
+  background: rgba(0, 0, 0, 0.03);
+  color: #64748b;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.15s ease;
+}
+body.dark-mode .period-preset-chip,
+.theme-dark .period-preset-chip {
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.period-preset-chip:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+body.dark-mode .period-preset-chip:hover,
+.theme-dark .period-preset-chip:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #bfdbfe;
 }
 
 .period-preset-chip.active {
   background: #dbeafe !important;
   color: #1d4ed8 !important;
   border-color: #93c5fd !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
-.dark .period-preset-chip.active {
+.dark .period-preset-chip.active,
+body.dark-mode .period-preset-chip.active,
+.theme-dark .period-preset-chip.active {
   background: rgba(59, 130, 246, 0.25) !important;
   color: #93c5fd !important;
   border-color: rgba(96, 165, 250, 0.5) !important;
-}
-
-/* Glass Style Overrides for OCR Card when Theme is Liquid Glass */
-.theme-liquid-glass .ocr-lang-card,
-.theme-frosted-glass .ocr-lang-card,
-.theme-cyber-glass .ocr-lang-card {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.25), inset 0 1px 1.5px rgba(255, 255, 255, 0.9) !important;
-}
-
-.dark.theme-liquid-glass .ocr-lang-card,
-.dark.theme-frosted-glass .ocr-lang-card,
-.dark.theme-cyber-glass .ocr-lang-card {
-  background: rgba(15, 23, 42, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1.5px rgba(255, 255, 255, 0.15) !important;
 }
 
 .canvas-scaler-container {
@@ -9598,6 +9708,7 @@ body.dark-mode #input-title-text-sidebar {
   justify-content: center;
   width: 16px;
   height: 16px;
+  contain: strict;
 }
 
 .morph-icon-wrapper svg {
@@ -9606,50 +9717,54 @@ body.dark-mode #input-title-text-sidebar {
   left: 0;
   width: 100%;
   height: 100%;
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s ease;
 }
 
 /* Light Mode: Sun is visible, Moon rotates away & shrinks */
 .morph-icon-sun {
-  transform: rotate(0deg) scale(1);
+  transform: rotate(0deg) scale(1) translateZ(0);
   opacity: 1;
 }
 .morph-icon-moon {
-  transform: rotate(-90deg) scale(0);
+  transform: rotate(-90deg) scale(0) translateZ(0);
   opacity: 0;
 }
 
 /* Dark Mode: Moon is visible, Sun spins & shrinks into nothing */
 .dark .morph-icon-sun,
 .dark-mode .morph-icon-sun {
-  transform: rotate(90deg) scale(0);
+  transform: rotate(90deg) scale(0) translateZ(0);
   opacity: 0;
 }
 .dark .morph-icon-moon,
 .dark-mode .morph-icon-moon {
-  transform: rotate(0deg) scale(1);
+  transform: rotate(0deg) scale(1) translateZ(0);
   opacity: 1;
 }
 
-/* Button Micro-Interactions */
-#btn-theme-toggle:hover .morph-icon-wrapper svg {
-  transform: rotate(20deg) scale(1.12);
-}
-.dark #btn-theme-toggle:hover .morph-icon-moon,
-.dark-mode #btn-theme-toggle:hover .morph-icon-moon {
-  transform: rotate(-15deg) scale(1.15);
-}
+/* Button Micro-Interactions: strictly guarded for mouse/desktop to prevent sticky touch hover lag */
+@media (hover: hover) and (pointer: fine) {
+  #btn-theme-toggle:hover .morph-icon-wrapper svg {
+    transform: rotate(20deg) scale(1.12) translateZ(0);
+  }
+  .dark #btn-theme-toggle:hover .morph-icon-moon,
+  .dark-mode #btn-theme-toggle:hover .morph-icon-moon {
+    transform: rotate(-15deg) scale(1.15) translateZ(0);
+  }
 
-#btn-randomize-theme:hover svg,
-#btn-randomize-course-colors:hover svg {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform: rotate(180deg);
-}
+  #btn-randomize-theme:hover svg,
+  #btn-randomize-course-colors:hover svg {
+    transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: rotate(180deg) translateZ(0);
+  }
 
-#btn-zoom-in:hover svg,
-#btn-zoom-out:hover svg {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform: scale(1.25);
+  #btn-zoom-in:hover svg,
+  #btn-zoom-out:hover svg {
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1.22) translateZ(0);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -10842,16 +10957,17 @@ body.theme-style-default.dark-mode #tour-popover-card,
 }
 
 /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    MOBILE & SMARTPHONE ULTRA-SMOOTH 60FPS PERFORMANCE PROFILE
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  /* 1. Optimize Mobile Backdrops & Filter Radii for GPU efficiency */
+  /* 1. Optimize Mobile Backdrops & Filter Radii for GPU efficiency on low-end chips */
   .liquid-glass,
   .m3-lock-timetable-container,
   .mobile-export-dropdown,
   .modal-card {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
   }
 
   /* 2. Sub-elements and small buttons don't need heavy independent blur layers on mobile */
@@ -10859,7 +10975,9 @@ body.theme-style-default.dark-mode #tour-popover-card,
   .capsule-btn,
   .dock-icon-circle,
   .card-expand-header,
-  .exact-course-card {
+  .exact-course-card,
+  #bottom-floating-pill-bar,
+  #header-desktop-bar {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
@@ -10872,10 +10990,13 @@ body.theme-style-default.dark-mode #tour-popover-card,
   .mobile-export-dropdown {
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
+    transform: translateZ(0);
   }
 
   /* 4. Rendering Isolation & Layout Containment */
-  .sidebar-accordion-section {
+  .sidebar-accordion-section,
+  .exact-course-card,
+  .class-card-item {
     contain: content !important;
   }
 
@@ -10885,6 +11006,17 @@ body.theme-style-default.dark-mode #tour-popover-card,
   .capsule-btn::after,
   .exact-course-card::after {
     display: none !important;
+  }
+
+  /* 6. Hardware-accelerate active sliding indicator & canvas wrapper on low-end mobile */
+  .glass-slider-thumb {
+    will-change: transform, width !important;
+    transform: translateZ(0) !important;
+  }
+
+  #main-phone-wrapper,
+  #phone-canvas {
+    will-change: transform !important;
   }
 }
 

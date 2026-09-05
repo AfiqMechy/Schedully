@@ -104,11 +104,11 @@
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- i18n Localization Engine -->
-<script src="i18n.js?v=20260905_v414"></script>
-<!-- html2canvas, dom-to-image-more & jsPDF -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="i18n.js?v=20260905_v420"></script>
+<!-- html2canvas, dom-to-image-more & jsPDF (Deferred for Instant First Paint) -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script>
   (function() {
     try {
@@ -159,13 +159,19 @@
   })();
 </script>
 <style id="app-startup-smoothness">
-  /* Prevent broken unstyled canvas / wrong model flash on page refresh */
-  body:not(.app-ready) #canvas-scaler-container {
+  /* Prevent broken unstyled canvas / wrong model / unstyled bars flash on page refresh */
+  body:not(.app-ready) #canvas-scaler-container,
+  body:not(.app-ready) #header-desktop-bar,
+  body:not(.app-ready) #floating-controls-container,
+  body:not(.app-ready) #mobile-export-bar {
     opacity: 0 !important;
     pointer-events: none !important;
   }
-  #canvas-scaler-container {
-    transition: opacity 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  #canvas-scaler-container,
+  #header-desktop-bar,
+  #floating-controls-container,
+  #mobile-export-bar {
+    transition: opacity 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
   }
 </style>
 <style data-purpose="custom-fonts">
@@ -215,11 +221,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260905_v416">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="firebase-config.js"></script>
+<link rel="stylesheet" href="styles.css?v=20260905_v420">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -2309,9 +2315,9 @@
     </div>
   </div>
 
-<script src="timetable_engine.js"></script>
-<script src="ocr_parser.js?v=20260903_v371"></script>
-<script src="ics_csv_parser_v3.js"></script>
+<script src="timetable_engine.js" defer></script>
+<script src="ocr_parser.js?v=20260905_v420" defer></script>
+<script src="ics_csv_parser_v3.js" defer></script>
   <!-- Firebase Project Credentials Setup Modal -->
   <div id="firebase-config-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 animate-scaleIn">
@@ -2426,71 +2432,88 @@
     </div>
   </div>
 
-  <!-- OCR Language & Period Choice Modal (Triggered when AI detects non-English / Japanese / Period timetable) -->
+  <!-- OCR Language & Period Choice Modal (Refined UI: Clean SVGs, Flat & Glass Compatible, Light & Dark Mode) -->
   <div id="ocr-language-choice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
-    <div class="ocr-lang-card rounded-3xl shadow-2xl border max-w-md w-full p-5 animate-scaleIn flex flex-col gap-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-slate-200/80 dark:border-slate-800/80">
-      <div class="flex items-center justify-between">
-        <span id="ocr-detected-lang-badge" class="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100/80 dark:bg-blue-500/15 px-3 py-1 rounded-full">🌐 Language Detected</span>
-        <button id="btn-close-ocr-lang-modal" type="button" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+    <div class="ocr-lang-card rounded-3xl shadow-2xl border max-w-md w-full p-6 animate-scaleIn flex flex-col gap-4">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+            </svg>
+          </div>
+          <span id="ocr-detected-lang-badge" class="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">Language Detected</span>
+        </div>
+        <button id="btn-close-ocr-lang-modal" type="button" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer" title="Close">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
+      <!-- Title & Description -->
       <div class="flex flex-col gap-1">
-        <h3 id="ocr-detected-lang-title" class="font-extrabold text-base text-gray-900 dark:text-white leading-tight">Japanese Timetable Detected</h3>
+        <h3 id="ocr-detected-lang-title" class="font-extrabold text-base text-gray-900 dark:text-white leading-tight">Foreign Timetable Detected</h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-          Customize your timetable format, language, and period schedule below:
+          Choose course text display and schedule period axis format below:
         </p>
       </div>
 
       <!-- 1. Language Choice Options -->
       <div class="flex flex-col gap-2">
-        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">1. Course Language</label>
-        <div class="grid grid-cols-2 gap-2">
+        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Course Text</label>
+        <div class="grid grid-cols-2 gap-2.5">
           <!-- Option A: Keep Original -->
-          <button id="btn-ocr-keep-original" type="button" class="ocr-choice-btn active p-3 rounded-2xl border-2 border-blue-500 bg-blue-50/70 dark:bg-blue-950/50 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98]">
-            <span id="ocr-lang-flag-icon" class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-base shadow-sm">🇯🇵</span>
-            <span id="ocr-keep-lang-label" class="font-extrabold text-xs text-blue-950 dark:text-blue-100">Keep Original</span>
-            <span id="ocr-keep-lang-desc" class="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight">Japanese text</span>
+          <button id="btn-ocr-keep-original" type="button" class="ocr-choice-btn active p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer">
+            <div class="ocr-choice-icon-wrap w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <span id="ocr-keep-lang-label" class="ocr-choice-title font-extrabold text-xs">Keep Original</span>
+            <span id="ocr-keep-lang-desc" class="ocr-choice-desc text-[10.5px] font-medium leading-tight">Original characters</span>
           </button>
 
           <!-- Option B: Translate to English -->
-          <button id="btn-ocr-translate-english" type="button" class="ocr-choice-btn p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-50 dark:hover:bg-slate-800 flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98]">
-            <span class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-extrabold text-base shadow-sm">🇬🇧</span>
-            <span class="font-extrabold text-xs text-gray-900 dark:text-white">Translate</span>
-            <span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">English & Codes</span>
+          <button id="btn-ocr-translate-english" type="button" class="ocr-choice-btn p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer">
+            <div class="ocr-choice-icon-wrap w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+              </svg>
+            </div>
+            <span class="ocr-choice-title font-extrabold text-xs">Translate</span>
+            <span class="ocr-choice-desc text-[10.5px] font-medium leading-tight">English & Codes</span>
           </button>
         </div>
       </div>
 
       <!-- 2. Schedule Axis & Period System Choice -->
-      <div id="ocr-period-section" class="flex flex-col gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+      <div id="ocr-period-section" class="flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-white/10">
         <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          2. Time Axis Format
+          Time Axis Format
         </label>
 
-        <!-- Axis Mode Segments — JS sets .active on open based on detected type -->
-        <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50">
-          <button id="btn-axis-period" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use period numbers (1, 2, 3...) on the time axis">
+        <!-- Axis Mode Segments -->
+        <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl ocr-segment-bar">
+          <button id="btn-axis-period" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-bold transition-all text-center" title="Use period numbers (1, 2, 3...) on the time axis">
             Periods
           </button>
-          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 transition-all text-center" title="Use clock times (09:00, 10:30...) on the time axis">
+          <button id="btn-axis-time" type="button" class="axis-mode-btn py-2 px-1 rounded-xl text-xs font-bold transition-all text-center" title="Use clock times (09:00, 10:30...) on the time axis">
             Clock
           </button>
         </div>
 
-        <!-- Period Start Time Presets — shown only when Clock or Both is selected -->
-        <!-- JS shows/hides #ocr-period-preset-container based on axis mode -->
-        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-0.5">
-          <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500">Period start time &amp; duration:</span>
+        <!-- Period Start Time Presets -->
+        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-1">
+          <span class="text-[10.5px] font-semibold text-gray-500 dark:text-gray-400">Period start time &amp; duration:</span>
           <div class="flex flex-wrap gap-1.5">
-            <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-100/90 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40 transition-all" title="1st period at 9:00 AM, each period is 90 min (standard university)">
+            <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-bold px-3 py-1.5 rounded-xl transition-all" title="1st period at 9:00 AM, each period is 90 min (standard university)">
               9:00 AM · 90 min
             </button>
-            <button type="button" data-preset="90m-850" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all" title="1st period at 8:50 AM, each period is 90 min (some universities)">
+            <button type="button" data-preset="90m-850" class="period-preset-chip text-[11px] font-bold px-3 py-1.5 rounded-xl transition-all" title="1st period at 8:50 AM, each period is 90 min (some universities)">
               8:50 AM · 90 min
             </button>
-            <button type="button" data-preset="50m-school" class="period-preset-chip text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all" title="Starts 8:30 AM, 50-minute classes with 10 min break (high school)">
+            <button type="button" data-preset="50m-school" class="period-preset-chip text-[11px] font-bold px-3 py-1.5 rounded-xl transition-all" title="Starts 8:30 AM, 50-minute classes with 10 min break (high school)">
               8:30 AM · 50 min
             </button>
           </div>
@@ -2498,9 +2521,12 @@
       </div>
 
       <!-- Action Button: Apply to Timetable -->
-      <div class="pt-1">
-        <button id="btn-ocr-apply-import" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-          <span>✨ Apply & Generate Timetable</span>
+      <div class="pt-2">
+        <button id="btn-ocr-apply-import" type="button" class="w-full py-3 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span>Apply to Timetable</span>
         </button>
       </div>
     </div>
@@ -2656,13 +2682,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260905_v416"></script>
+  <script src="app_v3.js?v=20260905_v420"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260905_v416').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260905_v420').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

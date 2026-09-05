@@ -4734,11 +4734,9 @@ class SchedullyApp {
     if (this.btnOcrKeepOriginal) {
       this.btnOcrKeepOriginal.addEventListener('click', () => {
         this.selectedOcrLangChoice = 'original';
-        this.btnOcrKeepOriginal.classList.add('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
-        this.btnOcrKeepOriginal.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+        this.btnOcrKeepOriginal.classList.add('active');
         if (this.btnOcrTranslateEnglish) {
-          this.btnOcrTranslateEnglish.classList.remove('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
-          this.btnOcrTranslateEnglish.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+          this.btnOcrTranslateEnglish.classList.remove('active');
         }
       });
     }
@@ -4746,11 +4744,9 @@ class SchedullyApp {
     if (this.btnOcrTranslateEnglish) {
       this.btnOcrTranslateEnglish.addEventListener('click', () => {
         this.selectedOcrLangChoice = 'translated';
-        this.btnOcrTranslateEnglish.classList.add('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
-        this.btnOcrTranslateEnglish.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+        this.btnOcrTranslateEnglish.classList.add('active');
         if (this.btnOcrKeepOriginal) {
-          this.btnOcrKeepOriginal.classList.remove('active', 'border-2', 'border-blue-500', 'bg-blue-50/70', 'dark:bg-blue-950/50');
-          this.btnOcrKeepOriginal.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white/70', 'dark:bg-slate-800/70');
+          this.btnOcrKeepOriginal.classList.remove('active');
         }
       });
     }
@@ -4881,11 +4877,10 @@ class SchedullyApp {
             });
             const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
             const detectedLang = scanResult.detectedLanguage || 'English';
-            const hasNonEnglish = (scanResult.hasNonEnglishText !== undefined) ? scanResult.hasNonEnglishText : false;
-
+            const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? scanResult.isPeriodBased : extracted.some(c => c.periodNumber !== undefined);
             if (extracted && extracted.length > 0) {
-              if (hasNonEnglish || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang);
+              if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased);
               } else {
                 this.importClassesDirectly(extracted);
               }
@@ -6630,21 +6625,22 @@ class SchedullyApp {
     const flag = flagMap[langLower] || '🌐';
 
     if (this.ocrDetectedLangBadge) {
-      const typeLabel = isPeriodBased ? '時限 Period System' : 'Schedule Detected';
-      this.ocrDetectedLangBadge.innerText = `${flag} ${detectedLang} • ${typeLabel}`;
+      const typeLabel = isPeriodBased ? 'Period System' : 'Schedule Detected';
+      this.ocrDetectedLangBadge.innerText = `${detectedLang} • ${typeLabel}`;
     }
     if (this.ocrDetectedLangTitle) {
       this.ocrDetectedLangTitle.innerText = `${detectedLang} Timetable Detected`;
-    }
-    if (this.ocrLangFlagIcon) {
-      this.ocrLangFlagIcon.innerText = flag;
     }
     if (this.ocrKeepLangLabel) {
       this.ocrKeepLangLabel.innerText = `Keep ${detectedLang}`;
     }
     if (this.ocrKeepLangDesc) {
-      this.ocrKeepLangDesc.innerText = `Original ${detectedLang} characters`;
+      this.ocrKeepLangDesc.innerText = `Original ${detectedLang} text`;
     }
+
+    // Reset language choice active states
+    if (this.btnOcrKeepOriginal) this.btnOcrKeepOriginal.classList.add('active');
+    if (this.btnOcrTranslateEnglish) this.btnOcrTranslateEnglish.classList.remove('active');
 
     // Default Selection State
     this.selectedOcrLangChoice = 'original';

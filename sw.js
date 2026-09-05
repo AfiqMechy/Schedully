@@ -1,13 +1,13 @@
-const CACHE_NAME = 'schedully-cache-v416';
+const CACHE_NAME = 'schedully-cache-v420';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/app_v3.js',
-  '/ocr_parser.js',
+  '/styles.css?v=20260905_v420',
+  '/app_v3.js?v=20260905_v420',
+  '/ocr_parser.js?v=20260905_v420',
   '/ics_csv_parser_v3.js',
   '/timetable_engine.js',
-  '/i18n.js',
+  '/i18n.js?v=20260905_v420',
   '/manifest.json',
   '/logo-transparent.png',
   '/icon-192.png',
@@ -16,7 +16,7 @@ const ASSETS = [
   '/tng_qr.png'
 ];
 
-// Install Event: cache core app shell
+// Install Event: cache core app shell immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -41,40 +41,29 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Network-first for code assets, cache fallback
+// Fetch Event: Stale-While-Revalidate for sub-millisecond instant refresh & offline speed
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
   const url = new URL(event.request.url);
-  const isCodeAsset = url.pathname.endsWith('.html') || 
-                      url.pathname.endsWith('.css') || 
-                      url.pathname.endsWith('.js') || 
-                      url.pathname === '/';
-
-  if (isCodeAsset) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request))
-    );
+  // Bypass non-GET, analytics, or external API calls
+  if (url.origin !== self.location.origin && !url.hostname.includes('fonts.gstatic.com') && !url.hostname.includes('fonts.googleapis.com')) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).then((networkResponse) => {
+      // Background revalidation fetch
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return networkResponse;
-      });
+      }).catch(() => null);
+
+      // Return instant cached response if available, or wait for fetch
+      return cachedResponse || fetchPromise;
     })
   );
 });
