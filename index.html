@@ -215,7 +215,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260905_v415">
+<link rel="stylesheet" href="styles.css?v=20260905_v416">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -1996,23 +1996,28 @@
         </button>
       </div>
 
-      <!-- Capsule 2: Theme Toggle (Dark / Light Mode) -->
+      <!-- Capsule 2: Theme Toggle (Dark / Light Mode) with Fluid Sun-Moon Morph Animation -->
       <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5">
-        <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Toggle Light/Dark Theme">
-          <svg id="icon-theme-toggle" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-          </svg>
+        <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors overflow-hidden" title="Toggle Light/Dark Theme">
+          <div class="morph-icon-wrapper">
+            <!-- Sun Icon (Light Mode) -->
+            <svg class="morph-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="5" stroke-width="2"></circle>
+              <line x1="12" y1="1" x2="12" y2="3" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="12" y1="21" x2="12" y2="23" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="1" y1="12" x2="3" y2="12" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="21" y1="12" x2="23" y2="12" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke-width="2" stroke-linecap="round"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke-width="2" stroke-linecap="round"></line>
+            </svg>
+            <!-- Moon Icon (Dark Mode) -->
+            <svg class="morph-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
         </button>
-        <script>
-          (function() {
-            var isDark = document.documentElement.classList.contains('dark') || document.documentElement.classList.contains('dark-mode');
-            var btn = document.getElementById('btn-theme-toggle');
-            if (btn && isDark) {
-              btn.setAttribute('title', 'Switch to Light Mode');
-              btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
-            }
-          })();
-        </script>
       </div>
 
       <!-- Capsule 3: Expandable Controls Button -->
@@ -2651,13 +2656,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260905_v415"></script>
+  <script src="app_v3.js?v=20260905_v416"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260905_v415').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260905_v416').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

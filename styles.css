@@ -9588,6 +9588,71 @@ body.dark-mode #input-title-text-sidebar {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   LOTTIE / RIVE-STYLE FLUID SVG MICRO-INTERACTIONS
+   Smooth morphing Sun ☀️ ↔ Moon 🌙, Spin, and Bounce Physics
+   ═══════════════════════════════════════════════════════════════ */
+.morph-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.morph-icon-wrapper svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+/* Light Mode: Sun is visible, Moon rotates away & shrinks */
+.morph-icon-sun {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+.morph-icon-moon {
+  transform: rotate(-90deg) scale(0);
+  opacity: 0;
+}
+
+/* Dark Mode: Moon is visible, Sun spins & shrinks into nothing */
+.dark .morph-icon-sun,
+.dark-mode .morph-icon-sun {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+.dark .morph-icon-moon,
+.dark-mode .morph-icon-moon {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+
+/* Button Micro-Interactions */
+#btn-theme-toggle:hover .morph-icon-wrapper svg {
+  transform: rotate(20deg) scale(1.12);
+}
+.dark #btn-theme-toggle:hover .morph-icon-moon,
+.dark-mode #btn-theme-toggle:hover .morph-icon-moon {
+  transform: rotate(-15deg) scale(1.15);
+}
+
+#btn-randomize-theme:hover svg,
+#btn-randomize-course-colors:hover svg {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: rotate(180deg);
+}
+
+#btn-zoom-in:hover svg,
+#btn-zoom-out:hover svg {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scale(1.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    UNIVERSAL LIQUID GLASS LIGHT-FOLLOWING TRACKER (Mouse + Touch)
    ═══════════════════════════════════════════════════════════════ */
 #left-sidebar,
