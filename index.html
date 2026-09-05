@@ -6,6 +6,26 @@
     const saved = localStorage.getItem('schedully_theme_mode') || 'auto';
     const isDark = saved === 'dark' || (saved === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', isDark);
+
+    // If mobile/tablet viewport, immediately prepare sidebars as collapsed to prevent flash of open drawers on load
+    if (window.innerWidth <= 1280) {
+      document.addEventListener('DOMContentLoaded', function() {
+        var left = document.getElementById('left-sidebar');
+        var right = document.getElementById('right-sidebar');
+        var btnLeft = document.getElementById('btn-expand-left-floating');
+        var btnRight = document.getElementById('btn-expand-right-floating');
+        if (left) left.classList.add('sidebar-collapsed-left');
+        if (right) right.classList.add('sidebar-collapsed-right');
+        if (btnLeft) {
+          btnLeft.classList.remove('hidden');
+          btnLeft.style.display = 'flex';
+        }
+        if (btnRight) {
+          btnRight.classList.remove('hidden');
+          btnRight.style.display = 'flex';
+        }
+      });
+    }
   })();
 </script>
 <meta charset="utf-8">
@@ -77,30 +97,77 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Schedully">
 <meta name="application-name" content="Schedully">
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- i18n Localization Engine -->
-<script src="i18n.js?v=20260901_instant_cloud_v368"></script>
-<!-- html2canvas & jsPDF -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Performance Optimized Google Fonts & UI Icons (preconnect + font-display=swap) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&family=Lexend:wght@400;600;700;800&family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- i18n Localization Engine -->
+<script src="i18n.js?v=20260905_v414"></script>
+<!-- html2canvas, dom-to-image-more & jsPDF -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   (function() {
     try {
+      // 1. Instant Theme & Dark Mode
       var presets = JSON.parse(localStorage.getItem('schedully_presets') || '{}');
       var activeKey = localStorage.getItem('schedully_active_preset') || 'preset1';
       var activePreset = presets[activeKey] || {};
-      var mode = activePreset.currentMode || 'auto';
+      var mode = activePreset.currentMode || localStorage.getItem('schedully_theme_mode') || 'auto';
       var isDark = mode === 'dark' || (mode === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
       if (isDark) {
         document.documentElement.classList.add('dark-mode');
       }
+
+      // 2. Active Device & Initial Zoom Preparation
+      var activeDevice = localStorage.getItem('schedully_active_device') || 'phone';
+      var wallpaperData = localStorage.getItem('schedully_wallpaper_data');
+      var wallpaperClass = wallpaperData ? ' has-photo-wallpaper' : '';
+
+      var getDims = function(dev) {
+        if (dev === 'tablet') return { cls: 'canvas-tablet', wrapCls: 'tablet-mode' };
+        if (dev === 'watch') return { cls: 'canvas-watch', wrapCls: 'watch-mode' };
+        if (dev === 'paper') return { cls: 'canvas-paper', wrapCls: 'paper-mode' };
+        return { cls: 'canvas-phone', wrapCls: '' };
+      };
+      var d = getDims(activeDevice);
+
+      // Prepare correct device class & bottom pill bar controls immediately when DOM is parsed
+      document.addEventListener('DOMContentLoaded', function() {
+        var wrapper = document.getElementById('main-phone-wrapper');
+        var canvas = document.getElementById('phone-canvas');
+        if (wrapper && d.wrapCls) {
+          wrapper.className = 'm3-phone-wrapper ' + d.wrapCls;
+        }
+        if (canvas) {
+          canvas.className = 'm3-phone-canvas ' + d.cls + wallpaperClass;
+        }
+
+        // Instantly display saved/computed zoom percentage instead of hardcoded 100%
+        var storedZoom = parseFloat(localStorage.getItem('schedully_zoom_scale'));
+        var fitZoom = window.innerWidth <= 640 ? 0.95 : (window.innerWidth <= 1280 ? 0.85 : Math.min(0.85, Math.max(0.60, Math.round(((window.innerHeight - 200) / 770) * 20) / 20)));
+        var activeZoom = (!isNaN(storedZoom) && storedZoom >= 0.4 && storedZoom <= 1.5) ? storedZoom : fitZoom;
+        var zoomLabel = document.getElementById('zoom-label-text');
+        if (zoomLabel) {
+          zoomLabel.innerText = Math.round(activeZoom * 100) + '%';
+        }
+      });
     } catch(e) {}
   })();
 </script>
+<style id="app-startup-smoothness">
+  /* Prevent broken unstyled canvas / wrong model flash on page refresh */
+  body:not(.app-ready) #canvas-scaler-container {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  #canvas-scaler-container {
+    transition: opacity 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+</style>
 <style data-purpose="custom-fonts">
     body {
       font-family: var(--font-sans, 'Inter', sans-serif);
@@ -148,10 +215,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260904_v388">
+<link rel="stylesheet" href="styles.css?v=20260905_v415">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -171,7 +235,7 @@
 </svg>
 
 <!-- BEGIN: Left Sidebar Navigation -->
-<button id="btn-expand-left-floating" class="hidden fixed top-5 left-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
+<button id="btn-expand-left-floating" class="fixed top-5 left-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
   <svg class="w-4 h-4 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
   <span>Menu</span>
 </button>
@@ -242,7 +306,7 @@
 
 
 
-<aside id="left-sidebar" class="w-80 m-3 rounded-3xl flex flex-col justify-between overflow-y-auto no-scrollbar p-6 z-20 shrink-0">
+<aside id="left-sidebar" class="sidebar-collapsed-left w-80 m-3 rounded-3xl flex flex-col justify-between overflow-y-auto no-scrollbar p-6 z-20 shrink-0">
 <!-- Top Section: Logo and Nav Items -->
 <div>
 <!-- Logo & Collapse Button -->
@@ -1594,31 +1658,31 @@
 <!-- BEGIN: Center Workspace -->
 <main class="flex-1 flex flex-col relative overflow-hidden bg-[#F6F8FB] dot-matrix-bg">
 <!-- Top Action Bar -->
-<header class="h-auto flex items-center justify-center border-none bg-transparent pointer-events-none z-10 relative">
+<header class="h-auto flex items-center justify-center border-none bg-transparent pointer-events-none z-20 relative pt-4 pb-2">
 
   <!-- DESKTOP: full pill bar (hidden on mobile) -->
-  <div id="header-desktop-bar" class="hidden-mobile inline-flex items-center gap-2 p-1.5 bg-white/90 backdrop-blur-md border border-gray-200/90 rounded-full shadow-sm">
-    <button id="btn-export-ical" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+  <div id="header-desktop-bar" class="hidden-mobile pointer-events-auto inline-flex items-center gap-2 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-lg">
+    <button id="btn-export-ical" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
+      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       <span data-i18n="exportIcs">Calendar (.ics)</span>
     </button>
-    <button id="btn-export-csv" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    <button id="btn-export-csv" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
+      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       <span data-i18n="exportCsv">Export CSV</span>
     </button>
     <button id="btn-download-hd" class="btn-theme-primary flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-extrabold active:scale-95 transition-all shadow-md">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       <span data-i18n="downloadImage">Download Image</span>
     </button>
-    <button id="btn-save-pdf" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    <button id="btn-save-pdf" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
+      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       <span data-i18n="savePdf">Save as PDF</span>
     </button>
   </div>
 </header>
 
 <!-- Main Canvas Area (Phone Model Preview First) -->
-<div id="canvas-scroll-area" class="flex-1 flex flex-col items-center justify-start p-8 relative overflow-y-auto no-scrollbar pt-6">
+<div id="canvas-scroll-area" class="flex-1 flex flex-col items-center justify-center p-8 relative overflow-y-auto no-scrollbar">
   <!-- Dynamic Studio Stage Ambient Backdrop -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none -z-20">
     <!-- Crisp Neutral Studio Dot Matrix Grid -->
@@ -1907,7 +1971,16 @@
         <button id="btn-zoom-out" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom Out">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
-        <span id="zoom-label-text" class="text-xs font-extrabold text-gray-800 dark:text-gray-100 px-1 w-10 text-center">100%</span>
+        <span id="zoom-label-text" class="text-xs font-extrabold text-gray-800 dark:text-gray-100 px-1 w-10 text-center">85%</span>
+        <script>
+          (function() {
+            var z = parseFloat(localStorage.getItem('schedully_zoom_scale'));
+            if (!isNaN(z) && z >= 0.4 && z <= 1.5) {
+              var el = document.getElementById('zoom-label-text');
+              if (el) el.innerText = Math.round(z * 100) + '%';
+            }
+          })();
+        </script>
         <button id="btn-zoom-in" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom In">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
@@ -1926,8 +1999,20 @@
       <!-- Capsule 2: Theme Toggle (Dark / Light Mode) -->
       <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5">
         <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Toggle Light/Dark Theme">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <svg id="icon-theme-toggle" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg>
         </button>
+        <script>
+          (function() {
+            var isDark = document.documentElement.classList.contains('dark') || document.documentElement.classList.contains('dark-mode');
+            var btn = document.getElementById('btn-theme-toggle');
+            if (btn && isDark) {
+              btn.setAttribute('title', 'Switch to Light Mode');
+              btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
+            }
+          })();
+        </script>
       </div>
 
       <!-- Capsule 3: Expandable Controls Button -->
@@ -1941,12 +2026,12 @@
 </main>
 <!-- END: Center Workspace -->
 <!-- BEGIN: Right Sidebar Schedule List -->
-<button id="btn-expand-right-floating" class="hidden fixed top-5 right-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
+<button id="btn-expand-right-floating" class="fixed top-5 right-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
   <svg class="w-4 h-4 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
   <span>Schedule</span>
 </button>
 
-<aside id="right-sidebar" class="w-80 m-3 rounded-3xl flex flex-col overflow-hidden z-20 shrink-0">
+<aside id="right-sidebar" class="sidebar-collapsed-right w-80 m-3 rounded-3xl flex flex-col overflow-hidden z-20 shrink-0">
     <!-- Header -->
     <div class="p-5 border-b border-gray-100">
       <div class="flex items-center justify-between mb-3.5">
@@ -2566,13 +2651,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260904_v405"></script>
+  <script src="app_v3.js?v=20260905_v415"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260904_v405').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260905_v415').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

@@ -190,9 +190,16 @@ class SchedullyApp {
     this.gridYPosVal = 0;
 
     const storedZoom = parseFloat(localStorage.getItem('schedully_zoom_scale'));
-    this.zoomScale = !isNaN(storedZoom) && storedZoom >= 0.3 && storedZoom <= 2.0 
+    const getOptimalFitScale = () => {
+      if (window.innerWidth <= 640) return 0.95;
+      if (window.innerWidth <= 1280) return 0.85;
+      const availableH = window.innerHeight - 200;
+      const fit = Math.min(0.85, Math.max(0.60, Math.round((availableH / 770) * 20) / 20));
+      return fit;
+    };
+    this.zoomScale = (!isNaN(storedZoom) && storedZoom >= 0.4 && storedZoom <= 1.5) 
       ? storedZoom 
-      : (window.innerWidth < 1024 ? 1.0 : 0.85);
+      : getOptimalFitScale();
 
     this.initDOMElements();
     this.bindEvents();
@@ -214,6 +221,10 @@ class SchedullyApp {
 
     // this.loadFromLocal();
     this.renderAll();
+    if (typeof this.applyCanvasZoom === 'function') {
+      this.applyCanvasZoom(false);
+    }
+    document.body.classList.add('app-ready');
     this.updateHistoryButtonUI();
   }
 
@@ -504,6 +515,18 @@ class SchedullyApp {
     document.querySelectorAll('.theme-mode-dot').forEach(d => {
       d.classList.toggle('active', d.getAttribute('data-mode') === this.currentMode);
     });
+
+    // Sync bottom capsule theme toggle button icon and title
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    if (btnThemeToggle) {
+      if (resolvedMode === 'dark') {
+        btnThemeToggle.setAttribute('title', 'Switch to Light Mode');
+        btnThemeToggle.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
+      } else {
+        btnThemeToggle.setAttribute('title', 'Switch to Dark Mode');
+        btnThemeToggle.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
+      }
+    }
 
     const paletteGroup = THEME_PALETTES[resolvedMode] || THEME_PALETTES.light;
     const selectedTheme = paletteGroup[this.currentPalette] || paletteGroup.indigo;
@@ -4331,15 +4354,18 @@ class SchedullyApp {
     };
 
     const toggleLeftSidebar = (collapse) => {
-      const isCurrentlyCollapsed = leftSidebar.classList.contains('sidebar-collapsed-left');
+      const isCurrentlyCollapsed = leftSidebar.classList.contains('sidebar-collapsed-left') || !leftSidebar.classList.contains('sidebar-open-left');
       const shouldCollapse = collapse !== undefined ? collapse : !isCurrentlyCollapsed;
       
       if (shouldCollapse) {
         leftSidebar.classList.add('sidebar-collapsed-left');
+        leftSidebar.classList.remove('sidebar-open-left', 'sidebar-expanded');
       } else {
         leftSidebar.classList.remove('sidebar-collapsed-left');
+        leftSidebar.classList.add('sidebar-open-left', 'sidebar-expanded');
         if (isMobile()) {
           rightSidebar.classList.add('sidebar-collapsed-right');
+          rightSidebar.classList.remove('sidebar-open-right', 'sidebar-expanded');
         }
       }
       syncFloatingButtonsState();
@@ -4348,15 +4374,18 @@ class SchedullyApp {
     window.toggleLeftSidebar = toggleLeftSidebar;
 
     const toggleRightSidebar = (collapse) => {
-      const isCurrentlyCollapsed = rightSidebar.classList.contains('sidebar-collapsed-right');
+      const isCurrentlyCollapsed = rightSidebar.classList.contains('sidebar-collapsed-right') || !rightSidebar.classList.contains('sidebar-open-right');
       const shouldCollapse = collapse !== undefined ? collapse : !isCurrentlyCollapsed;
       
       if (shouldCollapse) {
         rightSidebar.classList.add('sidebar-collapsed-right');
+        rightSidebar.classList.remove('sidebar-open-right', 'sidebar-expanded');
       } else {
         rightSidebar.classList.remove('sidebar-collapsed-right');
+        rightSidebar.classList.add('sidebar-open-right', 'sidebar-expanded');
         if (isMobile()) {
           leftSidebar.classList.add('sidebar-collapsed-left');
+          leftSidebar.classList.remove('sidebar-open-left', 'sidebar-expanded');
         }
       }
       syncFloatingButtonsState();
@@ -4371,15 +4400,11 @@ class SchedullyApp {
     btnExpandRightFloating?.addEventListener('click', () => toggleRightSidebar(false));
 
     // Initial sidebar state on web app load:
-    // Mobile & Tablet (<=1280px): BOTH Menu and Schedule start COLLAPSED (not expanded)
-    // Desktop (>1280px): BOTH Menu and Schedule start EXPANDED by default
-    if (isMobile()) {
-      leftSidebar?.classList.add('sidebar-collapsed-left');
-      rightSidebar?.classList.add('sidebar-collapsed-right');
-    } else {
-      leftSidebar?.classList.remove('sidebar-collapsed-left');
-      rightSidebar?.classList.remove('sidebar-collapsed-right');
-    }
+    // Mobile, Tablet, & Desktop: BOTH Menu and Schedule start COLLAPSED by default for a clean workspace
+    leftSidebar?.classList.add('sidebar-collapsed-left');
+    leftSidebar?.classList.remove('sidebar-open-left', 'sidebar-expanded');
+    rightSidebar?.classList.add('sidebar-collapsed-right');
+    rightSidebar?.classList.remove('sidebar-open-right', 'sidebar-expanded');
     syncFloatingButtonsState();
 
     // Re-check on window resize

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Schedully i18n Comprehensive Localization Engine
  * Supports: EN, EN-SLANG, FR, ZH-CN, ZH-TW, KO, JA, MS, ID, ES
  */
@@ -37,8 +37,9 @@ window.SchedullyI18n = {
         exportIcs: 'Calendar (.ics)',
         exportCsv: 'Export CSV',
         downloadImage: 'Download Image',
-        savePdf: 'Save PDF',
+        savePdf: 'Save as PDF',
         preset: 'Schedule Preset',
+        displayOptions: 'Display Options',
         smartphone: 'Phone',
         phone: 'Phone',
         tablet: 'Tablet',
@@ -65,6 +66,7 @@ window.SchedullyI18n = {
         dark: 'Dark',
         light: 'Light',
         bgBlur: 'Background Blur',
+
         blurIntensity: 'Blur Intensity',
         yes: 'Yes',
         no: 'No',

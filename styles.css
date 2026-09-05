@@ -265,6 +265,7 @@ body.dark-mode, .theme-dark {
   height: calc(100vh - 64px);
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */
+  transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease, margin 0.3s ease !important;
 }
 
 body.dark-mode .m3-sidebar,
@@ -524,92 +525,97 @@ body.dark-mode .mobile-export-divider,
 
 
 
-/* ── ADAPTIVE CANVAS HORIZONTAL & VERTICAL SWIPING (TABLET 920px, PAPER 720px, PHONE 380px) ── */
+/* ── UNIVERSAL CANVAS HORIZONTAL & VERTICAL CENTERING (DESKTOP, TABLET, PHONE) ── */
+#canvas-scroll-area {
+  width: 100% !important;
+  min-height: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  scroll-behavior: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: safe center !important;
+  justify-content: safe center !important;
+  padding: 80px 32px 140px 32px !important;
+  box-sizing: border-box !important;
+  touch-action: pan-x pan-y !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+#canvas-scroll-area::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+#canvas-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Scaler footprint container gives exact visual size to scroll area for 100% boundary panning */
+.canvas-scaler-container {
+  position: relative !important;
+  margin: auto !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* Wrapper contains canvas & physical side buttons scaled seamlessly as one hardware unit */
+#main-phone-wrapper {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-width: none !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+  touch-action: pan-x pan-y !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  transform-origin: 0 0 !important;
+}
+
+.m3-phone-canvas.canvas-phone {
+  width: 380px !important;
+  min-width: 380px !important;
+}
+
+.m3-phone-canvas.canvas-watch {
+  width: 320px !important;
+  min-width: 320px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-band {
+  width: 220px !important;
+  min-width: 220px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-capsule {
+  width: 195px !important;
+  min-width: 195px !important;
+}
+
+.m3-phone-canvas.canvas-watch.watch-shape-round {
+  width: 340px !important;
+  min-width: 340px !important;
+}
+
+.m3-phone-canvas.canvas-tablet {
+  width: 920px !important;
+  min-width: 920px !important;
+}
+
+.m3-phone-canvas.canvas-paper {
+  width: 720px !important;
+  min-width: 720px !important;
+}
+
 @media (max-width: 1280px) {
   #canvas-scroll-area {
-    width: 100% !important;
     max-width: 100vw !important;
-    min-height: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    scroll-behavior: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: safe center !important;
-    justify-content: safe center !important;
-    padding: 60px 40px !important;
-    box-sizing: border-box !important;
-    touch-action: pan-x pan-y !important;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-  }
-
-  #canvas-scroll-area::-webkit-scrollbar {
-    height: 5px;
-  }
-  #canvas-scroll-area::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-  }
-
-  /* Scaler footprint container gives exact visual size to scroll area for 100% boundary panning */
-  .canvas-scaler-container {
-    position: relative !important;
-    margin: auto !important;
-    display: block !important;
-    flex-shrink: 0 !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  /* Wrapper contains canvas & physical side buttons scaled seamlessly as one hardware unit */
-  #main-phone-wrapper {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    max-width: none !important;
-    flex-shrink: 0 !important;
-    display: block !important;
-    touch-action: pan-x pan-y !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-    transform-origin: 0 0 !important;
-  }
-
-  .m3-phone-canvas.canvas-phone {
-    width: 380px !important;
-    min-width: 380px !important;
-  }
-
-  .m3-phone-canvas.canvas-watch {
-    width: 320px !important;
-    min-width: 320px !important;
-  }
-
-  .m3-phone-canvas.canvas-watch.watch-shape-band {
-    width: 220px !important;
-    min-width: 220px !important;
-  }
-
-  .m3-phone-canvas.canvas-watch.watch-shape-capsule {
-    width: 195px !important;
-    min-width: 195px !important;
-  }
-
-  .m3-phone-canvas.canvas-watch.watch-shape-round {
-    width: 340px !important;
-    min-width: 340px !important;
-  }
-
-  .m3-phone-canvas.canvas-tablet {
-    width: 920px !important;
-    min-width: 920px !important;
-  }
-
-  .m3-phone-canvas.canvas-paper {
-    width: 720px !important;
-    min-width: 720px !important;
+    padding: 60px 40px 140px 40px !important;
   }
 
   /* Bottom floating pill bar: ALWAYS strictly 1 horizontal row pill (Image 1 layout, NEVER wraps!) */
@@ -6230,14 +6236,20 @@ input:focus, select:focus, textarea:focus {
     overflow-x: hidden !important;
     /* Remove them from flex flow — they float on top */
     flex-shrink: 0;
+    will-change: transform, opacity;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
   }
 
+  /* On mobile/tablet, sidebars default to off-screen (collapsed) */
   #left-sidebar {
     left: 12px !important;
     right: auto !important;
     width: min(360px, calc(100vw - 24px)) !important;
     max-width: min(360px, calc(100vw - 24px)) !important;
     margin: 0 !important;
+    transform: translate3d(calc(-100% - 32px), 0, 0) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   #right-sidebar {
@@ -6246,17 +6258,35 @@ input:focus, select:focus, textarea:focus {
     width: min(360px, calc(100vw - 24px)) !important;
     max-width: min(360px, calc(100vw - 24px)) !important;
     margin: 0 !important;
+    transform: translate3d(calc(100% + 32px), 0, 0) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
-  /* Collapsed sidebars slide off-screen (not just opacity — real slide) */
+  /* Expanded sidebars slide into view only when user explicitly toggles them */
+  #left-sidebar.sidebar-open-left,
+  #left-sidebar.sidebar-expanded {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  #right-sidebar.sidebar-open-right,
+  #right-sidebar.sidebar-expanded {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Collapsed sidebars slide off-screen smoothly with GPU acceleration */
   #left-sidebar.sidebar-collapsed-left {
-    transform: translateX(calc(-100% - 24px)) !important;
+    transform: translate3d(calc(-100% - 32px), 0, 0) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
 
   #right-sidebar.sidebar-collapsed-right {
-    transform: translateX(calc(100% + 24px)) !important;
+    transform: translate3d(calc(100% + 32px), 0, 0) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
@@ -9066,16 +9096,16 @@ body.dark-mode #input-title-text-stage,
   display: inline-flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  background: rgba(0, 0, 0, 0.05) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) * 0.5)) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) * 0.5)) saturate(160%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background: #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #CBD5E1 !important;
   border-radius: 9999px !important;
   padding: 2.5px !important;
   box-sizing: border-box !important;
   user-select: none !important;
   touch-action: pan-y !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: none !important;
   overflow: hidden !important;
   isolation: isolate !important;
 }
@@ -9157,9 +9187,9 @@ body.dark-mode .edit-course-time-format,
 .theme-dark #time-display-mode-group,
 .theme-dark .time-display-mode-container,
 .theme-dark .edit-course-time-format {
-  background: rgba(0, 0, 0, 0.22) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.35) !important;
+  background: #0F172A !important;
+  border-color: #334155 !important;
+  box-shadow: none !important;
 }
 
 /* Layer 1: Text & Icons (Native High-DPI Vector Crisp Typography with Optical Magnifying Effect) */
@@ -9263,12 +9293,12 @@ body.dark-mode .edit-course-time-format,
 #device-type-toggles {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  padding: 3.5px !important;
+  padding: 3px !important;
   gap: 3px !important;
-  background: rgba(241, 245, 249, 0.92) !important;
-  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  background: #E2E8F0 !important;
+  border: 1px solid #CBD5E1 !important;
   border-radius: 9999px !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: none !important;
 }
 
 #device-type-toggles .capsule-btn {
@@ -9341,8 +9371,9 @@ body.dark-mode .edit-course-time-format,
 
 body.dark-mode #device-type-toggles,
 .theme-dark #device-type-toggles {
-  background: rgba(15, 23, 42, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: #0F172A !important;
+  border-color: #334155 !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode #device-type-toggles .capsule-btn,
@@ -9419,7 +9450,7 @@ body.dark-mode .support-tab-btn.active,
   font-weight: 800 !important;
   box-shadow: none !important;
   text-shadow: none !important;
-  transform: scale(1.02) !important;
+  transform: scale(1) !important;
 }
 
 body.dark-mode #device-type-toggles .capsule-btn.active svg,
@@ -9429,37 +9460,31 @@ body.dark-mode .capsule-group button.active svg,
   color: #FFFFFF !important;
 }
 
-/* Layer 2: Tactile Liquid Glass Slider Indicator (Dynamic WebGL Physics Shader Sync) */
+/* Layer 2: Tactile Flat Slider Indicator */
 .glass-slider-thumb {
   position: absolute !important;
-  top: 2.5px !important;
-  bottom: 2.5px !important;
+  top: 2px !important;
+  bottom: 2px !important;
   left: 0 !important;
   border-radius: 9999px !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 2px)) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 2px)) saturate(180%) !important;
-  border: 0.5px solid rgba(0, 0, 0, 0.04) !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
   pointer-events: none !important;
   z-index: 2 !important;
-  transition: transform 0.28s cubic-bezier(0.25, 1, 0.35, 1), width 0.24s cubic-bezier(0.25, 1, 0.35, 1) !important;
+  transition: transform 0.24s cubic-bezier(0.25, 1, 0.35, 1), width 0.2s cubic-bezier(0.25, 1, 0.35, 1) !important;
   will-change: transform, width;
 }
 
 body.dark-mode .glass-slider-thumb,
 .theme-dark .glass-slider-thumb {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.25)) 0%, rgba(255, 255, 255, 0.14) 50%, rgba(255, 255, 255, 0.08) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 4px)) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.35),
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.4) !important;
+  background: #1E293B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #475569 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
 
 .time-display-mode-container .glass-slider-thumb,
