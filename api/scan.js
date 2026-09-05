@@ -85,8 +85,8 @@ ABSOLUTE STRICT RULES:
    - "originalTitle": Same exact verbatim subject name as printed on the image.
    - "code": The official course code printed next to or above/below the title (e.g. "BBSB3103", "CS101", "SE302"). If NO separate alphanumeric code is printed, reuse the verbatim title or native abbreviation.
    - "originalCode": Native shorthand or code if present.
-   - "translatedTitle": Optional English translation ONLY if the original language is non-English (e.g. Japanese, Chinese, Arabic). For English or Malay timetables, set to the same verbatim title.
-   - "translatedCode": Standard Latin alphanumeric code or the course code.
+   - "translatedTitle": ACCURATE ENGLISH TRANSLATION of the subject name. If the timetable is in Japanese, Chinese, Korean, Arabic, French, German, Spanish, etc., you MUST translate the subject title into natural English (e.g. "外国語特別講義II(マレー語)" -> "Special Foreign Language Lecture II (Malay)", "体育実技II(バスケットボールB)" -> "Physical Education Practice II (Basketball B)", "教育制度論" -> "Educational Systems Theory"). If the timetable is already in English, provide the exact English title.
+   - "translatedCode": Standard Latin/English alphanumeric code (e.g. "FL202", "PE202", "CS101") or the official course code.
 
 3. DAYS & TIME RECOGNITION:
    - Map columns or rows to standard English day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
@@ -108,23 +108,24 @@ ABSOLUTE STRICT RULES:
 
 OUTPUT STRICT JSON SCHEMA ONLY:
 {
-  "detectedLanguage": "English",
-  "hasNonEnglishText": false,
-  "isPeriodBased": false,
+  "detectedLanguage": "Japanese",
+  "hasNonEnglishText": true,
+  "isPeriodBased": true,
   "courses": [
     {
-      "title": "EXACT 100% VERBATIM SUBJECT NAME",
-      "code": "EXACT COURSE CODE",
-      "originalTitle": "EXACT 100% VERBATIM SUBJECT NAME",
-      "originalCode": "EXACT COURSE CODE",
-      "translatedTitle": "EXACT 100% VERBATIM SUBJECT NAME",
-      "translatedCode": "EXACT COURSE CODE",
+      "title": "外国語特別講義II(マレー語)",
+      "code": "FL202",
+      "originalTitle": "外国語特別講義II(マレー語)",
+      "originalCode": "FL202",
+      "translatedTitle": "Special Foreign Language Lecture II (Malay)",
+      "translatedCode": "FL202",
       "day": "Mon",
-      "startTime": "08:00",
-      "endTime": "10:00",
+      "startTime": "09:00",
+      "endTime": "10:30",
+      "periodNumber": 1,
       "type": "Lecture",
-      "room": "DK1",
-      "lecturer": "Dr. Aminah",
+      "room": "301",
+      "lecturer": "Professor Tanaka",
       "group": "G1"
     }
   ]
