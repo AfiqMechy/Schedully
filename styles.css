@@ -3358,13 +3358,14 @@ textarea::placeholder,
 
 /* Segment container bar */
 .ocr-segment-bar {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
 }
 body.dark-mode .ocr-segment-bar,
-.theme-dark .ocr-segment-bar {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.theme-dark .ocr-segment-bar,
+.dark .ocr-segment-bar {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Axis mode toggle buttons */
@@ -3372,113 +3373,128 @@ body.dark-mode .ocr-segment-bar,
   cursor: pointer;
   user-select: none;
   font-family: var(--font-sans, inherit);
-  color: #64748b;
+  color: #475569;
+  font-weight: 700;
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 body.dark-mode .axis-mode-btn,
-.theme-dark .axis-mode-btn {
-  color: #94a3b8;
+.theme-dark .axis-mode-btn,
+.dark .axis-mode-btn {
+  color: #cbd5e1;
 }
 
 .axis-mode-btn.active {
-  background: #ffffff !important;
-  color: #2563eb !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
   font-weight: 800 !important;
 }
 
 .dark .axis-mode-btn.active,
 body.dark-mode .axis-mode-btn.active,
 .theme-dark .axis-mode-btn.active {
-  background: #0f172a !important;
-  color: #60a5fa !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4) !important;
 }
 
 /* Language choice cards */
 .ocr-choice-btn {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.05);
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 .ocr-choice-btn .ocr-choice-icon-wrap {
-  background: rgba(0, 0, 0, 0.05);
-  color: #64748b;
+  background: #f1f5f9;
+  color: #334155;
   transition: all 0.2s ease;
 }
 .ocr-choice-btn .ocr-choice-title {
-  color: #1e293b;
+  color: #0f172a;
+  font-weight: 800;
 }
 .ocr-choice-btn .ocr-choice-desc {
-  color: #64748b;
+  color: #475569;
+  font-weight: 600;
 }
 
 /* Dark mode default state */
 body.dark-mode .ocr-choice-btn,
-.theme-dark .ocr-choice-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1);
+.theme-dark .ocr-choice-btn,
+.dark .ocr-choice-btn {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 body.dark-mode .ocr-choice-btn .ocr-choice-icon-wrap,
-.theme-dark .ocr-choice-btn .ocr-choice-icon-wrap {
-  background: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+.theme-dark .ocr-choice-btn .ocr-choice-icon-wrap,
+.dark .ocr-choice-btn .ocr-choice-icon-wrap {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
 }
 body.dark-mode .ocr-choice-btn .ocr-choice-title,
-.theme-dark .ocr-choice-btn .ocr-choice-title {
-  color: #f1f5f9;
+.theme-dark .ocr-choice-btn .ocr-choice-title,
+.dark .ocr-choice-btn .ocr-choice-title {
+  color: #f8fafc;
 }
 body.dark-mode .ocr-choice-btn .ocr-choice-desc,
-.theme-dark .ocr-choice-btn .ocr-choice-desc {
-  color: #94a3b8;
+.theme-dark .ocr-choice-btn .ocr-choice-desc,
+.dark .ocr-choice-btn .ocr-choice-desc {
+  color: #cbd5e1;
 }
 
 /* Hover state */
 .ocr-choice-btn:hover {
-  background: rgba(37, 99, 235, 0.04);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: #f8fafc;
+  border-color: #93c5fd;
 }
 body.dark-mode .ocr-choice-btn:hover,
-.theme-dark .ocr-choice-btn:hover {
-  background: rgba(96, 165, 250, 0.06);
-  border-color: rgba(96, 165, 250, 0.35);
+.theme-dark .ocr-choice-btn:hover,
+.dark .ocr-choice-btn:hover {
+  background: rgba(51, 65, 85, 0.85);
+  border-color: rgba(147, 197, 253, 0.4);
 }
 
 /* Active selected state */
 .ocr-choice-btn.active {
-  background: rgba(37, 99, 235, 0.06) !important;
+  background: #eff6ff !important;
   border-color: #2563eb !important;
-  box-shadow: 0 0 0 1px #2563eb, 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+  box-shadow: 0 0 0 2px #2563eb, 0 4px 14px rgba(37, 99, 235, 0.2) !important;
 }
 .ocr-choice-btn.active .ocr-choice-icon-wrap {
   background: #2563eb !important;
   color: #ffffff !important;
 }
 .ocr-choice-btn.active .ocr-choice-title {
-  color: #2563eb !important;
+  color: #1d4ed8 !important;
 }
 .ocr-choice-btn.active .ocr-choice-desc {
-  color: #3b82f6 !important;
+  color: #2563eb !important;
 }
 
 /* Dark mode active selected state */
 body.dark-mode .ocr-choice-btn.active,
-.theme-dark .ocr-choice-btn.active {
-  background: rgba(37, 99, 235, 0.18) !important;
+.theme-dark .ocr-choice-btn.active,
+.dark .ocr-choice-btn.active {
+  background: rgba(37, 99, 235, 0.25) !important;
   border-color: #60a5fa !important;
-  box-shadow: 0 0 0 1px #60a5fa, 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 0 0 2px #60a5fa, 0 4px 18px rgba(0, 0, 0, 0.5) !important;
 }
 body.dark-mode .ocr-choice-btn.active .ocr-choice-icon-wrap,
-.theme-dark .ocr-choice-btn.active .ocr-choice-icon-wrap {
-  background: #2563eb !important;
+.theme-dark .ocr-choice-btn.active .ocr-choice-icon-wrap,
+.dark .ocr-choice-btn.active .ocr-choice-icon-wrap {
+  background: #3b82f6 !important;
   color: #ffffff !important;
 }
 body.dark-mode .ocr-choice-btn.active .ocr-choice-title,
-.theme-dark .ocr-choice-btn.active .ocr-choice-title {
-  color: #93c5fd !important;
+.theme-dark .ocr-choice-btn.active .ocr-choice-title,
+.dark .ocr-choice-btn.active .ocr-choice-title {
+  color: #ffffff !important;
 }
 body.dark-mode .ocr-choice-btn.active .ocr-choice-desc,
-.theme-dark .ocr-choice-btn.active .ocr-choice-desc {
+.theme-dark .ocr-choice-btn.active .ocr-choice-desc,
+.dark .ocr-choice-btn.active .ocr-choice-desc {
   color: #bfdbfe !important;
 }
 
@@ -3486,40 +3502,48 @@ body.dark-mode .ocr-choice-btn.active .ocr-choice-desc,
 .period-preset-chip {
   cursor: pointer;
   user-select: none;
-  background: rgba(0, 0, 0, 0.03);
-  color: #64748b;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   transition: all 0.15s ease;
 }
 body.dark-mode .period-preset-chip,
-.theme-dark .period-preset-chip {
-  background: rgba(255, 255, 255, 0.04);
-  color: #94a3b8;
-  border-color: rgba(255, 255, 255, 0.08);
+.theme-dark .period-preset-chip,
+.dark .period-preset-chip {
+  background: rgba(30, 41, 59, 0.7);
+  color: #e2e8f0;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 }
 .period-preset-chip:hover {
-  border-color: #93c5fd;
+  border-color: #60a5fa;
   color: #1d4ed8;
+  background: #f8fafc;
 }
 body.dark-mode .period-preset-chip:hover,
-.theme-dark .period-preset-chip:hover {
-  border-color: rgba(96, 165, 250, 0.4);
-  color: #bfdbfe;
+.theme-dark .period-preset-chip:hover,
+.dark .period-preset-chip:hover {
+  border-color: rgba(147, 197, 253, 0.5);
+  color: #93c5fd;
+  background: rgba(51, 65, 85, 0.9);
 }
 
 .period-preset-chip.active {
-  background: #dbeafe !important;
-  color: #1d4ed8 !important;
-  border-color: #93c5fd !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
   font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
 }
 
 .dark .period-preset-chip.active,
 body.dark-mode .period-preset-chip.active,
 .theme-dark .period-preset-chip.active {
-  background: rgba(59, 130, 246, 0.25) !important;
-  color: #93c5fd !important;
-  border-color: rgba(96, 165, 250, 0.5) !important;
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #60a5fa !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4) !important;
 }
 
 .canvas-scaler-container {
@@ -9722,7 +9746,7 @@ body.dark-mode #input-title-text-sidebar {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s ease;
 }
 
-/* Light Mode: Sun is visible, Moon rotates away & shrinks */
+/* Light Mode (Default & explicit light): Sun is visible, Moon rotates away & shrinks */
 .morph-icon-sun {
   transform: rotate(0deg) scale(1) translateZ(0);
   opacity: 1;
@@ -9732,16 +9756,30 @@ body.dark-mode #input-title-text-sidebar {
   opacity: 0;
 }
 
-/* Dark Mode: Moon is visible, Sun spins & shrinks into nothing */
-.dark .morph-icon-sun,
-.dark-mode .morph-icon-sun {
-  transform: rotate(90deg) scale(0) translateZ(0);
-  opacity: 0;
-}
-.dark .morph-icon-moon,
-.dark-mode .morph-icon-moon {
+/* Explicit Light Mode Override */
+html:not(.dark):not(.dark-mode) .morph-icon-sun,
+body:not(.dark-mode) .morph-icon-sun {
   transform: rotate(0deg) scale(1) translateZ(0);
   opacity: 1;
+}
+html:not(.dark):not(.dark-mode) .morph-icon-moon,
+body:not(.dark-mode) .morph-icon-moon {
+  transform: rotate(-90deg) scale(0) translateZ(0);
+  opacity: 0;
+}
+
+/* Dark Mode: Moon is visible, Sun spins & shrinks into nothing */
+html.dark .morph-icon-sun,
+html.dark-mode .morph-icon-sun,
+body.dark-mode .morph-icon-sun {
+  transform: rotate(90deg) scale(0) translateZ(0) !important;
+  opacity: 0 !important;
+}
+html.dark .morph-icon-moon,
+html.dark-mode .morph-icon-moon,
+body.dark-mode .morph-icon-moon {
+  transform: rotate(0deg) scale(1) translateZ(0) !important;
+  opacity: 1 !important;
 }
 
 /* Button Micro-Interactions: strictly guarded for mouse/desktop to prevent sticky touch hover lag */
@@ -10479,7 +10517,8 @@ body.theme-style-default.dark-mode #header-desktop-bar button:not(#btn-download-
 }
 
 /* ── Bottom Floating Pill Bar & Buttons in Default Style ── */
-body.theme-style-default #bottom-floating-pill-bar .flex.items-center.bg-white {
+body.theme-style-default #bottom-floating-pill-bar > div,
+body.theme-style-default #bottom-floating-pill-bar .flex.items-center {
   background: #F1F5F9 !important;
   border: 1px solid #E2E8F0 !important;
   backdrop-filter: none !important;
@@ -10487,7 +10526,8 @@ body.theme-style-default #bottom-floating-pill-bar .flex.items-center.bg-white {
   box-shadow: none !important;
 }
 
-body.theme-style-default.dark-mode #bottom-floating-pill-bar .flex.items-center.bg-white {
+body.theme-style-default.dark-mode #bottom-floating-pill-bar > div,
+body.theme-style-default.dark-mode #bottom-floating-pill-bar .flex.items-center {
   background: #0F172A !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: none !important;
@@ -10495,20 +10535,20 @@ body.theme-style-default.dark-mode #bottom-floating-pill-bar .flex.items-center.
   box-shadow: none !important;
 }
 
-body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd),
+body.theme-style-default #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd):not(#btn-toggle-canvas-popover),
 body.theme-style-default #floating-undo-redo-row button {
-  background: #F1F5F9 !important;
-  border: 1px solid #E2E8F0 !important;
+  background: transparent !important;
+  border: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: none !important;
   color: #0F172A !important;
 }
 
-body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd),
+body.theme-style-default.dark-mode #bottom-floating-pill-bar button:not(#btn-theme-popover-toggle):not(.btn-theme-primary):not(#btn-download-hd):not(#btn-toggle-canvas-popover),
 body.theme-style-default.dark-mode #floating-undo-redo-row button {
-  background: #0F172A !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: transparent !important;
+  border: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
@@ -11690,9 +11730,9 @@ body.dark-mode #history-undo-redo-capsule button[disabled],
   display: inline-block !important;
 }
 
-/* Floating 2-Row Stacked Toolbar Controls (Fully Connected to Liquid Glass Style Presets: Crystal, Frosted, Fluid, Prism) */
-#floating-undo-redo-row,
-#bottom-floating-pill-bar {
+/* Floating 2-Row Stacked Toolbar Controls (Only active in Liquid Glass Theme Style) */
+body.theme-style-glass #floating-undo-redo-row,
+body.theme-style-glass #bottom-floating-pill-bar {
   background: linear-gradient(
     calc(180deg + var(--glass-glare-angle, -45deg)),
     rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.55 + 0.12)) 0%,
@@ -11721,7 +11761,7 @@ body.dark-mode #history-undo-redo-capsule button[disabled],
   display: none;
 }
 
-#floating-undo-redo-row:hover {
+body.theme-style-glass #floating-undo-redo-row:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 
     0 26px 65px -10px rgba(15, 23, 42, 0.26),
@@ -11729,8 +11769,8 @@ body.dark-mode #history-undo-redo-capsule button[disabled],
 }
 
 /* Inner Capsules High-Gloss Styling */
-#floating-undo-redo-row #history-undo-redo-capsule,
-#bottom-floating-pill-bar > div {
+body.theme-style-glass #floating-undo-redo-row #history-undo-redo-capsule,
+body.theme-style-glass #bottom-floating-pill-bar > div {
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.6 + 0.1)) 0%,
@@ -11745,12 +11785,10 @@ body.dark-mode #history-undo-redo-capsule button[disabled],
 }
 
 /* Dark Mode Liquid Glass Treatment (Deep Optical Obsidian / Prism / Frosted) */
-body.dark-mode #floating-undo-redo-row,
-.theme-dark #floating-undo-redo-row,
-.dark #floating-undo-redo-row,
-body.dark-mode #bottom-floating-pill-bar,
-.theme-dark #bottom-floating-pill-bar,
-.dark #bottom-floating-pill-bar {
+body.theme-style-glass.dark-mode #floating-undo-redo-row,
+body.theme-style-glass.theme-dark #floating-undo-redo-row,
+body.theme-style-glass.dark-mode #bottom-floating-pill-bar,
+body.theme-style-glass.theme-dark #bottom-floating-pill-bar {
   background: linear-gradient(
     calc(180deg + var(--glass-glare-angle, -45deg)),
     rgba(30, 41, 59, calc(var(--glass-glare-factor, 0.9) * 0.55 + 0.15)) 0%,
@@ -11767,12 +11805,10 @@ body.dark-mode #bottom-floating-pill-bar,
     inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
 }
 
-body.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
-.theme-dark #floating-undo-redo-row #history-undo-redo-capsule,
-.dark #floating-undo-redo-row #history-undo-redo-capsule,
-body.dark-mode #bottom-floating-pill-bar > div,
-.theme-dark #bottom-floating-pill-bar > div,
-.dark #bottom-floating-pill-bar > div {
+body.theme-style-glass.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
+body.theme-style-glass.theme-dark #floating-undo-redo-row #history-undo-redo-capsule,
+body.theme-style-glass.dark-mode #bottom-floating-pill-bar > div,
+body.theme-style-glass.theme-dark #bottom-floating-pill-bar > div {
   background: linear-gradient(135deg, rgba(51, 65, 85, 0.45) 0%, rgba(15, 23, 42, 0.35) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.2), 0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
@@ -11820,6 +11856,242 @@ body.dark-mode #canvas-ratio-popover,
     0 28px 70px -10px rgba(0, 0, 0, 0.85),
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   HIGH-CONTRAST PRIMARY ACTION BUTTONS (Controls, Download HD, etc.)
+   ═══════════════════════════════════════════════════════════════ */
+#btn-toggle-canvas-popover,
+#btn-download-hd,
+.btn-theme-primary,
+#bottom-floating-pill-bar #btn-toggle-canvas-popover,
+#bottom-floating-pill-bar .btn-theme-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+#btn-toggle-canvas-popover span,
+#btn-toggle-canvas-popover svg,
+#btn-download-hd span,
+#btn-download-hd svg,
+.btn-theme-primary span,
+.btn-theme-primary svg,
+#bottom-floating-pill-bar #btn-toggle-canvas-popover span,
+#bottom-floating-pill-bar #btn-toggle-canvas-popover svg {
+  color: #ffffff !important;
+  fill: none !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
+}
+
+#btn-toggle-canvas-popover:hover,
+#btn-download-hd:hover,
+.btn-theme-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.55) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM LIQUID GLASS EFFECT SUITE (When "Glass" Theme Style is Active)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Timetable Container Liquid Glass (Light & Dark, Solid & Photo Wallpaper) */
+body.theme-style-glass .m3-lock-timetable-container,
+body.theme-style-glass #lock-timetable-container,
+body.theme-style-glass #phone-canvas:not(.has-photo-wallpaper) .m3-lock-timetable-container,
+body.theme-style-glass #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(255, 255, 255, 0.35) 45%,
+    rgba(241, 245, 249, 0.45) 100%
+  ) !important;
+  backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    0 20px 50px -10px rgba(15, 23, 42, 0.18),
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 3px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-style-glass.dark-mode .m3-lock-timetable-container,
+body.theme-style-glass.theme-dark .m3-lock-timetable-container,
+body.theme-style-glass.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container,
+body.theme-style-glass.theme-dark #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.65) 0%,
+    rgba(15, 23, 42, 0.50) 45%,
+    rgba(15, 23, 42, 0.65) 100%
+  ) !important;
+  backdrop-filter: blur(22px) saturate(200%) brightness(1.1) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(200%) brightness(1.1) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 2. Timetable Grid Cells / Course Cards Glass Specular Highlight */
+body.theme-style-glass .exact-grid-cell-course,
+body.theme-style-glass .timetable-course-cell {
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease !important;
+}
+
+body.theme-style-glass .exact-grid-cell-course:hover,
+body.theme-style-glass .timetable-course-cell:hover {
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+    0 8px 20px rgba(0, 0, 0, 0.14) !important;
+}
+
+body.theme-style-glass.dark-mode .exact-grid-cell-course,
+body.theme-style-glass.theme-dark .exact-grid-cell-course,
+body.theme-style-glass.dark-mode .timetable-course-cell,
+body.theme-style-glass.theme-dark .timetable-course-cell {
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* 3. Sidebars Liquid Glass Panels in Desktop and Mobile */
+body.theme-style-glass #left-sidebar,
+body.theme-style-glass #right-sidebar {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.38) 50%,
+    rgba(241, 245, 249, 0.55) 100%
+  ) !important;
+  backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) contrast(106%) !important;
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    0 24px 60px -10px rgba(15, 23, 42, 0.14),
+    inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-style-glass.dark-mode #left-sidebar,
+body.theme-style-glass.dark-mode #right-sidebar,
+body.theme-style-glass.theme-dark #left-sidebar,
+body.theme-style-glass.theme-dark #right-sidebar {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.70) 0%,
+    rgba(15, 23, 42, 0.52) 50%,
+    rgba(15, 23, 42, 0.70) 100%
+  ) !important;
+  backdrop-filter: blur(26px) saturate(200%) brightness(1.12) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(200%) brightness(1.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    0 28px 70px -10px rgba(0, 0, 0, 0.75),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+/* 4. Active Theme Switcher Buttons */
+.theme-style-btn {
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-style-btn:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.theme-style-btn.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+
+.theme-style-btn.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+body.dark-mode .theme-style-btn,
+.theme-dark .theme-style-btn,
+.dark .theme-style-btn {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+}
+
+body.dark-mode .theme-style-btn:hover,
+.theme-dark .theme-style-btn:hover,
+.dark .theme-style-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(147, 197, 253, 0.4);
+  color: #ffffff;
+}
+
+body.dark-mode .theme-style-btn.active,
+.theme-dark .theme-style-btn.active,
+.dark .theme-style-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: #60a5fa !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45) !important;
+}
+
+/* 5. Header Desktop Bar Glass Glow in Glass Mode */
+body.theme-style-glass #header-desktop-bar {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.42) 100%
+  ) !important;
+  backdrop-filter: blur(20px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    0 16px 36px -6px rgba(15, 23, 42, 0.12),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1) !important;
+}
+
+body.theme-style-glass.dark-mode #header-desktop-bar,
+body.theme-style-glass.theme-dark #header-desktop-bar {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(15, 23, 42, 0.52) 100%
+  ) !important;
+  backdrop-filter: blur(22px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(200%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 
+    0 20px 45px -6px rgba(0, 0, 0, 0.75),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+
 
 
 

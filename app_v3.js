@@ -510,6 +510,7 @@ class SchedullyApp {
 
     document.body.classList.toggle('dark-mode', resolvedMode === 'dark');
     document.documentElement.classList.toggle('dark', resolvedMode === 'dark');
+    document.documentElement.classList.toggle('dark-mode', resolvedMode === 'dark');
 
     // Sync UI mode dots
     document.querySelectorAll('.theme-mode-dot').forEach(d => {
@@ -625,7 +626,7 @@ class SchedullyApp {
     const subtext   = theme.subtext || theme.text;
     const outline   = theme.outline || '';
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Detect dark mode (bg is dark if luminance < 0.25) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // Detect dark mode (bg is dark if luminance < 0.25)
     const isDark = this._isColorDark(bg);
 
     // Update CSS variables dynamically
@@ -638,8 +639,12 @@ class SchedullyApp {
     root.style.setProperty('--m3-sys-text-primary', textColor);
     root.style.setProperty('--m3-sys-text-secondary', subtext);
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ DARK MODE: apply dark surfaces & contrast to all layout elements ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // Dark mode classes synced across body and html root
     document.body.classList.toggle('dark-mode', isDark);
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('dark-mode', isDark);
+
+    // DARK MODE: apply dark surfaces & contrast to all layout elements
     if (isDark) {
       document.body.style.backgroundColor = bg;
       const mainEl = document.querySelector('main');
@@ -6176,9 +6181,10 @@ class SchedullyApp {
 
         if (window.schedullyFirebase.currentUser) {
           window.schedullyFirebase.onUserChangedCallback(window.schedullyFirebase.currentUser);
+          window.schedullyFirebase.fetchUserData();
         }
       } else {
-        setTimeout(initAuthListener, 300);
+        setTimeout(initAuthListener, 200);
       }
     };
 
