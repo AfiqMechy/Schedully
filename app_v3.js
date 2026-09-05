@@ -4531,6 +4531,7 @@ class SchedullyApp {
       this.inputLocation.value = '';
       if (this.inputGroup) this.inputGroup.value = '';
 
+      this.updateHistoryButtonUI();
       this.renderAll();
     });
 
@@ -4902,6 +4903,9 @@ class SchedullyApp {
     if (this.btnClearAll) {
       this.btnClearAll.addEventListener('click', async (e) => {
          try {
+           if (this.classes.length > 0) {
+             this.recordHistoryState();
+           }
            const originalText = e.currentTarget.innerHTML;
            e.currentTarget.innerHTML = "Clearing...";
            e.currentTarget.style.backgroundColor = "#dcfce7";
@@ -4925,7 +4929,8 @@ class SchedullyApp {
            if (this.slotsBadgeCount) this.slotsBadgeCount.innerText = '0';
            if (this.clashAlert) this.clashAlert.classList.add('hidden');
            
-           // Render to reset empty states
+           // Update undo/redo button states & render to reset empty states
+           this.updateHistoryButtonUI();
            this.renderAll();
            
            // Revert button visually
@@ -6362,6 +6367,10 @@ class SchedullyApp {
        return;
     }
     
+    if (this.classes.length > 0) {
+      this.recordHistoryState();
+    }
+
     // Auto-clear previous classes when importing a new file or scan
     this.classes = [];
     
@@ -6458,6 +6467,7 @@ class SchedullyApp {
       chk.checked = this.activeDays.includes(chk.value);
     });
 
+    this.updateHistoryButtonUI();
     this._stagePending();
     this.renderAll();
   }
