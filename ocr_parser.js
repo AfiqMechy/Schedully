@@ -140,7 +140,10 @@ ABSOLUTE STRICT RULES:
    - "originalTitle": Same exact verbatim subject name as printed on the image.
    - "code": The official course code printed next to or above/below the title (e.g. "BBSB3103", "CS101", "SE302"). If NO separate alphanumeric code is printed, reuse the verbatim title or native abbreviation.
    - "originalCode": Native shorthand or code if present.
-   - "translatedTitle": ACCURATE ENGLISH TRANSLATION of the subject name. If the timetable is in Japanese, Chinese, Korean, Arabic, French, German, Spanish, etc., you MUST translate the subject title into natural English (e.g. "外国語特別講義II(マレー語)" -> "Special Foreign Language Lecture II (Malay)", "体育実技II(バスケットボールB)" -> "Physical Education Practice II (Basketball B)", "教育制度論" -> "Educational Systems Theory"). If the timetable is already in English, provide the exact English title.
+   - "translatedTitle": FULL, COMPLETE, UNABBREVIATED ENGLISH TRANSLATION of the subject name.
+     * NO SHORTFORMS / NO ABBREVIATIONS: Spell out complete words in English (e.g., use "Introduction to Computer Science", NOT "Intro to CS"; "Physical Education", NOT "P.E." or "PE"; "Mathematics", NOT "Math").
+     * PRESERVE ALL PARENTHESES AND QUALIFIERS: If the original subject has text in parentheses, you MUST TRANSLATE and INCLUDE the complete contents inside parentheses (e.g. "外国語特別講義II(マレー語)" -> "Special Foreign Language Lecture II (Malay)", "体育実技II(バスケットボールB)" -> "Physical Education Practice II (Basketball B)", "教育制度論(スポーツ健康学科対象)" -> "Educational Systems Theory (Sports and Health Science Department)"). NEVER drop parentheses or abbreviations in parentheses.
+     * If the timetable is already in English, provide the full unabbreviated subject title while keeping parenthetical notes.
    - "translatedCode": Standard Latin/English alphanumeric code (e.g. "FL202", "PE202", "CS101") or the official course code.
 
 3. DAYS & TIME RECOGNITION:
