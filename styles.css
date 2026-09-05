@@ -9382,14 +9382,36 @@ body.dark-mode .edit-course-time-format,
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
-  padding: 5.5px 0 !important;
-  font-size: 11.5px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 5.5px 2px !important;
+  border-radius: 9999px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  white-space: nowrap !important;
-  text-align: center !important;
-  z-index: 2 !important;
+  color: #64748B !important;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  z-index: 2 !important;
   letter-spacing: 0.01em !important;
+}
+
+#device-type-toggles .capsule-btn span,
+.pill-toggle-group .pill-btn span,
+.capsule-group button span,
+#time-display-mode-group button span,
+.time-display-mode-container button span,
+.time-mode-btn span {
+  display: inline-block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
 }
 
 #device-type-toggles .capsule-btn:focus,
@@ -9407,6 +9429,10 @@ body.dark-mode .edit-course-time-format,
   transform: scale(1) !important;
 }
 
+#device-type-toggles .capsule-btn:hover {
+  color: #0F172A !important;
+}
+
 /* Active item is crisp with high contrast and transparent so only the glass thumb renders */
 #device-type-toggles .capsule-btn.active,
 .pill-toggle-group .pill-btn.active,
@@ -9418,56 +9444,11 @@ body.dark-mode .edit-course-time-format,
 .time-mode-btn.active,
 .support-tab-btn.active {
   background: transparent !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
   box-shadow: none !important;
   position: relative !important;
   z-index: 3 !important;
-}
-
-/* Device Type 4-Segment Toggle Bar (Symmetric Text-Only Layout) */
-#device-type-toggles {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  padding: 3px !important;
-  gap: 3px !important;
-  background: #E2E8F0 !important;
-  border: 1px solid #CBD5E1 !important;
-  border-radius: 9999px !important;
-  box-shadow: none !important;
-}
-
-#device-type-toggles .capsule-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  padding: 5.5px 2px !important;
-  border-radius: 9999px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: #64748B !important;
-  background: transparent !important;
-  border: none !important;
-  cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-#device-type-toggles .capsule-btn span,
-.pill-toggle-group .pill-btn span,
-.capsule-group button span,
-#time-display-mode-group button span,
-.time-display-mode-container button span,
-.time-mode-btn span {
-  display: inline-block !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  max-width: 100% !important;
 }
 
 #canvas-controls-popover {
@@ -9488,19 +9469,6 @@ body.dark-mode .edit-course-time-format,
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-}
-
-#device-type-toggles .capsule-btn:hover {
-  color: #0F172A !important;
-}
-
-#device-type-toggles .capsule-btn.active {
-  background: transparent !important;
-  color: #0F172A !important;
-  font-weight: 800 !important;
-  box-shadow: none !important;
-  position: relative !important;
-  z-index: 3 !important;
 }
 
 body.dark-mode #device-type-toggles,
@@ -11051,7 +11019,7 @@ body.theme-style-default.dark-mode #tour-popover-card,
   /* 6. Hardware-accelerate active sliding indicator & canvas wrapper on low-end mobile */
   .glass-slider-thumb {
     will-change: transform, width !important;
-    transform: translateZ(0) !important;
+    /* NOTE: do NOT set transform here — JS sets translateX() inline and !important would override it */
   }
 
   #main-phone-wrapper,

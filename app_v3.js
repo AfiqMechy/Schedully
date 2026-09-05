@@ -4268,6 +4268,7 @@ class SchedullyApp {
         if (!canvasPopover.classList.contains('hidden')) {
           setTimeout(window.syncGlassSliders, 20);
           setTimeout(window.syncGlassSliders, 120);
+          setTimeout(window.syncGlassSliders, 360); // after popoverSpring animation (300ms) fully settles
         }
       });
 
@@ -8744,11 +8745,17 @@ function initGlassSegmentedSliders() {
     const fallbackWidth = groupWidth > 0 ? (groupWidth / buttons.length) : (group.offsetWidth / buttons.length);
     const fallbackLeft = 3 + (idx * fallbackWidth);
 
-    let left = activeBtn.offsetLeft;
-    let width = activeBtn.offsetWidth;
+    // Use getBoundingClientRect for accurate positioning in any layout (flex, grid, etc.)
+    // Divide by scaleX to convert viewport coords → local CSS px, handling parent transform animations
+    const groupRect = group.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    const scaleX = groupRect.width > 0 ? (groupRect.width / group.offsetWidth) : 1;
+    let left = (btnRect.left - groupRect.left) / scaleX;
+    let width = btnRect.width / scaleX;
 
-    // If offsetLeft is 0 or abnormal while idx > 0, use guaranteed mathematical positioning
-    if ((idx > 0 && left <= 4) || width <= 0 || width >= group.offsetWidth - 2) {
+    // Sanity check: fall back to mathematical positioning if rects are unavailable
+    // (e.g. element is hidden / not yet laid out, or offsetWidth is 0)
+    if (width <= 0 || groupRect.width <= 0 || group.offsetWidth <= 0) {
       left = fallbackLeft;
       width = fallbackWidth;
     }
