@@ -4644,11 +4644,9 @@ class SchedullyApp {
             try {
               const provider = 'gemini';
               const apiKey = (
-                localStorage.getItem('schedully_gemini_api_key') ||
-                localStorage.getItem('schedully_api_key') ||
-                localStorage.getItem('gemini_api_key') ||
                 document.getElementById('input-gemini-api-key')?.value ||
                 document.getElementById('fb-api-key')?.value ||
+                localStorage.getItem('schedully_custom_gemini_key') ||
                 ''
               ).trim();
               
