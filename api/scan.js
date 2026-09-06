@@ -168,7 +168,9 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
           const validModels = listData.models.filter(m => 
             m.supportedGenerationMethods && 
             m.supportedGenerationMethods.includes('generateContent') &&
-            m.name.includes('gemini')
+            m.name.includes('gemini') &&
+            !m.name.includes('preview-image') &&
+            !m.name.includes('-tts')
           );
           const sorted = [];
           const pushIf = (filterFn) => {
@@ -177,11 +179,13 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
               if (!sorted.includes(cleanName)) sorted.push(cleanName);
             });
           };
-          pushIf(m => m.name.includes('2.5-flash'));
+          pushIf(m => m.name === 'models/gemini-2.5-flash' || m.name.endsWith('/gemini-2.5-flash'));
+          pushIf(m => m.name === 'models/gemini-2.0-flash' || m.name.endsWith('/gemini-2.0-flash'));
+          pushIf(m => m.name === 'models/gemini-1.5-flash' || m.name.endsWith('/gemini-1.5-flash'));
+          pushIf(m => m.name.includes('2.5-flash') && !m.name.includes('image'));
           pushIf(m => m.name.includes('2.0-flash'));
           pushIf(m => m.name.includes('1.5-flash'));
           pushIf(m => m.name.includes('flash'));
-          pushIf(m => m.name.includes('gemini'));
           if (sorted.length > 0) candidateModels = sorted;
         }
       } catch (e) {

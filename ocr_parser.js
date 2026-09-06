@@ -127,18 +127,20 @@ class OCRTimetableParser {
         const listData = await listRes.json();
         if (listData && listData.models) {
           const apiModels = listData.models
-            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && !m.name.includes('preview-image') && !m.name.includes('-tts'))
             .map(m => m.name.replace('models/', ''));
           
           const sorted = [];
           const pushIf = (filterFn) => {
             apiModels.filter(filterFn).forEach(m => { if (!sorted.includes(m)) sorted.push(m); });
           };
-          pushIf(m => m.includes('2.5-flash'));
+          pushIf(m => m === 'gemini-2.5-flash');
+          pushIf(m => m === 'gemini-2.0-flash');
+          pushIf(m => m === 'gemini-1.5-flash');
+          pushIf(m => m.includes('2.5-flash') && !m.includes('image'));
           pushIf(m => m.includes('2.0-flash'));
           pushIf(m => m.includes('1.5-flash'));
           pushIf(m => m.includes('flash'));
-          pushIf(m => m.includes('gemini'));
 
           if (sorted.length > 0) candidateModels = sorted;
         }
