@@ -13,7 +13,7 @@ class OCRTimetableParser {
    * Universal Cloud Vision API Scanning (Supports Gemini 2.0/2.5/3.7 Flash & Fallbacks)
    */
   async scanWithCloudAPI(file, provider, apiKey, onProgress = () => {}) {
-    onProgress("Encoding image for AI Vision Analysis...");
+    onProgress("Reading your timetable...");
     const base64Data = await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result.split(',')[1]);
@@ -23,7 +23,7 @@ class OCRTimetableParser {
     const mimeType = file.type || 'image/jpeg';
 
     // 1. Try Vercel Serverless Function First (/api/scan with secure process.env.GEMINI_API_KEY)
-    onProgress("Analyzing timetable with AI Vision Scanner...");
+    onProgress("Analyzing your schedule...");
     let serverlessErrorMessage = null;
     try {
       const response = await fetch('/api/scan', {
@@ -64,7 +64,7 @@ class OCRTimetableParser {
     ).trim().replace(/^["']|["']$/g, '');
 
     if (effectiveApiKey) {
-      onProgress("Running Gemini Vision AI Scanner...");
+      onProgress("Extracting course details...");
       try {
         const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
         if (directResult && directResult.courses && directResult.courses.length > 0) {
@@ -193,7 +193,7 @@ Respond ONLY with valid JSON. No conversational wrapper or markdown backticks ou
 
     let lastErrorMsg = null;
     for (const model of candidateModels) {
-      onProgress(`Scanning with ${model}...`);
+      onProgress("Almost there...");
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const payload = {

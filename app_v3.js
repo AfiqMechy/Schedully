@@ -231,27 +231,44 @@ class SchedullyApp {
 
   setupAutoImmersiveFullscreen() {
     // Automatically hide system notification bar & navigation bar on tablets/smartphones
-    const isPWA = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches 
-      || window.navigator.standalone === true 
-      || document.referrer.includes('android-app://');
+    const isMobileOrTablet = window.innerWidth <= 1280 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    
+    // 1. Edge-to-edge status bar background matching: ensure theme-color matches current canvas
+    const updateThemeColor = () => {
+      const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark-mode');
+      const themeColor = isDark ? '#0B0F19' : '#F6F8FB';
+      let metaTheme = document.querySelector('meta[name="theme-color"]:not([media])');
+      if (!metaTheme) {
+        metaTheme = document.createElement('meta');
+        metaTheme.name = 'theme-color';
+        document.head.appendChild(metaTheme);
+      }
+      metaTheme.setAttribute('content', themeColor);
+    };
+    updateThemeColor();
+    // Also listen for theme toggles to update theme-color dynamically
+    const observer = new MutationObserver(() => updateThemeColor());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    if (isPWA || (window.innerWidth <= 1280 && 'ontouchstart' in window)) {
-      const enterImmersive = () => {
-        try {
-          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            const docEl = document.documentElement;
-            if (docEl.requestFullscreen) {
-              docEl.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
-            } else if (docEl.webkitRequestFullscreen) {
-              docEl.webkitRequestFullscreen().catch(() => {});
-            }
+    // 2. Immersive Fullscreen requesting
+    const enterImmersive = () => {
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          const docEl = document.documentElement;
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen().catch(() => {});
           }
-        } catch (e) {}
-      };
+        }
+      } catch (e) {}
+    };
 
-      // Seamlessly trigger on first user interaction without any UI toggle button
-      window.addEventListener('pointerdown', enterImmersive, { once: true, passive: true });
-      window.addEventListener('touchstart', enterImmersive, { once: true, passive: true });
+    if (isMobileOrTablet) {
+      // Must use direct, uninhibited user gesture handlers (click & touchend) so Chromium grants transient user activation
+      ['click', 'touchend', 'pointerup'].forEach(evtType => {
+        document.addEventListener(evtType, enterImmersive, { passive: true });
+      });
     }
   }
 
@@ -4983,7 +5000,7 @@ class SchedullyApp {
           const fileToScan = this.pendingScanFile;
           this.pendingScanFile = null;
           if (this.ocrLoadingBar) this.ocrLoadingBar.classList.remove('hidden');
-          if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Analyzing timetable with Gemini Vision...";
+          if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Reading your timetable...";
           try {
             const scanResult = await window.ocrParser.scanWithCloudAPI(fileToScan, 'gemini', rawKey, (msg) => {
               if (this.ocrLoadingText) this.ocrLoadingText.innerText = msg;

@@ -347,7 +347,7 @@ body.dark-mode .m3-right-sidebar {
   /* Left: Menu Floating Button */
   #btn-expand-left-floating {
     position: fixed !important;
-    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    top: 16px !important;
     left: max(10px, env(safe-area-inset-left, 10px)) !important;
     z-index: 9999 !important;
   }
@@ -361,7 +361,7 @@ body.dark-mode .m3-right-sidebar {
   #mobile-export-bar {
     display: flex !important;
     position: fixed !important;
-    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    top: 16px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 9999 !important;
@@ -378,7 +378,7 @@ body.dark-mode .m3-right-sidebar {
   /* Right: Schedule Floating Button */
   #btn-expand-right-floating {
     position: fixed !important;
-    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    top: 16px !important;
     right: max(10px, env(safe-area-inset-right, 10px)) !important;
     z-index: 9999 !important;
   }
@@ -6436,9 +6436,9 @@ input:focus, select:focus, textarea:focus {
     overflow: hidden !important;
   }
 
-  /* Theme-adaptive sidebar backgrounds & dominant front layer priority */
-  #left-sidebar:not(.sidebar-collapsed-left),
-  #right-sidebar:not(.sidebar-collapsed-right) {
+  /* Theme-adaptive sidebar backgrounds & dominant front layer priority (Glass Style only) */
+  body:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
+  body:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right) {
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.72)) 0%, rgba(255, 255, 255, 0.35) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.45)) 100%) !important;
     backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
     -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
@@ -6453,10 +6453,10 @@ input:focus, select:focus, textarea:focus {
     z-index: 10001 !important;
   }
 
-  body.dark-mode #left-sidebar:not(.sidebar-collapsed-left),
-  body.dark-mode #right-sidebar:not(.sidebar-collapsed-right),
-  .theme-dark #left-sidebar:not(.sidebar-collapsed-left),
-  .theme-dark #right-sidebar:not(.sidebar-collapsed-right) {
+  body.dark-mode:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
+  body.dark-mode:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right),
+  .theme-dark:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
+  .theme-dark:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right) {
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.10 + 0.02)) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.15) 100%) !important;
     backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
     -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
@@ -8321,7 +8321,7 @@ body.dark-mode .mobile-export-divider,
 
 #btn-expand-left-floating {
   position: fixed !important;
-  top: max(12px, env(safe-area-inset-top, 12px)) !important;
+  top: 16px !important;
   left: max(10px, env(safe-area-inset-left, 10px)) !important;
   bottom: auto !important;
   right: auto !important;
@@ -8330,7 +8330,7 @@ body.dark-mode .mobile-export-divider,
 
 #btn-expand-right-floating {
   position: fixed !important;
-  top: max(12px, env(safe-area-inset-top, 12px)) !important;
+  top: 16px !important;
   right: max(10px, env(safe-area-inset-right, 10px)) !important;
   bottom: auto !important;
   left: auto !important;
@@ -10219,11 +10219,12 @@ body.dark-mode .sidebar-glass-preset-btn.active,
    THEME STYLE SWITCHER (Default M3 Expressive vs Liquid Glass)
    ═══════════════════════════════════════════════════════════════ */
 .theme-style-btn {
-  background: rgba(255, 255, 255, 0.55) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
   backdrop-filter: blur(14px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
   color: #0F172A !important;
+  font-weight: 800 !important;
   box-shadow: 
     inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
     0 2px 6px rgba(15, 23, 42, 0.03) !important;
@@ -10233,8 +10234,13 @@ body.dark-mode .sidebar-glass-preset-btn.active,
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+.theme-style-btn span {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
 .theme-style-btn:hover {
-  background: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   border-color: rgba(147, 197, 253, 0.9) !important;
   transform: translateY(-1px) scale(1.02);
   box-shadow: inset 0 1.5px 2px #fff, 0 4px 12px rgba(37, 99, 235, 0.12) !important;
@@ -10245,12 +10251,34 @@ body.dark-mode .sidebar-glass-preset-btn.active,
 }
 
 .theme-style-btn.active {
-  background: #FFFFFF !important;
-  border-color: #2563EB !important;
-  color: #2563EB !important;
+  background: var(--m3-sys-color-primary, #2563eb) !important;
+  border-color: var(--m3-sys-color-primary, #1d4ed8) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
   box-shadow: 
-    inset 0 1.5px 2px #fff,
-    0 4px 14px rgba(37, 99, 235, 0.2) !important;
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+#active-theme-style-label {
+  background: var(--m3-sys-color-primary-container, rgba(37, 99, 235, 0.15)) !important;
+  color: var(--m3-sys-color-primary, #2563eb) !important;
+  border-color: var(--m3-sys-color-primary, rgba(37, 99, 235, 0.25)) !important;
+}
+
+.theme-style-btn.active span {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  font-weight: 800 !important;
+}
+
+.theme-style-btn.active svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  fill: none !important;
+}
+
+#btn-theme-style-glass.active svg {
+  fill: #FFFFFF !important;
+  stroke: none !important;
 }
 
 body.dark-mode .theme-style-btn,
@@ -10261,6 +10289,11 @@ body.dark-mode .theme-style-btn,
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.25) !important;
 }
 
+body.dark-mode .theme-style-btn span,
+.theme-dark .theme-style-btn span {
+  color: #F1F5F9 !important;
+}
+
 body.dark-mode .theme-style-btn:hover,
 .theme-dark .theme-style-btn:hover {
   background: rgba(255, 255, 255, 0.14) !important;
@@ -10269,12 +10302,17 @@ body.dark-mode .theme-style-btn:hover,
 
 body.dark-mode .theme-style-btn.active,
 .theme-dark .theme-style-btn.active {
-  background: rgba(37, 99, 235, 0.25) !important;
-  border-color: #38BDF8 !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: #60a5fa !important;
   color: #FFFFFF !important;
   box-shadow: 
     inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
     0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+
+body.dark-mode .theme-style-btn.active span,
+.theme-dark .theme-style-btn.active span {
+  color: #FFFFFF !important;
 }
 
 /* ── Greyed-Out / Disabled Liquid Glass Style Option in Default Mode ── */
@@ -10313,6 +10351,29 @@ body.theme-style-default .ocr-lang-card {
   border: 1.5px solid #E2E8F0 !important;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
 }
+
+/* Ensure high contrast dark font colors across all labels, spans, and headings in Default Style (Light Mode) */
+body.theme-style-default:not(.dark-mode) .opt-label,
+body.theme-style-default:not(.dark-mode) .picker-label,
+body.theme-style-default:not(.dark-mode) .sub-accordion-header span,
+body.theme-style-default:not(.dark-mode) #btn-theme-style-default:not(.active) span,
+body.theme-style-default:not(.dark-mode) #btn-theme-style-glass:not(.active) span,
+body.theme-style-default:not(.dark-mode) #active-theme-style-label,
+body.theme-style-default:not(.dark-mode) .sidebar-card-title,
+body.theme-style-default:not(.dark-mode) #left-sidebar h2,
+body.theme-style-default:not(.dark-mode) #left-sidebar h3,
+body.theme-style-default:not(.dark-mode) #right-sidebar h2,
+body.theme-style-default:not(.dark-mode) #right-sidebar h3 {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+body.theme-style-default:not(.dark-mode) .theme-style-btn.active span,
+body.theme-style-glass:not(.dark-mode) .theme-style-btn.active span {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
 
 body.theme-style-default.dark-mode #left-sidebar,
 body.theme-style-default.dark-mode #right-sidebar,
@@ -10362,11 +10423,11 @@ body.theme-style-default.dark-mode .btn-guide-tour {
 
 /* ── Adaptive Auth Login Button in Default Style ── */
 body.theme-style-default .btn-adaptive-auth {
-  background: #2563EB !important;
-  color: #FFFFFF !important;
-  border: 1px solid #1D4ED8 !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  border: 1px solid var(--m3-sys-color-primary, #1D4ED8) !important;
   border-radius: 16px !important;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   text-shadow: none !important;
@@ -10379,15 +10440,15 @@ body.theme-style-default .btn-adaptive-auth .auth-icon-circle {
 }
 
 body.theme-style-default .btn-adaptive-auth:hover {
-  background: #1D4ED8 !important;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35) !important;
+  filter: brightness(0.92) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
   transform: none !important;
 }
 
 body.theme-style-default.dark-mode .btn-adaptive-auth {
-  background: #3B82F6 !important;
-  color: #FFFFFF !important;
-  border: 1px solid #2563EB !important;
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  border: 1px solid var(--m3-sys-color-primary, #2563EB) !important;
   border-radius: 16px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: none !important;
@@ -10402,7 +10463,7 @@ body.theme-style-default.dark-mode .btn-adaptive-auth .auth-icon-circle {
 }
 
 body.theme-style-default.dark-mode .btn-adaptive-auth:hover {
-  background: #2563EB !important;
+  filter: brightness(1.1) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
   transform: none !important;
 }
@@ -10432,17 +10493,17 @@ body.theme-style-default .mobile-export-option:not(.mobile-export-primary):hover
 }
 
 body.theme-style-default .mobile-export-option.mobile-export-primary {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
-  border: 1px solid #1E40AF !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  border: 1px solid var(--m3-sys-color-primary, #1E40AF) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
 }
 
 body.theme-style-default .mobile-export-option.mobile-export-primary p,
 body.theme-style-default .mobile-export-option.mobile-export-primary span,
 body.theme-style-default .mobile-export-option.mobile-export-primary svg {
-  color: #FFFFFF !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
 }
 
 body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-primary) {
@@ -10467,10 +10528,16 @@ body.theme-style-default.dark-mode .mobile-export-option:not(.mobile-export-prim
 }
 
 body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary {
-  background: #2563EB !important;
-  border: 1px solid #3B82F6 !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  border: 1px solid var(--m3-sys-color-primary, #3B82F6) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary p,
+body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary span,
+body.theme-style-default.dark-mode .mobile-export-option.mobile-export-primary svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
 }
 
 /* ── Top Header Desktop Bar in Default Style ── */
@@ -10537,14 +10604,22 @@ body.theme-style-default #btn-download-hd,
 body.theme-style-default #header-desktop-bar #btn-download-hd,
 body.theme-style-default #btn-download-hd-mobile,
 body.theme-style-default #btn-toggle-canvas-popover {
-  background: #2563EB !important;
-  color: #FFFFFF !important;
-  border: 1px solid #1D4ED8 !important;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  border: 1px solid var(--m3-sys-color-primary, #1D4ED8) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   text-shadow: none !important;
   transform: none !important;
+}
+
+body.theme-style-default .btn-theme-primary svg,
+body.theme-style-default #btn-download-hd svg,
+body.theme-style-default #header-desktop-bar #btn-download-hd svg,
+body.theme-style-default #btn-download-hd-mobile svg,
+body.theme-style-default #btn-toggle-canvas-popover svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
 }
 
 body.theme-style-default .btn-theme-primary:hover,
@@ -10552,8 +10627,8 @@ body.theme-style-default #btn-download-hd:hover,
 body.theme-style-default #header-desktop-bar #btn-download-hd:hover,
 body.theme-style-default #btn-download-hd-mobile:hover,
 body.theme-style-default #btn-toggle-canvas-popover:hover {
-  background: #1D4ED8 !important;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35) !important;
+  filter: brightness(0.92) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22) !important;
 }
 
 body.theme-style-default.dark-mode .btn-theme-primary,
@@ -10561,9 +10636,9 @@ body.theme-style-default.dark-mode #btn-download-hd,
 body.theme-style-default.dark-mode #header-desktop-bar #btn-download-hd,
 body.theme-style-default.dark-mode #btn-download-hd-mobile,
 body.theme-style-default.dark-mode #btn-toggle-canvas-popover {
-  background: #3B82F6 !important;
-  color: #FFFFFF !important;
-  border: 1px solid #2563EB !important;
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  border: 1px solid var(--m3-sys-color-primary, #2563EB) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -10571,12 +10646,20 @@ body.theme-style-default.dark-mode #btn-toggle-canvas-popover {
   transform: none !important;
 }
 
+body.theme-style-default.dark-mode .btn-theme-primary svg,
+body.theme-style-default.dark-mode #btn-download-hd svg,
+body.theme-style-default.dark-mode #header-desktop-bar #btn-download-hd svg,
+body.theme-style-default.dark-mode #btn-download-hd-mobile svg,
+body.theme-style-default.dark-mode #btn-toggle-canvas-popover svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+}
+
 body.theme-style-default.dark-mode .btn-theme-primary:hover,
 body.theme-style-default.dark-mode #btn-download-hd:hover,
 body.theme-style-default.dark-mode #header-desktop-bar #btn-download-hd:hover,
 body.theme-style-default.dark-mode #btn-download-hd-mobile:hover,
 body.theme-style-default.dark-mode #btn-toggle-canvas-popover:hover {
-  background: #2563EB !important;
+  filter: brightness(1.1) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
 }
 
@@ -10722,7 +10805,21 @@ body.theme-style-default.dark-mode #btn-preset-menu-trigger:hover {
 
 /* ── Inner Theme Panels & Toggles in Default Style ── */
 body.theme-style-default .theme-card-inner,
-body.theme-style-default .layout-card-inner,
+body.theme-style-default .layout-card-inner {
+  background: var(--m3-sys-color-primary-container, #EFF6FF) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.theme-style-default.dark-mode .theme-card-inner,
+body.theme-style-default.dark-mode .layout-card-inner {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
 body.theme-style-default .pill-toggle-group,
 body.theme-style-default .capsule-group,
 body.theme-style-default #device-type-toggles,
@@ -10735,6 +10832,48 @@ body.theme-style-default #bottom-floating-pill-bar > div {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Default Style: Theme Adaptive Sliding Thumb Pill & Segmented Buttons */
+body.theme-style-default .glass-slider-thumb {
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16) !important;
+  z-index: 2 !important;
+}
+
+body.theme-style-default #device-type-toggles .capsule-btn.active,
+body.theme-style-default .capsule-group button.active,
+body.theme-style-default .pill-toggle-group .pill-btn.active,
+body.theme-style-default #time-display-mode-group button.active,
+body.theme-style-default .time-mode-btn.active {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+body.theme-style-default .support-tab-btn.active {
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16) !important;
+  border-radius: 9999px !important;
+  z-index: 5 !important;
+}
+
+body.theme-style-default .pill-btn.active svg,
+body.theme-style-default .capsule-btn.active svg,
+body.theme-style-default .capsule-group button.active svg,
+body.theme-style-default .pill-toggle-group .pill-btn.active svg,
+body.theme-style-default #device-type-toggles .capsule-btn.active svg,
+body.theme-style-default #time-display-mode-group button.active svg,
+body.theme-style-default .time-mode-btn.active svg,
+body.theme-style-default .support-tab-btn.active svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
 }
 
 body.theme-style-default.dark-mode .theme-card-inner,
@@ -10751,6 +10890,64 @@ body.theme-style-default.dark-mode #bottom-floating-pill-bar > div {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
+}
+
+body.theme-style-default.dark-mode .glass-slider-thumb {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  border: none !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  z-index: 2 !important;
+}
+
+body.theme-style-default.dark-mode #device-type-toggles .capsule-btn.active,
+body.theme-style-default.dark-mode .capsule-group button.active,
+body.theme-style-default.dark-mode .pill-toggle-group .pill-btn.active,
+body.theme-style-default.dark-mode #time-display-mode-group button.active,
+body.theme-style-default.dark-mode .time-mode-btn.active {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+body.theme-style-default.dark-mode .support-tab-btn.active {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.theme-style-default.dark-mode .pill-btn.active svg,
+body.theme-style-default.dark-mode .capsule-btn.active svg,
+body.theme-style-default.dark-mode .capsule-group button.active svg,
+body.theme-style-default.dark-mode .pill-toggle-group .pill-btn.active svg,
+body.theme-style-default.dark-mode #device-type-toggles .capsule-btn.active svg,
+body.theme-style-default.dark-mode #time-display-mode-group button.active svg,
+body.theme-style-default.dark-mode .time-mode-btn.active svg,
+body.theme-style-default.dark-mode .support-tab-btn.active svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+}
+
+/* Default Style: Explicit INACTIVE button text — prevents white bleed-through from active rules */
+body.theme-style-default #device-type-toggles .capsule-btn:not(.active),
+body.theme-style-default .capsule-group button:not(.active),
+body.theme-style-default .pill-toggle-group .pill-btn:not(.active),
+body.theme-style-default #time-display-mode-group button:not(.active),
+body.theme-style-default .time-mode-btn:not(.active),
+body.theme-style-default .support-tab-btn:not(.active) {
+  color: #64748B !important;
+  background: transparent !important;
+}
+
+body.theme-style-default.dark-mode #device-type-toggles .capsule-btn:not(.active),
+body.theme-style-default.dark-mode .capsule-group button:not(.active),
+body.theme-style-default.dark-mode .pill-toggle-group .pill-btn:not(.active),
+body.theme-style-default.dark-mode #time-display-mode-group button:not(.active),
+body.theme-style-default.dark-mode .time-mode-btn:not(.active),
+body.theme-style-default.dark-mode .support-tab-btn:not(.active) {
+  color: #94A3B8 !important;
+  background: transparent !important;
 }
 
 /* ── Disable specific glass glare overlay layers in Default Style ── */
@@ -11077,6 +11274,102 @@ body.dark-mode #ai-scan-fullscreen-overlay {
 #ai-scan-fullscreen-overlay.active {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AI SCAN PROGRESS CARD (replaces orb animation)
+   ═══════════════════════════════════════════════════════════════ */
+.ai-scan-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 28px 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-width: 260px;
+  max-width: 320px;
+  width: 80vw;
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.13),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  transform: translateZ(0);
+}
+
+/* Ring spinner — simple single arc */
+.ai-scan-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: #2563EB;
+  border-right-color: #2563EB;
+  animation: aiScanSpin 0.85s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes aiScanSpin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-scan-card-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  width: 100%;
+}
+
+.ai-scan-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+}
+
+.ai-scan-status {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.4;
+  min-height: 1em;
+}
+
+/* Dark mode */
+body.dark-mode .ai-scan-card {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode .ai-scan-spinner {
+  border-color: rgba(96, 165, 250, 0.18);
+  border-top-color: #60A5FA;
+  border-right-color: #60A5FA;
+}
+
+body.dark-mode .ai-scan-title {
+  color: #F1F5F9;
+}
+
+body.dark-mode .ai-scan-status {
+  color: #94A3B8;
+}
+
+/* Default Style variant */
+body.theme-style-default .ai-scan-card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+}
+
+body.theme-style-default.dark-mode .ai-scan-card {
+  background: #0B0F17;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -12078,16 +12371,38 @@ body.theme-style-glass.theme-dark #right-sidebar {
 .theme-style-btn {
   border: 1.5px solid #e2e8f0;
   background: #ffffff;
-  color: #475569;
+  color: #0F172A !important;
+  font-weight: 800 !important;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.theme-style-btn span {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
 .theme-style-btn:hover {
   border-color: #93c5fd;
-  color: #1d4ed8;
+  color: #1d4ed8 !important;
   transform: translateY(-1px);
+}
+
+.theme-style-btn svg {
+  transition: all 0.2s ease !important;
+}
+
+#btn-theme-style-default:not(.active) svg {
+  color: #2563EB !important;
+  stroke: #2563EB !important;
+  fill: none !important;
+}
+
+#btn-theme-style-glass:not(.active) svg {
+  color: #9333EA !important;
+  fill: #9333EA !important;
+  stroke: none !important;
 }
 
 .theme-style-btn.active {
@@ -12097,10 +12412,21 @@ body.theme-style-glass.theme-dark #right-sidebar {
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
 }
 
+.theme-style-btn.active span {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
 .theme-style-btn.active svg {
   color: #ffffff !important;
   stroke: #ffffff !important;
+  fill: none !important;
+}
+
+#btn-theme-style-glass.active svg {
+  color: #ffffff !important;
   fill: #ffffff !important;
+  stroke: none !important;
 }
 
 body.dark-mode .theme-style-btn,
@@ -12108,7 +12434,13 @@ body.dark-mode .theme-style-btn,
 .dark .theme-style-btn {
   background: rgba(30, 41, 59, 0.7);
   border-color: rgba(255, 255, 255, 0.15);
-  color: #cbd5e1;
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .theme-style-btn span,
+.theme-dark .theme-style-btn span,
+.dark .theme-style-btn span {
+  color: #F8FAFC !important;
 }
 
 body.dark-mode .theme-style-btn:hover,
@@ -12116,7 +12448,7 @@ body.dark-mode .theme-style-btn:hover,
 .dark .theme-style-btn:hover {
   background: rgba(51, 65, 85, 0.9);
   border-color: rgba(147, 197, 253, 0.4);
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 body.dark-mode .theme-style-btn.active,
@@ -12126,6 +12458,12 @@ body.dark-mode .theme-style-btn.active,
   border-color: #60a5fa !important;
   color: #ffffff !important;
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45) !important;
+}
+
+body.dark-mode .theme-style-btn.active span,
+.theme-dark .theme-style-btn.active span,
+.dark .theme-style-btn.active span {
+  color: #ffffff !important;
 }
 
 /* 5. Header Desktop Bar Glass Glow in Glass Mode */
