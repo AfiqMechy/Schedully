@@ -2748,13 +2748,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260907_v467"></script>
+  <script src="app_v3.js?v=20260907_v468"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260907_v467').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260907_v468').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

@@ -285,6 +285,10 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
 
     let gridStartHour = "08:00";
     let gridEndHour = "23:00";
+    let courses = [];
+    let detectedLanguage = "English";
+    let hasNonEnglishText = false;
+    let isPeriodBased = false;
 
     if (Array.isArray(parsed)) {
       courses = parsed;
