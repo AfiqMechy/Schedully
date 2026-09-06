@@ -3361,9 +3361,19 @@ textarea::placeholder,
 }
 
 /* ═══════════════════════════════════════════════════════════════
-/* ═══════════════════════════════════════════════════════════════
    OCR LANGUAGE & PERIOD MODAL (Refined UI: Flat & Glass, Light & Dark)
    ═══════════════════════════════════════════════════════════════ */
+
+.ocr-lang-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+body.dark-mode .ocr-lang-card,
+.theme-dark .ocr-lang-card,
+.dark .ocr-lang-card {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.12);
+}
 
 /* Segment container bar */
 .ocr-segment-bar {

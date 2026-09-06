@@ -2572,7 +2572,7 @@
         </div>
 
         <!-- Period Start Time Presets (Shown when Clock mode is selected to convert Period 1, 2, 3 into clock times) -->
-        <div id="ocr-period-preset-container" class="hidden flex flex-col gap-1.5 mt-1">
+        <div id="ocr-period-preset-container" class="flex flex-col gap-1.5 mt-1" style="display: none;">
           <span class="text-[10.5px] font-semibold text-gray-500 dark:text-gray-400">Map periods to clock schedule:</span>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" data-preset="90m-900" class="period-preset-chip active text-[11px] font-bold px-3 py-1.5 rounded-xl transition-all" title="1st period at 9:00 AM, each period is 90 min (standard university)">
@@ -2750,13 +2750,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=473"></script>
+  <script src="app_v3.js?v=474"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260907_v470').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=474').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
