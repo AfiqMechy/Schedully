@@ -226,6 +226,33 @@ class SchedullyApp {
     }
     document.body.classList.add('app-ready');
     this.updateHistoryButtonUI();
+    this.setupAutoImmersiveFullscreen();
+  }
+
+  setupAutoImmersiveFullscreen() {
+    // Automatically hide system notification bar & navigation bar on tablets/smartphones
+    const isPWA = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches 
+      || window.navigator.standalone === true 
+      || document.referrer.includes('android-app://');
+
+    if (isPWA || (window.innerWidth <= 1280 && 'ontouchstart' in window)) {
+      const enterImmersive = () => {
+        try {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+              docEl.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+            } else if (docEl.webkitRequestFullscreen) {
+              docEl.webkitRequestFullscreen().catch(() => {});
+            }
+          }
+        } catch (e) {}
+      };
+
+      // Seamlessly trigger on first user interaction without any UI toggle button
+      window.addEventListener('pointerdown', enterImmersive, { once: true, passive: true });
+      window.addEventListener('touchstart', enterImmersive, { once: true, passive: true });
+    }
   }
 
   initDOMElements() {
