@@ -1,14 +1,14 @@
-const CACHE_NAME = 'schedully-cache-v435';
+const CACHE_NAME = 'schedully-cache-v438';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=20260906_v435',
-  '/app_v3.js?v=20260906_v434',
-  '/ocr_parser.js?v=20260905_v428',
+  '/styles.css?v=20260906_v438',
+  '/app_v3.js?v=20260906_v438',
+  '/ocr_parser.js?v=20260906_v437',
   '/ics_csv_parser_v3.js',
   '/timetable_engine.js',
   '/i18n.js?v=20260905_v428',
-  '/manifest.json',
+  '/manifest.json?v=20260906_v437',
   '/logo-transparent.png',
   '/icon-192.png',
   '/icon-512.png',

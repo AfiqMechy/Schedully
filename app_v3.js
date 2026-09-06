@@ -2810,7 +2810,12 @@ class SchedullyApp {
       if (this.courseSearchInput) {
         this.courseSearchInput.removeAttribute('tabindex');
         setTimeout(() => {
-          this.courseSearchInput.focus();
+          // preventScroll prevents mobile browser from scrolling/pushing the entire page viewport upwards!
+          try {
+            this.courseSearchInput.focus({ preventScroll: true });
+          } catch (e) {
+            this.courseSearchInput.focus();
+          }
         }, 120);
       }
     };
@@ -4625,7 +4630,16 @@ class SchedullyApp {
               if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
                 this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased);
               } else {
-                this.importClassesDirectly(extracted);
+                const fullDetailCourses = extracted.map(c => {
+                  const rawCode = (c.code || c.title || '').trim();
+                  const hasGenuineCode = /^[A-Z]{2,5}\s*\d{2,4}[A-Z]?$/i.test(rawCode);
+                  return {
+                    ...c,
+                    title: c.title || rawCode,
+                    code: hasGenuineCode ? rawCode : (c.title || rawCode)
+                  };
+                });
+                this.importClassesDirectly(fullDetailCourses);
               }
             } catch (err) {
               console.error("Scanner Error (Internal):", err);
@@ -4846,7 +4860,12 @@ class SchedullyApp {
           const courses = this.pendingOcrResult.courses.map(c => {
             const isTranslated = (this.selectedOcrLangChoice === 'translated');
             const mappedTitle = isTranslated ? (c.translatedTitle || c.title) : (c.originalTitle || c.title);
-            const mappedCode = isTranslated ? (c.translatedCode || c.code) : (c.originalCode || c.code);
+            let rawCode = isTranslated ? (c.translatedCode || c.code || mappedTitle) : (c.originalCode || c.code || mappedTitle);
+            
+            // If code is an invented shortform (e.g. MSLC, PE2, EDUSYSTEMS) and mappedTitle has full description,
+            // or if code is just an abbreviation without a genuine course number, ensure card displays full details
+            const hasGenuineCode = /^[A-Z]{2,5}\s*\d{2,4}[A-Z]?$/i.test((rawCode || '').trim());
+            const mappedCode = hasGenuineCode ? rawCode : (mappedTitle || rawCode);
             
             let sTime = c.startTime;
             let eTime = c.endTime;

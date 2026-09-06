@@ -144,7 +144,7 @@ ABSOLUTE STRICT RULES:
      * NO SHORTFORMS / NO ABBREVIATIONS: Spell out complete words in English (e.g., use "Introduction to Computer Science", NOT "Intro to CS"; "Physical Education", NOT "P.E." or "PE"; "Mathematics", NOT "Math").
      * PRESERVE ALL PARENTHESES AND QUALIFIERS: If the original subject has text in parentheses, you MUST TRANSLATE and INCLUDE the complete contents inside parentheses (e.g. "外国語特別講義II(マレー語)" -> "Special Foreign Language Lecture II (Malay)", "体育実技II(バスケットボールB)" -> "Physical Education Practice II (Basketball B)", "教育制度論(スポーツ健康学科対象)" -> "Educational Systems Theory (Sports and Health Science Department)"). NEVER drop parentheses or abbreviations in parentheses.
      * If the timetable is already in English, provide the full unabbreviated subject title while keeping parenthetical notes.
-   - "translatedCode": Standard Latin/English alphanumeric code (e.g. "FL202", "PE202", "CS101") or the official course code.
+   - "translatedCode": ALWAYS PROVIDE FULL DETAILS. If the image has an official alphanumeric course code (e.g. "FL202", "CS101", "BBSB3103"), keep that code. BUT IF NO SEPARATE COURSE CODE IS PRINTED ON THE CELL, SET "translatedCode" EXACTLY EQUAL TO "translatedTitle" (FULL UNABBREVIATED ENGLISH NAME). NEVER INVENT RANDOM SHORTFORMS, INITIALISMS, OR ACRONYMS (e.g., NEVER turn "Sports Biomechanics" into "SPORTSBIOMECHANICS" or "MSLC", NEVER turn "Education Systems" into "EDUSYSTEMS", keep full title with spaces!).
 
 3. DAYS & TIME RECOGNITION:
    - Map columns or rows to standard English day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".

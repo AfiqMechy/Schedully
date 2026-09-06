@@ -11112,10 +11112,12 @@ body.dark-mode #ai-scan-fullscreen-overlay {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GOOGLE MATERIAL 3 EXPRESSIVE LOADING INDICATOR
-   - Dynamic Shape Morphing (Circle -> Squircle -> Teardrop / Starburst)
-   - Asymmetric Spring Easing (M3 Expressive Motion System)
-   - Radiant Prismatic Material Ring & Gemini Spark
+/* ═══════════════════════════════════════════════════════════════
+   OFFICIAL GOOGLE MATERIAL 3 EXPRESSIVE LOADING INDICATOR
+   Reference: material-components-android / docs / components / LoadingIndicator.md
+   - Pure solid token colors (Primary: #2563EB / #3B82F6)
+   - Organic morphing geometric shapes (Circle -> Pill -> Rounded Star -> Squircle)
+   - Contained surface option with clean elevation shadow and solid indicator
    ═══════════════════════════════════════════════════════════════ */
 .m3-expressive-loader-wrapper {
   position: relative;
@@ -11123,196 +11125,162 @@ body.dark-mode #ai-scan-fullscreen-overlay {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
   transform: translateZ(0);
 }
 
+/* Contained M3 Loading Indicator Container (Clean rounded surface container) */
 .m3-expressive-loader {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #FFFFFF;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.12),
+              0 2px 6px -1px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-/* Central M3 Expressive Morphing Geometric Shape */
+/* Active Indicator: Solid dynamic color shape morphing smoothly according to M3 Expressive physics */
 .m3-expressive-shape {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #1A73E8 0%, #7C3AED 45%, #E11D48 100%);
-  box-shadow: 0 12px 32px -4px rgba(37, 99, 235, 0.45), 
-              0 4px 12px rgba(124, 58, 237, 0.3),
-              inset 0 2px 5px rgba(255, 255, 255, 0.6);
-  animation: m3ExpressiveMorph 3.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite,
-             m3ExpressiveHue 8s linear infinite;
-  will-change: border-radius, transform;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background-color: #2563EB;
+  border-radius: 50%;
+  animation: m3SolidShapeMorph 2.6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+  will-change: border-radius, transform, background-color;
 }
 
-/* Material 3 Expressive Asymmetric Orbiting Track */
+/* Clean, crisp M3 Expressive Orbit Arc Track in solid primary color */
 .m3-expressive-ring {
   position: absolute;
-  inset: -8px;
+  inset: 10px;
   border-radius: 50%;
-  border: 3.5px solid transparent;
+  border: 3px solid transparent;
   border-top-color: #3B82F6;
-  border-right-color: #8B5CF6;
-  filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4));
-  animation: m3ExpressiveSpin 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  will-change: transform;
+  border-right-color: #3B82F6;
+  animation: m3ExpressiveSpin 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 .m3-expressive-ring::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 6px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #60A5FA;
-  box-shadow: 0 0 10px #3B82F6, 0 0 18px #93C5FD;
+  display: none !important;
 }
 
-/* Ambient Accent Glow / Gemini Spark Aura */
+/* No glowing spark or gradients - clean solid M3 material */
 .m3-expressive-spark {
-  position: absolute;
-  inset: -16px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, rgba(139, 92, 246, 0.2) 40%, transparent 72%);
-  filter: blur(16px);
-  animation: m3ExpressivePulse 2.4s ease-in-out infinite alternate;
-  will-change: transform, opacity;
-  pointer-events: none;
+  display: none !important;
 }
 
-/* Material 3 Expressive Dynamic Rhythm Dots */
+/* M3 Solid Dynamic Rhythm Dots */
 .m3-expressive-dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 10px;
+  gap: 6px;
+  height: 8px;
 }
 
 .m3-expressive-dots .m3-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 9999px;
-  background: #3B82F6;
-  opacity: 0.3;
-  animation: m3DotBounce 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+  background-color: #2563EB;
+  opacity: 0.35;
+  animation: m3DotBounce 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
 }
 
 .m3-expressive-dots .m3-dot:nth-child(1) {
   animation-delay: 0s;
-  background: #3B82F6;
+  background-color: #2563EB;
 }
 .m3-expressive-dots .m3-dot:nth-child(2) {
-  animation-delay: 0.2s;
-  background: #8B5CF6;
+  animation-delay: 0.18s;
+  background-color: #3B82F6;
 }
 .m3-expressive-dots .m3-dot:nth-child(3) {
-  animation-delay: 0.4s;
-  background: #EC4899;
+  animation-delay: 0.36s;
+  background-color: #60A5FA;
 }
 
-/* Material 3 Expressive Shape Morph Keyframes: Circle -> Clover/Squircle -> Shield -> Soft Star */
-@keyframes m3ExpressiveMorph {
+/* Official M3 Expressive Morph Keyframes: 
+   Circle (100%) -> Squircle (Rounded Polygon) -> Shield/Pill -> Soft Star Burst -> Circle */
+@keyframes m3SolidShapeMorph {
   0% {
     border-radius: 50%;
-    transform: rotate(0deg) scale(0.92);
+    transform: rotate(0deg) scale(0.88);
+    background-color: #2563EB;
   }
   25% {
-    border-radius: 38% 62% 63% 37% / 41% 44% 56% 59%;
-    transform: rotate(90deg) scale(1.06);
+    border-radius: 35% 65% 60% 40% / 40% 45% 55% 60%;
+    transform: rotate(90deg) scale(1.05);
+    background-color: #1D4ED8;
   }
   50% {
-    border-radius: 20px;
-    transform: rotate(180deg) scale(0.95);
+    border-radius: 14px;
+    transform: rotate(180deg) scale(0.92);
+    background-color: #2563EB;
   }
   75% {
-    border-radius: 63% 37% 37% 63% / 57% 58% 42% 43%;
-    transform: rotate(270deg) scale(1.08);
+    border-radius: 60% 40% 40% 60% / 55% 55% 45% 45%;
+    transform: rotate(270deg) scale(1.06);
+    background-color: #3B82F6;
   }
   100% {
     border-radius: 50%;
-    transform: rotate(360deg) scale(0.92);
+    transform: rotate(360deg) scale(0.88);
+    background-color: #2563EB;
   }
 }
 
 @keyframes m3ExpressiveSpin {
   0% {
     transform: rotate(0deg);
-    border-width: 3.5px;
-  }
-  50% {
-    transform: rotate(200deg);
-    border-width: 2px;
   }
   100% {
     transform: rotate(360deg);
-    border-width: 3.5px;
-  }
-}
-
-@keyframes m3ExpressivePulse {
-  0% {
-    transform: scale(0.86);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scale(1.22);
-    opacity: 0.95;
-  }
-}
-
-@keyframes m3ExpressiveHue {
-  0% {
-    filter: hue-rotate(0deg) brightness(1);
-  }
-  50% {
-    filter: hue-rotate(45deg) brightness(1.15);
-  }
-  100% {
-    filter: hue-rotate(0deg) brightness(1);
   }
 }
 
 @keyframes m3DotBounce {
   0%, 100% {
     transform: translateY(0) scale(0.85);
-    opacity: 0.35;
+    opacity: 0.3;
   }
-  40% {
-    transform: translateY(-5px) scale(1.25);
+  50% {
+    transform: translateY(-4px) scale(1.2);
     opacity: 1;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
-  }
-  60% {
-    transform: translateY(0) scale(1);
-    opacity: 0.7;
   }
 }
 
-/* Dark Mode Overrides for M3 Expressive Loader */
+/* Dark Mode Overrides for M3 Expressive Contained Loader */
+.dark .m3-expressive-loader,
+body.dark-mode .m3-expressive-loader {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
 .dark .m3-expressive-shape,
 body.dark-mode .m3-expressive-shape {
-  box-shadow: 0 14px 36px -4px rgba(96, 165, 250, 0.4),
-              0 4px 16px rgba(167, 139, 250, 0.35),
-              inset 0 2px 5px rgba(255, 255, 255, 0.45);
+  background-color: #3B82F6;
 }
 
 .dark .m3-expressive-ring,
 body.dark-mode .m3-expressive-ring {
   border-top-color: #60A5FA;
-  border-right-color: #A78BFA;
+  border-right-color: #60A5FA;
 }
 
-.dark .m3-expressive-spark,
-body.dark-mode .m3-expressive-spark {
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.4) 0%, rgba(167, 139, 250, 0.25) 45%, transparent 75%);
+.dark .m3-expressive-dots .m3-dot,
+body.dark-mode .m3-expressive-dots .m3-dot {
+  background-color: #60A5FA;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -11513,16 +11481,18 @@ body.dark-mode .class-item-card.highlight-target-course,
   padding-right: 60px !important;
   padding-top: 10px !important;
   padding-bottom: 10px !important;
-  font-size: 13.5px !important;
+  font-size: 16px !important; /* Minimum 16px prevents mobile browsers (iOS/Chrome) from automatically zooming and shifting the entire viewport upward! */
   font-weight: 600 !important;
   color: #0F172A !important;
   height: 100% !important;
   width: 100% !important;
+  touch-action: manipulation !important;
 }
 
 .search-floating-input::placeholder {
   color: #94A3B8 !important;
   font-weight: 500 !important;
+  font-size: 14px !important;
 }
 
 /* Active Search Indicator Dot on Circular Button */
