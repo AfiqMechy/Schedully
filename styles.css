@@ -11351,13 +11351,14 @@ body.dark-mode .class-item-card.highlight-target-course,
    ========================================================================== */
 #course-search-dock {
   position: absolute;
-  bottom: 14px;
+  bottom: calc(14px + var(--keyboard-offset, 0px));
   left: 16px;
   right: 16px;
   z-index: 35;
   pointer-events: none;
   display: flex;
   justify-content: flex-end;
+  transition: bottom 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Single Morphing Container: Circle (44px) <-> Full-width Pill */

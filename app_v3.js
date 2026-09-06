@@ -2828,7 +2828,29 @@ class SchedullyApp {
         this.courseSearchInput.setAttribute('tabindex', '-1');
         this.courseSearchInput.blur();
       }
+      document.documentElement.style.removeProperty('--keyboard-offset');
     };
+
+    // Adaptive Keyboard Geometry Handling (visualViewport API)
+    // When virtual keyboard opens on mobile, dynamically float search button right above the keyboard!
+    if (window.visualViewport) {
+      const handleViewportResize = () => {
+        if (!this.courseSearchContainer || this.courseSearchContainer.classList.contains('is-collapsed')) {
+          document.documentElement.style.removeProperty('--keyboard-offset');
+          return;
+        }
+        const keyboardHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
+        if (keyboardHeight > 80) {
+          // Virtual keyboard is active: offset dock so it stays perfectly visible above keys
+          document.documentElement.style.setProperty('--keyboard-offset', `${keyboardHeight}px`);
+        } else {
+          document.documentElement.style.removeProperty('--keyboard-offset');
+        }
+      };
+
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      window.visualViewport.addEventListener('scroll', handleViewportResize);
+    }
 
     if (this.btnFloatingCourseSearch) {
       this.btnFloatingCourseSearch.addEventListener('click', (e) => {
