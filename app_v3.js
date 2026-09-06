@@ -6515,6 +6515,21 @@ class SchedullyApp {
     const codeColorMap = {};
     let colorIdx = 0;
 
+    const normalizeDay = (d) => {
+      if (!d) return 'Mon';
+      const clean = String(d).trim().toLowerCase();
+      const map = {
+        'monday': 'Mon', 'mon': 'Mon', 'isnin': 'Mon', 'senin': 'Mon',
+        'tuesday': 'Tue', 'tue': 'Tue', 'selasa': 'Tue',
+        'wednesday': 'Wed', 'wed': 'Wed', 'rabu': 'Wed',
+        'thursday': 'Thu', 'thu': 'Thu', 'khamis': 'Thu', 'kamis': 'Thu',
+        'friday': 'Fri', 'fri': 'Fri', 'jumaat': 'Fri', 'jumat': 'Fri',
+        'saturday': 'Sat', 'sat': 'Sat', 'sabtu': 'Sat',
+        'sunday': 'Sun', 'sun': 'Sun', 'ahad': 'Sun', 'minggu': 'Sun'
+      };
+      return map[clean] || (d.substring(0, 3).charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+    };
+
     const mapped = dedupedEvents.map((c, i) => {
       if (!codeColorMap[c.code]) {
         if (hasWallpaper && Array.isArray(wallpaperSwatches) && wallpaperSwatches.length > 0) {
@@ -6531,7 +6546,7 @@ class SchedullyApp {
         id: Date.now() + i,
         code: c.code,
         title: c.title,
-        day: c.day,
+        day: normalizeDay(c.day),
         startTime: c.startTime,
         endTime: c.endTime,
         type: c.type || '',
@@ -6565,33 +6580,36 @@ class SchedullyApp {
         const endCeil = (em > 0) ? eh + 1 : eh;
         if (!isNaN(endCeil)) maxEnd = Math.max(maxEnd, endCeil);
       }
-      if (c.day && !importedDays.includes(c.day)) {
-        importedDays.push(c.day);
+      const normD = normalizeDay(c.day);
+      if (!importedDays.includes(normD)) {
+        importedDays.push(normD);
       }
     });
 
+    let ocrStartHour = null;
+    let ocrEndHour = null;
     if (ocrGridBounds && ocrGridBounds.gridStartHour) {
       const [sh] = String(ocrGridBounds.gridStartHour).split(':').map(Number);
-      if (!isNaN(sh)) minStart = Math.min(minStart, sh);
+      if (!isNaN(sh)) ocrStartHour = sh;
     }
     if (ocrGridBounds && ocrGridBounds.gridEndHour) {
       let [eh, em] = String(ocrGridBounds.gridEndHour).split(':').map(Number);
       if (eh === 0) eh = 24;
       const endCeil = (em > 0) ? eh + 1 : eh;
-      if (!isNaN(endCeil)) maxEnd = Math.max(maxEnd, endCeil);
+      if (!isNaN(endCeil)) ocrEndHour = endCeil;
     }
 
     if (minStart < 24 && maxEnd > 0) {
-      this.gridStartHour = Math.max(0, Math.min(8, minStart));
-      // Full evening and night coverage up to 22:00, 23:00, or 24:00 (Midnight)
-      this.gridEndHour = Math.min(24, Math.max(maxEnd, 22));
+      this.gridStartHour = Math.max(0, Math.min(8, ocrStartHour !== null ? ocrStartHour : minStart));
+      // Full evening and night coverage: Up to 23:00 (11:00 PM) or 24:00 (Midnight)
+      const targetEnd = ocrEndHour !== null ? ocrEndHour : Math.max(maxEnd, 23);
+      this.gridEndHour = Math.min(24, Math.max(maxEnd, targetEnd));
     }
 
-    importedDays.forEach(d => {
-      if (!this.activeDays.includes(d)) {
-        this.activeDays.push(d);
-      }
-    });
+    // Set canonical active days without duplicates
+    const hasWeekend = importedDays.some(d => d === 'Sat' || d === 'Sun');
+    const defaultDays = hasWeekend ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    this.activeDays = defaultDays.filter(d => importedDays.includes(d) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(d));
 
     if (this.gridStartTimeSelect) {
       this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;
@@ -6969,7 +6987,24 @@ class SchedullyApp {
   }
 
   renderTimetableGrid() {
-    const days = this.activeDays && this.activeDays.length > 0 ? this.activeDays : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const normalizeDay = (d) => {
+      if (!d) return 'Mon';
+      const clean = String(d).trim().toLowerCase();
+      const map = {
+        'monday': 'Mon', 'mon': 'Mon', 'isnin': 'Mon', 'senin': 'Mon',
+        'tuesday': 'Tue', 'tue': 'Tue', 'selasa': 'Tue',
+        'wednesday': 'Wed', 'wed': 'Wed', 'rabu': 'Wed',
+        'thursday': 'Thu', 'thu': 'Thu', 'khamis': 'Thu', 'kamis': 'Thu',
+        'friday': 'Fri', 'fri': 'Fri', 'jumaat': 'Fri', 'jumat': 'Fri',
+        'saturday': 'Sat', 'sat': 'Sat', 'sabtu': 'Sat',
+        'sunday': 'Sun', 'sun': 'Sun', 'ahad': 'Sun', 'minggu': 'Sun'
+      };
+      return map[clean] || (d.substring(0, 3).charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+    };
+    const rawDays = this.activeDays && this.activeDays.length > 0 ? this.activeDays : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const days = [...new Set(rawDays.map(normalizeDay))].sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+    this.activeDays = days;
     const isWatch = (this.activeDevice === 'watch');
     const isPhone = (this.activeDevice === 'phone');
 
