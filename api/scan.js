@@ -67,70 +67,52 @@ export default async function handler(req, res) {
       console.warn("Failed to list models, using fallback gemini-2.5-flash", e);
     }
 
-    const promptText = `CRITICAL SYSTEM COMMAND:
-You are an expert universal academic timetable vision OCR parser.
-Your highest priority is 100% ACCURACY in extracting course entries, time structures, and detecting whether the timetable uses a PERIOD-BASED system (e.g., Period 1, 2, 3 / 1限, 2限 / 1교시, 2교시 / 第1节) or a CLOCK TIME system (e.g., 08:00-10:00, 9:30 AM - 11:00 AM).
+    const promptText = `CRITICAL MULTI-STAGE ACADEMIC TIMETABLE VISION PARSER:
+You are an expert, meticulous universal vision AI parser specialized in extracting 100% of academic courses and timetable data from images, schedules, and screenshots across all countries, universities, and schools.
 
-SYSTEM IDENTIFICATION RULES:
-1. PERIOD-BASED vs CLOCK TIME DETECTION:
-   - "isPeriodBased": Set to TRUE if the timetable rows/columns represent numbered sequential class periods/slots (e.g. 1, 2, 3, 4, 5, 6 / 1限-6限 in Japan / 1교시-8교시 in Korea / 第1节-第8节 in China / Period 1-7 in US/UK/International schools).
-   - "isPeriodBased": Set to FALSE if the schedule strictly uses clock timestamps without distinct named period blocks (e.g. standard university grid showing 08:00, 09:00, 10:00, 11:00... on the time axis).
-   - Even if clock times are printed alongside period numbers (e.g. "1 (09:00-10:30)", "2 (10:40-12:10)"), set "isPeriodBased": true and populate BOTH "periodNumber" and the exact "startTime"/"endTime".
+TAKE YOUR TIME TO EXHAUSTIVELY INSPECT EVERY INCH OF THIS IMAGE. DO NOT RUSH. ACCURACY, COMPLETENESS, AND FULL TIME COVERAGE ARE PARAMOUNT.
 
-2. LANGUAGE & NON-ENGLISH DETECTION (EXCLUDING NAMES):
-   - "hasNonEnglishText": Set to TRUE ONLY if the academic subjects, course titles, or timetable headers are in a foreign language (e.g. Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
-   - Set "hasNonEnglishText": FALSE if the timetable subjects and table headers are in English.
-   - EXCEPTION FOR NAMES: Lecturer, professor, teacher, instructor, or student names MUST BE EXCLUDED from foreign language determination. If course titles and schedule headers are in English (e.g. "Data Structures", "Calculus I", "Physics 101"), "hasNonEnglishText" MUST be FALSE and "detectedLanguage" MUST be "English", even if instructor names are foreign/ethnic.
+EXECUTE THIS 5-STAGE DEEP EXTRACTION METHODOLOGY:
 
-3. DAYS RECOGNITION (Multi-Country & Multi-Language):
-   - Map day column/row headers to standard English short day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
-   - Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun.
-   - Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun.
-   - Chinese: 星期一/周一/週一/一 -> Mon, 星期二/周二/週二/二 -> Tue, 星期三/周三/週三/三 -> Wed, 星期四/周四/週四/四 -> Thu, 星期五/周五/週五/五 -> Fri, 星期六/周六/週六/六 -> Sat, 星期日/周日/週日/日/天 -> Sun.
-   - Malay/Indo: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun.
-   - Arabic (RTL): الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat.
-   - Spanish/French/German/Italian/Portuguese: Lunes/Lundi/Montag/Lunedi/Segunda -> Mon, Martes/Mardi/Dienstag/Martedi/Terca -> Tue, Miercoles/Mercredi/Mittwoch/Mercoledi/Quarta -> Wed, Jueves/Jeudi/Donnerstag/Giovedi/Quinta -> Thu, Viernes/Vendredi/Freitag/Venerdi/Sexta -> Fri, Sabado/Samedi/Samstag/Sabato -> Sat, Domingo/Dimanche/Sonntag/Domenica -> Sun.
+STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION
+- Detect the table layout:
+  * Identify Day Axis (Columns vs Rows: Mon, Tue, Wed, Thu, Fri, Sat, Sun).
+  * Identify Time Axis (Rows vs Columns: e.g. 06:00, 07:00, 08:00... through 22:00, 23:00, 24:00/Midnight, or Period 1 to Period 12).
+- Distinguish System Type:
+  * "isPeriodBased": TRUE if rows/columns represent numbered sequential class periods (1, 2, 3... / 1限-7限 / 1교시-8교시 / 第1节-第8节 / Period 1-7).
+  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00).
 
-3. 100% VERBATIM SUBJECT / COURSE EXTRACTION:
-   - "title": Extract the full subject title character-for-character as printed in the table cell.
-   - INCLUDE ALL PARENTHESES AND QUALIFIERS: E.g., "外国語特別講義II(マレー語)", "体育実技II(バスケットボールB)", "Introduction to CS (Lecture)", "Calculus I - SEC 02". NEVER drop text in parentheses.
-   - If multiple lines of text exist in a cell, parse the main subject name into "title", the instructor into "lecturer", and room/venue into "room".
-   - "originalTitle": Same exact verbatim text as in the image.
-   - "translatedTitle": Complete English translation of the course name without shortforms (keep parenthetical notes translated).
-   - "code": Official alphanumeric course code (e.g. "FL202", "CS101", "BBSB3103"). If no separate code is printed in the cell, reuse the full verbatim title.
-   - "originalCode": Native shorthand or code if present.
-   - "translatedCode": Translated course code or full translated title if no separate code exists.
+STAGE 2: EXHAUSTIVE CELL-BY-CELL SCAN (ALL DAYS & ALL HOURS)
+- Meticulously examine EVERY SINGLE CELL in every column from Mon through Sun.
+- Check ALL time slots from earliest morning (06:00/07:00) to latest night (19:00, 20:00, 21:00, 22:00, 23:00, 23:30, 24:00/Midnight).
+- DO NOT SKIP bottom rows, edge columns, or compact cards.
+- If a course cell spans multiple hours or periods (e.g., 2-hour or 3-hour block), capture the true overall start time of the first block and end time of the last block.
 
-4. TIME & PERIOD MAPPING (FULL 24-HOUR / NIGHT SCHEDULE DETECTION UP TO 11PM & 12AM):
-   - "startTime" and "endTime": Strictly 24-hour "HH:MM" format (e.g. "09:00", "14:00", "20:00", "23:00", "24:00").
-   - NIGHT / EVENING HOURS (7 PM to 12 AM MIDNIGHT):
-     * Pay careful attention to late-night and evening timetables spanning up to 23:00 (11:00 PM), 23:30 (11:30 PM), or 24:00 (12:00 AM Midnight).
-     * Distinguish 12-hour AM vs PM:
-       - 7:00 PM -> "19:00", 7:30 PM -> "19:30"
-       - 8:00 PM -> "20:00", 8:30 PM -> "20:30"
-       - 9:00 PM -> "21:00", 9:30 PM -> "21:30"
-       - 10:00 PM -> "22:00", 10:30 PM -> "22:30"
-       - 11:00 PM -> "23:00", 11:30 PM -> "23:30"
-       - 12:00 AM / Midnight / End of night schedule -> "24:00"
-     * DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM).
-     * Scan the entire image thoroughly from top to bottom including the bottom rows where evening and night courses (19:00 - 24:00) are placed.
-   - "periodNumber": Integer (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12...) when period based.
-   - Extended period fallback clock times if not explicitly printed:
-     * Period 1: 09:00 - 10:30
-     * Period 2: 10:40 - 12:10
-     * Period 3: 13:00 - 14:30
-     * Period 4: 14:40 - 16:10
-     * Period 5: 16:20 - 17:50
-     * Period 6: 18:00 - 19:30
-     * Period 7: 19:40 - 21:10
-     * Period 8: 21:20 - 22:50
-     * Period 9: 23:00 - 24:00
+STAGE 3: 100% VERBATIM & PRECISE COURSE EXTRACTION
+- "title": Extract the full exact subject/course title verbatim from the cell including all parentheses, qualifiers, and section markers (e.g. "Calculus I (Lecture)", "外国語特別講義II(マレー語)", "Object Oriented Programming (Lab)").
+- "code": Official course code (e.g. "CS101", "FL202", "BBSB3103"). If no separate code exists, reuse the full title.
+- "originalTitle" & "originalCode": Native verbatim text as written in the image.
+- "translatedTitle" & "translatedCode": Full English translation without invented abbreviations.
+- "room": Room / Venue / Hall / Classroom / Building (e.g. "Room 301", "Lab 2", "DK 1", "E-401").
+- "lecturer": Professor / Lecturer / Teacher name.
+- "group": Class section / Group / OCC (e.g. "G1", "SEC 02", "Group A").
+- "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio".
 
-5. METADATA:
-   - "room": Room / Venue / Hall / Classroom / Building (e.g. "Room 301", "Lab 2", "E-401").
-   - "lecturer": Professor / Lecturer / Teacher name.
-   - "group": Section / Class group / OCC (e.g. "G1", "SEC 01", "Group A").
-   - "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio".
+STAGE 4: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
+- "startTime" and "endTime": Strictly 24-hour "HH:MM" format.
+- 12-Hour AM/PM conversions:
+  * 07:00 AM -> "07:00", 08:00 AM -> "08:00", 11:00 AM -> "11:00", 12:00 PM (Noon) -> "12:00"
+  * 01:00 PM -> "13:00", 02:00 PM -> "14:00", 03:00 PM -> "15:00", 04:00 PM -> "16:00"
+  * 05:00 PM -> "17:00", 06:00 PM -> "18:00", 07:00 PM -> "19:00", 08:00 PM -> "20:00"
+  * 09:00 PM -> "21:00", 10:00 PM -> "22:00", 11:00 PM -> "23:00", 11:30 PM -> "23:30"
+  * 12:00 AM / Midnight / End of evening schedule -> "24:00"
+- DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM).
+- If period-based, populate "periodNumber" (1, 2, 3...) and standard clock boundaries.
+
+STAGE 5: LANGUAGE CLASSIFICATION (EXCLUDING NAMES)
+- "hasNonEnglishText": TRUE ONLY if subject/course titles or table headers are in a foreign language (Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
+- Set "hasNonEnglishText": FALSE if the timetable subjects and table headers are in English.
+- EXCEPTION FOR NAMES: Lecturer/professor/teacher/student names MUST BE EXCLUDED from foreign language classification. If course titles and schedule headers are in English, "hasNonEnglishText" MUST be FALSE and "detectedLanguage" MUST be "English".
 
 OUTPUT STRICT JSON FORMAT:
 {
@@ -168,7 +150,7 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
         ]
       }],
       generationConfig: {
-        maxOutputTokens: 8192,
+        maxOutputTokens: 16384,
         temperature: 0.0,
         responseMimeType: "application/json"
       }
@@ -180,17 +162,47 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
 
     for (const model of candidateModels) {
       try {
+        const modelPayload = JSON.parse(JSON.stringify(payload));
+        if (model.includes('2.5') || model.includes('2.0')) {
+          modelPayload.generationConfig.thinkingConfig = {
+            thinkingBudget: 2048
+          };
+        }
+
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const response = await fetch(url, {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        let response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-goog-api-key': apiKey
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(modelPayload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
-        const resJson = await response.json();
+        let resJson = await response.json().catch(() => ({}));
+        if (resJson.error && modelPayload.generationConfig.thinkingConfig) {
+          // Retry without thinkingConfig if endpoint doesn't support it
+          delete modelPayload.generationConfig.thinkingConfig;
+          const retryController = new AbortController();
+          const retryTimeout = setTimeout(() => retryController.abort(), 60000);
+          response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(modelPayload),
+            signal: retryController.signal
+          });
+          clearTimeout(retryTimeout);
+          resJson = await response.json().catch(() => ({}));
+        }
+
         if (resJson.error) {
           lastError = resJson.error.message || `Model ${model} returned error ${response.status}`;
           console.warn(`[Vercel api/scan] Model ${model} failed:`, lastError);
