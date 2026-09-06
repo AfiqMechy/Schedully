@@ -5022,32 +5022,6 @@ class SchedullyApp {
       });
     }
 
-  setUploadBusy(busy) {
-    if (this.universalFileInput) {
-      this.universalFileInput.disabled = busy;
-    }
-    const dropzone = document.querySelector('.m3-dropzone');
-    if (dropzone) {
-      if (busy) {
-        dropzone.classList.add('is-busy');
-        dropzone.setAttribute('aria-disabled', 'true');
-      } else {
-        dropzone.classList.remove('is-busy');
-        dropzone.removeAttribute('aria-disabled');
-      }
-    }
-    const menuPill = document.getElementById('menu-file-import');
-    if (menuPill) {
-      if (busy) {
-        menuPill.classList.add('is-busy');
-        menuPill.setAttribute('aria-disabled', 'true');
-      } else {
-        menuPill.classList.remove('is-busy');
-        menuPill.removeAttribute('aria-disabled');
-      }
-    }
-  }
-
     if (this.btnClearAll) {
       this.btnClearAll.addEventListener('click', async (e) => {
          try {
@@ -5389,6 +5363,31 @@ class SchedullyApp {
     });
   }
 
+  setUploadBusy(busy) {
+    if (this.universalFileInput) {
+      this.universalFileInput.disabled = busy;
+    }
+    const dropzone = document.querySelector('.m3-dropzone');
+    if (dropzone) {
+      if (busy) {
+        dropzone.classList.add('is-busy');
+        dropzone.setAttribute('aria-disabled', 'true');
+      } else {
+        dropzone.classList.remove('is-busy');
+        dropzone.removeAttribute('aria-disabled');
+      }
+    }
+    const menuPill = document.getElementById('menu-file-import');
+    if (menuPill) {
+      if (busy) {
+        menuPill.classList.add('is-busy');
+        menuPill.setAttribute('aria-disabled', 'true');
+      } else {
+        menuPill.classList.remove('is-busy');
+        menuPill.removeAttribute('aria-disabled');
+      }
+    }
+  }
 
   applyPresetSettings(settings) {
     if (!settings || typeof settings !== 'object') return;
