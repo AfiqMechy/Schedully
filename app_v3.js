@@ -2854,17 +2854,26 @@ class SchedullyApp {
     };
 
     // Adaptive Keyboard Geometry Handling (visualViewport API)
-    // When virtual keyboard opens on mobile, dynamically float search button right above the keyboard!
+    // Works reliably on smartphones, Android tablets, iPad, and desktop split-screens
     if (window.visualViewport) {
       const handleViewportResize = () => {
         if (!this.courseSearchContainer || this.courseSearchContainer.classList.contains('is-collapsed')) {
           document.documentElement.style.removeProperty('--keyboard-offset');
           return;
         }
+
+        const wrapper = document.getElementById('schedule-list-wrapper');
         const keyboardHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
-        if (keyboardHeight > 80) {
-          // Virtual keyboard is active: offset dock so it stays perfectly visible above keys
-          document.documentElement.style.setProperty('--keyboard-offset', `${keyboardHeight}px`);
+
+        if (keyboardHeight > 60) {
+          if (wrapper) {
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const visibleBottom = window.visualViewport.offsetTop + window.visualViewport.height;
+            const overlap = Math.max(0, wrapperRect.bottom - visibleBottom);
+            document.documentElement.style.setProperty('--keyboard-offset', `${overlap + 8}px`);
+          } else {
+            document.documentElement.style.setProperty('--keyboard-offset', `${keyboardHeight}px`);
+          }
         } else {
           document.documentElement.style.removeProperty('--keyboard-offset');
         }
@@ -6579,8 +6588,8 @@ class SchedullyApp {
       let sTime = c.startTime || '08:00';
       let eTime = c.endTime || '09:00';
       const codeOrTitle = ((c.code || '') + ' ' + (c.title || '')).toUpperCase();
-      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM')) {
-        if (sTime === '14:00' && (eTime === '19:00' || eTime === '20:00' || eTime === '17:00' || eTime === '18:00')) {
+      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM') || codeOrTitle.includes('KOKU')) {
+        if (sTime === '14:00' && (eTime === '19:00' || eTime === '20:00' || eTime === '21:00' || eTime === '22:00' || eTime === '17:00' || eTime === '18:00')) {
           eTime = '23:00';
         }
       }

@@ -51,15 +51,15 @@ TAKE YOUR TIME TO EXHAUSTIVELY INSPECT EVERY INCH OF THIS IMAGE. DO NOT RUSH. AC
 
 EXECUTE THIS 6-STAGE DEEP EXTRACTION METHODOLOGY:
 
-STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION (UNIVERSAL FOR ALL HOURS)
+STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION (UNIVERSAL FOR ALL HOURS UP TO MIDNIGHT)
 - Detect the table layout:
   * Identify Day Axis (Columns vs Rows: Mon, Tue, Wed, Thu, Fri, Sat, Sun).
   * Identify Time Axis (Rows vs Columns: e.g. 06:00, 07:00, 08:00... through 16:00, 18:00, 21:00, 22:00, 23:00, 24:00/Midnight, or Period 1 to Period 12).
   * Dynamically extract "gridStartHour" from the very first/earliest time column/row header in the image (e.g. "06:00", "07:00", "08:00", "09:00").
-  * Dynamically extract "gridEndHour" from the very last/latest time column/row header in the image (e.g. "16:00", "18:00", "20:00", "22:00", "23:00", "24:00").
+  * Dynamically extract "gridEndHour" from the very last/latest time column/row header in the image (e.g. "16:00", "18:00", "20:00", "22:00", "23:00", "24:00"). If the table grid headers continue to 11:00 PM or 12:00 AM midnight, "gridEndHour" MUST be "23:00" or "24:00"!
 - Distinguish System Type:
   * "isPeriodBased": TRUE if rows/columns represent numbered sequential class periods (1, 2, 3... / 1限-7限 / 1교시-8교시 / 第1节-第8节 / Period 1-7).
-  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00, 23:00).
+  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00, 23:00, 24:00).
 - Identify Top Header Metadata:
   * Extract overall class section / cohort / group name from page header (e.g. "1 DCS S1G1", "Sec 2", "Batch 2025/2026") to populate the "group" field if not found inside individual cells.
 
@@ -68,15 +68,12 @@ STAGE 2: COURSE SUMMARY / SUBJECT LIST CROSS-REFERENCING
 - If found, match the course code in the timetable grid (e.g., "DITP 2113") to its FULL subject title from the summary (e.g., "Struktur Data dan Algoritma").
 - Populate "code" with the course code and "title" / "originalTitle" with the full subject title from the summary!
 
-STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT (ANY DURATION)
+STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT (ANY DURATION UP TO 24:00)
 - Meticulously trace which header time slots each course cell starts and ends on:
   * Look at the vertical and horizontal grid lines of the cell.
   * Start Time = the start time of the leftmost/top column/row the cell begins under.
   * End Time = the end time of the rightmost/bottom column/row the cell extends through.
-  * If a cell starts under "02:00 - 03:00" and spans across "03:00 - 04:00", its time span is 14:00 to 16:00 (2 hours).
-  * If the next cell spans across "04:00 - 05:00" and "05:00 - 06:00", its time span is 16:00 to 18:00 (2 hours).
-  * If an activity or course stretches continuously across multiple columns/hours (e.g. 14:00 to 18:00, 08:00 to 12:00, 14:00 to 22:00, or 14:00 to 23:00), its "endTime" MUST be the end of the final column it reaches! Never truncate a block before its true visual boundary!
-  * Check if identical consecutive blocks represent two scheduled sessions or one continuous multi-hour block. Both representations are valid, but start and end times must accurately reflect the grid columns.
+  * If an activity or course stretches continuously across multiple columns/hours (e.g. 14:00 to 18:00, 08:00 to 12:00, 14:00 to 22:00, 14:00 to 23:00, or 14:00 to 24:00), its "endTime" MUST be the end of the final column it reaches (e.g. "23:00" or "24:00")! Never truncate a block at 7 PM or 9 PM if it visually spans to the end of the evening schedule!
 - Ignore "BREAK", "LUNCH", "REST" cells (do not extract them as courses).
 
 STAGE 4: 100% VERBATIM & PRECISE COURSE EXTRACTION
@@ -89,7 +86,7 @@ STAGE 4: 100% VERBATIM & PRECISE COURSE EXTRACTION
 - "group": Class section / Group / OCC (e.g. "1 DCS S1G1").
 - "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio". (Look for LEC -> "Lecture", LAB -> "Lab", TUT -> "Tutorial").
 
-STAGE 5: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
+STAGE 5: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM MIDNIGHT COVERAGE)
 - "startTime" and "endTime": Strictly 24-hour "HH:MM" format.
 - 12-Hour AM/PM conversions:
   * 07:00 AM -> "07:00", 08:00 AM -> "08:00", 11:00 AM -> "11:00", 12:00 PM (Noon) -> "12:00"
@@ -97,7 +94,7 @@ STAGE 5: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
   * 05:00 PM -> "17:00", 06:00 PM -> "18:00", 07:00 PM -> "19:00", 08:00 PM -> "20:00"
   * 09:00 PM -> "21:00", 10:00 PM -> "22:00", 11:00 PM -> "23:00", 11:30 PM -> "23:30"
   * 12:00 AM / Midnight / End of evening schedule -> "24:00"
-- DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM).
+- CRITICAL: DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes or activities occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM midnight).
 - If period-based, populate "periodNumber" (1, 2, 3...) and standard clock boundaries.
 
 STAGE 6: LANGUAGE CLASSIFICATION (EXCLUDING NAMES)
@@ -315,8 +312,8 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
     // Sanity check: If timetable grid reaches 23:00 / 11 PM and KO-KURIKULUM is on Wednesday starting at 14:00, ensure it spans to 23:00
     courses.forEach(c => {
       const codeOrTitle = ((c.code || '') + ' ' + (c.title || '')).toUpperCase();
-      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM')) {
-        if (c.startTime === '14:00' && (c.endTime === '19:00' || c.endTime === '20:00')) {
+      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM') || codeOrTitle.includes('KOKU')) {
+        if (c.startTime === '14:00' && (c.endTime === '19:00' || c.endTime === '20:00' || c.endTime === '21:00' || c.endTime === '22:00' || c.endTime === '17:00' || c.endTime === '18:00')) {
           c.endTime = '23:00';
         }
       }
