@@ -3498,6 +3498,28 @@ body.dark-mode .ocr-choice-btn.active .ocr-choice-desc,
   color: #bfdbfe !important;
 }
 
+/* Disabled / Greyed out state for language option */
+.ocr-choice-btn.disabled,
+.ocr-choice-btn[disabled] {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(0.85);
+  box-shadow: none !important;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+}
+body.dark-mode .ocr-choice-btn.disabled,
+.theme-dark .ocr-choice-btn.disabled,
+.dark .ocr-choice-btn.disabled,
+body.dark-mode .ocr-choice-btn[disabled],
+.theme-dark .ocr-choice-btn[disabled],
+.dark .ocr-choice-btn[disabled] {
+  opacity: 0.35 !important;
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 /* Period preset chips */
 .period-preset-chip {
   cursor: pointer;
@@ -6436,9 +6458,9 @@ input:focus, select:focus, textarea:focus {
     overflow: hidden !important;
   }
 
-  /* Theme-adaptive sidebar backgrounds & dominant front layer priority (Glass Style only) */
-  body:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
-  body:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right) {
+  /* Theme-adaptive sidebar backgrounds & dominant front layer priority */
+  #left-sidebar:not(.sidebar-collapsed-left),
+  #right-sidebar:not(.sidebar-collapsed-right) {
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.72)) 0%, rgba(255, 255, 255, 0.35) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.45)) 100%) !important;
     backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
     -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
@@ -6453,10 +6475,10 @@ input:focus, select:focus, textarea:focus {
     z-index: 10001 !important;
   }
 
-  body.dark-mode:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
-  body.dark-mode:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right),
-  .theme-dark:not(.theme-style-default) #left-sidebar:not(.sidebar-collapsed-left),
-  .theme-dark:not(.theme-style-default) #right-sidebar:not(.sidebar-collapsed-right) {
+  body.dark-mode #left-sidebar:not(.sidebar-collapsed-left),
+  body.dark-mode #right-sidebar:not(.sidebar-collapsed-right),
+  .theme-dark #left-sidebar:not(.sidebar-collapsed-left),
+  .theme-dark #right-sidebar:not(.sidebar-collapsed-right) {
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.10 + 0.02)) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.15) 100%) !important;
     backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
     -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
@@ -10327,8 +10349,6 @@ body.dark-mode .theme-style-btn.active span,
 /* ═══════════════════════════════════════════════════════════════
    DEFAULT STYLE (Solid Material 3 Expressive Surfaces)
    ═══════════════════════════════════════════════════════════════ */
-body.theme-style-default #left-sidebar,
-body.theme-style-default #right-sidebar,
 body.theme-style-default #header-desktop-bar,
 body.theme-style-default #floating-undo-redo-row,
 body.theme-style-default #bottom-floating-pill-bar,
@@ -10375,8 +10395,6 @@ body.theme-style-glass:not(.dark-mode) .theme-style-btn.active span {
 }
 
 
-body.theme-style-default.dark-mode #left-sidebar,
-body.theme-style-default.dark-mode #right-sidebar,
 body.theme-style-default.dark-mode #header-desktop-bar,
 body.theme-style-default.dark-mode #floating-undo-redo-row,
 body.theme-style-default.dark-mode #bottom-floating-pill-bar,
@@ -11245,304 +11263,7 @@ body.theme-style-default.dark-mode #tour-popover-card,
   overscroll-behavior-y: contain;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MINIMALIST FULLSCREEN AI PROCESSING BLUR OVERLAY (NO TEXT)
-   ═══════════════════════════════════════════════════════════════ */
-#ai-scan-fullscreen-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.28);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, backdrop-filter;
-}
 
-.dark #ai-scan-fullscreen-overlay,
-body.dark-mode #ai-scan-fullscreen-overlay {
-  background: rgba(11, 15, 23, 0.45);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  backdrop-filter: blur(28px) saturate(200%);
-}
-
-#ai-scan-fullscreen-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   AI SCAN PROGRESS CARD (replaces orb animation)
-   ═══════════════════════════════════════════════════════════════ */
-.ai-scan-card {
-  background: #FFFFFF;
-  border-radius: 24px;
-  padding: 28px 36px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  min-width: 260px;
-  max-width: 320px;
-  width: 80vw;
-  box-shadow:
-    0 8px 32px rgba(15, 23, 42, 0.13),
-    0 2px 8px rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  transform: translateZ(0);
-}
-
-/* Ring spinner — simple single arc */
-.ai-scan-spinner {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 3px solid rgba(37, 99, 235, 0.15);
-  border-top-color: #2563EB;
-  border-right-color: #2563EB;
-  animation: aiScanSpin 0.85s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes aiScanSpin {
-  to { transform: rotate(360deg); }
-}
-
-.ai-scan-card-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  text-align: center;
-  width: 100%;
-}
-
-.ai-scan-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0F172A;
-  letter-spacing: 0.01em;
-  line-height: 1.3;
-}
-
-.ai-scan-status {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #64748B;
-  line-height: 1.4;
-  min-height: 1em;
-}
-
-/* Dark mode */
-body.dark-mode .ai-scan-card {
-  background: #1E293B;
-  border-color: rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-body.dark-mode .ai-scan-spinner {
-  border-color: rgba(96, 165, 250, 0.18);
-  border-top-color: #60A5FA;
-  border-right-color: #60A5FA;
-}
-
-body.dark-mode .ai-scan-title {
-  color: #F1F5F9;
-}
-
-body.dark-mode .ai-scan-status {
-  color: #94A3B8;
-}
-
-/* Default Style variant */
-body.theme-style-default .ai-scan-card {
-  background: #FFFFFF;
-  border-color: #E2E8F0;
-}
-
-body.theme-style-default.dark-mode .ai-scan-card {
-  background: #0B0F17;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-/* ═══════════════════════════════════════════════════════════════
-   OFFICIAL GOOGLE MATERIAL 3 EXPRESSIVE LOADING INDICATOR
-   Reference: material-components-android / docs / components / LoadingIndicator.md
-   - Pure solid token colors (Primary: #2563EB / #3B82F6)
-   - Organic morphing geometric shapes (Circle -> Pill -> Rounded Star -> Squircle)
-   - Contained surface option with clean elevation shadow and solid indicator
-   ═══════════════════════════════════════════════════════════════ */
-.m3-expressive-loader-wrapper {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  transform: translateZ(0);
-}
-
-/* Contained M3 Loading Indicator Container (Clean rounded surface container) */
-.m3-expressive-loader {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #FFFFFF;
-  border-radius: 24px;
-  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.12),
-              0 2px 6px -1px rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-/* Active Indicator: Solid dynamic color shape morphing smoothly according to M3 Expressive physics */
-.m3-expressive-shape {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  background-color: #2563EB;
-  border-radius: 50%;
-  animation: m3SolidShapeMorph 2.6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-  will-change: border-radius, transform, background-color;
-}
-
-/* Clean, crisp M3 Expressive Orbit Arc Track in solid primary color */
-.m3-expressive-ring {
-  position: absolute;
-  inset: 10px;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: #3B82F6;
-  border-right-color: #3B82F6;
-  animation: m3ExpressiveSpin 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  pointer-events: none;
-  opacity: 0.85;
-}
-
-.m3-expressive-ring::after {
-  display: none !important;
-}
-
-/* No glowing spark or gradients - clean solid M3 material */
-.m3-expressive-spark {
-  display: none !important;
-}
-
-/* M3 Solid Dynamic Rhythm Dots */
-.m3-expressive-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 8px;
-}
-
-.m3-expressive-dots .m3-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background-color: #2563EB;
-  opacity: 0.35;
-  animation: m3DotBounce 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-}
-
-.m3-expressive-dots .m3-dot:nth-child(1) {
-  animation-delay: 0s;
-  background-color: #2563EB;
-}
-.m3-expressive-dots .m3-dot:nth-child(2) {
-  animation-delay: 0.18s;
-  background-color: #3B82F6;
-}
-.m3-expressive-dots .m3-dot:nth-child(3) {
-  animation-delay: 0.36s;
-  background-color: #60A5FA;
-}
-
-/* Official M3 Expressive Morph Keyframes: 
-   Circle (100%) -> Squircle (Rounded Polygon) -> Shield/Pill -> Soft Star Burst -> Circle */
-@keyframes m3SolidShapeMorph {
-  0% {
-    border-radius: 50%;
-    transform: rotate(0deg) scale(0.88);
-    background-color: #2563EB;
-  }
-  25% {
-    border-radius: 35% 65% 60% 40% / 40% 45% 55% 60%;
-    transform: rotate(90deg) scale(1.05);
-    background-color: #1D4ED8;
-  }
-  50% {
-    border-radius: 14px;
-    transform: rotate(180deg) scale(0.92);
-    background-color: #2563EB;
-  }
-  75% {
-    border-radius: 60% 40% 40% 60% / 55% 55% 45% 45%;
-    transform: rotate(270deg) scale(1.06);
-    background-color: #3B82F6;
-  }
-  100% {
-    border-radius: 50%;
-    transform: rotate(360deg) scale(0.88);
-    background-color: #2563EB;
-  }
-}
-
-@keyframes m3ExpressiveSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes m3DotBounce {
-  0%, 100% {
-    transform: translateY(0) scale(0.85);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateY(-4px) scale(1.2);
-    opacity: 1;
-  }
-}
-
-/* Dark Mode Overrides for M3 Expressive Contained Loader */
-.dark .m3-expressive-loader,
-body.dark-mode .m3-expressive-loader {
-  background: #1E293B;
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.dark .m3-expressive-shape,
-body.dark-mode .m3-expressive-shape {
-  background-color: #3B82F6;
-}
-
-.dark .m3-expressive-ring,
-body.dark-mode .m3-expressive-ring {
-  border-top-color: #60A5FA;
-  border-right-color: #60A5FA;
-}
-
-.dark .m3-expressive-dots .m3-dot,
-body.dark-mode .m3-expressive-dots .m3-dot {
-  background-color: #60A5FA;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    PREVIEW CARD LIVE INTERACTION & SIDEBAR CARD AUTO-HIGHLIGHT

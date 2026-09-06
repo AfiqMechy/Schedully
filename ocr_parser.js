@@ -41,7 +41,10 @@ class OCRTimetableParser {
             return {
               courses: courses,
               detectedLanguage: resData.detectedLanguage || 'English',
-              hasNonEnglishText: resData.hasNonEnglishText !== undefined ? resData.hasNonEnglishText : false
+              hasNonEnglishText: resData.hasNonEnglishText !== undefined ? resData.hasNonEnglishText : false,
+              isPeriodBased: (resData.isPeriodBased !== undefined)
+                ? Boolean(resData.isPeriodBased)
+                : courses.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '')
             };
           }
         }
@@ -124,51 +127,62 @@ class OCRTimetableParser {
 
     const promptText = `CRITICAL SYSTEM COMMAND:
 You are an expert universal academic timetable vision OCR parser.
-Your highest priority is 100% EXACT VERBATIM ACCURACY. You must transcribe course names, subject titles, codes, and details EXACTLY character-for-character as written in the uploaded image.
+Your highest priority is 100% ACCURACY in extracting course entries, time structures, and detecting whether the timetable uses a PERIOD-BASED system (e.g., Period 1, 2, 3 / 1限, 2限 / 1교시, 2교시 / 第1节) or a CLOCK TIME system (e.g., 08:00-10:00, 9:30 AM - 11:00 AM).
 
-ABSOLUTE STRICT RULES:
-1. 100% EXACT VERBATIM SUBJECT / COURSE NAMES:
-   - Extract the full course title EXACTLY word-for-word, letter-for-letter, character-for-character as printed in the cell.
-   - INCLUDE ALL PARENTHESES AND SUB-STRINGS: If a subject has parentheses or qualifiers (e.g. "外国語特別講義II(マレー語)", "教育制度論(スポーツ健康学科対象)", "体育実技II(バスケットボールB)"), you MUST INCLUDE THE PARENTHESES AND TEXT INSIDE THEM in the title! NEVER DROP "(マレー語)" or "(バスケットボールB)".
-   - NEVER abbreviate, summarize, truncate, simplify, paraphrase, or alter subject names.
-   - Preserve exact spelling, casing, punctuation, roman numerals, and special characters (e.g., "I", "II", "(A)", "LAB", "TUTORIAL", "&", "-", "/", "(", ")").
-   - If a subject name spans multiple lines inside a table cell, combine all lines into one complete title string (e.g. "外国語特別講義II (マレー語)" or "外国語特別講義II(マレー語)").
-   - Do NOT invent or guess missing words. Capture every legible character in the cell.
+SYSTEM IDENTIFICATION RULES:
+1. PERIOD-BASED vs CLOCK TIME DETECTION:
+   - "isPeriodBased": Set to TRUE if the timetable rows/columns represent numbered sequential class periods/slots (e.g. 1, 2, 3, 4, 5, 6 / 1限-6限 in Japan / 1교시-8교시 in Korea / 第1节-第8节 in China / Period 1-7 in US/UK/International schools).
+   - "isPeriodBased": Set to FALSE if the schedule strictly uses clock timestamps without distinct named period blocks (e.g. standard university grid showing 08:00, 09:00, 10:00, 11:00... on the time axis).
+   - Even if clock times are printed alongside period numbers (e.g. "1 (09:00-10:30)", "2 (10:40-12:10)"), set "isPeriodBased": true and populate BOTH "periodNumber" and the exact "startTime"/"endTime".
 
-2. DUAL-LANGUAGE AND COURSE CODES:
-   - "title": MUST BE THE EXACT 100% VERBATIM SUBJECT NAME as printed on the image.
-   - "originalTitle": Same exact verbatim subject name as printed on the image.
-   - "code": The official course code printed next to or above/below the title (e.g. "BBSB3103", "CS101", "SE302"). If NO separate alphanumeric code is printed, reuse the verbatim title or native abbreviation.
+2. LANGUAGE & NON-ENGLISH DETECTION (EXCLUDING NAMES):
+   - "hasNonEnglishText": Set to TRUE ONLY if the academic subjects, course titles, or timetable headers are in a foreign language (e.g. Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
+   - Set "hasNonEnglishText": FALSE if the timetable subjects and table headers are in English.
+   - EXCEPTION FOR NAMES: Lecturer, professor, teacher, instructor, or student names MUST BE EXCLUDED from foreign language determination. If course titles and schedule headers are in English (e.g. "Data Structures", "Calculus I", "Physics 101"), "hasNonEnglishText" MUST be FALSE and "detectedLanguage" MUST be "English", even if instructor names are foreign/ethnic.
+
+3. DAYS RECOGNITION (Multi-Country & Multi-Language):
+   - Map day column/row headers to standard English short day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
+   - Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun.
+   - Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun.
+   - Chinese: 星期一/周一/週一/一 -> Mon, 星期二/周二/週二/二 -> Tue, 星期三/周三/週三/三 -> Wed, 星期四/周四/週四/四 -> Thu, 星期五/周五/週五/五 -> Fri, 星期六/周六/週六/六 -> Sat, 星期日/周日/週日/日/天 -> Sun.
+   - Malay/Indo: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun.
+   - Arabic (RTL): الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat.
+   - Spanish/French/German/Italian/Portuguese: Lunes/Lundi/Montag/Lunedi/Segunda -> Mon, Martes/Mardi/Dienstag/Martedi/Terca -> Tue, Miercoles/Mercredi/Mittwoch/Mercoledi/Quarta -> Wed, Jueves/Jeudi/Donnerstag/Giovedi/Quinta -> Thu, Viernes/Vendredi/Freitag/Venerdi/Sexta -> Fri, Sabado/Samedi/Samstag/Sabato -> Sat, Domingo/Dimanche/Sonntag/Domenica -> Sun.
+
+3. 100% VERBATIM SUBJECT / COURSE EXTRACTION:
+   - "title": Extract the full subject title character-for-character as printed in the table cell.
+   - INCLUDE ALL PARENTHESES AND QUALIFIERS: E.g., "外国語特別講義II(マレー語)", "体育実技II(バスケットボールB)", "Introduction to CS (Lecture)", "Calculus I - SEC 02". NEVER drop text in parentheses.
+   - If multiple lines of text exist in a cell, parse the main subject name into "title", the instructor into "lecturer", and room/venue into "room".
+   - "originalTitle": Same exact verbatim text as in the image.
+   - "translatedTitle": Complete English translation of the course name without shortforms (keep parenthetical notes translated).
+   - "code": Official alphanumeric course code (e.g. "FL202", "CS101", "BBSB3103"). If no separate code is printed in the cell, reuse the full verbatim title.
    - "originalCode": Native shorthand or code if present.
-   - "translatedTitle": FULL, COMPLETE, UNABBREVIATED ENGLISH TRANSLATION of the subject name.
-     * NO SHORTFORMS / NO ABBREVIATIONS: Spell out complete words in English (e.g., use "Introduction to Computer Science", NOT "Intro to CS"; "Physical Education", NOT "P.E." or "PE"; "Mathematics", NOT "Math").
-     * PRESERVE ALL PARENTHESES AND QUALIFIERS: If the original subject has text in parentheses, you MUST TRANSLATE and INCLUDE the complete contents inside parentheses (e.g. "外国語特別講義II(マレー語)" -> "Special Foreign Language Lecture II (Malay)", "体育実技II(バスケットボールB)" -> "Physical Education Practice II (Basketball B)", "教育制度論(スポーツ健康学科対象)" -> "Educational Systems Theory (Sports and Health Science Department)"). NEVER drop parentheses or abbreviations in parentheses.
-     * If the timetable is already in English, provide the full unabbreviated subject title while keeping parenthetical notes.
-   - "translatedCode": ALWAYS PROVIDE FULL DETAILS. If the image has an official alphanumeric course code (e.g. "FL202", "CS101", "BBSB3103"), keep that code. BUT IF NO SEPARATE COURSE CODE IS PRINTED ON THE CELL, SET "translatedCode" EXACTLY EQUAL TO "translatedTitle" (FULL UNABBREVIATED ENGLISH NAME). NEVER INVENT RANDOM SHORTFORMS, INITIALISMS, OR ACRONYMS (e.g., NEVER turn "Sports Biomechanics" into "SPORTSBIOMECHANICS" or "MSLC", NEVER turn "Education Systems" into "EDUSYSTEMS", keep full title with spaces!).
+   - "translatedCode": Translated course code or full translated title if no separate code exists.
 
-3. DAYS & TIME RECOGNITION:
-   - Map columns or rows to standard English day: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".
-     * Malay/Indo: Isnin/Senin -> Mon, Selasa -> Tue, Rabu -> Wed, Khamis/Kamis -> Thu, Jumaat/Jumat -> Fri, Sabtu -> Sat, Ahad/Minggu -> Sun.
-     * Japanese: 月 -> Mon, 火 -> Tue, 水 -> Wed, 木 -> Thu, 金 -> Fri, 土 -> Sat, 日 -> Sun.
-     * Chinese: 星期一/周一/週一 -> Mon, 星期二/周二 -> Tue, 星期三/周三 -> Wed, 星期四/周四 -> Thu, 星期五/周五 -> Fri, 星期六/周六 -> Sat, 星期日/周日 -> Sun.
-     * Korean: 월 -> Mon, 화 -> Tue, 수 -> Wed, 목 -> Thu, 금 -> Fri, 토 -> Sat, 일 -> Sun.
-     * Arabic (RTL): Note right-to-left order! الأحد -> Sun, الإثنين -> Mon, الثلاثاء -> Tue, الأربعاء -> Wed, الخميس -> Thu, الجمعة -> Fri, السبت -> Sat.
-   - "startTime" and "endTime": 24-hour HH:MM format (e.g. "08:00", "09:30", "14:00", "16:30"). Read the time header/ruler carefully.
-   - If period numbers are used instead of clock times (e.g. 1 to 6 / 1限, 2限):
-     * Set "periodNumber": 1, 2, 3, 4, 5, 6...
-     * Fallback standard university periods: 1: 09:00-10:30, 2: 10:40-12:10, 3: 13:00-14:30, 4: 14:40-16:10, 5: 16:20-17:50, 6: 18:00-19:30.
+4. TIME & PERIOD MAPPING:
+   - "startTime" and "endTime": 24-hour "HH:MM" format (e.g. "09:00", "10:30", "14:00").
+   - "periodNumber": Integer (1, 2, 3, 4, 5, 6...) when period based.
+   - Standard period fallback clock times if not explicitly printed:
+     * Period 1: 09:00 - 10:30
+     * Period 2: 10:40 - 12:10
+     * Period 3: 13:00 - 14:30
+     * Period 4: 14:40 - 16:10
+     * Period 5: 16:20 - 17:50
+     * Period 6: 18:00 - 19:30
+     * Period 7: 19:40 - 21:10
 
-4. METADATA:
-   - "room": Room / Venue / Lab / Hall if indicated in the cell (or "").
-   - "lecturer": Lecturer / Instructor / Professor name if indicated (or "").
-   - "group": Class section / Section / Group / OCC (e.g. "G1", "SEC 02", "T1") if printed (or "").
+5. METADATA:
+   - "room": Room / Venue / Hall / Classroom / Building (e.g. "Room 301", "Lab 2", "E-401").
+   - "lecturer": Professor / Lecturer / Teacher name.
+   - "group": Section / Class group / OCC (e.g. "G1", "SEC 01", "Group A").
    - "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio".
 
-OUTPUT STRICT JSON SCHEMA ONLY:
+OUTPUT STRICT JSON FORMAT:
 {
   "detectedLanguage": "Japanese",
   "hasNonEnglishText": true,
   "isPeriodBased": true,
+  "timetableFormat": "period",
   "courses": [
     {
       "title": "外国語特別講義II(マレー語)",
@@ -189,7 +203,7 @@ OUTPUT STRICT JSON SCHEMA ONLY:
   ]
 }
 
-Respond ONLY with valid JSON. No conversational wrapper or markdown backticks outside the json.`;
+Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
 
     let lastErrorMsg = null;
     for (const model of candidateModels) {
@@ -247,7 +261,9 @@ Respond ONLY with valid JSON. No conversational wrapper or markdown backticks ou
               courses,
               detectedLanguage: parsed.detectedLanguage || 'English',
               hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : false,
-              isPeriodBased: parsed.isPeriodBased !== undefined ? parsed.isPeriodBased : false
+              isPeriodBased: (parsed.isPeriodBased !== undefined)
+                ? Boolean(parsed.isPeriodBased)
+                : courses.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '')
             };
           }
         }

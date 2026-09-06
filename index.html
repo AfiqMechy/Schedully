@@ -225,7 +225,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260906_v448">
+<link rel="stylesheet" href="styles.css?v=20260907_v451">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -1522,7 +1522,7 @@
 
           <div id="ocr-loading-bar" class="m3-loading-banner hidden">
             <span class="material-symbols-outlined spin-icon">sync</span>
-            <span>Analyzing schedule...</span>
+            <span id="ocr-loading-text">Analyzing schedule...</span>
           </div>
 
           <!-- Scan Error Alert Banner -->
@@ -2333,7 +2333,7 @@
   </div>
 
 <script src="timetable_engine.js" defer></script>
-<script src="ocr_parser.js?v=20260906_v436" defer></script>
+<script src="ocr_parser.js?v=20260907_v451" defer></script>
 <script src="ics_csv_parser_v3.js" defer></script>
   <!-- Firebase Project Credentials Setup Modal -->
   <div id="firebase-config-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -2439,16 +2439,6 @@
     </div>
   </div>
 
-  <!-- Fullscreen AI Scan Overlay — simple card with spinner + live status text -->
-  <div id="ai-scan-fullscreen-overlay" aria-hidden="true">
-    <div class="ai-scan-card">
-      <div class="ai-scan-spinner"></div>
-      <div class="ai-scan-card-text">
-        <p class="ai-scan-title">Scanning Timetable</p>
-        <p id="ocr-loading-text" class="ai-scan-status">Analyzing schedule...</p>
-      </div>
-    </div>
-  </div>
 
   <!-- OCR Language & Period Choice Modal (Refined UI: Clean SVGs, Flat & Glass Compatible, Light & Dark Mode) -->
   <div id="ocr-language-choice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
@@ -2499,8 +2489,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
               </svg>
             </div>
-            <span class="ocr-choice-title font-extrabold text-xs">Translate</span>
-            <span class="ocr-choice-desc text-[10.5px] font-medium leading-tight">English & Codes</span>
+            <span id="ocr-translate-lang-label" class="ocr-choice-title font-extrabold text-xs">Translate</span>
+            <span id="ocr-translate-lang-desc" class="ocr-choice-desc text-[10.5px] font-medium leading-tight">English &amp; Codes</span>
           </button>
         </div>
       </div>
@@ -2700,13 +2690,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260906_v448"></script>
+  <script src="app_v3.js?v=20260907_v454"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260906_v446').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260907_v454').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

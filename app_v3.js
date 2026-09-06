@@ -230,10 +230,7 @@ class SchedullyApp {
   }
 
   setupAutoImmersiveFullscreen() {
-    // Automatically hide system notification bar & navigation bar on tablets/smartphones
-    const isMobileOrTablet = window.innerWidth <= 1280 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    
-    // 1. Edge-to-edge status bar background matching: ensure theme-color matches current canvas
+    // Edge-to-edge status bar background matching: ensure theme-color matches current canvas
     const updateThemeColor = () => {
       const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark-mode');
       const themeColor = isDark ? '#0B0F19' : '#F6F8FB';
@@ -249,27 +246,6 @@ class SchedullyApp {
     // Also listen for theme toggles to update theme-color dynamically
     const observer = new MutationObserver(() => updateThemeColor());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    // 2. Immersive Fullscreen requesting
-    const enterImmersive = () => {
-      try {
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-          const docEl = document.documentElement;
-          if (docEl.requestFullscreen) {
-            docEl.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
-          } else if (docEl.webkitRequestFullscreen) {
-            docEl.webkitRequestFullscreen().catch(() => {});
-          }
-        }
-      } catch (e) {}
-    };
-
-    if (isMobileOrTablet) {
-      // Must use direct, uninhibited user gesture handlers (click & touchend) so Chromium grants transient user activation
-      ['click', 'touchend', 'pointerup'].forEach(evtType => {
-        document.addEventListener(evtType, enterImmersive, { passive: true });
-      });
-    }
   }
 
   initDOMElements() {
@@ -400,6 +376,8 @@ class SchedullyApp {
     this.ocrLangFlagIcon = document.getElementById('ocr-lang-flag-icon');
     this.ocrKeepLangLabel = document.getElementById('ocr-keep-lang-label');
     this.ocrKeepLangDesc = document.getElementById('ocr-keep-lang-desc');
+    this.ocrTranslateLangLabel = document.getElementById('ocr-translate-lang-label');
+    this.ocrTranslateLangDesc = document.getElementById('ocr-translate-lang-desc');
     this.btnOcrKeepOriginal = document.getElementById('btn-ocr-keep-original');
     this.btnOcrTranslateEnglish = document.getElementById('btn-ocr-translate-english');
     this.btnCloseOcrLangModal = document.getElementById('btn-close-ocr-lang-modal');
@@ -4692,9 +4670,9 @@ class SchedullyApp {
                 return;
               }
 
-              const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? scanResult.isPeriodBased : extracted.some(c => c.periodNumber !== undefined);
+              const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? Boolean(scanResult.isPeriodBased) : extracted.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '');
               if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased);
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish);
               } else {
                 const fullDetailCourses = extracted.map(c => {
                   const rawCode = (c.code || c.title || '').trim();
@@ -4868,6 +4846,9 @@ class SchedullyApp {
 
     if (this.btnOcrTranslateEnglish) {
       this.btnOcrTranslateEnglish.addEventListener('click', () => {
+        if (this.btnOcrTranslateEnglish.classList.contains('disabled') || this.btnOcrTranslateEnglish.disabled) {
+          return;
+        }
         this.selectedOcrLangChoice = 'translated';
         this.btnOcrTranslateEnglish.classList.add('active');
         if (this.btnOcrKeepOriginal) {
@@ -4882,8 +4863,8 @@ class SchedullyApp {
 
     const updatePresetVisibility = (mode) => {
       if (presetContainer) {
-        // Show presets when Clock mode is selected (times matter)
-        if (mode === 'time') {
+        // Show presets when Period mode is active so user can pick period start time & duration
+        if (mode === 'period') {
           presetContainer.style.display = 'flex';
         } else {
           presetContainer.style.display = 'none';
@@ -4922,6 +4903,7 @@ class SchedullyApp {
           this.ocrLangModal.style.display = 'none';
         }
         if (this.pendingOcrResult) {
+          const isPeriodBased = Boolean(this.pendingOcrResult.isPeriodBased);
           const scheduleMap = PERIOD_SCHEDULES[this.selectedOcrPeriodPreset] || PERIOD_SCHEDULES['90m-900'];
           const courses = this.pendingOcrResult.courses.map(c => {
             const isTranslated = (this.selectedOcrLangChoice === 'translated');
@@ -4935,7 +4917,9 @@ class SchedullyApp {
             
             let sTime = c.startTime;
             let eTime = c.endTime;
-            if (c.periodNumber && scheduleMap[c.periodNumber]) {
+
+            // Only apply PERIOD_SCHEDULES mapping if the schedule was detected as period-based OR user explicitly chose period axis
+            if (isPeriodBased && c.periodNumber && scheduleMap[c.periodNumber]) {
               sTime = scheduleMap[c.periodNumber].start;
               eTime = scheduleMap[c.periodNumber].end;
             }
@@ -4944,12 +4928,12 @@ class SchedullyApp {
               ...c,
               title: mappedTitle,
               code: mappedCode,
-              startTime: sTime || '09:00',
-              endTime: eTime || '10:30'
+              startTime: sTime || c.startTime || '08:00',
+              endTime: eTime || c.endTime || '09:00'
             };
           });
 
-          this.axisMode = this.selectedOcrAxisMode || 'period';
+          this.axisMode = this.selectedOcrAxisMode || (isPeriodBased ? 'period' : 'time');
           this.importClassesDirectly(courses);
           this.pendingOcrResult = null;
         }
@@ -5007,10 +4991,11 @@ class SchedullyApp {
             });
             const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
             const detectedLang = scanResult.detectedLanguage || 'English';
-            const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? scanResult.isPeriodBased : extracted.some(c => c.periodNumber !== undefined);
+            const hasNonEnglish = (scanResult && scanResult.hasNonEnglishText !== undefined) ? scanResult.hasNonEnglishText : (detectedLang.toLowerCase() !== 'english');
+            const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? Boolean(scanResult.isPeriodBased) : extracted.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '');
             if (extracted && extracted.length > 0) {
               if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased);
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish);
               } else {
                 this.importClassesDirectly(extracted);
               }
@@ -6726,13 +6711,25 @@ class SchedullyApp {
     }
   }
 
-  showOcrLanguageModal(courses, detectedLang, isPeriodBased = false) {
+  showOcrLanguageModal(courses, detectedLang, isPeriodBased = false, hasNonEnglish = null) {
     if (!this.ocrLangModal) {
       this.importClassesDirectly(courses);
       return;
     }
 
-    this.pendingOcrResult = { courses, detectedLang, isPeriodBased };
+    // Determine whether timetable has non-English course names
+    // EXCLUDING person/lecturer/instructor names
+    let isActuallyForeign = false;
+    if (hasNonEnglish !== null && hasNonEnglish !== undefined) {
+      isActuallyForeign = Boolean(hasNonEnglish);
+    } else if (detectedLang && detectedLang.toLowerCase() !== 'english') {
+      isActuallyForeign = true;
+    } else if (Array.isArray(courses)) {
+      // Check subject titles/codes only (exclude lecturer names!)
+      isActuallyForeign = courses.some(c => /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7af\u0600-\u06ff\u0400-\u04ff]/.test((c.title || '') + (c.code || '') + (c.originalTitle || '')));
+    }
+
+    this.pendingOcrResult = { courses, detectedLang, isPeriodBased, hasNonEnglish: isActuallyForeign };
 
     const langLower = (detectedLang || '').toLowerCase();
     const flagMap = {
@@ -6758,32 +6755,67 @@ class SchedullyApp {
     };
     const flag = flagMap[langLower] || '🌐';
 
+    const typeLabel = isPeriodBased ? 'Period System' : 'Clock Schedule';
     if (this.ocrDetectedLangBadge) {
-      const typeLabel = isPeriodBased ? 'Period System' : 'Schedule Detected';
-      this.ocrDetectedLangBadge.innerText = `${detectedLang} • ${typeLabel}`;
+      if (isActuallyForeign) {
+        this.ocrDetectedLangBadge.innerText = `${detectedLang} • ${typeLabel}`;
+      } else {
+        this.ocrDetectedLangBadge.innerText = `English • ${typeLabel}`;
+      }
     }
     if (this.ocrDetectedLangTitle) {
-      this.ocrDetectedLangTitle.innerText = `${detectedLang} Timetable Detected`;
-    }
-    if (this.ocrKeepLangLabel) {
-      this.ocrKeepLangLabel.innerText = `Keep ${detectedLang}`;
-    }
-    if (this.ocrKeepLangDesc) {
-      this.ocrKeepLangDesc.innerText = `Original ${detectedLang} text`;
+      if (isActuallyForeign) {
+        this.ocrDetectedLangTitle.innerText = `${detectedLang} Timetable Detected`;
+      } else {
+        this.ocrDetectedLangTitle.innerText = `Timetable Settings`;
+      }
     }
 
-    // Reset language choice active states
-    if (this.btnOcrKeepOriginal) this.btnOcrKeepOriginal.classList.add('active');
-    if (this.btnOcrTranslateEnglish) this.btnOcrTranslateEnglish.classList.remove('active');
+    if (isActuallyForeign) {
+      // Foreign language timetable: Both Keep Original and Translate are active
+      if (this.ocrKeepLangLabel) this.ocrKeepLangLabel.innerText = `Keep ${detectedLang}`;
+      if (this.ocrKeepLangDesc) this.ocrKeepLangDesc.innerText = `Original ${detectedLang} text`;
+      if (this.ocrTranslateLangLabel) this.ocrTranslateLangLabel.innerText = 'Translate';
+      if (this.ocrTranslateLangDesc) this.ocrTranslateLangDesc.innerText = 'English & Codes';
+
+      if (this.btnOcrKeepOriginal) {
+        this.btnOcrKeepOriginal.classList.remove('disabled');
+        this.btnOcrKeepOriginal.removeAttribute('disabled');
+        this.btnOcrKeepOriginal.classList.add('active');
+      }
+      if (this.btnOcrTranslateEnglish) {
+        this.btnOcrTranslateEnglish.classList.remove('disabled', 'active');
+        this.btnOcrTranslateEnglish.removeAttribute('disabled');
+        this.btnOcrTranslateEnglish.removeAttribute('title');
+      }
+    } else {
+      // English timetable: Grey out the Translate button since it's already in English
+      if (this.ocrKeepLangLabel) this.ocrKeepLangLabel.innerText = 'English';
+      if (this.ocrKeepLangDesc) this.ocrKeepLangDesc.innerText = 'Original English text';
+      if (this.ocrTranslateLangLabel) this.ocrTranslateLangLabel.innerText = 'Translate';
+      if (this.ocrTranslateLangDesc) this.ocrTranslateLangDesc.innerText = 'Already English';
+
+      if (this.btnOcrKeepOriginal) {
+        this.btnOcrKeepOriginal.classList.remove('disabled');
+        this.btnOcrKeepOriginal.removeAttribute('disabled');
+        this.btnOcrKeepOriginal.classList.add('active');
+      }
+      if (this.btnOcrTranslateEnglish) {
+        this.btnOcrTranslateEnglish.classList.add('disabled');
+        this.btnOcrTranslateEnglish.classList.remove('active');
+        this.btnOcrTranslateEnglish.setAttribute('disabled', 'true');
+        this.btnOcrTranslateEnglish.setAttribute('title', 'Timetable text is already in English');
+      }
+    }
 
     // Default Selection State
     this.selectedOcrLangChoice = 'original';
     this.selectedOcrAxisMode = isPeriodBased ? 'period' : 'time';
     this.selectedOcrPeriodPreset = '90m-900';
 
-    // Show the period section always
+    // Show period configuration section only if period-based timetable is detected
     if (this.ocrPeriodSection) {
-      this.ocrPeriodSection.style.display = 'flex';
+      this.ocrPeriodSection.style.display = isPeriodBased ? 'flex' : 'none';
     }
 
     // Reset Segment Highlights — purely via .active class, CSS handles the styling
@@ -6795,10 +6827,10 @@ class SchedullyApp {
       this.btnAxisTime.classList.add('active');
     }
 
-    // Show/hide preset chips based on initial axis mode
+    // Show/hide preset chips based on whether timetable is period based
     const presetContainer = document.getElementById('ocr-period-preset-container');
     if (presetContainer) {
-      presetContainer.style.display = (this.selectedOcrAxisMode === 'time') ? 'flex' : 'none';
+      presetContainer.style.display = isPeriodBased ? 'flex' : 'none';
     }
 
     // Reset preset chip to first (9:00 AM)
