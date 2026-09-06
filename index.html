@@ -223,7 +223,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260905_v422">
+<link rel="stylesheet" href="styles.css?v=20260906_v435">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -1905,11 +1905,24 @@
       </button>
     </div>
 
-    <!-- Title Input -->
-    <div class="relative w-full">
-      <input class="w-full text-center py-2 px-4 rounded-full text-xs font-bold text-gray-800 focus:outline-none transition-all" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
-      <div class="absolute right-3 top-2 p-0.5 text-gray-400">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    <!-- Title Input Row with Integrated Enable/Disable Toggle -->
+    <div class="relative w-full flex items-center gap-1.5" id="controls-title-row">
+      <button type="button" id="btn-toggle-title-visibility" class="title-visibility-toggle-btn active shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-all" title="Toggle Title (Show / Hide)">
+        <!-- Eye Open Icon (Visible) -->
+        <svg class="w-4 h-4 icon-title-visible text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+        <!-- Eye Closed / Slash Icon (Hidden) -->
+        <svg class="w-4 h-4 icon-title-hidden hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+        </svg>
+      </button>
+      <div class="relative flex-1 min-w-0 flex items-center">
+        <input class="w-full text-center py-2 px-4 rounded-full text-xs font-bold text-gray-800 focus:outline-none transition-all" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
+        <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 pointer-events-none">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
       </div>
     </div>
 
@@ -2206,7 +2219,7 @@
   <div id="added-classes-list" class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-3" style="padding-bottom: 74px;"></div>
   
   <!-- Single Morphing Floating Search Widget (iOS Fluid Morph: Circle <-> Expanded Pill) -->
-  <div id="course-search-dock" class="hidden absolute bottom-3 right-3 z-30 flex items-center justify-end">
+  <div id="course-search-dock" class="hidden absolute z-30 flex items-center justify-end">
     <div id="course-search-container" class="course-search-widget is-collapsed" role="search">
       <!-- Circular Trigger Search Icon (visible when collapsed) -->
       <button id="btn-floating-course-search" type="button" class="search-widget-trigger-btn" title="Search courses" aria-label="Search courses">
@@ -2424,13 +2437,19 @@
     </div>
   </div>
 
-  <!-- Fullscreen Minimalist AI Vision Scan Overlay (No text, pure glassmorphic pulse) -->
+  <!-- Fullscreen Minimalist AI Vision Scan Overlay with Google Material 3 Expressive Loading Indicator -->
   <div id="ai-scan-fullscreen-overlay" aria-hidden="true">
-    <div class="ai-scan-orb-container">
-      <div class="ai-scan-orb-glow"></div>
-      <div class="ai-scan-ring"></div>
-      <div class="ai-scan-ring ring-outer"></div>
-      <div class="ai-scan-orb-core"></div>
+    <div class="m3-expressive-loader-wrapper">
+      <div class="m3-expressive-loader">
+        <div class="m3-expressive-shape shape-morph"></div>
+        <div class="m3-expressive-ring"></div>
+        <div class="m3-expressive-spark"></div>
+      </div>
+      <div class="m3-expressive-dots">
+        <span class="m3-dot"></span>
+        <span class="m3-dot"></span>
+        <span class="m3-dot"></span>
+      </div>
     </div>
   </div>
 
@@ -2684,13 +2703,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260905_v431"></script>
+  <script src="app_v3.js?v=20260906_v434"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260905_v431').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260906_v434').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

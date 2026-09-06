@@ -1090,6 +1090,41 @@ class SchedullyApp {
     }
   }
 
+  setTitleVisibility(show, save = true) {
+    this.showTitle = !!show;
+    if (this.lockGridTitle) {
+      this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
+    }
+
+    // Sync Controls Popover inline eye toggle button
+    const btnToggleTitle = document.getElementById('btn-toggle-title-visibility');
+    if (btnToggleTitle) {
+      btnToggleTitle.classList.toggle('active', this.showTitle);
+      btnToggleTitle.classList.toggle('title-hidden', !this.showTitle);
+      const iconVis = btnToggleTitle.querySelector('.icon-title-visible');
+      const iconHid = btnToggleTitle.querySelector('.icon-title-hidden');
+      if (iconVis) iconVis.classList.toggle('hidden', !this.showTitle);
+      if (iconHid) iconHid.classList.toggle('hidden', this.showTitle);
+      btnToggleTitle.setAttribute('title', this.showTitle ? 'Hide Title' : 'Show Title');
+    }
+
+    // Dim or enable stage title input
+    if (this.inputTitleStage) {
+      this.inputTitleStage.classList.toggle('title-disabled', !this.showTitle);
+      this.inputTitleStage.disabled = !this.showTitle;
+    }
+
+    // Sync Sidebar #toggle-title pill toggle (YES / NO)
+    document.querySelectorAll('#toggle-title .pill-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-val') === (this.showTitle ? 'yes' : 'no'));
+    });
+
+    if (save) {
+      this._stagePending();
+    }
+    window.syncGlassSliders?.();
+  }
+
   updateTrademarkText(newText) {
     this.trademarkText = (newText !== undefined && newText !== null) ? newText : 'Schedully • Student Edition';
     if (this.lockTrademarkText) {
@@ -3116,17 +3151,20 @@ class SchedullyApp {
       this.updateTitleText(e.target.value);
     });
 
-    // Title Toggle (YES / NO)
+    // Controls Popover Inline Eye Toggle Button (Show/Hide Title)
+    const btnToggleTitleVis = document.getElementById('btn-toggle-title-visibility');
+    if (btnToggleTitleVis) {
+      btnToggleTitleVis.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setTitleVisibility(!this.showTitle, true);
+      });
+    }
+
+    // Title Toggle (YES / NO in Sidebar)
     document.querySelectorAll('#toggle-title .pill-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('#toggle-title .pill-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.showTitle = (btn.getAttribute('data-val') === 'yes');
-        if (this.lockGridTitle) {
-          this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
-        }
-        this._stagePending();
-        window.syncGlassSliders?.();
+        const isYes = (btn.getAttribute('data-val') === 'yes');
+        this.setTitleVisibility(isYes, true);
       });
     });
 
@@ -5361,13 +5399,7 @@ class SchedullyApp {
 
       // 8. Title
       if (settings.showTitle !== undefined) {
-        this.showTitle = settings.showTitle;
-        document.querySelectorAll('#toggle-title .pill-btn').forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-val') === (this.showTitle ? 'yes' : 'no'));
-        });
-        if (this.lockGridTitle) {
-          this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
-        }
+        this.setTitleVisibility(settings.showTitle, false);
       }
       if (settings.titleText) {
         this.updateTitleText(settings.titleText);
