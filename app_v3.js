@@ -6544,11 +6544,15 @@ class SchedullyApp {
 
     this.classes.push(...mapped);
 
-    // Auto-adjust grid start & end times so all imported courses are visible
+    // Auto-adjust grid start & end times so all imported courses are visible and perfectly framed
+    let minStart = 24;
+    let maxEnd = 0;
+    const importedDays = [];
+
     mapped.forEach(c => {
       if (c.startTime) {
         const [sh] = c.startTime.split(':').map(Number);
-        if (!isNaN(sh) && sh < this.gridStartHour) this.gridStartHour = Math.max(5, sh);
+        if (!isNaN(sh)) minStart = Math.min(minStart, sh);
       }
       if (c.endTime) {
         let [eh, em] = c.endTime.split(':').map(Number);
@@ -6557,10 +6561,21 @@ class SchedullyApp {
           if (sh >= 12) eh = 24;
         }
         const endCeil = (em > 0) ? eh + 1 : eh;
-        if (!isNaN(endCeil) && endCeil > this.gridEndHour) this.gridEndHour = Math.min(24, endCeil);
+        if (!isNaN(endCeil)) maxEnd = Math.max(maxEnd, endCeil);
       }
-      if (c.day && !this.activeDays.includes(c.day)) {
-        this.activeDays.push(c.day);
+      if (c.day && !importedDays.includes(c.day)) {
+        importedDays.push(c.day);
+      }
+    });
+
+    if (minStart < 24 && maxEnd > 0) {
+      this.gridStartHour = Math.max(0, Math.min(8, minStart));
+      this.gridEndHour = Math.min(24, Math.max(maxEnd, this.gridStartHour + 6));
+    }
+
+    importedDays.forEach(d => {
+      if (!this.activeDays.includes(d)) {
+        this.activeDays.push(d);
       }
     });
 

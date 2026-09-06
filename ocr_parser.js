@@ -150,7 +150,7 @@ You are an expert, meticulous universal vision AI parser specialized in extracti
 
 TAKE YOUR TIME TO EXHAUSTIVELY INSPECT EVERY INCH OF THIS IMAGE. DO NOT RUSH. ACCURACY, COMPLETENESS, AND FULL TIME COVERAGE ARE PARAMOUNT.
 
-EXECUTE THIS 5-STAGE DEEP EXTRACTION METHODOLOGY:
+EXECUTE THIS 6-STAGE DEEP EXTRACTION METHODOLOGY:
 
 STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION
 - Detect the table layout:
@@ -159,24 +159,34 @@ STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION
 - Distinguish System Type:
   * "isPeriodBased": TRUE if rows/columns represent numbered sequential class periods (1, 2, 3... / 1限-7限 / 1교시-8교시 / 第1节-第8节 / Period 1-7).
   * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00).
+- Identify Top Header Metadata:
+  * Extract overall class section / cohort / group name from page header (e.g. "1 DCS S1G1", "Sec 2", "Batch 2025/2026") to populate the "group" field if not found inside individual cells.
 
-STAGE 2: EXHAUSTIVE CELL-BY-CELL SCAN (ALL DAYS & ALL HOURS)
-- Meticulously examine EVERY SINGLE CELL in every column from Mon through Sun.
-- Check ALL time slots from earliest morning (06:00/07:00) to latest night (19:00, 20:00, 21:00, 22:00, 23:00, 23:30, 24:00/Midnight).
-- DO NOT SKIP bottom rows, edge columns, or compact cards.
-- If a course cell spans multiple hours or periods (e.g., 2-hour or 3-hour block), capture the true overall start time of the first block and end time of the last block.
+STAGE 2: COURSE SUMMARY / SUBJECT LIST CROSS-REFERENCING
+- Look for any "Course Summary", "Subject List", "List of Subjects", or table footer anywhere on the page (e.g., "1 | DITP 2113 - STRUKTUR DATA DAN ALGORITMA").
+- If found, match the course code in the timetable grid (e.g., "DITP 2113") to its FULL subject title from the summary (e.g., "Struktur Data dan Algoritma").
+- Populate "code" with the course code and "title" / "originalTitle" with the full subject title from the summary!
 
-STAGE 3: 100% VERBATIM & PRECISE COURSE EXTRACTION
-- "title": Extract the full exact subject/course title verbatim from the cell including all parentheses, qualifiers, and section markers (e.g. "Calculus I (Lecture)", "外国語特別講義II(マレー語)", "Object Oriented Programming (Lab)").
-- "code": Official course code (e.g. "CS101", "FL202", "BBSB3103"). If no separate code exists, reuse the full title.
+STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT
+- Meticulously check which header time slots each course cell covers:
+  * Look at the vertical and horizontal grid lines of the cell.
+  * If a cell starts under "02:00 - 03:00" and spans across "03:00 - 04:00", its time span is 14:00 to 16:00 (2 hours).
+  * If the next cell spans across "04:00 - 05:00" and "05:00 - 06:00", its time span is 16:00 to 18:00 (2 hours). DO NOT prematurely stop at 17:00 if the cell extends to 18:00!
+  * If a long activity like "KO-KURIKULUM" spans continuously across "02:00 - 03:00", "03:00 - 04:00", "04:00 - 05:00", "05:00 - 06:00", "06:00 - 07:00", its time is 14:00 to 19:00.
+  * Check if identical consecutive blocks (e.g., Monday 09:00-11:00 and 11:00-13:00) represent two scheduled sessions or one continuous 4-hour lecture/lab (09:00-13:00). Both representations are valid, but start and end times must accurately reflect the grid columns.
+- Ignore "BREAK", "LUNCH", "REST" cells (do not extract them as courses).
+
+STAGE 4: 100% VERBATIM & PRECISE COURSE EXTRACTION
+- "title": Full subject/course title (matched from Course Summary if available, or extracted from cell).
+- "code": Official course code (e.g. "DITP 2113", "DITS 2313", "CS101").
 - "originalTitle" & "originalCode": Native verbatim text as written in the image.
-- "translatedTitle" & "translatedCode": Full English translation without invented abbreviations.
-- "room": Room / Venue / Hall / Classroom / Building (e.g. "Room 301", "Lab 2", "DK 1", "E-401").
-- "lecturer": Professor / Lecturer / Teacher name.
-- "group": Class section / Group / OCC (e.g. "G1", "SEC 02", "Group A").
-- "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio".
+- "translatedTitle" & "translatedCode": Full English translation without invented abbreviations (e.g. "STRUKTUR DATA DAN ALGORITMA" -> "Data Structures and Algorithms", "KOMUNIKASI DATA DAN RANGKAIAN" -> "Data Communications and Networking", "KO-KURIKULUM" -> "Co-Curriculum").
+- "room": Room / Venue / Classroom / Lab (e.g. "BK 14", "LAB - MP1", "LAB - MR2", "DK 1").
+- "lecturer": Professor / Lecturer / Instructor name (e.g. "AZLIANOR", "ROSMIZA", "KHADIJAH", "SYAHRUL AZHAR").
+- "group": Class section / Group / OCC (e.g. "1 DCS S1G1").
+- "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio". (Look for LEC -> "Lecture", LAB -> "Lab", TUT -> "Tutorial").
 
-STAGE 4: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
+STAGE 5: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
 - "startTime" and "endTime": Strictly 24-hour "HH:MM" format.
 - 12-Hour AM/PM conversions:
   * 07:00 AM -> "07:00", 08:00 AM -> "08:00", 11:00 AM -> "11:00", 12:00 PM (Noon) -> "12:00"
@@ -187,33 +197,32 @@ STAGE 4: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM COVERAGE)
 - DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM).
 - If period-based, populate "periodNumber" (1, 2, 3...) and standard clock boundaries.
 
-STAGE 5: LANGUAGE CLASSIFICATION (EXCLUDING NAMES)
-- "hasNonEnglishText": TRUE ONLY if subject/course titles or table headers are in a foreign language (Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
+STAGE 6: LANGUAGE CLASSIFICATION (EXCLUDING NAMES)
+- "hasNonEnglishText": TRUE if subject/course titles or table headers are in a foreign language (Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
 - Set "hasNonEnglishText": FALSE if the timetable subjects and table headers are in English.
 - EXCEPTION FOR NAMES: Lecturer/professor/teacher/student names MUST BE EXCLUDED from foreign language classification. If course titles and schedule headers are in English, "hasNonEnglishText" MUST be FALSE and "detectedLanguage" MUST be "English".
 
 OUTPUT STRICT JSON FORMAT:
 {
-  "detectedLanguage": "Japanese",
+  "detectedLanguage": "Malay",
   "hasNonEnglishText": true,
-  "isPeriodBased": true,
-  "timetableFormat": "period",
+  "isPeriodBased": false,
+  "timetableFormat": "clock",
   "courses": [
     {
-      "title": "外国語特別講義II(マレー語)",
-      "code": "FL202",
-      "originalTitle": "外国語特別講義II(マレー語)",
-      "originalCode": "FL202",
-      "translatedTitle": "Special Foreign Language Lecture II (Malay)",
-      "translatedCode": "FL202",
+      "title": "Struktur Data dan Algoritma",
+      "code": "DITP 2113",
+      "originalTitle": "Struktur Data dan Algoritma",
+      "originalCode": "DITP 2113",
+      "translatedTitle": "Data Structures and Algorithms",
+      "translatedCode": "DITP 2113",
       "day": "Mon",
       "startTime": "09:00",
-      "endTime": "10:30",
-      "periodNumber": 1,
+      "endTime": "13:00",
       "type": "Lecture",
-      "room": "301",
-      "lecturer": "Professor Tanaka",
-      "group": "G1"
+      "room": "BK 14",
+      "lecturer": "AZLIANOR",
+      "group": "1 DCS S1G1"
     }
   ]
 }
