@@ -24,9 +24,12 @@ class TimetableEngine {
 
         if (c1.day === c2.day) {
           const s1 = this.timeToMinutes(c1.startTime);
-          const e1 = this.timeToMinutes(c1.endTime);
+          let e1 = this.timeToMinutes(c1.endTime);
           const s2 = this.timeToMinutes(c2.startTime);
-          const e2 = this.timeToMinutes(c2.endTime);
+          let e2 = this.timeToMinutes(c2.endTime);
+
+          if (e1 <= s1 && (c1.endTime === '00:00' || c1.endTime === '24:00')) e1 = 1440;
+          if (e2 <= s2 && (c2.endTime === '00:00' || c2.endTime === '24:00')) e2 = 1440;
 
           if (s1 < e2 && s2 < e1) {
             clashes.push({ c1, c2 });
@@ -38,8 +41,11 @@ class TimetableEngine {
   }
 
   timeToMinutes(timeStr) {
+    if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
-    return (h * 60) + (m || 0);
+    let hour = isNaN(h) ? 0 : h;
+    if (hour === 24) hour = 24;
+    return (hour * 60) + (m || 0);
   }
 
   /**

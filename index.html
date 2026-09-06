@@ -1232,6 +1232,7 @@
                     <option value="21:00">09:00 PM</option>
                     <option value="22:00">10:00 PM</option>
                     <option value="23:00">11:00 PM</option>
+                    <option value="24:00">12:00 AM (Midnight)</option>
                   </select>
                 </div>
 
@@ -1438,6 +1439,8 @@
                 <div class="form-row" id="row-start-time">
                   <label data-i18n="startTime" for="input-start-time">Start Time</label>
                   <select id="input-start-time" class="m3-input-time">
+                    <option value="06:00">06:00 AM</option>
+                    <option value="07:00">07:00 AM</option>
                     <option value="08:00">08:00 AM</option>
                     <option value="09:00" selected>09:00 AM</option>
                     <option value="10:00">10:00 AM</option>
@@ -1447,6 +1450,13 @@
                     <option value="14:00">02:00 PM</option>
                     <option value="15:00">03:00 PM</option>
                     <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="21:00">09:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                    <option value="23:00">11:00 PM</option>
                   </select>
                 </div>
 
@@ -1454,6 +1464,8 @@
                 <div class="form-row" id="row-end-time">
                   <label data-i18n="endTime" for="input-end-time">End Time</label>
                   <select id="input-end-time" class="m3-input-time">
+                    <option value="07:00">07:00 AM</option>
+                    <option value="08:00">08:00 AM</option>
                     <option value="09:00">09:00 AM</option>
                     <option value="10:00">10:00 AM</option>
                     <option value="11:00" selected>11:00 AM</option>
@@ -1463,6 +1475,13 @@
                     <option value="15:00">03:00 PM</option>
                     <option value="16:00">04:00 PM</option>
                     <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="21:00">09:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                    <option value="23:00">11:00 PM</option>
+                    <option value="24:00">12:00 AM (Midnight)</option>
                   </select>
                 </div>
 
@@ -2690,13 +2709,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260907_v454"></script>
+  <script src="app_v3.js?v=20260907_v455"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260907_v454').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260907_v455').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

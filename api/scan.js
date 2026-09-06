@@ -101,10 +101,21 @@ SYSTEM IDENTIFICATION RULES:
    - "originalCode": Native shorthand or code if present.
    - "translatedCode": Translated course code or full translated title if no separate code exists.
 
-4. TIME & PERIOD MAPPING:
-   - "startTime" and "endTime": 24-hour "HH:MM" format (e.g. "09:00", "10:30", "14:00").
-   - "periodNumber": Integer (1, 2, 3, 4, 5, 6...) when period based.
-   - Standard period fallback clock times if not explicitly printed:
+4. TIME & PERIOD MAPPING (FULL 24-HOUR / NIGHT SCHEDULE DETECTION UP TO 11PM & 12AM):
+   - "startTime" and "endTime": Strictly 24-hour "HH:MM" format (e.g. "09:00", "14:00", "20:00", "23:00", "24:00").
+   - NIGHT / EVENING HOURS (7 PM to 12 AM MIDNIGHT):
+     * Pay careful attention to late-night and evening timetables spanning up to 23:00 (11:00 PM), 23:30 (11:30 PM), or 24:00 (12:00 AM Midnight).
+     * Distinguish 12-hour AM vs PM:
+       - 7:00 PM -> "19:00", 7:30 PM -> "19:30"
+       - 8:00 PM -> "20:00", 8:30 PM -> "20:30"
+       - 9:00 PM -> "21:00", 9:30 PM -> "21:30"
+       - 10:00 PM -> "22:00", 10:30 PM -> "22:30"
+       - 11:00 PM -> "23:00", 11:30 PM -> "23:30"
+       - 12:00 AM / Midnight / End of night schedule -> "24:00"
+     * DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM).
+     * Scan the entire image thoroughly from top to bottom including the bottom rows where evening and night courses (19:00 - 24:00) are placed.
+   - "periodNumber": Integer (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12...) when period based.
+   - Extended period fallback clock times if not explicitly printed:
      * Period 1: 09:00 - 10:30
      * Period 2: 10:40 - 12:10
      * Period 3: 13:00 - 14:30
@@ -112,6 +123,8 @@ SYSTEM IDENTIFICATION RULES:
      * Period 5: 16:20 - 17:50
      * Period 6: 18:00 - 19:30
      * Period 7: 19:40 - 21:10
+     * Period 8: 21:20 - 22:50
+     * Period 9: 23:00 - 24:00
 
 5. METADATA:
    - "room": Room / Venue / Hall / Classroom / Building (e.g. "Room 301", "Lab 2", "E-401").

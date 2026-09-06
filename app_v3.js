@@ -6548,10 +6548,14 @@ class SchedullyApp {
     mapped.forEach(c => {
       if (c.startTime) {
         const [sh] = c.startTime.split(':').map(Number);
-        if (!isNaN(sh) && sh < this.gridStartHour) this.gridStartHour = sh;
+        if (!isNaN(sh) && sh < this.gridStartHour) this.gridStartHour = Math.max(5, sh);
       }
       if (c.endTime) {
-        const [eh, em] = c.endTime.split(':').map(Number);
+        let [eh, em] = c.endTime.split(':').map(Number);
+        if (eh === 0 && c.startTime) {
+          const [sh] = c.startTime.split(':').map(Number);
+          if (sh >= 12) eh = 24;
+        }
         const endCeil = (em > 0) ? eh + 1 : eh;
         if (!isNaN(endCeil) && endCeil > this.gridEndHour) this.gridEndHour = Math.min(24, endCeil);
       }
@@ -6956,10 +6960,10 @@ class SchedullyApp {
     if (isNaN(effectiveStartHour) || effectiveStartHour < 0 || effectiveStartHour > 23) effectiveStartHour = 8;
 
     let effectiveEndHour = parseInt(this.gridEndHour, 10);
-    if (isNaN(effectiveEndHour) || effectiveEndHour < 0 || effectiveEndHour > 23) effectiveEndHour = 20;
+    if (isNaN(effectiveEndHour) || effectiveEndHour < 0 || effectiveEndHour > 24) effectiveEndHour = 20;
 
     if (effectiveEndHour <= effectiveStartHour) {
-      effectiveEndHour = Math.min(23, effectiveStartHour + 4);
+      effectiveEndHour = Math.min(24, effectiveStartHour + 4);
     }
 
     const timetableContainer = document.getElementById('lock-timetable-container');
@@ -7028,14 +7032,15 @@ class SchedullyApp {
     } else {
       for (let h = effectiveStartHour; h <= effectiveEndHour; h++) {
         if (this.clockFormat === '24') {
+          const displayH = (h === 24) ? '24' : String(h).padStart(2, '0');
           timeSlots.push({
             hour: h,
-            topText: `${String(h).padStart(2, '0')}:00`,
+            topText: `${displayH}:00`,
             bottomText: ''
           });
         } else {
-          const displayH = h > 12 ? h - 12 : h;
-          const ampm = h >= 12 ? 'PM' : 'AM';
+          const displayH = h > 12 ? (h === 24 ? 12 : h - 12) : (h === 0 ? 12 : h);
+          const ampm = (h >= 12 && h < 24) ? 'PM' : 'AM';
           timeSlots.push({
             hour: h,
             topText: `${String(displayH).padStart(2, '0')}:00`,
@@ -7112,7 +7117,10 @@ class SchedullyApp {
           const widthPercent = 100 / totalInCell;
 
           const [sh, sm] = matched.startTime.split(':').map(Number);
-          const [eh, em] = matched.endTime.split(':').map(Number);
+          let [eh, em] = matched.endTime.split(':').map(Number);
+          if ((eh === 0 || eh === 24) && sh >= 12) {
+            eh = 24;
+          }
 
           const startTotalM = (sh * 60) + (sm || 0);
           const endTotalM = (eh * 60) + (em || 0);
@@ -7158,9 +7166,11 @@ class SchedullyApp {
           let formatEnd = matched.endTime;
           if (this.clockFormat === '12') {
             const displaySh = sh > 12 ? sh - 12 : (sh === 0 ? 12 : sh);
-            const displayEh = eh > 12 ? eh - 12 : (eh === 0 ? 12 : eh);
-            formatStart = `${String(displaySh).padStart(2, '0')}:${String(sm || 0).padStart(2, '0')} ${sh >= 12 ? 'PM' : 'AM'}`;
-            formatEnd = `${String(displayEh).padStart(2, '0')}:${String(em || 0).padStart(2, '0')} ${eh >= 12 ? 'PM' : 'AM'}`;
+            const displayEh = eh > 12 ? (eh === 24 ? 12 : eh - 12) : (eh === 0 ? 12 : eh);
+            const shAmpm = (sh >= 12 && sh < 24) ? 'PM' : 'AM';
+            const ehAmpm = (eh >= 12 && eh < 24) ? 'PM' : 'AM';
+            formatStart = `${String(displaySh).padStart(2, '0')}:${String(sm || 0).padStart(2, '0')} ${shAmpm}`;
+            formatEnd = `${String(displayEh).padStart(2, '0')}:${String(em || 0).padStart(2, '0')} ${ehAmpm}`;
           }
 
           // Compute exact pixel height based on duration ratio
