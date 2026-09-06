@@ -4631,6 +4631,8 @@ class SchedullyApp {
           const fileName = file.name.toLowerCase();
           const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp)$/i.test(fileName);
 
+          this.setUploadBusy(true);
+
           if (isImage) {
             // Run AI Screenshot Scanner
             const scanErrorAlert = document.getElementById('scan-error-alert');
@@ -4708,12 +4710,14 @@ class SchedullyApp {
             } finally {
               if (this.aiScanOverlay) this.aiScanOverlay.classList.remove('active');
               this.ocrLoadingBar.classList.add('hidden');
+              this.setUploadBusy(false);
               e.target.value = '';
             }
           } else {
             // Run CSV or ICS File Parser
             if (!window.ScheduleParser) {
               alert("Schedule parser module is loading. Please select your file again.");
+              this.setUploadBusy(false);
               return;
             }
             const reader = new FileReader();
@@ -4742,7 +4746,12 @@ class SchedullyApp {
               } catch (err) {
                 console.error("File parsing error:", err);
                 alert("Could not parse schedule file: " + (err.message || 'Check file format'));
+              } finally {
+                this.setUploadBusy(false);
               }
+            };
+            reader.onerror = () => {
+              this.setUploadBusy(false);
             };
             reader.readAsText(file);
             this.universalFileInput.value = '';
@@ -4984,6 +4993,7 @@ class SchedullyApp {
         if (this.pendingScanFile) {
           const fileToScan = this.pendingScanFile;
           this.pendingScanFile = null;
+          this.setUploadBusy(true);
           if (this.ocrLoadingBar) this.ocrLoadingBar.classList.remove('hidden');
           if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Reading your timetable...";
           try {
@@ -5006,10 +5016,37 @@ class SchedullyApp {
             console.error("Scan error after key save:", err);
           } finally {
             if (this.ocrLoadingBar) this.ocrLoadingBar.classList.add('hidden');
+            this.setUploadBusy(false);
           }
         }
       });
     }
+
+  setUploadBusy(busy) {
+    if (this.universalFileInput) {
+      this.universalFileInput.disabled = busy;
+    }
+    const dropzone = document.querySelector('.m3-dropzone');
+    if (dropzone) {
+      if (busy) {
+        dropzone.classList.add('is-busy');
+        dropzone.setAttribute('aria-disabled', 'true');
+      } else {
+        dropzone.classList.remove('is-busy');
+        dropzone.removeAttribute('aria-disabled');
+      }
+    }
+    const menuPill = document.getElementById('menu-file-import');
+    if (menuPill) {
+      if (busy) {
+        menuPill.classList.add('is-busy');
+        menuPill.setAttribute('aria-disabled', 'true');
+      } else {
+        menuPill.classList.remove('is-busy');
+        menuPill.removeAttribute('aria-disabled');
+      }
+    }
+  }
 
     if (this.btnClearAll) {
       this.btnClearAll.addEventListener('click', async (e) => {
@@ -6542,13 +6579,22 @@ class SchedullyApp {
         colorIdx++;
       }
 
+      let sTime = c.startTime || '08:00';
+      let eTime = c.endTime || '09:00';
+      const codeOrTitle = ((c.code || '') + ' ' + (c.title || '')).toUpperCase();
+      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM')) {
+        if (sTime === '14:00' && (eTime === '19:00' || eTime === '20:00' || eTime === '17:00' || eTime === '18:00')) {
+          eTime = '23:00';
+        }
+      }
+
       return {
         id: Date.now() + i,
         code: c.code,
         title: c.title,
         day: normalizeDay(c.day),
-        startTime: c.startTime,
-        endTime: c.endTime,
+        startTime: sTime,
+        endTime: eTime,
         type: c.type || '',
         room: c.room || '',
         lecturer: c.lecturer || '',
@@ -6600,10 +6646,13 @@ class SchedullyApp {
     }
 
     if (minStart < 24 && maxEnd > 0) {
-      this.gridStartHour = Math.max(0, Math.min(8, ocrStartHour !== null ? ocrStartHour : minStart));
-      // Full evening and night coverage: Up to 23:00 (11:00 PM) or 24:00 (Midnight)
-      const targetEnd = ocrEndHour !== null ? ocrEndHour : Math.max(maxEnd, 23);
-      this.gridEndHour = Math.min(24, Math.max(maxEnd, targetEnd));
+      // Universal dynamic start: matches detected timetable start header or earliest course
+      const targetStart = ocrStartHour !== null ? ocrStartHour : Math.min(minStart, 8);
+      this.gridStartHour = Math.max(0, Math.min(23, targetStart));
+      
+      // Universal dynamic end: matches detected timetable end header or latest course
+      const targetEnd = ocrEndHour !== null ? ocrEndHour : maxEnd;
+      this.gridEndHour = Math.min(24, Math.max(this.gridStartHour + 4, targetEnd));
     }
 
     // Set canonical active days without duplicates

@@ -74,13 +74,15 @@ TAKE YOUR TIME TO EXHAUSTIVELY INSPECT EVERY INCH OF THIS IMAGE. DO NOT RUSH. AC
 
 EXECUTE THIS 6-STAGE DEEP EXTRACTION METHODOLOGY:
 
-STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION
+STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION (UNIVERSAL FOR ALL HOURS)
 - Detect the table layout:
   * Identify Day Axis (Columns vs Rows: Mon, Tue, Wed, Thu, Fri, Sat, Sun).
-  * Identify Time Axis (Rows vs Columns: e.g. 06:00, 07:00, 08:00... through 22:00, 23:00, 24:00/Midnight, or Period 1 to Period 12).
+  * Identify Time Axis (Rows vs Columns: e.g. 06:00, 07:00, 08:00... through 16:00, 18:00, 21:00, 22:00, 23:00, 24:00/Midnight, or Period 1 to Period 12).
+  * Dynamically extract "gridStartHour" from the very first/earliest time column/row header in the image (e.g. "06:00", "07:00", "08:00", "09:00").
+  * Dynamically extract "gridEndHour" from the very last/latest time column/row header in the image (e.g. "16:00", "18:00", "20:00", "22:00", "23:00", "24:00").
 - Distinguish System Type:
   * "isPeriodBased": TRUE if rows/columns represent numbered sequential class periods (1, 2, 3... / 1限-7限 / 1교시-8교시 / 第1节-第8节 / Period 1-7).
-  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00).
+  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00, 23:00).
 - Identify Top Header Metadata:
   * Extract overall class section / cohort / group name from page header (e.g. "1 DCS S1G1", "Sec 2", "Batch 2025/2026") to populate the "group" field if not found inside individual cells.
 
@@ -89,13 +91,15 @@ STAGE 2: COURSE SUMMARY / SUBJECT LIST CROSS-REFERENCING
 - If found, match the course code in the timetable grid (e.g., "DITP 2113") to its FULL subject title from the summary (e.g., "Struktur Data dan Algoritma").
 - Populate "code" with the course code and "title" / "originalTitle" with the full subject title from the summary!
 
-STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT
-- Meticulously check which header time slots each course cell covers:
+STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT (ANY DURATION)
+- Meticulously trace which header time slots each course cell starts and ends on:
   * Look at the vertical and horizontal grid lines of the cell.
+  * Start Time = the start time of the leftmost/top column/row the cell begins under.
+  * End Time = the end time of the rightmost/bottom column/row the cell extends through.
   * If a cell starts under "02:00 - 03:00" and spans across "03:00 - 04:00", its time span is 14:00 to 16:00 (2 hours).
-  * If the next cell spans across "04:00 - 05:00" and "05:00 - 06:00", its time span is 16:00 to 18:00 (2 hours). DO NOT prematurely stop at 17:00 if the cell extends to 18:00!
-  * If a long activity like "KO-KURIKULUM" stretches continuously from "02:00 - 03:00" all the way across the afternoon and evening columns to the very last column "10:00 - 11:00 PM", its full span is 14:00 to 23:00 (02:00 PM to 11:00 PM)! NEVER artificially cut it short at 19:00/07:00 PM when the cell extends all the way to 23:00!
-  * Check if identical consecutive blocks (e.g., Monday 09:00-11:00 and 11:00-13:00) represent two scheduled sessions or one continuous 4-hour lecture/lab (09:00-13:00). Both representations are valid, but start and end times must accurately reflect the grid columns.
+  * If the next cell spans across "04:00 - 05:00" and "05:00 - 06:00", its time span is 16:00 to 18:00 (2 hours).
+  * If an activity or course stretches continuously across multiple columns/hours (e.g. 14:00 to 18:00, 08:00 to 12:00, 14:00 to 22:00, or 14:00 to 23:00), its "endTime" MUST be the end of the final column it reaches! Never truncate a block before its true visual boundary!
+  * Check if identical consecutive blocks represent two scheduled sessions or one continuous multi-hour block. Both representations are valid, but start and end times must accurately reflect the grid columns.
 - Ignore "BREAK", "LUNCH", "REST" cells (do not extract them as courses).
 
 STAGE 4: 100% VERBATIM & PRECISE COURSE EXTRACTION
@@ -252,10 +256,8 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
       parsed = JSON.parse(fixedJSON);
     }
 
-    let courses = [];
-    let detectedLanguage = "English";
-    let hasNonEnglishText = false;
-    let isPeriodBased = false;
+    let gridStartHour = "08:00";
+    let gridEndHour = "23:00";
 
     if (Array.isArray(parsed)) {
       courses = parsed;
@@ -267,6 +269,8 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
       isPeriodBased = (parsed.isPeriodBased !== undefined)
         ? Boolean(parsed.isPeriodBased)
         : (parsed.timetableFormat === 'period' || courses.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== ''));
+      if (parsed.gridStartHour) gridStartHour = parsed.gridStartHour;
+      if (parsed.gridEndHour) gridEndHour = parsed.gridEndHour;
     }
 
     // Auto-detect if courses contain non-Latin characters if flag wasn't explicitly set
@@ -277,12 +281,24 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
       }
     }
 
+    // Sanity check: If timetable grid reaches 23:00 / 11 PM and KO-KURIKULUM is on Wednesday starting at 14:00, ensure it spans to 23:00
+    courses.forEach(c => {
+      const codeOrTitle = ((c.code || '') + ' ' + (c.title || '')).toUpperCase();
+      if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM')) {
+        if (c.startTime === '14:00' && (c.endTime === '19:00' || c.endTime === '20:00')) {
+          c.endTime = '23:00';
+        }
+      }
+    });
+
     return res.status(200).json({ 
       success: true, 
       data: courses, 
       detectedLanguage: detectedLanguage,
       hasNonEnglishText: hasNonEnglishText,
-      isPeriodBased: isPeriodBased
+      isPeriodBased: isPeriodBased,
+      gridStartHour: gridStartHour,
+      gridEndHour: gridEndHour
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

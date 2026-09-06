@@ -3044,6 +3044,15 @@ body.dark-mode .font-option-item.active,
   border-color: var(--m3-sys-color-primary);
 }
 
+.m3-dropzone.is-busy,
+.menu-pill.is-busy {
+  pointer-events: none !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.3);
+  user-select: none !important;
+}
+
 .dropzone-icon {
   font-size: 32px;
   color: var(--m3-sys-color-primary);
