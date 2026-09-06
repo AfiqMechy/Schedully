@@ -23,48 +23,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing image data' });
     }
 
-    let envKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
-    const apiKey = (clientApiKey || envKey).trim().replace(/^["']|["']$/g, '');
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEY in Vercel Environment Variables.' });
+    // 1. Gather all API keys from environment (Supports GEMINI_API_KEYS with comma/semicolon/newline separation or GEMINI_API_KEY)
+    let envKeysRaw = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+    let serverKeys = envKeysRaw
+      .split(/[,;\n\r]+/)
+      .map(k => k.trim().replace(/^["']|["']$/g, ''))
+      .filter(k => k.length > 5);
+
+    let keyPool = [];
+    if (clientApiKey && clientApiKey.trim()) {
+      // If user passed a personal custom key in the request, prioritize it first
+      keyPool.push(clientApiKey.trim().replace(/^["']|["']$/g, ''));
     }
 
-    // 1. DYNAMICALLY DISCOVER SUPPORTED MODELS (Default to active production model)
-    let candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-    let targetModelName = 'gemini-2.5-flash';
-    try {
-      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
-        method: 'GET',
-        headers: { 'x-goog-api-key': apiKey }
-      });
-      const listData = await listRes.json();
-      if (listData && listData.models) {
-        const validModels = listData.models.filter(m => 
-          m.supportedGenerationMethods && 
-          m.supportedGenerationMethods.includes('generateContent') &&
-          m.name.includes('gemini')
-        );
-        const sorted = [];
-        const pushIf = (filterFn) => {
-          validModels.filter(filterFn).forEach(m => {
-            const cleanName = m.name.replace('models/', '');
-            if (!sorted.includes(cleanName)) sorted.push(cleanName);
-          });
-        };
-        // Priority order: 2.5-flash first, then 2.0-flash, then 1.5-flash, then any flash/gemini
-        pushIf(m => m.name.includes('2.5-flash'));
-        pushIf(m => m.name.includes('2.0-flash'));
-        pushIf(m => m.name.includes('1.5-flash'));
-        pushIf(m => m.name.includes('flash'));
-        pushIf(m => m.name.includes('gemini'));
+    // Shuffle server keys for natural load-balancing across all available keys
+    const shuffledServerKeys = [...serverKeys].sort(() => Math.random() - 0.5);
+    keyPool.push(...shuffledServerKeys);
 
-        if (sorted.length > 0) {
-          candidateModels = sorted;
-          targetModelName = sorted[0];
-        }
-      }
-    } catch (e) {
-      console.warn("Failed to list models, using fallback gemini-2.5-flash", e);
+    if (keyPool.length === 0) {
+      return res.status(500).json({ error: 'Gemini API Key not configured. Please set GEMINI_API_KEYS or GEMINI_API_KEY in Vercel Environment Variables.' });
     }
 
     const promptText = `CRITICAL MULTI-STAGE ACADEMIC TIMETABLE VISION PARSER:
@@ -172,71 +149,117 @@ Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
     };
 
     let data = null;
-    let successfulModel = targetModelName;
     let lastError = null;
 
-    for (const model of candidateModels) {
+    // 2. Iterate through Key Pool (Automatic Failover across keys if quota/rate-limit hit)
+    for (let kIdx = 0; kIdx < keyPool.length; kIdx++) {
+      const apiKey = keyPool[kIdx];
+      const keySnippet = apiKey.slice(0, 6) + '...' + apiKey.slice(-4);
+      let candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+      // Dynamically check available models for this specific key
       try {
-        const modelPayload = JSON.parse(JSON.stringify(payload));
-        if (model.includes('2.5') || model.includes('2.0')) {
-          modelPayload.generationConfig.thinkingConfig = {
-            thinkingBudget: 2048
-          };
-        }
-
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-        let response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey
-          },
-          body: JSON.stringify(modelPayload),
-          signal: controller.signal
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+          method: 'GET',
+          headers: { 'x-goog-api-key': apiKey }
         });
-        clearTimeout(timeoutId);
+        const listData = await listRes.json();
+        if (listData && listData.models) {
+          const validModels = listData.models.filter(m => 
+            m.supportedGenerationMethods && 
+            m.supportedGenerationMethods.includes('generateContent') &&
+            m.name.includes('gemini')
+          );
+          const sorted = [];
+          const pushIf = (filterFn) => {
+            validModels.filter(filterFn).forEach(m => {
+              const cleanName = m.name.replace('models/', '');
+              if (!sorted.includes(cleanName)) sorted.push(cleanName);
+            });
+          };
+          pushIf(m => m.name.includes('2.5-flash'));
+          pushIf(m => m.name.includes('2.0-flash'));
+          pushIf(m => m.name.includes('1.5-flash'));
+          pushIf(m => m.name.includes('flash'));
+          pushIf(m => m.name.includes('gemini'));
+          if (sorted.length > 0) candidateModels = sorted;
+        }
+      } catch (e) {
+        // Continue with defaults
+      }
 
-        let resJson = await response.json().catch(() => ({}));
-        if (resJson.error && modelPayload.generationConfig.thinkingConfig) {
-          // Retry without thinkingConfig if endpoint doesn't support it
-          delete modelPayload.generationConfig.thinkingConfig;
-          const retryController = new AbortController();
-          const retryTimeout = setTimeout(() => retryController.abort(), 60000);
-          response = await fetch(url, {
+      for (const model of candidateModels) {
+        try {
+          const modelPayload = JSON.parse(JSON.stringify(payload));
+          if (model.includes('2.5') || model.includes('2.0')) {
+            modelPayload.generationConfig.thinkingConfig = {
+              thinkingBudget: 2048
+            };
+          }
+
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+          let response = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'x-goog-api-key': apiKey
             },
             body: JSON.stringify(modelPayload),
-            signal: retryController.signal
+            signal: controller.signal
           });
-          clearTimeout(retryTimeout);
-          resJson = await response.json().catch(() => ({}));
-        }
+          clearTimeout(timeoutId);
 
-        if (resJson.error) {
-          lastError = resJson.error.message || `Model ${model} returned error ${response.status}`;
-          console.warn(`[Vercel api/scan] Model ${model} failed:`, lastError);
-          continue;
-        }
+          let resJson = await response.json().catch(() => ({}));
+          if (resJson.error && modelPayload.generationConfig.thinkingConfig) {
+            delete modelPayload.generationConfig.thinkingConfig;
+            const retryController = new AbortController();
+            const retryTimeout = setTimeout(() => retryController.abort(), 60000);
+            response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify(modelPayload),
+              signal: retryController.signal
+            });
+            clearTimeout(retryTimeout);
+            resJson = await response.json().catch(() => ({}));
+          }
 
-        if (resJson.candidates && resJson.candidates[0] && resJson.candidates[0].content) {
-          data = resJson;
-          successfulModel = model;
-          break;
+          if (resJson.error) {
+            const errorMsg = resJson.error.message || `Status ${response.status}`;
+            lastError = errorMsg;
+            // Check if this error is a rate limit / quota exhaustion
+            if (response.status === 429 || errorMsg.includes('429') || errorMsg.toLowerCase().includes('quota') || errorMsg.toLowerCase().includes('rate limit')) {
+              console.warn(`[Vercel api/scan] API Key ${keySnippet} rate limited on ${model}. Switching key...`);
+              break; // Break inner model loop, try next key in keyPool
+            }
+            continue;
+          }
+
+          if (resJson.candidates && resJson.candidates[0] && resJson.candidates[0].content) {
+            data = resJson;
+            break; // Success!
+          }
+        } catch (callErr) {
+          lastError = callErr.message;
+          if (callErr.message && (callErr.message.includes('429') || callErr.message.toLowerCase().includes('quota'))) {
+            break;
+          }
         }
-      } catch (callErr) {
-        lastError = callErr.message;
-        console.warn(`[Vercel api/scan] Call to ${model} threw error:`, callErr);
+      }
+
+      if (data) {
+        break; // Successfully obtained scan result
       }
     }
 
     if (!data) {
-      return res.status(500).json({ error: lastError || 'All Gemini models failed to process the timetable.' });
+      return res.status(500).json({ error: lastError || 'All Gemini API keys and models failed to process the timetable.' });
     }
 
     let rawJSON = data.candidates[0].content.parts[0].text;
