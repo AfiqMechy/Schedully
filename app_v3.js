@@ -4880,8 +4880,8 @@ class SchedullyApp {
 
     const updatePresetVisibility = (mode) => {
       if (presetContainer) {
-        // Show presets when Period mode is active so user can pick period start time & duration
-        if (mode === 'period') {
+        // Show presets when Clock mode is active so user can pick what clock times the periods (1, 2, 3...) should map to
+        if (mode === 'time') {
           presetContainer.style.display = 'flex';
         } else {
           presetContainer.style.display = 'none';
@@ -6933,10 +6933,10 @@ class SchedullyApp {
       this.btnAxisTime.classList.add('active');
     }
 
-    // Show/hide preset chips based on whether timetable is period based
+    // Show/hide preset chips based on whether timetable is period based and axis mode is Clock
     const presetContainer = document.getElementById('ocr-period-preset-container');
     if (presetContainer) {
-      presetContainer.style.display = isPeriodBased ? 'flex' : 'none';
+      presetContainer.style.display = (isPeriodBased && this.selectedOcrAxisMode === 'time') ? 'flex' : 'none';
     }
 
     // Reset preset chip to first (9:00 AM)
