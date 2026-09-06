@@ -172,7 +172,7 @@ STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT
   * Look at the vertical and horizontal grid lines of the cell.
   * If a cell starts under "02:00 - 03:00" and spans across "03:00 - 04:00", its time span is 14:00 to 16:00 (2 hours).
   * If the next cell spans across "04:00 - 05:00" and "05:00 - 06:00", its time span is 16:00 to 18:00 (2 hours). DO NOT prematurely stop at 17:00 if the cell extends to 18:00!
-  * If a long activity like "KO-KURIKULUM" spans continuously across "02:00 - 03:00", "03:00 - 04:00", "04:00 - 05:00", "05:00 - 06:00", "06:00 - 07:00", its time is 14:00 to 19:00.
+  * If a long activity like "KO-KURIKULUM" stretches continuously from "02:00 - 03:00" all the way across the afternoon and evening columns to the very last column "10:00 - 11:00 PM", its full span is 14:00 to 23:00 (02:00 PM to 11:00 PM)! NEVER artificially cut it short at 19:00/07:00 PM when the cell extends all the way to 23:00!
   * Check if identical consecutive blocks (e.g., Monday 09:00-11:00 and 11:00-13:00) represent two scheduled sessions or one continuous 4-hour lecture/lab (09:00-13:00). Both representations are valid, but start and end times must accurately reflect the grid columns.
 - Ignore "BREAK", "LUNCH", "REST" cells (do not extract them as courses).
 
