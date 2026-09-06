@@ -1205,6 +1205,41 @@
                 <div class="opt-row margin-top-xs" id="row-grid-start-time">
                   <span class="opt-label" data-i18n="startTime">Start Time</span>
                   <select id="grid-start-time" class="m3-input-time opt-input">
+                    <option value="00:00">12:00 AM (Midnight)</option>
+                    <option value="01:00">01:00 AM</option>
+                    <option value="02:00">02:00 AM</option>
+                    <option value="03:00">03:00 AM</option>
+                    <option value="04:00">04:00 AM</option>
+                    <option value="05:00">05:00 AM</option>
+                    <option value="06:00">06:00 AM</option>
+                    <option value="07:00">07:00 AM</option>
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00" selected>09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="21:00">09:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                    <option value="23:00">11:00 PM</option>
+                  </select>
+                </div>
+
+                <!-- End Time (Shown in Time Mode) -->
+                <div class="opt-row" id="row-grid-end-time">
+                  <span class="opt-label" data-i18n="endTime">End Time</span>
+                  <select id="grid-end-time" class="m3-input-time opt-input">
+                    <option value="01:00">01:00 AM</option>
+                    <option value="02:00">02:00 AM</option>
+                    <option value="03:00">03:00 AM</option>
+                    <option value="04:00">04:00 AM</option>
                     <option value="05:00">05:00 AM</option>
                     <option value="06:00">06:00 AM</option>
                     <option value="07:00">07:00 AM</option>
@@ -1213,19 +1248,11 @@
                     <option value="10:00">10:00 AM</option>
                     <option value="11:00">11:00 AM</option>
                     <option value="12:00">12:00 PM</option>
-                  </select>
-                </div>
-
-                <!-- End Time (Shown in Time Mode) -->
-                <div class="opt-row" id="row-grid-end-time">
-                  <span class="opt-label" data-i18n="endTime">End Time</span>
-                  <select id="grid-end-time" class="m3-input-time opt-input">
-                    <option value="12:00">12:00 PM</option>
                     <option value="13:00">01:00 PM</option>
                     <option value="14:00">02:00 PM</option>
                     <option value="15:00">03:00 PM</option>
                     <option value="16:00">04:00 PM</option>
-                    <option value="17:00">05:00 PM</option>
+                    <option value="17:00" selected>05:00 PM</option>
                     <option value="18:00">06:00 PM</option>
                     <option value="19:00">07:00 PM</option>
                     <option value="20:00">08:00 PM</option>
@@ -1439,6 +1466,12 @@
                 <div class="form-row" id="row-start-time">
                   <label data-i18n="startTime" for="input-start-time">Start Time</label>
                   <select id="input-start-time" class="m3-input-time">
+                    <option value="00:00">12:00 AM (Midnight)</option>
+                    <option value="01:00">01:00 AM</option>
+                    <option value="02:00">02:00 AM</option>
+                    <option value="03:00">03:00 AM</option>
+                    <option value="04:00">04:00 AM</option>
+                    <option value="05:00">05:00 AM</option>
                     <option value="06:00">06:00 AM</option>
                     <option value="07:00">07:00 AM</option>
                     <option value="08:00">08:00 AM</option>
@@ -1464,6 +1497,12 @@
                 <div class="form-row" id="row-end-time">
                   <label data-i18n="endTime" for="input-end-time">End Time</label>
                   <select id="input-end-time" class="m3-input-time">
+                    <option value="01:00">01:00 AM</option>
+                    <option value="02:00">02:00 AM</option>
+                    <option value="03:00">03:00 AM</option>
+                    <option value="04:00">04:00 AM</option>
+                    <option value="05:00">05:00 AM</option>
+                    <option value="06:00">06:00 AM</option>
                     <option value="07:00">07:00 AM</option>
                     <option value="08:00">08:00 AM</option>
                     <option value="09:00">09:00 AM</option>
@@ -2709,13 +2748,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260907_v456"></script>
+  <script src="app_v3.js?v=20260907_v457"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=20260907_v456').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=20260907_v457').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

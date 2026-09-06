@@ -8790,8 +8790,16 @@ class SchedullyApp {
             <div class="editor-field-cell">
               <label>${lblStart}</label>
               <select class="m3-input-time edit-start">
+                <option value="00:00" ${c.startTime === '00:00' ? 'selected' : ''}>12:00 AM (Midnight)</option>
+                <option value="01:00" ${c.startTime === '01:00' ? 'selected' : ''}>01:00 AM</option>
+                <option value="02:00" ${c.startTime === '02:00' ? 'selected' : ''}>02:00 AM</option>
+                <option value="03:00" ${c.startTime === '03:00' ? 'selected' : ''}>03:00 AM</option>
+                <option value="04:00" ${c.startTime === '04:00' ? 'selected' : ''}>04:00 AM</option>
+                <option value="05:00" ${c.startTime === '05:00' ? 'selected' : ''}>05:00 AM</option>
+                <option value="06:00" ${c.startTime === '06:00' ? 'selected' : ''}>06:00 AM</option>
+                <option value="07:00" ${c.startTime === '07:00' ? 'selected' : ''}>07:00 AM</option>
                 <option value="08:00" ${c.startTime === '08:00' ? 'selected' : ''}>08:00 AM</option>
-                <option value="09:00" ${c.startTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
+                <option value="09:00" ${c.startTime === '09:00' || !c.startTime ? 'selected' : ''}>09:00 AM</option>
                 <option value="10:00" ${c.startTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
                 <option value="11:00" ${c.startTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
                 <option value="12:00" ${c.startTime === '12:00' ? 'selected' : ''}>12:00 PM</option>
@@ -8799,11 +8807,26 @@ class SchedullyApp {
                 <option value="14:00" ${c.startTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
                 <option value="15:00" ${c.startTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
                 <option value="16:00" ${c.startTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
+                <option value="17:00" ${c.startTime === '17:00' ? 'selected' : ''}>05:00 PM</option>
+                <option value="18:00" ${c.startTime === '18:00' ? 'selected' : ''}>06:00 PM</option>
+                <option value="19:00" ${c.startTime === '19:00' ? 'selected' : ''}>07:00 PM</option>
+                <option value="20:00" ${c.startTime === '20:00' ? 'selected' : ''}>08:00 PM</option>
+                <option value="21:00" ${c.startTime === '21:00' ? 'selected' : ''}>09:00 PM</option>
+                <option value="22:00" ${c.startTime === '22:00' ? 'selected' : ''}>10:00 PM</option>
+                <option value="23:00" ${c.startTime === '23:00' ? 'selected' : ''}>11:00 PM</option>
               </select>
             </div>
             <div class="editor-field-cell">
               <label>${lblEnd}</label>
               <select class="m3-input-time edit-end">
+                <option value="01:00" ${c.endTime === '01:00' ? 'selected' : ''}>01:00 AM</option>
+                <option value="02:00" ${c.endTime === '02:00' ? 'selected' : ''}>02:00 AM</option>
+                <option value="03:00" ${c.endTime === '03:00' ? 'selected' : ''}>03:00 AM</option>
+                <option value="04:00" ${c.endTime === '04:00' ? 'selected' : ''}>04:00 AM</option>
+                <option value="05:00" ${c.endTime === '05:00' ? 'selected' : ''}>05:00 AM</option>
+                <option value="06:00" ${c.endTime === '06:00' ? 'selected' : ''}>06:00 AM</option>
+                <option value="07:00" ${c.endTime === '07:00' ? 'selected' : ''}>07:00 AM</option>
+                <option value="08:00" ${c.endTime === '08:00' ? 'selected' : ''}>08:00 AM</option>
                 <option value="09:00" ${c.endTime === '09:00' ? 'selected' : ''}>09:00 AM</option>
                 <option value="10:00" ${c.endTime === '10:00' ? 'selected' : ''}>10:00 AM</option>
                 <option value="11:00" ${c.endTime === '11:00' ? 'selected' : ''}>11:00 AM</option>
@@ -8812,7 +8835,14 @@ class SchedullyApp {
                 <option value="14:00" ${c.endTime === '14:00' ? 'selected' : ''}>02:00 PM</option>
                 <option value="15:00" ${c.endTime === '15:00' ? 'selected' : ''}>03:00 PM</option>
                 <option value="16:00" ${c.endTime === '16:00' ? 'selected' : ''}>04:00 PM</option>
-                <option value="17:00" ${c.endTime === '17:00' ? 'selected' : ''}>05:00 PM</option>
+                <option value="17:00" ${c.endTime === '17:00' || !c.endTime ? 'selected' : ''}>05:00 PM</option>
+                <option value="18:00" ${c.endTime === '18:00' ? 'selected' : ''}>06:00 PM</option>
+                <option value="19:00" ${c.endTime === '19:00' ? 'selected' : ''}>07:00 PM</option>
+                <option value="20:00" ${c.endTime === '20:00' ? 'selected' : ''}>08:00 PM</option>
+                <option value="21:00" ${c.endTime === '21:00' ? 'selected' : ''}>09:00 PM</option>
+                <option value="22:00" ${c.endTime === '22:00' ? 'selected' : ''}>10:00 PM</option>
+                <option value="23:00" ${c.endTime === '23:00' ? 'selected' : ''}>11:00 PM</option>
+                <option value="24:00" ${c.endTime === '24:00' || c.endTime === '00:00' ? 'selected' : ''}>12:00 AM (Midnight)</option>
               </select>
             </div>
           </div>
