@@ -130,6 +130,8 @@ OUTPUT STRICT JSON FORMAT:
   "hasNonEnglishText": true,
   "isPeriodBased": false,
   "timetableFormat": "clock",
+  "gridStartHour": "08:00",
+  "gridEndHour": "23:00",
   "courses": [
     {
       "title": "Struktur Data dan Algoritma",

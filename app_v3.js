@@ -4671,8 +4671,9 @@ class SchedullyApp {
               }
 
               const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? Boolean(scanResult.isPeriodBased) : extracted.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '');
+              const gridBounds = { gridStartHour: scanResult?.gridStartHour, gridEndHour: scanResult?.gridEndHour };
               if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish);
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish, gridBounds);
               } else {
                 const fullDetailCourses = extracted.map(c => {
                   const rawCode = (c.code || c.title || '').trim();
@@ -4683,7 +4684,7 @@ class SchedullyApp {
                     code: hasGenuineCode ? rawCode : (c.title || rawCode)
                   };
                 });
-                this.importClassesDirectly(fullDetailCourses);
+                this.importClassesDirectly(fullDetailCourses, gridBounds);
               }
             } catch (err) {
               console.error("Scanner Error (Internal):", err);
@@ -4797,7 +4798,7 @@ class SchedullyApp {
           this.ocrLangModal.style.display = 'none';
         }
         if (this.pendingOcrResult) {
-          this.importClassesDirectly(this.pendingOcrResult.courses);
+          this.importClassesDirectly(this.pendingOcrResult.courses, this.pendingOcrResult.gridBounds);
           this.pendingOcrResult = null;
         }
       });
@@ -4934,7 +4935,7 @@ class SchedullyApp {
           });
 
           this.axisMode = this.selectedOcrAxisMode || (isPeriodBased ? 'period' : 'time');
-          this.importClassesDirectly(courses);
+          this.importClassesDirectly(courses, this.pendingOcrResult.gridBounds);
           this.pendingOcrResult = null;
         }
       });
@@ -4993,11 +4994,12 @@ class SchedullyApp {
             const detectedLang = scanResult.detectedLanguage || 'English';
             const hasNonEnglish = (scanResult && scanResult.hasNonEnglishText !== undefined) ? scanResult.hasNonEnglishText : (detectedLang.toLowerCase() !== 'english');
             const isPeriodBased = (scanResult && scanResult.isPeriodBased !== undefined) ? Boolean(scanResult.isPeriodBased) : extracted.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== '');
+            const gridBounds = { gridStartHour: scanResult?.gridStartHour, gridEndHour: scanResult?.gridEndHour };
             if (extracted && extracted.length > 0) {
               if (hasNonEnglish || isPeriodBased || (detectedLang && detectedLang.toLowerCase() !== 'english')) {
-                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish);
+                this.showOcrLanguageModal(extracted, detectedLang, isPeriodBased, hasNonEnglish, gridBounds);
               } else {
-                this.importClassesDirectly(extracted);
+                this.importClassesDirectly(extracted, gridBounds);
               }
             }
           } catch (err) {
@@ -6464,7 +6466,7 @@ class SchedullyApp {
       this.markSaved();
     }
   }
-  importClassesDirectly(newEvents) {
+  importClassesDirectly(newEvents, ocrGridBounds = null) {
     if (!newEvents || newEvents.length === 0) {
        alert("No matching classes found for the selected groups.");
        return;
@@ -6544,7 +6546,7 @@ class SchedullyApp {
 
     this.classes.push(...mapped);
 
-    // Auto-adjust grid start & end times so all imported courses are visible and perfectly framed
+    // Auto-adjust grid start & end times so all imported courses are visible and full night coverage is supported
     let minStart = 24;
     let maxEnd = 0;
     const importedDays = [];
@@ -6568,9 +6570,21 @@ class SchedullyApp {
       }
     });
 
+    if (ocrGridBounds && ocrGridBounds.gridStartHour) {
+      const [sh] = String(ocrGridBounds.gridStartHour).split(':').map(Number);
+      if (!isNaN(sh)) minStart = Math.min(minStart, sh);
+    }
+    if (ocrGridBounds && ocrGridBounds.gridEndHour) {
+      let [eh, em] = String(ocrGridBounds.gridEndHour).split(':').map(Number);
+      if (eh === 0) eh = 24;
+      const endCeil = (em > 0) ? eh + 1 : eh;
+      if (!isNaN(endCeil)) maxEnd = Math.max(maxEnd, endCeil);
+    }
+
     if (minStart < 24 && maxEnd > 0) {
       this.gridStartHour = Math.max(0, Math.min(8, minStart));
-      this.gridEndHour = Math.min(24, Math.max(maxEnd, this.gridStartHour + 6));
+      // Full evening and night coverage up to 22:00, 23:00, or 24:00 (Midnight)
+      this.gridEndHour = Math.min(24, Math.max(maxEnd, 22));
     }
 
     importedDays.forEach(d => {
@@ -6730,9 +6744,9 @@ class SchedullyApp {
     }
   }
 
-  showOcrLanguageModal(courses, detectedLang, isPeriodBased = false, hasNonEnglish = null) {
+  showOcrLanguageModal(courses, detectedLang, isPeriodBased = false, hasNonEnglish = null, gridBounds = null) {
     if (!this.ocrLangModal) {
-      this.importClassesDirectly(courses);
+      this.importClassesDirectly(courses, gridBounds);
       return;
     }
 
@@ -6748,7 +6762,7 @@ class SchedullyApp {
       isActuallyForeign = courses.some(c => /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7af\u0600-\u06ff\u0400-\u04ff]/.test((c.title || '') + (c.code || '') + (c.originalTitle || '')));
     }
 
-    this.pendingOcrResult = { courses, detectedLang, isPeriodBased, hasNonEnglish: isActuallyForeign };
+    this.pendingOcrResult = { courses, detectedLang, isPeriodBased, hasNonEnglish: isActuallyForeign, gridBounds };
 
     const langLower = (detectedLang || '').toLowerCase();
     const flagMap = {
