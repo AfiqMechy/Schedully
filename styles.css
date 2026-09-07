@@ -248,16 +248,10 @@ body.dark-mode, .theme-dark {
 }
 
 .m3-sidebar, .m3-right-sidebar {
-  background: rgba(255, 255, 255, 0.68) !important;
-  backdrop-filter: blur(32px) saturate(210%) contrast(102%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(210%) contrast(102%) !important;
+  background: #FFFFFF;
   border-radius: 28px;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1.5px 2px 0 rgba(255, 255, 255, 0.25),
-    inset 0 0 24px 2px rgba(255, 255, 255, 0.3),
-    0 16px 40px -8px rgba(15, 23, 42, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+  border: 1px solid #E2E8F0;
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
@@ -269,15 +263,12 @@ body.dark-mode, .theme-dark {
 }
 
 body.dark-mode .m3-sidebar,
-body.dark-mode .m3-right-sidebar {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
-  backdrop-filter: blur(32px) saturate(200%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(200%) contrast(104%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1.5px 2px 0 rgba(255, 255, 255, 0.08),
-    0 20px 50px -10px rgba(0, 0, 0, 0.65) !important;
+body.dark-mode .m3-right-sidebar,
+.theme-dark .m3-sidebar,
+.theme-dark .m3-right-sidebar {
+  background: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 .m3-sidebar::-webkit-scrollbar, .m3-right-sidebar::-webkit-scrollbar {
@@ -858,15 +849,15 @@ body.dark-mode #left-sidebar,
 body.dark-mode #right-sidebar,
 .theme-dark #left-sidebar,
 .theme-dark #right-sidebar {
-  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.10 + 0.02)) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.15) 100%) !important;
+  background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.78) 45%, rgba(10, 15, 29, 0.85) 100%) !important;
   backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
   -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
-  border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.08)) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   color: #F8FAFC !important;
   box-shadow: 
     0 24px 60px -10px rgba(0, 0, 0, 0.70),
     0 4px 16px rgba(0, 0, 0, 0.40),
-    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.25)),
+    inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, 0.12),
     inset 0 -1px 2px 0 rgba(0, 0, 0, 0.3),
     inset calc(var(--glass-dispersion, 7) * 0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.25)),
     inset calc(var(--glass-dispersion, 7) * -0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.20)) !important;
@@ -2231,7 +2222,8 @@ body.dark-mode .pill-btn {
 }
 
 body.dark-mode .pill-btn.active {
-  background: #3B82F6 !important;
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: #FFFFFF !important;
   box-shadow: 0 3px 12px rgba(59, 130, 246, 0.45) !important;
 }
 
@@ -6498,15 +6490,15 @@ input:focus, select:focus, textarea:focus {
   body.dark-mode #right-sidebar:not(.sidebar-collapsed-right),
   .theme-dark #left-sidebar:not(.sidebar-collapsed-left),
   .theme-dark #right-sidebar:not(.sidebar-collapsed-right) {
-    background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.10 + 0.02)) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.15) 100%) !important;
+    background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.78) 45%, rgba(10, 15, 29, 0.85) 100%) !important;
     backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
     -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 6px)) saturate(190%) !important;
-    border: 1.5px solid rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.12 + 0.08)) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
     color: #F8FAFC !important;
     box-shadow: 
       0 24px 60px -10px rgba(0, 0, 0, 0.70),
       0 4px 16px rgba(0, 0, 0, 0.40),
-      inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.25)),
+      inset 0 calc(var(--glass-thickness, 20px) * 0.08) calc(var(--glass-thickness, 20px) * 0.12) 0 rgba(255, 255, 255, 0.12),
       inset 0 -1px 2px 0 rgba(0, 0, 0, 0.3),
       inset calc(var(--glass-dispersion, 7) * 0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.25)),
       inset calc(var(--glass-dispersion, 7) * -0.3px) 0 calc(var(--glass-dispersion, 7) * 0.5px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.20)) !important;
@@ -8816,38 +8808,47 @@ body.dark-mode #right-sidebar .bg-gray-100,
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
 }
 
-/* ── Danger Liquid Glass Button (Clear All) ── */
+/* ── Action Pill (Clear All) ── */
 #btn-clear-all {
-  background: linear-gradient(135deg, rgba(254, 226, 226, 0.55) 0%, rgba(254, 202, 202, 0.22) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.22) 100%) !important;
   backdrop-filter: blur(14px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(190%) !important;
-  border: 1px solid rgba(252, 165, 165, 0.8) !important;
-  color: #DC2626 !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  color: #0F172A !important;
   box-shadow: 
     inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(239, 68, 68, 0.15),
-    0 3px 8px rgba(239, 68, 68, 0.06) !important;
+    0 3px 8px rgba(15, 23, 42, 0.04) !important;
   border-radius: 14px !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+#btn-clear-all svg,
+#btn-clear-all span {
+  color: #475569 !important;
+}
+
 #btn-clear-all:hover {
   transform: translateY(-1px) scale(1.02);
-  background: linear-gradient(135deg, rgba(254, 202, 202, 0.75) 0%, rgba(254, 202, 202, 0.4) 100%) !important;
-  box-shadow: 
-    inset 0 2px 2px 0 rgba(255, 255, 255, 1),
-    0 6px 16px rgba(239, 68, 68, 0.18) !important;
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.75) 0%, rgba(254, 202, 202, 0.4) 100%) !important;
+  border-color: rgba(252, 165, 165, 0.85) !important;
+  color: #DC2626 !important;
+  box-shadow: inset 0 2px 2px #fff, 0 6px 16px rgba(239, 68, 68, 0.15) !important;
+}
+
+#btn-clear-all:hover svg,
+#btn-clear-all:hover span {
+  color: #DC2626 !important;
 }
 
 body.dark-mode #btn-clear-all,
 .theme-dark #btn-clear-all {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
-  backdrop-filter: blur(14px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(190%) !important;
-  border: 1px solid rgba(248, 113, 113, 0.45) !important;
-  color: #FCA5A5 !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #F1F5F9 !important;
   box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.12),
     0 4px 12px rgba(0, 0, 0, 0.35) !important;
 }
 
@@ -8855,17 +8856,24 @@ body.dark-mode #btn-clear-all svg,
 body.dark-mode #btn-clear-all span,
 .theme-dark #btn-clear-all svg,
 .theme-dark #btn-clear-all span {
-  color: #FCA5A5 !important;
+  color: #CBD5E1 !important;
 }
 
 body.dark-mode #btn-clear-all:hover,
 .theme-dark #btn-clear-all:hover {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.28) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
-  border-color: rgba(248, 113, 113, 0.75) !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.08) 100%) !important;
+  border-color: rgba(248, 113, 113, 0.6) !important;
   color: #FFFFFF !important;
   box-shadow: 
-    inset 0 2px 3px 0 rgba(255, 255, 255, 0.45),
-    0 8px 20px rgba(239, 68, 68, 0.4) !important;
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.35),
+    0 8px 20px rgba(239, 68, 68, 0.35) !important;
+}
+
+body.dark-mode #btn-clear-all:hover svg,
+body.dark-mode #btn-clear-all:hover span,
+.theme-dark #btn-clear-all:hover svg,
+.theme-dark #btn-clear-all:hover span {
+  color: #FCA5A5 !important;
 }
 
 /* ── Secondary Liquid Glass Action Pill (Settings) ── */
@@ -9485,7 +9493,7 @@ body.dark-mode .edit-course-time-format,
   color: #0F172A !important;
 }
 
-/* Active item is crisp with high contrast and transparent so only the glass thumb renders */
+/* Active item is crisp with high contrast and bright white text */
 #device-type-toggles .capsule-btn.active,
 .pill-toggle-group .pill-btn.active,
 .capsule-group button.active,
@@ -9495,10 +9503,10 @@ body.dark-mode .edit-course-time-format,
 .edit-course-time-format button.active,
 .time-mode-btn.active,
 .support-tab-btn.active {
-  background: transparent !important;
-  color: #0F172A !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: #FFFFFF !important;
   font-weight: 800 !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
   position: relative !important;
   z-index: 3 !important;
 }
@@ -9531,25 +9539,6 @@ body.dark-mode #device-type-toggles,
 }
 
 body.dark-mode #device-type-toggles .capsule-btn,
-.theme-dark #device-type-toggles .capsule-btn {
-  color: #94A3B8 !important;
-}
-
-body.dark-mode #device-type-toggles .capsule-btn:hover,
-.theme-dark #device-type-toggles .capsule-btn:hover {
-  color: #FFFFFF !important;
-}
-
-body.dark-mode #device-type-toggles .capsule-btn.active,
-.theme-dark #device-type-toggles .capsule-btn.active {
-  background: transparent !important;
-  color: #FFFFFF !important;
-  box-shadow: none !important;
-  position: relative !important;
-  z-index: 3 !important;
-}
-
-body.dark-mode #device-type-toggles .capsule-btn,
 body.dark-mode .pill-toggle-group .pill-btn,
 body.dark-mode .capsule-group button,
 body.dark-mode #time-display-mode-group button,
@@ -9566,10 +9555,8 @@ body.dark-mode .support-tab-btn,
 .theme-dark .time-mode-btn,
 .theme-dark .support-tab-btn {
   background: transparent !important;
-  background-color: transparent !important;
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: #94A3B8 !important;
   box-shadow: none !important;
-  text-shadow: none !important;
   transform: scale(1) !important;
 }
 
@@ -9579,7 +9566,7 @@ body.dark-mode .capsule-group button:hover,
 .theme-dark #device-type-toggles .capsule-btn:hover,
 .theme-dark .pill-toggle-group .pill-btn:hover,
 .theme-dark .capsule-group button:hover {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: #FFFFFF !important;
 }
 
 body.dark-mode #device-type-toggles .capsule-btn.active,
@@ -9598,12 +9585,14 @@ body.dark-mode .support-tab-btn.active,
 .theme-dark .edit-course-time-format button.active,
 .theme-dark .time-mode-btn.active,
 .theme-dark .support-tab-btn.active {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  background-color: var(--m3-sys-color-primary, #3B82F6) !important;
   color: #FFFFFF !important;
   font-weight: 800 !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
   text-shadow: none !important;
+  position: relative !important;
+  z-index: 3 !important;
   transform: scale(1) !important;
 }
 
@@ -9650,20 +9639,6 @@ body.dark-mode .glass-slider-thumb,
 .capsule-group button svg {
   color: inherit !important;
   transition: color 0.22s ease !important;
-}
-
-body.dark-mode #device-type-toggles .capsule-btn,
-body.dark-mode .pill-toggle-group .pill-btn,
-body.dark-mode .capsule-group button,
-body.dark-mode #time-display-mode-group button {
-  color: #94A3B8 !important;
-}
-
-body.dark-mode #device-type-toggles .capsule-btn.active,
-body.dark-mode .pill-toggle-group .pill-btn.active,
-body.dark-mode .capsule-group button.active,
-body.dark-mode #time-display-mode-group button.active {
-  color: #FFFFFF !important;
 }
 
 /* Stepper Controls & Option Inputs (Refined Glass Capsules) */
@@ -10368,6 +10343,8 @@ body.dark-mode .theme-style-btn.active span,
 /* ═══════════════════════════════════════════════════════════════
    DEFAULT STYLE (Solid Material 3 Expressive Surfaces)
    ═══════════════════════════════════════════════════════════════ */
+body.theme-style-default #left-sidebar,
+body.theme-style-default #right-sidebar,
 body.theme-style-default #header-desktop-bar,
 body.theme-style-default #floating-undo-redo-row,
 body.theme-style-default #bottom-floating-pill-bar,
@@ -10391,29 +10368,279 @@ body.theme-style-default .ocr-lang-card {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
 }
 
-/* Ensure high contrast dark font colors across all labels, spans, and headings in Default Style (Light Mode) */
-body.theme-style-default:not(.dark-mode) .opt-label,
-body.theme-style-default:not(.dark-mode) .picker-label,
-body.theme-style-default:not(.dark-mode) .sub-accordion-header span,
-body.theme-style-default:not(.dark-mode) #btn-theme-style-default:not(.active) span,
-body.theme-style-default:not(.dark-mode) #btn-theme-style-glass:not(.active) span,
-body.theme-style-default:not(.dark-mode) #active-theme-style-label,
-body.theme-style-default:not(.dark-mode) .sidebar-card-title,
-body.theme-style-default:not(.dark-mode) #left-sidebar h2,
-body.theme-style-default:not(.dark-mode) #left-sidebar h3,
-body.theme-style-default:not(.dark-mode) #right-sidebar h2,
-body.theme-style-default:not(.dark-mode) #right-sidebar h3 {
+/* ═══════════════════════════════════════════════════════════════
+   UNIVERSAL APP UI HIGH-CONTRAST ADAPTIVE TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Light Mode Main Headings, Titles, Buttons, and Primary Labels ── */
+body:not(.dark-mode) .opt-label,
+body:not(.dark-mode) .picker-label,
+body:not(.dark-mode) .sub-accordion-header span,
+body:not(.dark-mode) .card-expand-header p:first-child,
+body:not(.dark-mode) .theme-style-btn:not(.active) span,
+body:not(.dark-mode) #active-theme-style-label,
+body:not(.dark-mode) .sidebar-card-title,
+body:not(.dark-mode) .settings-row label,
+body:not(.dark-mode) .setting-item label,
+body:not(.dark-mode) .option-label,
+body:not(.dark-mode) .form-row label,
+body:not(.dark-mode) .course-form-body label,
+body:not(.dark-mode) .brand-title,
+body:not(.dark-mode) .brand-tagline,
+body:not(.dark-mode) #left-sidebar h1,
+body:not(.dark-mode) #left-sidebar h2,
+body:not(.dark-mode) #left-sidebar h3,
+body:not(.dark-mode) #right-sidebar h1,
+body:not(.dark-mode) #right-sidebar h2,
+body:not(.dark-mode) #right-sidebar h3,
+body:not(.dark-mode) #schedule-settings-panel h2,
+body:not(.dark-mode) #schedule-settings-panel h3,
+body:not(.dark-mode) #schedule-settings-panel label,
+body:not(.dark-mode) .popover-item-title,
+body:not(.dark-mode) .font-option-title,
+body:not(.dark-mode) .ratio-card-title,
+body:not(.dark-mode) .stepper-btn,
+body:not(.dark-mode) .stepper-input,
+body:not(.dark-mode) .stepper-val,
+body:not(.dark-mode) .dock-section-title,
+body:not(.dark-mode) .dock-icon-btn:hover .dock-icon-label,
+body:not(.dark-mode) #user-display-name,
+body:not(.dark-mode) .coffee-title {
   color: #0F172A !important;
-  font-weight: 800 !important;
 }
 
-body.theme-style-default:not(.dark-mode) .theme-style-btn.active span,
-body.theme-style-glass:not(.dark-mode) .theme-style-btn.active span {
+/* ── Light Mode Secondary Subtext, Hints, and Descriptions ── */
+body:not(.dark-mode) .settings-subtext,
+body:not(.dark-mode) .opt-subtext,
+body:not(.dark-mode) .option-desc,
+body:not(.dark-mode) .settings-hint,
+body:not(.dark-mode) .helper-text,
+body:not(.dark-mode) .card-expand-header p:last-child,
+body:not(.dark-mode) .card-expand-header p.text-xs,
+body:not(.dark-mode) .font-option-desc,
+body:not(.dark-mode) .ratio-card-sub,
+body:not(.dark-mode) .dock-icon-label,
+body:not(.dark-mode) .popover-item-desc,
+body:not(.dark-mode) .coffee-desc,
+body:not(.dark-mode) #user-status-text,
+body:not(.dark-mode) .creator-footer p,
+body:not(.dark-mode) .creator-footer span {
+  color: #475569 !important;
+}
+
+/* ── Dark Mode Main Headings, Titles, Buttons, and Primary Labels ── */
+body.dark-mode .opt-label,
+body.dark-mode .picker-label,
+body.dark-mode .sub-accordion-header span,
+body.dark-mode .card-expand-header p:first-child,
+body.dark-mode .theme-style-btn:not(.active) span,
+body.dark-mode #active-theme-style-label,
+body.dark-mode .sidebar-card-title,
+body.dark-mode .settings-row label,
+body.dark-mode .setting-item label,
+body.dark-mode .option-label,
+body.dark-mode .form-row label,
+body.dark-mode .course-form-body label,
+body.dark-mode .brand-title,
+body.dark-mode #left-sidebar h1,
+body.dark-mode #left-sidebar h2,
+body.dark-mode #left-sidebar h3,
+body.dark-mode #right-sidebar h1,
+body.dark-mode #right-sidebar h2,
+body.dark-mode #right-sidebar h3,
+body.dark-mode #schedule-settings-panel h2,
+body.dark-mode #schedule-settings-panel h3,
+body.dark-mode #schedule-settings-panel label,
+body.dark-mode .popover-item-title,
+body.dark-mode .font-option-title,
+body.dark-mode .font-group-header span,
+body.dark-mode .ratio-card-title,
+body.dark-mode .stepper-btn,
+body.dark-mode .stepper-input,
+body.dark-mode .stepper-val,
+body.dark-mode .dock-section-title,
+body.dark-mode .dock-icon-btn:hover .dock-icon-label,
+body.dark-mode #user-display-name,
+body.dark-mode .coffee-title,
+.theme-dark .opt-label,
+.theme-dark .picker-label,
+.theme-dark .sub-accordion-header span,
+.theme-dark .card-expand-header p:first-child,
+.theme-dark .theme-style-btn:not(.active) span,
+.theme-dark #active-theme-style-label,
+.theme-dark .sidebar-card-title,
+.theme-dark .settings-row label,
+.theme-dark .setting-item label,
+.theme-dark .option-label,
+.theme-dark .form-row label,
+.theme-dark .course-form-body label,
+.theme-dark .brand-title,
+.theme-dark #left-sidebar h1,
+.theme-dark #left-sidebar h2,
+.theme-dark #left-sidebar h3,
+.theme-dark #right-sidebar h1,
+.theme-dark #right-sidebar h2,
+.theme-dark #right-sidebar h3,
+.theme-dark #schedule-settings-panel h2,
+.theme-dark #schedule-settings-panel h3,
+.theme-dark #schedule-settings-panel label,
+.theme-dark .popover-item-title,
+.theme-dark .font-option-title,
+.theme-dark .font-group-header span,
+.theme-dark .ratio-card-title,
+.theme-dark .stepper-btn,
+.theme-dark .stepper-input,
+.theme-dark .stepper-val,
+.theme-dark .dock-section-title,
+.theme-dark .dock-icon-btn:hover .dock-icon-label,
+.theme-dark #user-display-name,
+.theme-dark .coffee-title {
+  color: #F8FAFC !important;
+}
+
+/* ── Dark Mode Secondary Subtext, Hints, and Descriptions ── */
+body.dark-mode .settings-subtext,
+body.dark-mode .opt-subtext,
+body.dark-mode .option-desc,
+body.dark-mode .settings-hint,
+body.dark-mode .helper-text,
+body.dark-mode .card-expand-header p:last-child,
+body.dark-mode .card-expand-header p.text-xs,
+body.dark-mode .font-option-desc,
+body.dark-mode .ratio-card-sub,
+body.dark-mode .dock-icon-label,
+body.dark-mode .popover-item-desc,
+body.dark-mode .coffee-desc,
+body.dark-mode #user-status-text,
+body.dark-mode .brand-tagline,
+body.dark-mode .creator-footer p,
+.theme-dark .settings-subtext,
+.theme-dark .opt-subtext,
+.theme-dark .option-desc,
+.theme-dark .settings-hint,
+.theme-dark .helper-text,
+.theme-dark .card-expand-header p:last-child,
+.theme-dark .card-expand-header p.text-xs,
+.theme-dark .font-option-desc,
+.theme-dark .ratio-card-sub,
+.theme-dark .dock-icon-label,
+.theme-dark .popover-item-desc,
+.theme-dark .coffee-desc,
+.theme-dark #user-status-text,
+.theme-dark .brand-tagline,
+.theme-dark .creator-footer p {
+  color: #94A3B8 !important;
+}
+
+/* ── Active Primary Pill Text ── */
+body .theme-style-btn.active span,
+body .pill-btn.active,
+body .capsule-btn.active,
+body .btn-theme-primary {
   color: #FFFFFF !important;
   font-weight: 800 !important;
 }
 
 
+/* ═══════════════════════════════════════════════════════════════
+   ADAPTIVE TIMETABLE & WALLPAPER CONTRAST SHIELD (Phone, Tablet, Watch)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Base Lockscreen Clock & Date in Light & Dark Mode */
+.m3-phone-canvas:not(.has-photo-wallpaper) .phone-lock-header,
+.m3-phone-canvas:not(.has-photo-wallpaper) .lock-time,
+.m3-phone-canvas:not(.has-photo-wallpaper) .lock-date {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .phone-lock-header,
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .lock-time,
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .lock-date,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .phone-lock-header,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .lock-time,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .lock-date {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 2. Photo Wallpaper Contrast Shield: High-legibility drop-shadow & crisp whites */
+.m3-phone-canvas.has-photo-wallpaper .phone-lock-header,
+.m3-phone-canvas.has-photo-wallpaper .lock-time,
+.m3-phone-canvas.has-photo-wallpaper .lock-date {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 0 2px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* 3. Timetable Grid Title Bar */
+.m3-phone-canvas:not(.has-photo-wallpaper) .lock-grid-title-bar,
+.m3-phone-canvas:not(.has-photo-wallpaper) #lock-title-text {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .lock-grid-title-bar,
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) #lock-title-text,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .lock-grid-title-bar,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) #lock-title-text {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+.m3-phone-canvas.has-photo-wallpaper .lock-grid-title-bar,
+.m3-phone-canvas.has-photo-wallpaper #lock-title-text {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* 4. Timetable Grid Header (Days) & Time Column (Hours) */
+.m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-header,
+.m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-time {
+  color: #1E293B !important;
+  font-weight: 800 !important;
+}
+
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-header,
+body.dark-mode .m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-time,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-header,
+.theme-dark .m3-phone-canvas:not(.has-photo-wallpaper) .exact-grid-cell-time {
+  color: #F8FAFC !important;
+  font-weight: 800 !important;
+}
+
+.m3-phone-canvas.has-photo-wallpaper .exact-grid-cell-header,
+.m3-phone-canvas.has-photo-wallpaper .exact-grid-cell-time {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 5. Course Cards Text High Contrast Shield */
+.exact-course-card {
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.exact-card-code {
+  font-weight: 900 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.exact-card-type,
+.exact-card-room,
+.exact-card-lecturer,
+.exact-card-group,
+.exact-card-time {
+  font-weight: 700 !important;
+}
+
+
+
+
+body.theme-style-default.dark-mode #left-sidebar,
+body.theme-style-default.dark-mode #right-sidebar,
+body.theme-style-default.theme-dark #left-sidebar,
+body.theme-style-default.theme-dark #right-sidebar,
 body.theme-style-default.dark-mode #header-desktop-bar,
 body.theme-style-default.dark-mode #floating-undo-redo-row,
 body.theme-style-default.dark-mode #bottom-floating-pill-bar,
@@ -10769,32 +10996,76 @@ body.theme-style-default.dark-mode .card-expand-header {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* ── Clear All & Settings buttons in Default Style ── */
-body.theme-style-default #btn-clear-all {
-  background: #FEE2E2 !important;
-  border: 1px solid #FECACA !important;
+/* ── Reset Buttons & Action Tonal Buttons in Default Style ── */
+body.theme-style-default #btn-reset-theme,
+body.theme-style-default #btn-reset-layout,
+.m3-button-tonal {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.08) !important;
-  color: #DC2626 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+body.theme-style-default #btn-reset-theme:hover,
+body.theme-style-default #btn-reset-layout:hover,
+.m3-button-tonal:hover {
+  background: #E2E8F0 !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.theme-style-default.dark-mode #btn-reset-theme,
+body.theme-style-default.dark-mode #btn-reset-layout,
+body.dark-mode .m3-button-tonal {
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94A3B8 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.theme-style-default.dark-mode #btn-reset-theme:hover,
+body.theme-style-default.dark-mode #btn-reset-layout:hover,
+body.dark-mode .m3-button-tonal:hover {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #F8FAFC !important;
+}
+
+/* ── Clear All & Settings buttons in Default Style ── */
+body.theme-style-default #btn-clear-all {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  color: #64748B !important;
   text-shadow: none !important;
   transform: none !important;
 }
 
 body.theme-style-default #btn-clear-all:hover {
-  background: #FCA5A5 !important;
-  border-color: #F87171 !important;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.18) !important;
+  background: #FEE2E2 !important;
+  border-color: #FECACA !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15) !important;
+  color: #DC2626 !important;
   transform: none !important;
 }
 
 body.theme-style-default.dark-mode #btn-clear-all {
-  background: rgba(220, 38, 38, 0.15) !important;
-  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+  background: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
-  color: #FCA5A5 !important;
+  color: #94A3B8 !important;
   text-shadow: none !important;
   transform: none !important;
 }
@@ -10803,6 +11074,7 @@ body.theme-style-default.dark-mode #btn-clear-all:hover {
   background: rgba(220, 38, 38, 0.25) !important;
   border-color: rgba(220, 38, 38, 0.5) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  color: #FCA5A5 !important;
   transform: none !important;
 }
 
@@ -10843,8 +11115,7 @@ body.theme-style-default.dark-mode #btn-preset-menu-trigger:hover {
 /* ── Inner Theme Panels & Toggles in Default Style ── */
 body.theme-style-default .theme-card-inner,
 body.theme-style-default .layout-card-inner {
-  background: var(--m3-sys-color-primary-container, #EFF6FF) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
@@ -10852,8 +11123,8 @@ body.theme-style-default .layout-card-inner {
 
 body.theme-style-default.dark-mode .theme-card-inner,
 body.theme-style-default.dark-mode .layout-card-inner {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: none !important;
 }
 
@@ -11358,7 +11629,7 @@ body.dark-mode .class-item-card.highlight-target-course,
   width: calc(100% - 32px) !important;
   max-width: calc(100% - 32px) !important;
   box-sizing: border-box !important;
-  z-index: 35;
+  z-index: 9999 !important;
   pointer-events: none;
   display: flex;
   justify-content: flex-end;
@@ -11373,13 +11644,14 @@ body.dark-mode .class-item-card.highlight-target-course,
   background: #FFFFFF;
   border: 1px solid rgba(226, 232, 240, 0.95);
   box-shadow: 
-    0 4px 14px -2px rgba(15, 23, 42, 0.12),
-    0 10px 25px -4px rgba(15, 23, 42, 0.08),
+    0 8px 24px -4px rgba(15, 23, 42, 0.16),
+    0 2px 8px rgba(15, 23, 42, 0.06),
     inset 0 1px 1px 0 #FFFFFF;
   overflow: hidden;
   box-sizing: border-box;
   transform-origin: right center;
   pointer-events: auto;
+  z-index: 9999 !important;
   transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s ease,
               background-color 0.2s ease,
@@ -11396,8 +11668,8 @@ body.dark-mode .class-item-card.highlight-target-course,
 .course-search-widget.is-collapsed:hover {
   transform: scale(1.06) translateY(-1px);
   box-shadow: 
-    0 6px 18px -2px rgba(15, 23, 42, 0.16),
-    0 14px 30px -4px rgba(15, 23, 42, 0.10);
+    0 10px 28px -2px rgba(15, 23, 42, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.12);
 }
 
 .course-search-widget.is-collapsed:active {
@@ -11410,8 +11682,8 @@ body.dark-mode .class-item-card.highlight-target-course,
   min-width: 100% !important;
   max-width: 100% !important;
   box-shadow: 
-    0 12px 32px -4px rgba(15, 23, 42, 0.16),
-    0 4px 12px rgba(15, 23, 42, 0.06),
+    0 14px 36px -4px rgba(15, 23, 42, 0.22),
+    0 6px 16px rgba(15, 23, 42, 0.08),
     inset 0 1px 1px #FFFFFF;
 }
 
@@ -11430,7 +11702,7 @@ body.dark-mode .class-item-card.highlight-target-course,
   outline: none !important;
   cursor: pointer;
   padding: 0 !important;
-  z-index: 2;
+  z-index: 10;
   transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
@@ -11462,6 +11734,8 @@ body.dark-mode .class-item-card.highlight-target-course,
   bottom: 0;
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
@@ -11478,35 +11752,53 @@ body.dark-mode .class-item-card.highlight-target-course,
   transition: opacity 0.12s ease 0s;
 }
 
+.search-input-leading-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  pointer-events: none;
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+  z-index: 3;
+}
+
+/* Input element inside morphing search container */
+.search-widget-expanded-content input#course-search-input,
 .search-floating-input {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  padding-left: 38px !important;
-  padding-right: 60px !important;
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
-  font-size: 16px !important; /* Minimum 16px prevents mobile browsers (iOS/Chrome) from automatically zooming and shifting the entire viewport upward! */
+  padding-left: 40px !important;
+  padding-right: 68px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 13.5px !important;
+  line-height: 44px !important;
   font-weight: 600 !important;
   color: #0F172A !important;
-  height: 100% !important;
+  height: 44px !important;
   width: 100% !important;
+  box-sizing: border-box !important;
   touch-action: manipulation !important;
 }
 
+.search-widget-expanded-content input#course-search-input::placeholder,
 .search-floating-input::placeholder {
   color: #94A3B8 !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 13.5px !important;
 }
 
 /* Active Search Indicator Dot on Circular Button */
 .course-search-widget.is-collapsed .search-widget-trigger-btn.has-query::after {
   content: '';
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 6px;
+  right: 6px;
   width: 9px;
   height: 9px;
   border-radius: 9999px;
@@ -11526,7 +11818,7 @@ body.theme-style-glass .course-search-widget {
   -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
   box-shadow: 
-    0 8px 24px -4px rgba(15, 23, 42, 0.12),
+    0 8px 24px -4px rgba(15, 23, 42, 0.14),
     inset 0 1.5px 2px 0 #FFFFFF,
     inset calc(var(--glass-dispersion, 7) * 0.25px) 0 2px rgba(96, 165, 250, 0.35),
     inset calc(var(--glass-dispersion, 7) * -0.25px) 0 2px rgba(244, 114, 182, 0.3) !important;
@@ -11534,17 +11826,17 @@ body.theme-style-glass .course-search-widget {
 
 body.theme-style-glass .course-search-widget.is-expanded {
   box-shadow: 
-    0 16px 36px -6px rgba(15, 23, 42, 0.16),
+    0 16px 36px -6px rgba(15, 23, 42, 0.20),
     inset 0 1.5px 2px 0 #FFFFFF !important;
 }
 
-/* Dark Mode - Solid */
+/* Dark Mode - Solid & Glass */
 body.dark-mode .course-search-widget,
 .theme-dark .course-search-widget {
   background: #1E293B !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.45),
+    0 10px 28px rgba(0, 0, 0, 0.55),
     inset 0 1px 1.5px rgba(255, 255, 255, 0.12) !important;
 }
 
@@ -11554,12 +11846,22 @@ body.dark-mode .search-widget-trigger-btn svg,
   stroke: #F8FAFC !important;
 }
 
+body.dark-mode .search-input-leading-icon,
+.theme-dark .search-input-leading-icon {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+}
+
+body.dark-mode .search-widget-expanded-content input#course-search-input,
 body.dark-mode .search-floating-input,
+.theme-dark .search-widget-expanded-content input#course-search-input,
 .theme-dark .search-floating-input {
   color: #F8FAFC !important;
 }
 
+body.dark-mode .search-widget-expanded-content input#course-search-input::placeholder,
 body.dark-mode .search-floating-input::placeholder,
+.theme-dark .search-widget-expanded-content input#course-search-input::placeholder,
 .theme-dark .search-floating-input::placeholder {
   color: #64748B !important;
 }

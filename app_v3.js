@@ -545,8 +545,53 @@ class SchedullyApp {
       btnThemeToggle.setAttribute('title', resolvedMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
     }
 
-    const paletteGroup = THEME_PALETTES[resolvedMode] || THEME_PALETTES.light;
-    const selectedTheme = paletteGroup[this.currentPalette] || paletteGroup.indigo;
+    let paletteGroup = THEME_PALETTES[resolvedMode] || THEME_PALETTES.light;
+    let selectedTheme = paletteGroup[this.currentPalette] || paletteGroup.indigo;
+
+    const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
+
+    // If Photo Wallpaper is active, synthesize a fully adaptive palette from the dominant wallpaper color
+    if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
+      const primaryHex = this.wallpaperSwatches[0];
+      const isDarkHex = this._isColorDark(primaryHex);
+      let pr = 37, pg = 99, pb = 235;
+      if (primaryHex.startsWith('#') && primaryHex.length === 7) {
+        pr = parseInt(primaryHex.slice(1, 3), 16) || 37;
+        pg = parseInt(primaryHex.slice(3, 5), 16) || 99;
+        pb = parseInt(primaryHex.slice(5, 7), 16) || 235;
+      }
+
+      const onPrimaryHex = isDarkHex ? '#FFFFFF' : '#0F172A';
+      const adaptiveBg = resolvedMode === 'dark'
+        ? `rgba(${Math.max(10, Math.round(pr * 0.10))}, ${Math.max(15, Math.round(pg * 0.10))}, ${Math.max(25, Math.round(pb * 0.10))}, 1)`
+        : `rgba(${Math.min(255, Math.round(246 + (pr - 128) * 0.05))}, ${Math.min(255, Math.round(248 + (pg - 128) * 0.05))}, ${Math.min(255, Math.round(252 + (pb - 128) * 0.05))}, 1)`;
+      const adaptiveSurface = resolvedMode === 'dark'
+        ? `rgba(${Math.max(14, Math.round(pr * 0.14 + 10))}, ${Math.max(20, Math.round(pg * 0.14 + 12))}, ${Math.max(32, Math.round(pb * 0.14 + 16))}, 0.90)`
+        : '#FFFFFF';
+      const adaptiveVariant = resolvedMode === 'dark'
+        ? `rgba(${Math.max(20, Math.round(pr * 0.18 + 15))}, ${Math.max(28, Math.round(pg * 0.18 + 18))}, ${Math.max(44, Math.round(pb * 0.18 + 22))}, 1)`
+        : `rgba(${pr}, ${pg}, ${pb}, 0.12)`;
+      const adaptiveGridSurface = resolvedMode === 'dark'
+        ? `rgba(${Math.max(12, Math.round(pr * 0.12 + 8))}, ${Math.max(18, Math.round(pg * 0.12 + 10))}, ${Math.max(30, Math.round(pb * 0.12 + 14))}, 0.80)`
+        : '#FFFFFF';
+
+      selectedTheme = {
+        top: primaryHex,
+        bottom: primaryHex + (resolvedMode === 'dark' ? '30' : '18'),
+        bg: adaptiveBg,
+        surface: adaptiveSurface,
+        variant: adaptiveVariant,
+        defaultBg: adaptiveBg,
+        defaultHeader: primaryHex,
+        defaultSurface: adaptiveGridSurface,
+        text: resolvedMode === 'dark' ? '#F8FAFC' : '#0F172A',
+        subtext: resolvedMode === 'dark' ? '#94A3B8' : '#475569',
+        outline: resolvedMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        onPrimary: onPrimaryHex,
+        swatches: this.wallpaperSwatches,
+        courseSwatches: this.wallpaperSwatches.slice(0, 6)
+      };
+    }
 
     const root = document.documentElement;
     root.style.setProperty('--m3-sys-color-background', selectedTheme.bg);
@@ -577,7 +622,6 @@ class SchedullyApp {
     });
 
     // Apply 3 distinct tone colors for Wallpaper Background, Header, and Grid Surface
-    const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
     if (!this.userHasPickedBgColor && !hasPhotoWallpaper) {
       this.phoneCanvas.style.backgroundColor = selectedTheme.defaultBg || selectedTheme.bg;
     }
@@ -627,11 +671,48 @@ class SchedullyApp {
       this.classes[0].customColor = selectedTheme.courseSwatches[0];
     }
 
+    // If Photo Wallpaper is active, seamlessly adapt the app's primary color & container to the extracted wallpaper palette
+    if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
+      const primaryHex = this.wallpaperSwatches[0];
+      const isDarkHex = this._isColorDark(primaryHex);
+      const onPrimaryHex = isDarkHex ? '#FFFFFF' : '#0F172A';
+      root.style.setProperty('--m3-sys-color-primary', primaryHex);
+      root.style.setProperty('--m3-sys-color-primary-container', primaryHex + (resolvedMode === 'dark' ? '30' : '18'));
+      root.style.setProperty('--m3-sys-color-on-primary', onPrimaryHex);
+    }
+
     // Auto-check lockscreen clock contrast on theme change
     this.updateClockContrast(selectedTheme.bg);
 
     // Imperatively push primary color to all hardcoded-blue elements
-    this.applyDynamicThemeToElements(selectedTheme);
+    if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
+      const primaryHex = this.wallpaperSwatches[0];
+      let pr = 37, pg = 99, pb = 235;
+      if (primaryHex.startsWith('#') && primaryHex.length === 7) {
+        pr = parseInt(primaryHex.slice(1, 3), 16) || 37;
+        pg = parseInt(primaryHex.slice(3, 5), 16) || 99;
+        pb = parseInt(primaryHex.slice(5, 7), 16) || 235;
+      }
+      const wallpaperDotTint = resolvedMode === 'dark'
+        ? `rgba(${pr}, ${pg}, ${pb}, 0.25)`
+        : `rgba(${pr}, ${pg}, ${pb}, 0.22)`;
+      const wallpaperBgTint = selectedTheme.bg;
+
+      root.style.setProperty('--dot-matrix-color', wallpaperDotTint);
+      root.style.setProperty('--m3-sys-color-bg', wallpaperBgTint);
+      root.style.setProperty('--glass-dispersion-cyan', `rgba(${pr}, ${pg}, ${pb}, 0.35)`);
+      root.style.setProperty('--glass-dispersion-pink', `rgba(${pr}, ${pg}, ${pb}, 0.20)`);
+
+      this.applyDynamicThemeToElements({
+        ...selectedTheme,
+        isWallpaperAdaptive: true,
+        wallpaperDotTint,
+        wallpaperBgTint
+      });
+    } else {
+      root.style.setProperty('--dot-matrix-color', resolvedMode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(15, 23, 42, 0.08)');
+      this.applyDynamicThemeToElements(selectedTheme);
+    }
 
     this.renderTimetableGrid();
     this.renderClassList();
@@ -671,8 +752,13 @@ class SchedullyApp {
       document.body.style.backgroundColor = bg;
       const mainEl = document.querySelector('main');
       if (mainEl) {
-        mainEl.style.backgroundColor = bg;
-        mainEl.style.setProperty('--dot-matrix-color', 'rgba(255, 255, 255, 0.09)');
+        if (theme.isWallpaperAdaptive) {
+          mainEl.style.backgroundColor = theme.wallpaperBgTint || bg;
+          mainEl.style.setProperty('--dot-matrix-color', theme.wallpaperDotTint || 'rgba(255, 255, 255, 0.12)');
+        } else {
+          mainEl.style.backgroundColor = bg;
+          mainEl.style.setProperty('--dot-matrix-color', 'rgba(255, 255, 255, 0.09)');
+        }
       }
 
       const leftSidebar  = document.getElementById('left-sidebar');
@@ -859,12 +945,17 @@ class SchedullyApp {
         btn.querySelectorAll('svg').forEach(svg => svg.style.color = textColor);
       });
     } else {
-      // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ LIGHT MODE: reset layout to neutral whites ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+      // LIGHT MODE: reset layout to neutral whites with adaptive wallpaper tinting if active
       document.body.style.backgroundColor = '';
       const mainEl = document.querySelector('main');
       if (mainEl) {
-        mainEl.style.backgroundColor = '';
-        mainEl.style.setProperty('--dot-matrix-color', 'rgba(15, 23, 42, 0.08)');
+        if (theme.isWallpaperAdaptive) {
+          mainEl.style.backgroundColor = theme.wallpaperBgTint || '#F6F8FB';
+          mainEl.style.setProperty('--dot-matrix-color', theme.wallpaperDotTint || 'rgba(15, 23, 42, 0.08)');
+        } else {
+          mainEl.style.backgroundColor = '';
+          mainEl.style.setProperty('--dot-matrix-color', 'rgba(15, 23, 42, 0.08)');
+        }
       }
 
       const leftSidebar  = document.getElementById('left-sidebar');
@@ -1028,13 +1119,31 @@ class SchedullyApp {
     }
   }
 
-  // Helper: detect if a hex color is "dark" (luminance < 0.25)
-  _isColorDark(hex) {
-    if (!hex || !hex.startsWith('#')) return false;
-    const r = parseInt(hex.slice(1,3), 16) / 255;
-    const g = parseInt(hex.slice(3,5), 16) / 255;
-    const b = parseInt(hex.slice(5,7), 16) / 255;
-    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  // Helper: detect if a hex or rgb/rgba color is "dark" (luminance < 0.25)
+  _isColorDark(colorStr) {
+    if (!colorStr) return false;
+    let r = 255, g = 255, b = 255;
+    if (typeof colorStr === 'string' && colorStr.startsWith('#')) {
+      if (colorStr.length === 7) {
+        r = parseInt(colorStr.slice(1, 3), 16) || 0;
+        g = parseInt(colorStr.slice(3, 5), 16) || 0;
+        b = parseInt(colorStr.slice(5, 7), 16) || 0;
+      } else if (colorStr.length === 4) {
+        r = parseInt(colorStr[1] + colorStr[1], 16) || 0;
+        g = parseInt(colorStr[2] + colorStr[2], 16) || 0;
+        b = parseInt(colorStr[3] + colorStr[3], 16) || 0;
+      }
+    } else if (typeof colorStr === 'string' && colorStr.startsWith('rgb')) {
+      const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (match) {
+        r = parseInt(match[1], 10) || 0;
+        g = parseInt(match[2], 10) || 0;
+        b = parseInt(match[3], 10) || 0;
+      }
+    } else {
+      return false;
+    }
+    const lum = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
     return lum < 0.25;
   }
 
@@ -2030,6 +2139,7 @@ class SchedullyApp {
 
         const imgData = ctx.getImageData(0, 0, width, height).data;
         const colorBuckets = {};
+        const hueBuckets = {}; // Group into 12 hue segments: Red, Orange, Yellow, Chartreuse, Green, Spring, Cyan, Azure, Blue, Violet, Magenta, Rose
         let topLuminanceSum = 0;
         let topPixelCount = 0;
 
@@ -2050,21 +2160,46 @@ class SchedullyApp {
             topPixelCount++;
           }
 
-          // Quantize to bucket similar shades
-          const qr = Math.round(r / 28) * 28;
-          const qg = Math.round(g / 28) * 28;
-          const qb = Math.round(b / 28) * 28;
+          // Quantize RGB to bucket similar shades
+          const qr = Math.round(r / 24) * 24;
+          const qg = Math.round(g / 24) * 24;
+          const qb = Math.round(b / 24) * 24;
           const key = `${qr},${qg},${qb}`;
 
           const max = Math.max(r, g, b);
           const min = Math.min(r, g, b);
-          const sat = (max === 0) ? 0 : (max - min) / max;
+          const delta = max - min;
+          const sat = (max === 0) ? 0 : delta / max;
           const lum = (0.299 * r + 0.587 * g + 0.114 * b);
 
-          // Prefer rich, vibrant, authentic tones directly from wallpaper pixels
-          if (lum > 25 && lum < 235 && sat > 0.12) {
-            const weight = (sat * 3.0) + 1.2;
+          let h = 0;
+          if (delta !== 0) {
+            if (max === r) {
+              h = ((g - b) / delta) % 6;
+            } else if (max === g) {
+              h = (b - r) / delta + 2;
+            } else {
+              h = (r - g) / delta + 4;
+            }
+            h = Math.round(h * 60);
+            if (h < 0) h += 360;
+          }
+
+          // Sample vibrant, visible colors
+          if (lum > 20 && lum < 240 && sat > 0.08) {
+            const weight = 1 + (sat * 0.5);
             colorBuckets[key] = (colorBuckets[key] || 0) + weight;
+
+            // 12 hue segments (30 degrees each)
+            const hueSegment = Math.floor(h / 30);
+            if (!hueBuckets[hueSegment]) {
+              hueBuckets[hueSegment] = { totalWeight: 0, rSum: 0, gSum: 0, bSum: 0, keys: {} };
+            }
+            hueBuckets[hueSegment].totalWeight += weight;
+            hueBuckets[hueSegment].rSum += r * weight;
+            hueBuckets[hueSegment].gSum += g * weight;
+            hueBuckets[hueSegment].bSum += b * weight;
+            hueBuckets[hueSegment].keys[key] = (hueBuckets[hueSegment].keys[key] || 0) + weight;
           }
         }
 
@@ -2072,14 +2207,33 @@ class SchedullyApp {
 
         if (sorted.length > 0) {
           const parseRgb = (k) => k.split(',').map(Number);
-          const dominantRgb = parseRgb(sorted[0]);
           const rgbToHex = (r, g, b) => "#" + [r, g, b].map(x => {
             const hex = Math.min(255, Math.max(0, Math.round(x))).toString(16);
             return hex.length === 1 ? '0' + hex : hex;
           }).join('');
 
-          // Extract distinct authentic colors directly from the wallpaper
-          const courseSwatches = [];
+          // Find the dominant hue family across the whole wallpaper (e.g., Sky Blue, Cyan/Teal, Green)
+          const sortedHues = Object.keys(hueBuckets).sort((a, b) => hueBuckets[b].totalWeight - hueBuckets[a].totalWeight);
+          let dominantRgb = parseRgb(sorted[0]);
+
+          if (sortedHues.length > 0) {
+            const topHue = hueBuckets[sortedHues[0]];
+            const topKeyInHue = Object.keys(topHue.keys).sort((a, b) => topHue.keys[b] - topHue.keys[a])[0];
+            if (topKeyInHue) {
+              dominantRgb = parseRgb(topKeyInHue);
+            } else if (topHue.totalWeight > 0) {
+              dominantRgb = [
+                Math.round(topHue.rSum / topHue.totalWeight),
+                Math.round(topHue.gSum / topHue.totalWeight),
+                Math.round(topHue.bSum / topHue.totalWeight)
+              ];
+            }
+          }
+
+          const primaryHex = rgbToHex(dominantRgb[0], dominantRgb[1], dominantRgb[2]);
+
+          // Extract distinct authentic colors directly from the wallpaper, prioritizing the dominant color first
+          const courseSwatches = [primaryHex];
           for (let i = 0; i < sorted.length && courseSwatches.length < 8; i++) {
             const rgb = parseRgb(sorted[i]);
             const hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
@@ -2088,30 +2242,12 @@ class SchedullyApp {
               const pg = parseInt(picked.slice(3, 5), 16) || 0;
               const pb = parseInt(picked.slice(5, 7), 16) || 0;
               const d = Math.sqrt(Math.pow(rgb[0] - pr, 2) + Math.pow(rgb[1] - pg, 2) + Math.pow(rgb[2] - pb, 2));
-              return d >= 35;
+              return d >= 30;
             });
             if (isDistinct) {
               courseSwatches.push(hex);
             }
           }
-
-          // If wallpaper has fewer distinct colors, generate harmonious shades from the extracted dominant
-          if (courseSwatches.length < 8 && courseSwatches.length > 0) {
-            const [br, bg, bb] = parseRgb(sorted[0]);
-            const multipliers = [0.8, 1.2, 0.65, 1.35, 0.5, 1.5];
-            for (const mult of multipliers) {
-              if (courseSwatches.length >= 8) break;
-              const vr = Math.min(255, Math.max(0, Math.round(br * mult)));
-              const vg = Math.min(255, Math.max(0, Math.round(bg * mult)));
-              const vb = Math.min(255, Math.max(0, Math.round(bb * mult)));
-              const vHex = rgbToHex(vr, vg, vb);
-              if (!courseSwatches.includes(vHex)) {
-                courseSwatches.push(vHex);
-              }
-            }
-          }
-
-          const primaryHex = courseSwatches[0] || '#2563EB';
 
           // Auto-contrast Clock Color (Pure neutral deep graphite or pure white)
           const avgTopLum = topPixelCount > 0 ? (topLuminanceSum / topPixelCount) : 128;
@@ -2174,6 +2310,7 @@ class SchedullyApp {
             this.selectedColor = courseSwatches[0];
           }
 
+          this.applyThemeEngine();
           this.renderAll();
           if (!skipAutoStage) {
             this._stagePending();
@@ -5066,8 +5203,8 @@ class SchedullyApp {
            setTimeout(() => {
              if (this.btnClearAll) {
                this.btnClearAll.innerHTML = originalText;
-               this.btnClearAll.style.backgroundColor = "#fee2e2";
-               this.btnClearAll.style.color = "#b91c1c";
+               this.btnClearAll.style.backgroundColor = "";
+               this.btnClearAll.style.color = "";
              }
            }, 400);
          } catch (err) {
