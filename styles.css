@@ -9,10 +9,16 @@
   --m3-sys-color-outline: #E2E8F0;
 
   --m3-sys-color-primary: #2563EB;
-  --m3-sys-color-secondary: #3B82F6;
-  --m3-sys-color-tertiary: #10B981;
-  --m3-sys-color-primary-container: #DBEAFE;
   --m3-sys-color-on-primary: #FFFFFF;
+  --m3-sys-color-primary-container: #DBEAFE;
+
+  --m3-sys-color-secondary: #7C3AED;
+  --m3-sys-color-on-secondary: #FFFFFF;
+  --m3-sys-color-secondary-container: #EDE9FE;
+
+  --m3-sys-color-tertiary: #059669;
+  --m3-sys-color-on-tertiary: #FFFFFF;
+  --m3-sys-color-tertiary-container: #D1FAE5;
 
   --m3-sys-text-primary: #0F172A;
   --m3-sys-text-secondary: #475569;
@@ -2222,7 +2228,7 @@ body.dark-mode .pill-btn {
 }
 
 body.dark-mode .pill-btn.active {
-  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  background: #3B82F6 !important;
   color: #FFFFFF !important;
   box-shadow: 0 3px 12px rgba(59, 130, 246, 0.45) !important;
 }
@@ -9585,8 +9591,8 @@ body.dark-mode .support-tab-btn.active,
 .theme-dark .edit-course-time-format button.active,
 .theme-dark .time-mode-btn.active,
 .theme-dark .support-tab-btn.active {
-  background: var(--m3-sys-color-primary, #3B82F6) !important;
-  background-color: var(--m3-sys-color-primary, #3B82F6) !important;
+  background: #3B82F6 !important;
+  background-color: #3B82F6 !important;
   color: #FFFFFF !important;
   font-weight: 800 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
@@ -12538,9 +12544,53 @@ body.theme-style-glass.theme-dark #header-desktop-bar {
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ADAPTIVE SECONDARY & TERTIARY PALETTE APPLICATION
+   Wires --m3-sys-color-secondary & --m3-sys-color-tertiary
+   into the visible UI so the wallpaper 3-color palette shows
+   across the whole app, not just the primary accent.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Scrollbar thumb — secondary */
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--m3-sys-color-secondary, #7C3AED) 55%, transparent) !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--m3-sys-color-secondary, #7C3AED) !important;
+}
 
 
 
+/* Time-display-mode pill — secondary when active */
+.time-display-mode-container button.active,
+#time-display-mode-group button.active {
+  background: var(--m3-sys-color-secondary, #7C3AED) !important;
+  color: var(--m3-sys-color-on-secondary, #FFFFFF) !important;
+}
+body.dark-mode .time-display-mode-container button.active,
+body.dark-mode #time-display-mode-group button.active {
+  background: var(--m3-sys-color-secondary, #7C3AED) !important;
+  color: #FFFFFF !important;
+}
+
+/* Support / info tab buttons — tertiary when active */
+.support-tab-btn.active {
+  background: var(--m3-sys-color-tertiary, #059669) !important;
+  color: var(--m3-sys-color-on-tertiary, #FFFFFF) !important;
+}
+body.dark-mode .support-tab-btn.active {
+  background: var(--m3-sys-color-tertiary, #059669) !important;
+  color: #FFFFFF !important;
+}
+
+/* Focus ring — tertiary */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2.5px solid var(--m3-sys-color-tertiary, #059669) !important;
+  outline-offset: 2px;
+}
 
 
 

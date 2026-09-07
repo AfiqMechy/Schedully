@@ -225,7 +225,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=490">
+<link rel="stylesheet" href="styles.css?v=501">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -2750,13 +2750,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=488"></script>
+  <script src="app_v3.js?v=501"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=488').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=501').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
