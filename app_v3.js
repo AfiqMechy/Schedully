@@ -6234,9 +6234,23 @@ class SchedullyApp {
         menuDropdown?.classList.add('hidden');
         const presetName = this.presets[this.activePresetKey]?.name || 'Active Preset';
         if (confirm(`Reset preset "${presetName}"? This will clear all classes, wallpaper, and restore default styling.`)) {
+          if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
           this.classes = [];
-          this.removeWallpaper();
-          this.phoneCanvas.style.backgroundColor = '';
+          this.currentWallpaperData = null;
+          this.wallpaperSwatches = null;
+          this.wallpaperPrimary = null;
+          this.wallpaperSecondary = null;
+          this.wallpaperTertiary = null;
+          this.wallpaperHeader = null;
+          this.customHexColors = null;
+          this.historyUndoStack = [];
+          this.historyRedoStack = [];
+          this.updateHistoryButtonUI();
+          this.removeWallpaper(true);
+          if (this.phoneCanvas) {
+            this.phoneCanvas.style.backgroundColor = '';
+            this.phoneCanvas.className = 'm3-phone-canvas';
+          }
           this.applyHeaderColor('');
           this.applyFontColor('');
           
@@ -6268,10 +6282,21 @@ class SchedullyApp {
             this.presets[this.activePresetKey].classes = [];
             this.presets[this.activePresetKey].wallpaper = null;
             this.presets[this.activePresetKey].wallpaperSwatches = null;
+            this.presets[this.activePresetKey].wallpaperPrimary = null;
+            this.presets[this.activePresetKey].wallpaperSecondary = null;
+            this.presets[this.activePresetKey].wallpaperTertiary = null;
+            this.presets[this.activePresetKey].wallpaperHeader = null;
             this.presets[this.activePresetKey].settings = freshSettings;
           }
 
-          this._stagePending();
+          localStorage.removeItem('schedully_wallpaper_data');
+          localStorage.removeItem('schedully_wallpaper_swatches');
+          localStorage.removeItem('schedully_wallpaper_primary');
+          localStorage.removeItem('schedully_wallpaper_secondary');
+          localStorage.removeItem('schedully_wallpaper_tertiary');
+          localStorage.removeItem('schedully_wallpaper_header');
+
+          this._stagePending(true);
           this.renderAll();
         }
       });
@@ -6415,8 +6440,10 @@ class SchedullyApp {
         profileSettingsMenu?.classList.add('hidden');
         if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
 
-        const confirmed = confirm("Are you sure you want to reset your account data in the cloud to fresh defaults? This will clear any broken test presets and classes.");
+        const confirmed = confirm("Are you sure you want to reset your account data in the cloud to fresh defaults? This will clear any presets, wallpaper, and classes.");
         if (!confirmed) return;
+
+        if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
 
         const freshSettings = {
           tableCornerStyle: 'rounded',
@@ -6441,19 +6468,62 @@ class SchedullyApp {
           gridEndHour: 20
         };
 
-        // 1. Reset Local Storage
+        // 1. Reset All Local Storage
         localStorage.removeItem('schedully_presets');
         localStorage.removeItem('schedully_active_preset');
         localStorage.removeItem('schedully_classes');
         localStorage.removeItem('schedully_wallpaper_data');
+        localStorage.removeItem('schedully_wallpaper_swatches');
+        localStorage.removeItem('schedully_wallpaper_primary');
+        localStorage.removeItem('schedully_wallpaper_secondary');
+        localStorage.removeItem('schedully_wallpaper_tertiary');
+        localStorage.removeItem('schedully_wallpaper_header');
+        localStorage.removeItem('schedully_theme_palette');
+        localStorage.removeItem('schedully_theme_mode');
+        localStorage.removeItem('schedully_axis_mode');
+        localStorage.removeItem('schedully_time_display_mode');
+        localStorage.removeItem('schedully_screen_ratio');
+        localStorage.removeItem('schedully_active_device');
+        localStorage.removeItem('schedully_zoom_scale');
 
-        // 2. Reset In-Memory App State
+        // 2. Reset In-Memory App State Completely
         this.classes = [];
+        this.currentWallpaperData = null;
+        this.wallpaperSwatches = null;
+        this.wallpaperPrimary = null;
+        this.wallpaperSecondary = null;
+        this.wallpaperTertiary = null;
+        this.wallpaperHeader = null;
+        this.customHexColors = null;
+        this.historyUndoStack = [];
+        this.historyRedoStack = [];
+        this._hasUnsavedCloudChanges = false;
+        this.updateHistoryButtonUI();
+        this.removeWallpaper(true);
+        if (this.phoneCanvas) {
+          this.phoneCanvas.style.backgroundColor = '';
+          this.phoneCanvas.className = 'm3-phone-canvas';
+        }
+        this.applyHeaderColor('');
+        this.applyFontColor('');
+        this.currentPalette = 'nord';
+        this.currentMode = 'light';
+        this.applyThemeEngine();
+
         this.presets = {
-          default: { name: 'Default', classes: [], settings: freshSettings, wallpaper: null, wallpaperSwatches: null }
+          default: {
+            name: 'Default',
+            classes: [],
+            settings: freshSettings,
+            wallpaper: null,
+            wallpaperSwatches: null,
+            wallpaperPrimary: null,
+            wallpaperSecondary: null,
+            wallpaperTertiary: null,
+            wallpaperHeader: null
+          }
         };
         this.activePresetKey = 'default';
-        this.removeWallpaper();
         this.applyPresetSettings(freshSettings);
         this.updatePresetSelectDropdown();
         this.renderAll();
@@ -6462,6 +6532,11 @@ class SchedullyApp {
         if (window.schedullyFirebase?.currentUser) {
           await window.schedullyFirebase.resetUserData(freshSettings);
         }
+
+        // Cache the clean state in local storage so refreshes don't pull ghost data
+        localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
+        localStorage.setItem('schedully_active_preset', 'default');
+        localStorage.setItem('schedully_classes', JSON.stringify([]));
 
         this.markSaved();
         alert("Account reset successfully! Fresh default workspace is ready.");
@@ -6473,6 +6548,8 @@ class SchedullyApp {
         profileSettingsMenu?.classList.add('hidden');
         if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
 
+        if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
+
         await window.schedullyFirebase?.logout();
         if (btnSaveCloud) btnSaveCloud.style.display = 'none';
 
@@ -6481,13 +6558,50 @@ class SchedullyApp {
         localStorage.removeItem('schedully_active_preset');
         localStorage.removeItem('schedully_classes');
         localStorage.removeItem('schedully_wallpaper_data');
+        localStorage.removeItem('schedully_wallpaper_swatches');
+        localStorage.removeItem('schedully_wallpaper_primary');
+        localStorage.removeItem('schedully_wallpaper_secondary');
+        localStorage.removeItem('schedully_wallpaper_tertiary');
+        localStorage.removeItem('schedully_wallpaper_header');
 
         this.classes = [];
+        this.currentWallpaperData = null;
+        this.wallpaperSwatches = null;
+        this.wallpaperPrimary = null;
+        this.wallpaperSecondary = null;
+        this.wallpaperTertiary = null;
+        this.wallpaperHeader = null;
+        this.customHexColors = null;
+        this.historyUndoStack = [];
+        this.historyRedoStack = [];
+        this._hasUnsavedCloudChanges = false;
+        this.updateHistoryButtonUI();
+        this.removeWallpaper(true);
+        if (this.phoneCanvas) {
+          this.phoneCanvas.style.backgroundColor = '';
+          this.phoneCanvas.className = 'm3-phone-canvas';
+        }
+        this.applyHeaderColor('');
+        this.applyFontColor('');
+        this.currentPalette = 'nord';
+        this.currentMode = 'light';
+        this.applyThemeEngine();
+
+        const freshSettings = this.getPresetSettings();
         this.presets = {
-          default: { name: 'Default', classes: [], settings: this.getPresetSettings(), wallpaper: null, wallpaperSwatches: null }
+          default: {
+            name: 'Default',
+            classes: [],
+            settings: freshSettings,
+            wallpaper: null,
+            wallpaperSwatches: null,
+            wallpaperPrimary: null,
+            wallpaperSecondary: null,
+            wallpaperTertiary: null,
+            wallpaperHeader: null
+          }
         };
         this.activePresetKey = 'default';
-        this.removeWallpaper();
         this.updatePresetSelectDropdown();
         this.renderAll();
       });

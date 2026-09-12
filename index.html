@@ -225,11 +225,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=507">
+<link rel="stylesheet" href="styles.css?v=509">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
-<script src="firebase-config.js?v=507" defer></script>
+<script src="firebase-config.js?v=509" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -2279,7 +2279,7 @@
   <div id="added-classes-list" class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-3" style="padding-bottom: 74px;"></div>
   
   <!-- Single Morphing Floating Search Widget (iOS Fluid Morph: Circle <-> Expanded Pill) -->
-  <div id="course-search-dock" class="hidden absolute z-50 flex items-center justify-end">
+  <div id="course-search-dock" class="hidden absolute z-[999999] flex items-center justify-end">
     <div id="course-search-container" class="course-search-widget is-collapsed" role="search">
       <!-- Circular Trigger Search Icon (visible when collapsed) -->
       <button id="btn-floating-course-search" type="button" class="search-widget-trigger-btn" title="Search courses" aria-label="Search courses">
@@ -2750,13 +2750,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=507"></script>
+  <script src="app_v3.js?v=509"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=507').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=509').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

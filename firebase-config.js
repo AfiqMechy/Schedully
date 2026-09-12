@@ -178,17 +178,30 @@ class SchedullyFirebaseService {
             classes: [],
             wallpaper: null,
             wallpaperSwatches: null,
+            wallpaperPrimary: null,
+            wallpaperSecondary: null,
+            wallpaperTertiary: null,
+            wallpaperHeader: null,
             settings: freshPresetSettings || {}
           }
         },
         activePreset: 'default',
+        wallpaper: null,
+        wallpaperSwatches: null,
+        wallpaperPrimary: null,
+        wallpaperSecondary: null,
+        wallpaperTertiary: null,
+        wallpaperHeader: null,
         settings: freshPresetSettings || {},
+        language: 'en',
+        activeDevice: 'phone',
+        zoomScale: 0.85,
         updatedAt: new Date().toISOString(),
         userEmail: this.currentUser.email,
         displayName: this.currentUser.displayName
       };
       await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
-      setTimeout(() => { this._isSaving = false; }, 1000);
+      setTimeout(() => { this._isSaving = false; }, 1500);
       return true;
     } catch (error) {
       this._isSaving = false;
