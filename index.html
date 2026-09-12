@@ -225,11 +225,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=501">
+<link rel="stylesheet" href="styles.css?v=507">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
+<script src="firebase-config.js?v=507" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -1826,12 +1826,12 @@
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
           <span id="nudge-label-minus">-30m</span>
         </button>
-        <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+        <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
         <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Shift Later">
           <span id="nudge-label-plus">+30m</span>
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
         </button>
-        <div class="h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+        <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
         <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
           <span data-i18n="edit">Edit</span>
@@ -2750,13 +2750,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=501"></script>
+  <script src="app_v3.js?v=507"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=501').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=507').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

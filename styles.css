@@ -116,6 +116,12 @@ body.dark-mode, .theme-dark {
    CPU never touches animated properties — zero jank.
 ───────────────────────────────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────────────────────────────
+   FULL GPU COMPOSITOR LAYER PROMOTION
+   Moves ALL animations onto the device GPU thread (Adreno/Mali/PowerVR).
+   CPU never touches animated properties — zero jank.
+───────────────────────────────────────────────────────────────────── */
+
 /* Sidebars: promoted permanently since they slide in/out often */
 #left-sidebar,
 #right-sidebar,
@@ -124,18 +130,38 @@ body.dark-mode, .theme-dark {
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
   contain: layout style;
 }
 
-/* Phone canvas preview: GPU promoted for smooth wallpaper render */
+/* Phone canvas preview & Scaler: GPU promoted for silky zoom & render */
+#canvas-scaler-container,
+#main-phone-wrapper,
 #phone-canvas,
+#phone-wallpaper-layer,
 #lock-timetable-container,
 .m3-lock-timetable-container {
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+}
+
+/* Floating bars, popovers, action pill, and dynamic navigation */
+#floating-controls-container,
+#header-desktop-bar,
+#mobile-export-bar,
+#mobile-export-dropdown,
+#canvas-controls-popover,
+#canvas-ratio-popover,
+#grid-course-action-pill,
+.glass-slider-thumb,
+.modal-overlay,
+.modal-container {
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  isolation: isolate;
 }
 
 /* Accordions & Cards: promoted only when they are active/animating */
@@ -145,6 +171,7 @@ body.dark-mode, .theme-dark {
   will-change: transform, opacity, max-height;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
 /* Buttons, swatches, palette dots: instant GPU response on tap */
@@ -159,11 +186,14 @@ body.dark-mode, .theme-dark {
 .btn-wallpaper-delete,
 .btn-resync-wallpaper,
 .card-expand-header,
-.sub-accordion-header {
+.sub-accordion-header,
+.action-pill-btn,
+.action-pill-icon-btn {
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  touch-action: manipulation;
 }
 
 /* Tactile Micro-Press Feedback (True Apple Haptic Spring Physics) */
@@ -179,8 +209,10 @@ body.dark-mode, .theme-dark {
 .btn-wallpaper-delete,
 .btn-resync-wallpaper,
 .dock-icon-circle,
-.stepper-btn {
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+.stepper-btn,
+.action-pill-btn,
+.action-pill-icon-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
 }
 
 .m3-button:active,
@@ -193,9 +225,11 @@ body.dark-mode, .theme-dark {
 .btn-wallpaper-action:active,
 .btn-wallpaper-delete:active,
 .dock-icon-btn:active .dock-icon-circle,
-.stepper-btn:active {
-  transform: scale(0.91) translateZ(0) !important;
-  transition-duration: 0.05s !important;
+.stepper-btn:active,
+.action-pill-btn:active,
+.action-pill-icon-btn:active {
+  transform: scale(0.94) translate3d(0, 0, 0) !important;
+  transition-duration: 0.04s !important;
 }
 
 .card-expand-header:active,
@@ -6178,8 +6212,16 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
 
 /* Popover Controls Card Spring Transition */
 #floating-controls-container {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translate3d(-50%, 0, 0) !important;
   bottom: max(14px, env(safe-area-inset-bottom, 14px)) !important;
   max-width: calc(100vw - 16px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  z-index: 30 !important;
+  pointer-events: none !important;
 }
 
 #canvas-controls-popover {
@@ -11642,6 +11684,12 @@ body.dark-mode .class-item-card.highlight-target-course,
   transition: bottom 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+#course-search-dock.is-expanded-dock,
+#course-search-dock:has(.is-expanded) {
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
+
 /* Single Morphing Container: Circle (44px) <-> Full-width Card Pill */
 .course-search-widget {
   position: relative;
@@ -11687,10 +11735,12 @@ body.dark-mode .class-item-card.highlight-target-course,
   width: 100% !important;
   min-width: 100% !important;
   max-width: 100% !important;
+  z-index: 10000 !important;
+  isolation: isolate;
   box-shadow: 
-    0 14px 36px -4px rgba(15, 23, 42, 0.22),
-    0 6px 16px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1px #FFFFFF;
+    0 18px 45px -4px rgba(15, 23, 42, 0.30),
+    0 8px 20px rgba(15, 23, 42, 0.12),
+    inset 0 1px 1px #FFFFFF !important;
 }
 
 /* Trigger Button: Fills widget when collapsed, hidden when expanded */
@@ -11951,6 +12001,37 @@ body.dark-mode.theme-style-glass .course-search-widget,
   z-index: 50 !important;
   white-space: nowrap !important;
   max-width: calc(100% - 16px) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dark-mode #grid-course-action-pill,
+.theme-dark #grid-course-action-pill,
+html.dark #grid-course-action-pill,
+body.theme-style-default.dark-mode #grid-course-action-pill,
+body.theme-style-glass.dark-mode #grid-course-action-pill,
+body.theme-style-bold.dark-mode #grid-course-action-pill,
+body.theme-style-monochrome.dark-mode #grid-course-action-pill,
+body.theme-style-clay.dark-mode #grid-course-action-pill,
+body.theme-style-retro.dark-mode #grid-course-action-pill,
+body.theme-style-pastel.dark-mode #grid-course-action-pill,
+body.theme-style-neon.dark-mode #grid-course-action-pill {
+  background: #1E293B !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75) !important;
+}
+
+#grid-course-action-pill .action-pill-divider {
+  height: 12px;
+  width: 1px;
+  background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+body.dark-mode #grid-course-action-pill .action-pill-divider,
+.theme-dark #grid-course-action-pill .action-pill-divider,
+html.dark #grid-course-action-pill .action-pill-divider {
+  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 #lock-timetable-container {
@@ -12036,25 +12117,62 @@ body.dark-mode.theme-style-glass .course-search-widget,
 }
 
 body.dark-mode .action-pill-btn,
-.theme-dark .action-pill-btn {
+.theme-dark .action-pill-btn,
+html.dark .action-pill-btn,
+body.dark-mode #grid-course-action-pill .action-pill-btn,
+.theme-dark #grid-course-action-pill .action-pill-btn,
+html.dark #grid-course-action-pill .action-pill-btn {
   color: #F8FAFC !important;
 }
 
 body.dark-mode .action-pill-btn svg,
-.theme-dark .action-pill-btn svg {
+.theme-dark .action-pill-btn svg,
+html.dark .action-pill-btn svg,
+body.dark-mode #grid-course-action-pill .action-pill-btn svg,
+.theme-dark #grid-course-action-pill .action-pill-btn svg,
+html.dark #grid-course-action-pill .action-pill-btn svg {
   color: #F8FAFC !important;
   stroke: #F8FAFC !important;
 }
 
 body.dark-mode .action-pill-btn:hover,
-.theme-dark .action-pill-btn:hover {
+.theme-dark .action-pill-btn:hover,
+html.dark .action-pill-btn:hover {
   background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .action-pill-icon-btn,
+.theme-dark .action-pill-icon-btn,
+html.dark .action-pill-icon-btn,
+body.dark-mode #grid-course-action-pill .action-pill-icon-btn,
+.theme-dark #grid-course-action-pill .action-pill-icon-btn,
+html.dark #grid-course-action-pill .action-pill-icon-btn {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode .action-pill-icon-btn svg,
+.theme-dark .action-pill-icon-btn svg,
+html.dark .action-pill-icon-btn svg,
+body.dark-mode #grid-course-action-pill .action-pill-icon-btn svg,
+.theme-dark #grid-course-action-pill .action-pill-icon-btn svg,
+html.dark #grid-course-action-pill .action-pill-icon-btn svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
 }
 
 body.dark-mode .action-pill-icon-btn:hover,
-.theme-dark .action-pill-icon-btn:hover {
+.theme-dark .action-pill-icon-btn:hover,
+html.dark .action-pill-icon-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #FFFFFF !important;
+}
+
+body.dark-mode .action-pill-icon-btn:hover svg,
+.theme-dark .action-pill-icon-btn:hover svg,
+html.dark .action-pill-icon-btn:hover svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 /* History Undo & Redo Capsule Styling */

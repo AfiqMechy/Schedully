@@ -1662,7 +1662,20 @@ class SchedullyApp {
     try {
       const savedWallpaper = localStorage.getItem('schedully_wallpaper_data');
       if (savedWallpaper) {
-        this.applyWallpaper(savedWallpaper, true);
+        let swatches = null;
+        try {
+          swatches = JSON.parse(localStorage.getItem('schedully_wallpaper_swatches') || 'null');
+        } catch (e) {}
+        if (swatches && Array.isArray(swatches) && swatches.length > 0) {
+          this.wallpaperSwatches = swatches;
+          this.wallpaperPrimary = localStorage.getItem('schedully_wallpaper_primary') || swatches[0];
+          this.wallpaperSecondary = localStorage.getItem('schedully_wallpaper_secondary') || swatches[1];
+          this.wallpaperTertiary = localStorage.getItem('schedully_wallpaper_tertiary') || swatches[2];
+          this.wallpaperHeader = localStorage.getItem('schedully_wallpaper_header') || null;
+          this.applyWallpaper(savedWallpaper, false); // Don't re-extract and overwrite shuffled swatches!
+        } else {
+          this.applyWallpaper(savedWallpaper, true);
+        }
       }
     } catch (e) {}
 
@@ -1671,8 +1684,13 @@ class SchedullyApp {
       if (!file) return;
 
       this.compressWallpaperImage(file, (compressedDataUrl) => {
+        this.wallpaperSwatches = null;
+        this.wallpaperPrimary = null;
+        this.wallpaperSecondary = null;
+        this.wallpaperTertiary = null;
+        this.wallpaperHeader = null;
         this.applyWallpaper(compressedDataUrl, true);
-        this._stagePending();
+        this._stagePending(true);
       });
     });
 
@@ -1728,7 +1746,7 @@ class SchedullyApp {
         setTimeout(() => {
           icon.style.transition = 'none';
           icon.style.transform = '';
-        }, 480);
+        }, 500);
       }
     });
   }
@@ -1771,12 +1789,11 @@ class SchedullyApp {
   }
 
   setWallpaperModeUI(isActive) {
-    const paletteRow = document.querySelector('#palette-picker-section .palette-row');
-    const badge = document.getElementById('palette-wallpaper-badge');
+    const paletteRow = document.getElementById('theme-palette-row');
+    const badge = document.getElementById('wallpaper-active-badge');
     const btnRandTheme = document.getElementById('btn-randomize-theme');
     const btnRandCourse = document.getElementById('btn-randomize-course-colors');
     const btnRandSchedule = document.getElementById('btn-randomize-colors');
-
     const quickAdaptiveRow = document.getElementById('toggle-quick-adaptive')?.closest('.opt-row');
 
     if (isActive) {
@@ -1870,6 +1887,19 @@ class SchedullyApp {
 
     if (shouldExtract) {
       this.extractColorsFromImage(dataUrl, isSwitchingPreset);
+    } else {
+      if (this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
+        document.querySelectorAll('.swatch-grid .swatch-dot').forEach((dot, idx) => {
+          if (this.wallpaperSwatches[idx]) {
+            dot.setAttribute('data-color', this.wallpaperSwatches[idx]);
+            dot.style.backgroundColor = this.wallpaperSwatches[idx];
+          }
+        });
+        if (this.wallpaperHeader) {
+          this.applyHeaderColor(this.wallpaperHeader);
+        }
+      }
+      this.applyThemeEngine();
     }
   }
 
@@ -3042,6 +3072,7 @@ class SchedullyApp {
     // Floating Circular Course Search Controls (Fluid iOS Single-Widget Morph)
     const openFloatingSearch = () => {
       if (!this.courseSearchContainer) return;
+      this.courseSearchDock?.classList.add('is-expanded-dock');
       this.courseSearchContainer.classList.remove('is-collapsed');
       this.courseSearchContainer.classList.add('is-expanded');
       if (this.courseSearchInput) {
@@ -3059,6 +3090,7 @@ class SchedullyApp {
 
     const closeFloatingSearch = () => {
       if (!this.courseSearchContainer) return;
+      this.courseSearchDock?.classList.remove('is-expanded-dock');
       this.courseSearchContainer.classList.remove('is-expanded');
       this.courseSearchContainer.classList.add('is-collapsed');
       if (this.courseSearchInput) {
@@ -3781,10 +3813,11 @@ class SchedullyApp {
       this.classes.forEach(c => {
         c.customColor = codeColorMap[c.code];
         c.color = codeColorMap[c.code];
+        c.isManualCustomColor = true;
       });
 
       this.renderAll();
-      this._stagePending();
+      this._stagePending(true);
     });
 
     // GLOBAL DEFAULT DISPLAY TIME TOGGLE IN ADD A COURSE CARD
@@ -4536,6 +4569,7 @@ class SchedullyApp {
         this.classes.forEach(c => {
           c.customColor = codeMap[c.code] || swatches[0];
           c.color = codeMap[c.code] || swatches[0];
+          c.isManualCustomColor = true;
         });
 
         // Update swatch picker dots in UI
@@ -4548,7 +4582,7 @@ class SchedullyApp {
 
         this.applyThemeEngine();
         this.renderAll();
-        this._stagePending();
+        this._stagePending(true);
         return;
       }
 
@@ -4557,6 +4591,7 @@ class SchedullyApp {
       const randomPalette = available[Math.floor(Math.random() * available.length)];
       if (randomPalette) {
         this.setPalette(randomPalette);
+        this._stagePending(true);
       }
     });
 
@@ -4589,10 +4624,11 @@ class SchedullyApp {
       this.classes.forEach(c => {
         c.customColor = codeColorMap[c.code];
         c.color = codeColorMap[c.code];
+        c.isManualCustomColor = true;
       });
 
-      this._stagePending();
       this.renderAll();
+      this._stagePending(true);
     });
 
     // Expandable Canvas Controls Popover Toggle
@@ -5967,17 +6003,39 @@ class SchedullyApp {
       if (stored) {
         this.presets = JSON.parse(stored);
       }
-      const active = localStorage.getItem('schedully_active_preset');
-      if (active && this.presets[active]) {
+      const active = localStorage.getItem('schedully_active_preset') || 'default';
+      if (active && this.presets && this.presets[active]) {
         this.activePresetKey = active;
         this.classes = this.presets[active].classes || [];
         if (this.presets[active].settings) {
           this.applyPresetSettings(this.presets[active].settings);
         }
-        const activeWallpaper = this.presets[active].wallpaper || null;
+        if (this.presets[active].wallpaperSwatches && Array.isArray(this.presets[active].wallpaperSwatches)) {
+          this.wallpaperSwatches = this.presets[active].wallpaperSwatches;
+        } else {
+          try {
+            const sw = JSON.parse(localStorage.getItem('schedully_wallpaper_swatches') || 'null');
+            if (Array.isArray(sw) && sw.length > 0) this.wallpaperSwatches = sw;
+          } catch (e) {}
+        }
+        if (this.presets[active].wallpaperPrimary || localStorage.getItem('schedully_wallpaper_primary')) {
+          this.wallpaperPrimary = this.presets[active].wallpaperPrimary || localStorage.getItem('schedully_wallpaper_primary');
+        }
+        if (this.presets[active].wallpaperSecondary || localStorage.getItem('schedully_wallpaper_secondary')) {
+          this.wallpaperSecondary = this.presets[active].wallpaperSecondary || localStorage.getItem('schedully_wallpaper_secondary');
+        }
+        if (this.presets[active].wallpaperTertiary || localStorage.getItem('schedully_wallpaper_tertiary')) {
+          this.wallpaperTertiary = this.presets[active].wallpaperTertiary || localStorage.getItem('schedully_wallpaper_tertiary');
+        }
+        if (this.presets[active].wallpaperHeader || localStorage.getItem('schedully_wallpaper_header')) {
+          this.wallpaperHeader = this.presets[active].wallpaperHeader || localStorage.getItem('schedully_wallpaper_header');
+        }
+
+        const activeWallpaper = this.presets[active].wallpaper || localStorage.getItem('schedully_wallpaper_data') || null;
         this.currentWallpaperData = activeWallpaper;
         if (activeWallpaper) {
-          this.applyWallpaper(activeWallpaper, true, true);
+          const hasExistingSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
+          this.applyWallpaper(activeWallpaper, !hasExistingSwatches, true);
         } else {
           this.removeWallpaper(true);
         }
@@ -6021,6 +6079,10 @@ class SchedullyApp {
             this.presets[this.activePresetKey].classes = [...this.classes];
             this.presets[this.activePresetKey].wallpaper = this.currentWallpaperData || this.presets[this.activePresetKey].wallpaper || null;
             this.presets[this.activePresetKey].wallpaperSwatches = this.wallpaperSwatches || null;
+            this.presets[this.activePresetKey].wallpaperPrimary = this.wallpaperPrimary || null;
+            this.presets[this.activePresetKey].wallpaperSecondary = this.wallpaperSecondary || null;
+            this.presets[this.activePresetKey].wallpaperTertiary = this.wallpaperTertiary || null;
+            this.presets[this.activePresetKey].wallpaperHeader = this.wallpaperHeader || null;
             this.presets[this.activePresetKey].settings = this.getPresetSettings();
           }
 
@@ -6038,15 +6100,14 @@ class SchedullyApp {
           this.currentWallpaperData = targetWallpaper;
 
           if (targetWallpaper) {
-            this.applyWallpaper(targetWallpaper, true, true);
-            if (this.presets[targetKey].wallpaperSwatches && Array.isArray(this.presets[targetKey].wallpaperSwatches)) {
+            const hasExistingSwatches = !!(this.presets[targetKey].wallpaperSwatches && this.presets[targetKey].wallpaperSwatches.length > 0);
+            this.applyWallpaper(targetWallpaper, !hasExistingSwatches, true);
+            if (hasExistingSwatches) {
               this.wallpaperSwatches = this.presets[targetKey].wallpaperSwatches;
-              this.classes.forEach((cls, idx) => {
-                if (!cls.isManualCustomColor) {
-                  cls.customColor = this.wallpaperSwatches[idx % this.wallpaperSwatches.length];
-                  cls.color = this.wallpaperSwatches[idx % this.wallpaperSwatches.length];
-                }
-              });
+              this.wallpaperPrimary = this.presets[targetKey].wallpaperPrimary || this.wallpaperSwatches[0];
+              this.wallpaperSecondary = this.presets[targetKey].wallpaperSecondary || this.wallpaperSwatches[1];
+              this.wallpaperTertiary = this.presets[targetKey].wallpaperTertiary || this.wallpaperSwatches[2];
+              this.wallpaperHeader = this.presets[targetKey].wallpaperHeader || null;
             }
           } else {
             this.removeWallpaper(true);
@@ -6514,16 +6575,45 @@ class SchedullyApp {
               }
               if (presetData.wallpaperSwatches && Array.isArray(presetData.wallpaperSwatches)) {
                 this.wallpaperSwatches = presetData.wallpaperSwatches;
+              } else if (data.wallpaperSwatches && Array.isArray(data.wallpaperSwatches)) {
+                this.wallpaperSwatches = data.wallpaperSwatches;
               }
+              if (presetData.wallpaperPrimary || data.wallpaperPrimary) {
+                this.wallpaperPrimary = presetData.wallpaperPrimary || data.wallpaperPrimary;
+              }
+              if (presetData.wallpaperSecondary || data.wallpaperSecondary) {
+                this.wallpaperSecondary = presetData.wallpaperSecondary || data.wallpaperSecondary;
+              }
+              if (presetData.wallpaperTertiary || data.wallpaperTertiary) {
+                this.wallpaperTertiary = presetData.wallpaperTertiary || data.wallpaperTertiary;
+              }
+              if (presetData.wallpaperHeader || data.wallpaperHeader) {
+                this.wallpaperHeader = presetData.wallpaperHeader || data.wallpaperHeader;
+              }
+
               if (presetData.wallpaper) {
-                this.applyWallpaper(presetData.wallpaper, true);
+                const hasSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
+                this.applyWallpaper(presetData.wallpaper, !hasSwatches, true);
                 localStorage.setItem('schedully_wallpaper_data', presetData.wallpaper);
               } else {
                 this.removeWallpaper();
               }
             } else if (data.settings) {
               this.applyPresetSettings(data.settings);
-              if (!data.wallpaper) this.removeWallpaper();
+              if (data.wallpaperSwatches && Array.isArray(data.wallpaperSwatches)) {
+                this.wallpaperSwatches = data.wallpaperSwatches;
+              }
+              if (data.wallpaperPrimary) this.wallpaperPrimary = data.wallpaperPrimary;
+              if (data.wallpaperSecondary) this.wallpaperSecondary = data.wallpaperSecondary;
+              if (data.wallpaperTertiary) this.wallpaperTertiary = data.wallpaperTertiary;
+              if (data.wallpaperHeader) this.wallpaperHeader = data.wallpaperHeader;
+
+              if (data.wallpaper) {
+                const hasSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
+                this.applyWallpaper(data.wallpaper, !hasSwatches, true);
+              } else {
+                this.removeWallpaper();
+              }
             }
 
             if (data.language && window.SchedullyI18n && typeof window.SchedullyI18n.setLanguage === 'function') {
@@ -6555,11 +6645,12 @@ class SchedullyApp {
               this.classes = this.presets[data.activePreset].classes;
             }
 
-            // If wallpaper is active, guarantee wallpaper swatch adaptation is applied
+            // If wallpaper is active, only assign wallpaper swatch if course has no existing color
             if (this.phoneCanvas?.classList.contains('has-photo-wallpaper') && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
               this.classes.forEach((cls, idx) => {
-                if (!cls.isManualCustomColor) {
+                if (!cls.customColor && !cls.color) {
                   cls.customColor = this.wallpaperSwatches[idx % this.wallpaperSwatches.length];
+                  cls.color = cls.customColor;
                 }
               });
             }
@@ -6570,6 +6661,13 @@ class SchedullyApp {
             localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
             localStorage.setItem('schedully_active_preset', this.activePresetKey);
             localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
+            if (this.wallpaperSwatches) {
+              localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
+            }
+            if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
+            if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
+            if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
+            if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
 
             // Silently clear unsaved indicator on load
             this._hasUnsavedCloudChanges = false;
@@ -6648,6 +6746,10 @@ class SchedullyApp {
       classes: this.classes,
       wallpaper: currentWallpaper,
       wallpaperSwatches: this.wallpaperSwatches || null,
+      wallpaperPrimary: this.wallpaperPrimary || null,
+      wallpaperSecondary: this.wallpaperSecondary || null,
+      wallpaperTertiary: this.wallpaperTertiary || null,
+      wallpaperHeader: this.wallpaperHeader || null,
       settings: currentSettings
     };
 
@@ -6659,6 +6761,13 @@ class SchedullyApp {
       localStorage.setItem('schedully_axis_mode', this.axisMode || 'time');
       localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
       localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
+      if (this.wallpaperSwatches) {
+        localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
+      }
+      if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
+      if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
+      if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
+      if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
@@ -6698,6 +6807,10 @@ class SchedullyApp {
         classes: this.classes,
         wallpaper: currentWallpaper,
         wallpaperSwatches: this.wallpaperSwatches || null,
+        wallpaperPrimary: this.wallpaperPrimary || null,
+        wallpaperSecondary: this.wallpaperSecondary || null,
+        wallpaperTertiary: this.wallpaperTertiary || null,
+        wallpaperHeader: this.wallpaperHeader || null,
         settings: currentSettings
       };
 
@@ -6706,6 +6819,13 @@ class SchedullyApp {
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
       localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
       localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
+      if (this.wallpaperSwatches) {
+        localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
+      }
+      if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
+      if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
+      if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
+      if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
@@ -6736,6 +6856,10 @@ class SchedullyApp {
         classes: this.classes,
         wallpaper: currentWallpaper,
         wallpaperSwatches: this.wallpaperSwatches || null,
+        wallpaperPrimary: this.wallpaperPrimary || null,
+        wallpaperSecondary: this.wallpaperSecondary || null,
+        wallpaperTertiary: this.wallpaperTertiary || null,
+        wallpaperHeader: this.wallpaperHeader || null,
         settings: currentSettings
       };
     }
@@ -6745,6 +6869,11 @@ class SchedullyApp {
       presets: this.presets,
       activePreset: this.activePresetKey,
       wallpaper: currentWallpaper,
+      wallpaperSwatches: this.wallpaperSwatches || null,
+      wallpaperPrimary: this.wallpaperPrimary || null,
+      wallpaperSecondary: this.wallpaperSecondary || null,
+      wallpaperTertiary: this.wallpaperTertiary || null,
+      wallpaperHeader: this.wallpaperHeader || null,
       settings: currentSettings,
       language: currentSettings.language,
       activeDevice: currentSettings.activeDevice,
@@ -9350,6 +9479,7 @@ function initGlassSegmentedSliders() {
     let hasDragged = false;
     let startX = 0;
     let startLeft = 0;
+    let moveRaf = null;
 
     group.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
@@ -9388,11 +9518,15 @@ function initGlassSegmentedSliders() {
       const stretchX = Math.min(1.15, 1 + Math.abs(deltaX) * 0.0018);
       const stretchY = 1 / Math.sqrt(stretchX);
 
-      thumb.style.transform = `translateX(${currentLeft}px) scale(${stretchX}, ${stretchY})`;
-    });
+      if (moveRaf) cancelAnimationFrame(moveRaf);
+      moveRaf = requestAnimationFrame(() => {
+        thumb.style.transform = `translateX(${currentLeft}px) scale(${stretchX}, ${stretchY})`;
+      });
+    }, { passive: true });
 
     const endDrag = (e) => {
       if (!isDragging) return;
+      if (moveRaf) cancelAnimationFrame(moveRaf);
       isDragging = false;
       if (hasDragged) {
         try { group.releasePointerCapture?.(e.pointerId); } catch (_) {}

@@ -131,7 +131,7 @@ class SchedullyFirebaseService {
     }
   }
 
-  // MANUAL SAVE — only called when user clicks the Save button.
+  // MANUAL SAVE — only called when user clicks the Save button or staged pending triggers.
   // Sets _isSaving so the listener ignores the echo of this write.
   async saveUserData(userData) {
     if (!this.db || !this.currentUser) return false;
@@ -141,6 +141,12 @@ class SchedullyFirebaseService {
         classes: userData.classes || [],
         presets: userData.presets || {},
         activePreset: userData.activePreset || 'default',
+        wallpaper: userData.wallpaper || null,
+        wallpaperSwatches: userData.wallpaperSwatches || null,
+        wallpaperPrimary: userData.wallpaperPrimary || null,
+        wallpaperSecondary: userData.wallpaperSecondary || null,
+        wallpaperTertiary: userData.wallpaperTertiary || null,
+        wallpaperHeader: userData.wallpaperHeader || null,
         settings: userData.settings || {},
         language: userData.language || userData.settings?.language || 'en',
         activeDevice: userData.activeDevice || userData.settings?.activeDevice || 'phone',
