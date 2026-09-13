@@ -1,8 +1,8 @@
-const CACHE_NAME = 'schedully-cache-v509';
+const CACHE_NAME = 'schedully-cache-v529';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=20260907_v471',
+  '/styles.css?v=20260912_v529',
   '/app_v3.js?v=20260907_v471',
   '/ocr_parser.js?v=20260907_v471',
   '/ics_csv_parser_v3.js',
@@ -67,3 +67,9 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+
+
+
+
+

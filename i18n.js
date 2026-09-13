@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Schedully i18n Comprehensive Localization Engine
  * Supports: EN, EN-SLANG, FR, ZH-CN, ZH-TW, KO, JA, MS, ID, ES
  */
@@ -21,7 +21,7 @@ window.SchedullyI18n = {
         addCourseDesc: 'Create class or event',
         uploadFile: 'Upload Timetable',
         uploadDesc: 'CSV, .ics, PNG, JPG, WebP',
-        scheduleList: 'Schedule List',
+        scheduleList: 'Schedule',
         subjects: 'Subjects',
         clearAll: 'Clear All',
         settings: 'Settings',

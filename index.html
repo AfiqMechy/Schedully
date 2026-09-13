@@ -106,7 +106,7 @@
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- i18n Localization Engine -->
-<script src="i18n.js?v=20260905_v422"></script>
+<script src="i18n.js?v=20260905_v423"></script>
 <!-- html2canvas, dom-to-image-more & jsPDF (Deferred for Instant First Paint) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js" defer></script>
@@ -225,11 +225,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=509">
+<link rel="stylesheet" href="styles.css?v=545">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
-<script src="firebase-config.js?v=509" defer></script>
+<script src="firebase-config.js?v=514" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -628,40 +628,6 @@
                 <input type="range" id="slider-timetable-opacity" min="20" max="100" value="100" step="5" class="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer mt-1.5">
               </div>
 
-              <!-- Liquid Glass Optical Presets (Crystal, Frosted, Fluid, Prism) -->
-              <div id="liquid-glass-presets-section" class="theme-picker-section disabled-preset-section margin-top-sm pt-2.5 border-t border-gray-100/60 dark:border-white/10 flex flex-col gap-2 transition-all duration-300">
-                <div class="flex items-center justify-between">
-                  <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-200">Liquid Glass Style</span>
-                  <span id="active-glass-preset-label" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25">Crystal</span>
-                </div>
-                
-                <!-- 4 Preset Pills Matching Image Exactly -->
-                <div class="grid grid-cols-2 gap-2 mt-1" id="sidebar-glass-presets-group">
-                  <!-- Crystal -->
-                  <button type="button" class="sidebar-glass-preset-btn active flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="crystal">
-                    <svg class="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19.5 3h-15L1 9l11 12L23 9l-3.5-6zM12 18.5L4.5 9h15L12 18.5z"/></svg>
-                    <span>Crystal</span>
-                  </button>
-
-                  <!-- Frosted -->
-                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="frosted">
-                    <svg class="w-4 h-4 text-sky-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                    <span>Frosted</span>
-                  </button>
-
-                  <!-- Fluid -->
-                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="fluid">
-                    <svg class="w-4 h-4 text-emerald-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                    <span>Fluid</span>
-                  </button>
-
-                  <!-- Prism -->
-                  <button type="button" class="sidebar-glass-preset-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all" data-glass-preset="prism">
-                    <svg class="w-4 h-4 text-purple-500 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/></svg>
-                    <span>Prism</span>
-                  </button>
-                </div>
-              </div>
             </div>
 
             <!-- 4. Typography & Fonts Sub-Content -->
@@ -1877,7 +1843,7 @@
 </div>
 
 <!-- Floating Mobile-Friendly Controls Container: 2-Row Stacked Pills + Popover Windows -->
-<div id="floating-controls-container" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 z-30 pointer-events-none">
+<div id="floating-controls-container" class="absolute bottom-6 left-0 right-0 mx-auto flex flex-col items-center justify-center gap-2 z-30 pointer-events-none w-fit max-w-[calc(100%-24px)]">
   
   <!-- Window 2: Separate Floating Aspect Ratio Popover Window (Floats above Controls Window) -->
   <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3 min-w-[320px] max-w-[92vw] shadow-2xl transition-all mb-1">
@@ -1987,7 +1953,7 @@
     </div>
 
     <!-- Device Type Toggles (Clean 4-Segment Text-Only Layout) -->
-    <div class="grid grid-cols-4 p-1 bg-white border border-gray-200 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
+    <div class="grid grid-cols-4 p-1 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
       <button data-device="phone" class="capsule-btn active flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
         <span data-i18n="phone">Phone</span>
       </button>
@@ -2026,8 +1992,8 @@
   </div>
     
     <!-- Top Pill: Undo & Redo Only -->
-    <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-lg transition-all">
-      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
+    <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 rounded-full shadow-lg transition-all">
+      <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
         <button id="btn-history-undo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 14 4 9l5-5"/>
@@ -2045,10 +2011,10 @@
     </div>
 
     <!-- Bottom Floating Capsule Pill Bar: Zoom, Theme Colors, Light/Dark Mode, Controls -->
-    <div id="bottom-floating-pill-bar" class="pointer-events-auto flex items-center gap-2.5 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-xl transition-all">
+    <div id="bottom-floating-pill-bar" class="pointer-events-auto flex items-center gap-2.5 p-1.5 rounded-full shadow-xl transition-all">
       
       <!-- Capsule 1: Zoom & Randomize Theme Controls -->
-      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5 gap-0.5">
+      <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5">
         <button id="btn-zoom-out" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom Out">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
@@ -2078,7 +2044,7 @@
       </div>
 
       <!-- Capsule 2: Theme Toggle (Dark / Light Mode) with Fluid Sun-Moon Morph Animation -->
-      <div class="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full shadow-xs p-0.5">
+      <div class="flex items-center rounded-full shadow-xs p-0.5">
         <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors overflow-hidden" title="Toggle Light/Dark Theme">
           <div class="morph-icon-wrapper">
             <!-- Sun Icon (Light Mode) -->
@@ -2101,11 +2067,14 @@
         </button>
       </div>
 
-      <!-- Capsule 3: Expandable Controls Button -->
-      <button id="btn-toggle-canvas-popover" class="btn-theme-primary flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-extrabold active:scale-95 transition-all shadow-sm">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        <span data-i18n="controls">Controls</span>
-      </button>
+      <!-- Capsule 3: Minimal Icon Controls Button (Option 2) -->
+      <div class="flex items-center rounded-full shadow-xs p-0.5">
+        <button id="btn-toggle-canvas-popover" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Canvas Controls & Settings">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+        </button>
+      </div>
 
     </div>
   </div>
@@ -2119,34 +2088,75 @@
 
 <aside id="right-sidebar" class="sidebar-collapsed-right w-80 m-3 rounded-3xl flex flex-col overflow-hidden z-20 shrink-0">
     <!-- Header -->
-    <div class="p-5 border-b border-gray-100">
-      <div class="flex items-center justify-between mb-3.5">
-        <div class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          <h2 data-i18n="scheduleList" class="font-bold text-sm text-gray-800">Schedule List</h2>
+    <div class="p-3 border-b border-gray-100 dark:border-gray-800">
+      <div class="flex items-center justify-between gap-2">
+        <!-- Title & Counter Badge -->
+        <div class="flex items-center gap-1.5 min-w-0">
+          <div class="schedule-header-icon-wrap shrink-0">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <div class="flex items-center gap-1.5 min-w-0">
+            <h2 data-i18n="scheduleList" class="font-extrabold text-sm text-gray-800 dark:text-gray-100 whitespace-nowrap">Schedule</h2>
+            <span class="schedule-badge-count shrink-0"><span id="slots-badge-count">0</span></span>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><span id="slots-badge-count">0</span> <span data-i18n="subjects">Subjects</span></span>
-          <button id="btn-toggle-right-sidebar" class="p-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition-all" title="Collapse Right Sidebar">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+
+        <!-- Right Controls: 3-Action Capsule + Separated Collapse Button -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- 3-Action Capsule -->
+          <div class="schedule-header-capsule flex items-center p-0.5 rounded-xl gap-0.5">
+            <!-- Spotlight Search Trigger Button -->
+            <button id="btn-floating-course-search" class="schedule-capsule-btn" title="Search Courses" aria-label="Search courses">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </button>
+            <!-- Schedule Settings Toggle Button -->
+            <button id="btn-schedule-settings-toggle" class="schedule-capsule-btn" title="Schedule Settings" aria-label="Settings">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <!-- Clear All Button -->
+            <button id="btn-clear-all" class="schedule-capsule-btn btn-clear-danger" title="Clear All Courses" aria-label="Clear All">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </div>
+
+          <!-- Separated Collapse Button -->
+          <button id="btn-toggle-right-sidebar" class="schedule-collapse-btn" title="Collapse Sidebar" aria-label="Collapse Sidebar">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
           </button>
         </div>
       </div>
 
-      <!-- Action Buttons (Clear All & Settings) -->
-      <div class="flex gap-2.5 mb-3.5">
-        <button id="btn-clear-all" class="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors">
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          <span data-i18n="clearAll">Clear All</span>
-        </button>
-        <button id="btn-schedule-settings-toggle" class="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors">
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          <span data-i18n="settings">Settings</span>
-        </button>
+      <!-- Top Spotlight Course Search Bar (Expandable Top Sheet: immune to mobile virtual keyboard) -->
+      <div id="course-search-dock" class="hidden my-3 w-full">
+        <div id="course-search-container" class="course-search-widget is-expanded w-full relative flex items-center" role="search">
+          <div class="search-widget-expanded-content flex items-center w-full h-full relative">
+            <svg class="search-input-leading-icon absolute left-3.5 w-4 h-4 text-gray-400 dark:text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input id="course-search-input" type="text" placeholder="Search courses, codes, rooms..." class="search-floating-input" autocomplete="off" spellcheck="false" />
+            <!-- Clear text button -->
+            <button id="clear-search-btn" type="button" class="hidden absolute right-8 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full focus:outline-none transition-transform active:scale-90" title="Clear text">
+              <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <!-- Close / Collapse Search -->
+            <button id="btn-close-course-search" type="button" class="absolute right-2 p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full focus:outline-none transition-transform active:scale-90" title="Close Search">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
-        <!-- Preset / Semester Selector Bar (Below the Divider Line) -->
-        <div class="flex items-center justify-between pt-3 border-t border-gray-100/80">
+      <!-- Preset / Semester Selector Bar (Below the Divider Line) -->
+      <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100/80 dark:border-gray-800/80">
           <div class="flex items-center gap-1.5 flex-1 min-w-0">
             <span data-i18n="presetLabel" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Preset:</span>
             <div class="relative flex items-center flex-1 min-w-0">
@@ -2277,39 +2287,8 @@
 </div>
 <div id="schedule-list-wrapper" class="relative flex-1 flex flex-col min-h-0 overflow-hidden">
   <div id="added-classes-list" class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-3" style="padding-bottom: 74px;"></div>
-  
-  <!-- Single Morphing Floating Search Widget (iOS Fluid Morph: Circle <-> Expanded Pill) -->
-  <div id="course-search-dock" class="hidden absolute z-[999999] flex items-center justify-end">
-    <div id="course-search-container" class="course-search-widget is-collapsed" role="search">
-      <!-- Circular Trigger Search Icon (visible when collapsed) -->
-      <button id="btn-floating-course-search" type="button" class="search-widget-trigger-btn" title="Search courses" aria-label="Search courses">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </button>
-
-      <!-- Search Input Elements (smoothly fades in during expansion) -->
-      <div class="search-widget-expanded-content flex items-center w-full h-full">
-        <svg class="search-input-leading-icon absolute left-3.5 w-4 h-4 text-gray-400 dark:text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-        <input id="course-search-input" type="text" placeholder="Search courses or codes..." class="search-floating-input" autocomplete="off" spellcheck="false" />
-        <!-- Clear text button (Solid circle-x when text exists) -->
-        <button id="clear-search-btn" type="button" class="hidden absolute right-8 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full focus:outline-none transition-transform active:scale-90" title="Clear text">
-          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-          </svg>
-        </button>
-        <!-- Collapse/Close Search Bar (Chevron Down Collapse button) -->
-        <button id="btn-close-course-search" type="button" class="absolute right-2 p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full focus:outline-none transition-transform active:scale-90" title="Collapse Search">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
+
 <div id="clash-alert" class="m3-alert-banner hidden">
         <span class="material-symbols-outlined alert-icon">warning</span>
         <div class="alert-info">
@@ -2321,6 +2300,7 @@
           <button id="btn-ignore-clash" class="m3-button m3-button-outlined" style="background: transparent; color: var(--m3-sys-color-on-surface); border-color: rgba(0,0,0,0.2); padding: 4px 8px; font-size: 11px;">Ignore</button>
         </div>
       </div>
+
 </aside>
   <!-- OCC / Group Selector Modal for CSVs -->
   <div id="occ-modal" class="modal-overlay hidden">
@@ -2750,16 +2730,22 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=509"></script>
+  <script src="app_v3.js?v=519"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=509').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=529').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
   }
 </script>
 </body></html>
+
+
+
+
+
+

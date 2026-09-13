@@ -523,6 +523,25 @@ class SchedullyApp {
     }
   }
 
+  setPalette(paletteKey, save = true) {
+    if (!paletteKey) return;
+    this.currentPalette = paletteKey;
+    if (save) {
+      try {
+        localStorage.setItem('schedully_theme_palette', paletteKey);
+      } catch (e) {}
+    }
+    // Sync palette dots in UI
+    document.querySelectorAll('.palette-dot').forEach(d => {
+      d.classList.toggle('active', d.getAttribute('data-palette') === paletteKey);
+    });
+    this.applyThemeEngine();
+    this.renderAll();
+    if (save && typeof this._stagePending === 'function') {
+      this._stagePending(true);
+    }
+  }
+
   applyThemeEngine() {
     let resolvedMode = this.currentMode;
     if (resolvedMode === 'auto') {
@@ -1737,6 +1756,9 @@ class SchedullyApp {
         this.renderWatchGlance();
       }
       this._stagePending();
+      if (typeof showToast === 'function') {
+        showToast('Theme & course colors resynced!', 'info');
+      }
 
       // Subtle icon rotation without changing button label or adding tick icon
       const icon = resyncBtn.querySelector('svg');
@@ -1801,11 +1823,11 @@ class SchedullyApp {
       quickAdaptiveRow?.classList.add('disabled-by-wallpaper');
       badge?.classList.remove('hidden');
 
-      // Theme shuffle (🔄) is disabled/greyed out because the theme is locked to the wallpaper
+      // Theme shuffle (🔄) stays active to shuffle extracted wallpaper swatches and anchor colors
       if (btnRandTheme) {
-        btnRandTheme.classList.add('disabled-by-wallpaper');
-        btnRandTheme.setAttribute('disabled', 'true');
-        btnRandTheme.title = "Theme palette is automatically anchored to your active wallpaper";
+        btnRandTheme.classList.remove('disabled-by-wallpaper');
+        btnRandTheme.removeAttribute('disabled');
+        btnRandTheme.title = "Shuffle Wallpaper Palette Accent & Primary Anchor";
       }
 
       // Course card color shuffle (🎨) stays ACTIVE so you can shuffle card colors from the wallpaper palette
@@ -3069,66 +3091,39 @@ class SchedullyApp {
     this.updateCourseFormMode();
 
 
-    // Floating Circular Course Search Controls (Fluid iOS Single-Widget Morph)
+    // Top Spotlight Course Search Controls (Expandable Top Sheet)
     const openFloatingSearch = () => {
-      if (!this.courseSearchContainer) return;
-      this.courseSearchDock?.classList.add('is-expanded-dock');
-      this.courseSearchContainer.classList.remove('is-collapsed');
-      this.courseSearchContainer.classList.add('is-expanded');
-      if (this.courseSearchInput) {
-        this.courseSearchInput.removeAttribute('tabindex');
-        setTimeout(() => {
-          // preventScroll prevents mobile browser from scrolling/pushing the entire page viewport upwards!
-          try {
-            this.courseSearchInput.focus({ preventScroll: true });
-          } catch (e) {
-            this.courseSearchInput.focus();
-          }
-        }, 120);
+      const searchDock = document.getElementById('course-search-dock');
+      const searchBtn = document.getElementById('btn-floating-course-search');
+      if (!searchDock) return;
+      const isHidden = searchDock.classList.contains('hidden');
+      if (isHidden) {
+        searchDock.classList.remove('hidden');
+        searchBtn?.classList.add('active');
+        if (this.courseSearchInput) {
+          setTimeout(() => {
+            try {
+              this.courseSearchInput.focus({ preventScroll: true });
+            } catch (e) {
+              this.courseSearchInput.focus();
+            }
+          }, 80);
+        }
+      } else {
+        closeFloatingSearch();
       }
     };
 
     const closeFloatingSearch = () => {
-      if (!this.courseSearchContainer) return;
-      this.courseSearchDock?.classList.remove('is-expanded-dock');
-      this.courseSearchContainer.classList.remove('is-expanded');
-      this.courseSearchContainer.classList.add('is-collapsed');
+      const searchDock = document.getElementById('course-search-dock');
+      const searchBtn = document.getElementById('btn-floating-course-search');
+      if (!searchDock) return;
+      searchDock.classList.add('hidden');
+      searchBtn?.classList.remove('active');
       if (this.courseSearchInput) {
-        this.courseSearchInput.setAttribute('tabindex', '-1');
         this.courseSearchInput.blur();
       }
-      document.documentElement.style.removeProperty('--keyboard-offset');
     };
-
-    // Adaptive Keyboard Geometry Handling (visualViewport API)
-    // Works reliably on smartphones, Android tablets, iPad, and desktop split-screens
-    if (window.visualViewport) {
-      const handleViewportResize = () => {
-        if (!this.courseSearchContainer || this.courseSearchContainer.classList.contains('is-collapsed')) {
-          document.documentElement.style.removeProperty('--keyboard-offset');
-          return;
-        }
-
-        const wrapper = document.getElementById('schedule-list-wrapper');
-        const keyboardHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
-
-        if (keyboardHeight > 60) {
-          if (wrapper) {
-            const wrapperRect = wrapper.getBoundingClientRect();
-            const visibleBottom = window.visualViewport.offsetTop + window.visualViewport.height;
-            const overlap = Math.max(0, wrapperRect.bottom - visibleBottom);
-            document.documentElement.style.setProperty('--keyboard-offset', `${overlap + 8}px`);
-          } else {
-            document.documentElement.style.setProperty('--keyboard-offset', `${keyboardHeight}px`);
-          }
-        } else {
-          document.documentElement.style.removeProperty('--keyboard-offset');
-        }
-      };
-
-      window.visualViewport.addEventListener('resize', handleViewportResize);
-      window.visualViewport.addEventListener('scroll', handleViewportResize);
-    }
 
     if (this.btnFloatingCourseSearch) {
       this.btnFloatingCourseSearch.addEventListener('click', (e) => {
@@ -3816,8 +3811,16 @@ class SchedullyApp {
         c.isManualCustomColor = true;
       });
 
+      this.globalAdaptiveColor = false;
+      document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+      });
+
       this.renderAll();
       this._stagePending(true);
+      if (typeof showToast === 'function') {
+        showToast('Course colors randomized!', 'info');
+      }
     });
 
     // GLOBAL DEFAULT DISPLAY TIME TOGGLE IN ADD A COURSE CARD
@@ -4528,7 +4531,21 @@ class SchedullyApp {
     }
 
     // Randomize Theme Palette Button (Bottom Pill Bar)
-    document.getElementById('btn-randomize-theme')?.addEventListener('click', () => {
+    const btnRandThemeEl = document.getElementById('btn-randomize-theme');
+    btnRandThemeEl?.addEventListener('click', () => {
+      if (window.soundFX) window.soundFX.play('click');
+      
+      // Visual feedback spin animation
+      const iconSvg = btnRandThemeEl.querySelector('svg');
+      if (iconSvg) {
+        iconSvg.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        iconSvg.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+          iconSvg.style.transition = 'none';
+          iconSvg.style.transform = 'none';
+        }, 450);
+      }
+
       const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
       if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
         // Rotate/shuffle the wallpaper swatches order so a new wallpaper-extracted color becomes the primary anchor & header
@@ -4583,20 +4600,41 @@ class SchedullyApp {
         this.applyThemeEngine();
         this.renderAll();
         this._stagePending(true);
+        if (typeof showToast === 'function') {
+          showToast('Wallpaper palette shuffled!', 'info');
+        }
         return;
       }
 
-      const paletteKeys = Object.keys(THEME_PALETTES.light);
+      const resolvedMode = (this.currentMode === 'dark' || (this.currentMode === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) ? 'dark' : 'light';
+      const paletteGroup = THEME_PALETTES[resolvedMode] || THEME_PALETTES.light;
+      const paletteKeys = Object.keys(paletteGroup);
       const available = paletteKeys.filter(k => k !== this.currentPalette);
-      const randomPalette = available[Math.floor(Math.random() * available.length)];
+      const randomPalette = available[Math.floor(Math.random() * available.length)] || paletteKeys[0];
       if (randomPalette) {
-        this.setPalette(randomPalette);
-        this._stagePending(true);
+        this.setPalette(randomPalette, true);
+        if (typeof showToast === 'function') {
+          const formattedName = randomPalette.charAt(0).toUpperCase() + randomPalette.slice(1);
+          showToast(`Theme: ${formattedName}`, 'info');
+        }
       }
     });
 
     // Randomize Course Card Colors Button (Bottom Pill Bar)
-    document.getElementById('btn-randomize-course-colors')?.addEventListener('click', () => {
+    const btnRandCourseEl = document.getElementById('btn-randomize-course-colors');
+    btnRandCourseEl?.addEventListener('click', () => {
+      if (window.soundFX) window.soundFX.play('click');
+      
+      const iconSvg = btnRandCourseEl.querySelector('svg');
+      if (iconSvg) {
+        iconSvg.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        iconSvg.style.transform = 'rotate(180deg) scale(1.15)';
+        setTimeout(() => {
+          iconSvg.style.transition = 'none';
+          iconSvg.style.transform = 'none';
+        }, 450);
+      }
+
       const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
       
       let paletteColors;
@@ -4627,8 +4665,16 @@ class SchedullyApp {
         c.isManualCustomColor = true;
       });
 
+      this.globalAdaptiveColor = false;
+      document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+      });
+
       this.renderAll();
       this._stagePending(true);
+      if (typeof showToast === 'function') {
+        showToast('Course colors shuffled!', 'info');
+      }
     });
 
     // Expandable Canvas Controls Popover Toggle
@@ -5314,13 +5360,18 @@ class SchedullyApp {
     if (this.btnClearAll) {
       this.btnClearAll.addEventListener('click', async (e) => {
          try {
-           if (this.classes.length > 0) {
-             this.recordHistoryState();
+           if (!this.classes || this.classes.length === 0) {
+             return;
            }
-           const originalText = e.currentTarget.innerHTML;
-           e.currentTarget.innerHTML = "Clearing...";
-           e.currentTarget.style.backgroundColor = "#dcfce7";
-           e.currentTarget.style.color = "#166534";
+
+           const confirmed = window.confirm("Are you sure you want to clear all courses from your schedule?");
+           if (!confirmed) {
+             return;
+           }
+
+           this.recordHistoryState();
+           const originalHtml = e.currentTarget.innerHTML;
+           e.currentTarget.innerHTML = `<svg class="w-3.5 h-3.5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
            
            // Clear internal state & presets
            this.classes = [];
@@ -5347,9 +5398,7 @@ class SchedullyApp {
            // Revert button visually
            setTimeout(() => {
              if (this.btnClearAll) {
-               this.btnClearAll.innerHTML = originalText;
-               this.btnClearAll.style.backgroundColor = "";
-               this.btnClearAll.style.color = "";
+               this.btnClearAll.innerHTML = originalHtml;
              }
            }, 400);
          } catch (err) {
@@ -7754,19 +7803,24 @@ class SchedullyApp {
           const codeIdx = uniqueCodes.indexOf(matched.code);
           const matchIdx = this.classes.indexOf(matched);
           const colorIdx = codeIdx >= 0 ? codeIdx : matchIdx;
-          // Priority: matched.customColor (allows custom & shuffled assignments) -> adaptive fallback
-          const effectiveBg = (matched.customColor)
-            ? matched.customColor
-            : adaptiveBg;
+          const paletteCardColor = courseSwatches[colorIdx % courseSwatches.length] || '#2563EB';
+
+          // If Adaptive Color is ON (default/Yes), enforce the coordinated palette/wallpaper swatches.
+          // If Adaptive Color is OFF (No), respect individual custom / randomized colors.
+          const effectiveBg = (this.globalAdaptiveColor !== false)
+            ? paletteCardColor
+            : (matched.customColor || matched.color || paletteCardColor);
 
           // Smart Auto-Contrast Font Color for Card Text (Manual fontColor is the BOSS)
           const autoContrastFont = this.getContrastColor(effectiveBg);
           const customFontOverride = (this.userHasPickedFontColor && this.customFontColor) ? this.customFontColor : null;
           const textColor = matched.fontColor || customFontOverride || autoContrastFont;
 
+          const cardStyleBg = effectiveBg;
+
           const cardStyle = (matched.isClashing && !this.ignoreClashes)
             ? 'background: #F43F5E !important; color: #FFFFFF !important;'
-            : `background: ${effectiveBg}; color: ${textColor};`;
+            : `background: ${cardStyleBg}; color: ${textColor};`;
           
           let formatStart = matched.startTime;
           let formatEnd = matched.endTime;
@@ -9033,7 +9087,12 @@ class SchedullyApp {
         swatchBtn.classList.add('active');
         const pickedColor = swatchBtn.getAttribute('data-hex');
         c.customColor = pickedColor;
+        c.color = pickedColor;
         c.isManualCustomColor = true;
+        this.globalAdaptiveColor = false;
+        document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+        });
         const customBtn = card.querySelector('.mini-grid-custom');
         if (customBtn) customBtn.style.background = pickedColor;
         this.requestGridRender();
@@ -9049,7 +9108,12 @@ class SchedullyApp {
         this.openCustomColorPicker(c.customColor || '#2563EB', `Customize Color: ${c.code}`, (pickedColor) => {
           card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
           c.customColor = pickedColor;
+          c.color = pickedColor;
           c.isManualCustomColor = true;
+          this.globalAdaptiveColor = false;
+          document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+          });
           customGridBtn.style.background = pickedColor;
           this.requestGridRender();
           this._stagePending();
@@ -9805,51 +9869,67 @@ function initLiquidGlassPresets() {
   const presets = {
     crystal: {
       name: 'Crystal',
-      refThickness: 16,
-      refFactor: 1.5,
-      refDispersion: 4.0,
+      refThickness: 14,
+      blur: '10px',
+      refFactor: 1.55,
+      refDispersion: 3.5,
       glareAngle: -45,
-      glareFactor: 110,
-      glareOppositeFactor: 85,
-      refFresnelFactor: 15,
+      glareFactor: 135,
+      glareOppositeFactor: 90,
+      refFresnelFactor: 18,
+      saturate: '185%',
+      contrast: '108%',
+      brightness: '1.05',
       mergeRate: 0.04,
       springSizeFactor: 12
     },
     frosted: {
       name: 'Frosted',
-      refThickness: 28,
-      refFactor: 1.25,
-      refDispersion: 9.0,
+      refThickness: 34,
+      blur: '32px',
+      refFactor: 1.15,
+      refDispersion: 2.0,
       glareAngle: -35,
-      glareFactor: 75,
-      glareOppositeFactor: 60,
-      refFresnelFactor: 30,
+      glareFactor: 58,
+      glareOppositeFactor: 48,
+      refFresnelFactor: 35,
+      saturate: '135%',
+      contrast: '98%',
+      brightness: '1.02',
       mergeRate: 0.08,
       springSizeFactor: 8
     },
     fluid: {
       name: 'Fluid',
-      refThickness: 22,
-      refFactor: 1.45,
-      refDispersion: 8.0,
+      refThickness: 24,
+      blur: '18px',
+      refFactor: 1.48,
+      refDispersion: 9.5,
       glareAngle: -45,
-      glareFactor: 95,
-      glareOppositeFactor: 90,
-      refFresnelFactor: 25,
-      mergeRate: 0.15,
+      glareFactor: 110,
+      glareOppositeFactor: 95,
+      refFresnelFactor: 28,
+      saturate: '235%',
+      contrast: '112%',
+      brightness: '1.06',
+      mergeRate: 0.16,
       springSizeFactor: 18
     },
     prism: {
       name: 'Prism',
-      refThickness: 32,
-      refFactor: 1.65,
-      refDispersion: 18.0,
+      refThickness: 30,
+      blur: '20px',
+      refFactor: 1.72,
+      refDispersion: 22.0,
       glareAngle: -60,
-      glareFactor: 120,
-      glareOppositeFactor: 95,
-      refFresnelFactor: 40,
-      mergeRate: 0.05,
-      springSizeFactor: 14
+      glareFactor: 135,
+      glareOppositeFactor: 100,
+      refFresnelFactor: 45,
+      saturate: '215%',
+      contrast: '110%',
+      brightness: '1.08',
+      mergeRate: 0.06,
+      springSizeFactor: 15
     }
   };
 
@@ -9860,7 +9940,7 @@ function initLiquidGlassPresets() {
     if (!cfg) return;
     const s = cfg.controls || cfg;
     const thicknessPx = `${s.refThickness || 20}px`;
-    const blurPx = `${Math.max(4, Math.round((s.refThickness || 20) * 0.8))}px`;
+    const blurPx = s.blur || `${Math.max(4, Math.round((s.refThickness || 20) * 0.8))}px`;
     const glareFactor = ((s.glareFactor !== undefined ? s.glareFactor : 90) / 100).toFixed(2);
     const glareOpposite = ((s.glareOppositeFactor !== undefined ? s.glareOppositeFactor : 80) / 100).toFixed(2);
     const dispersion = s.refDispersion !== undefined ? s.refDispersion : 7;
@@ -9868,6 +9948,9 @@ function initLiquidGlassPresets() {
     const dispersionCyan = `rgba(96, 165, 250, ${((dispersion / 20) * 0.85).toFixed(2)})`;
     const dispersionPink = `rgba(244, 114, 182, ${((dispersion / 20) * 0.7).toFixed(2)})`;
     const fresnelFactor = ((s.refFresnelFactor !== undefined ? s.refFresnelFactor : 20) / 100).toFixed(2);
+    const saturateVal = s.saturate || '190%';
+    const contrastVal = s.contrast || '105%';
+    const brightnessVal = s.brightness || '1.04';
 
     const root = document.documentElement;
     root.style.setProperty('--glass-thickness', thicknessPx);
@@ -9880,11 +9963,23 @@ function initLiquidGlassPresets() {
     root.style.setProperty('--glass-glare-factor', glareFactor);
     root.style.setProperty('--glass-glare-opposite', glareOpposite);
     root.style.setProperty('--glass-fresnel-factor', fresnelFactor);
+    root.style.setProperty('--glass-preset-saturate', saturateVal);
+    root.style.setProperty('--glass-preset-contrast', contrastVal);
+    root.style.setProperty('--glass-preset-brightness', brightnessVal);
 
     if (presetKey) {
       activePresetKey = presetKey;
       const label = document.getElementById('active-glass-preset-label');
       if (label) label.textContent = presets[presetKey]?.name || presetKey;
+
+      // Update active body preset classes
+      const allPresets = ['crystal', 'frosted', 'fluid', 'prism'];
+      allPresets.forEach(p => {
+        document.body.classList.remove(`glass-preset-${p}`);
+        document.documentElement.classList.remove(`glass-preset-${p}`);
+      });
+      document.body.classList.add(`glass-preset-${presetKey}`);
+      document.documentElement.classList.add(`glass-preset-${presetKey}`);
 
       document.querySelectorAll('.sidebar-glass-preset-btn').forEach(btn => {
         if (btn.dataset.glassPreset === presetKey) {
@@ -9905,6 +10000,9 @@ function initLiquidGlassPresets() {
 
     if (typeof window.syncGlassSliders === 'function') {
       window.syncGlassSliders();
+    }
+    if (window.schedullyApp && typeof window.schedullyApp.renderTimetableGrid === 'function') {
+      window.schedullyApp.renderTimetableGrid();
     }
   };
 
@@ -9960,6 +10058,13 @@ function initThemeStyleEngine() {
     try {
       localStorage.setItem('schedully_theme_style', effectiveStyle);
     } catch (e) {}
+
+    if (window.schedullyApp && typeof window.schedullyApp.renderTimetableGrid === 'function') {
+      window.schedullyApp.renderTimetableGrid();
+    }
+    if (typeof window.syncGlassSliders === 'function') {
+      window.syncGlassSliders();
+    }
   };
   window.applyThemeStyle = applyThemeStyle;
 
