@@ -66,11 +66,12 @@ window.SchedullyI18n = {
         dark: 'Dark',
         light: 'Light',
         bgBlur: 'Background Blur',
-
         blurIntensity: 'Blur Intensity',
         yes: 'Yes',
         no: 'No',
         fontStyle: 'Font Style',
+        fontShadow: 'Font Shadow',
+        fontShadowDesc: 'Text shadow on timetable cards',
         timetableOpacity: 'Timetable Opacity',
         gridSurfaceColor: 'Grid Surface Colour',
         clockFormat: 'Clock Format',

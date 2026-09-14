@@ -303,6 +303,7 @@ class SchedullyApp {
     this.clashDesc = document.getElementById('clash-desc');
 
     this.slotsBadgeCount = document.getElementById('slots-badge-count');
+    this.settingsCoursesBadge = document.getElementById('settings-courses-badge');
     this.btnClearAll = document.getElementById('btn-clear-all');
     this.universalTimetableGrid = document.getElementById('universal-timetable-grid');
     this.classListContainer = document.getElementById('added-classes-list') || document.getElementById('class-list-container');
@@ -968,7 +969,7 @@ class SchedullyApp {
 
       document.querySelectorAll('#left-sidebar, #right-sidebar, main').forEach(container => {
         container.querySelectorAll('svg, p, span, h1, h2, h3, h4, h5, h6, label').forEach(el => {
-          if (!el.closest('.btn-theme-primary') && !el.closest('.pill-btn.active') && !el.classList.contains('badge-adaptive-pill') && !el.closest('.badge-adaptive-pill')) {
+          if (!el.closest('.btn-theme-primary') && !el.closest('#floating-courses-count-circle') && !el.closest('#btn-toggle-canvas-popover') && !el.closest('.pill-btn.active') && !el.classList.contains('badge-adaptive-pill') && !el.closest('.badge-adaptive-pill')) {
             if (el.tagName.toLowerCase() === 'svg') {
               el.style.color = textColor;
             } else if (el.classList.contains('text-gray-400') || el.classList.contains('text-gray-500') || el.classList.contains('subtext')) {
@@ -1366,21 +1367,29 @@ class SchedullyApp {
     this.bgBlurEnabled = false;
     this.bgBlurIntensity = 10;
 
+    this.setWallpaperBlur = (val, isEnabled = true, syncSlider = true) => {
+      this.bgBlurIntensity = Math.max(0, Math.min(40, parseInt(val, 10) || 0));
+      this.bgBlurEnabled = !!isEnabled;
+      if (blurSlider) blurSlider.value = this.bgBlurIntensity;
+      if (blurValText) blurValText.innerText = `${this.bgBlurIntensity}px`;
+      if (toggleBgBlur) {
+        toggleBgBlur.querySelectorAll('.pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-val') === (isEnabled ? 'yes' : 'no'));
+        });
+        if (isEnabled) blurControl?.classList.remove('hidden');
+        else blurControl?.classList.add('hidden');
+      }
+      document.documentElement.style.setProperty('--wallpaper-blur-val', isEnabled ? `${this.bgBlurIntensity}px` : '0px');
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+    };
+
     if (toggleBgBlur) {
       toggleBgBlur.querySelectorAll('.pill-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          toggleBgBlur.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
           const isEnabled = (btn.getAttribute('data-val') === 'yes');
-          this.bgBlurEnabled = isEnabled;
-
-          if (isEnabled) {
-            blurControl?.classList.remove('hidden');
-            document.documentElement.style.setProperty('--wallpaper-blur-val', `${this.bgBlurIntensity}px`);
-          } else {
-            blurControl?.classList.add('hidden');
-            document.documentElement.style.setProperty('--wallpaper-blur-val', '0px');
-          }
+          this.setWallpaperBlur(this.bgBlurIntensity, isEnabled);
           this._stagePending();
         });
       });
@@ -1389,11 +1398,7 @@ class SchedullyApp {
     if (blurSlider) {
       blurSlider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value, 10) || 0;
-        this.bgBlurIntensity = val;
-        if (blurValText) blurValText.innerText = `${val}px`;
-        if (this.bgBlurEnabled) {
-          document.documentElement.style.setProperty('--wallpaper-blur-val', `${val}px`);
-        }
+        this.setWallpaperBlur(val, this.bgBlurEnabled);
         this._stagePending();
       });
     }
@@ -1404,11 +1409,14 @@ class SchedullyApp {
 
     this.timetableOpacity = 100;
 
-    this.setTimetableOpacity = (val) => {
+    this.setTimetableOpacity = (val, syncSlider = true) => {
       this.timetableOpacity = Math.max(20, Math.min(100, parseInt(val, 10) || 100));
       if (opacitySlider) opacitySlider.value = this.timetableOpacity;
       if (opacityValText) opacityValText.innerText = `${this.timetableOpacity}%`;
       document.documentElement.style.setProperty('--timetable-opacity', `${this.timetableOpacity / 100}`);
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
     };
 
     if (opacitySlider) {
@@ -2213,6 +2221,49 @@ class SchedullyApp {
           console.error("Font loading error:", err);
           alert("Could not load font. Please ensure the file is a valid .ttf, .otf, or .woff2 font file.");
         }
+      });
+    }
+
+    // Font Shadow Toggle
+    const toggleFontShadow = document.getElementById('toggle-font-shadow');
+    const savedFontShadow = (localStorage.getItem('schedully_font_shadow') === 'yes');
+    this.fontShadowEnabled = savedFontShadow;
+
+    this.setFontShadow = (enabled, skipSave = false) => {
+      this.fontShadowEnabled = !!enabled;
+      try { localStorage.setItem('schedully_font_shadow', this.fontShadowEnabled ? 'yes' : 'no'); } catch (e) {}
+
+      const timetableContainer = document.getElementById('lock-timetable-container');
+      const universalGrid = document.getElementById('universal-timetable-grid');
+      const watchCardsList = document.getElementById('watch-cards-list');
+      const phoneLockHeader = document.getElementById('phone-lock-header');
+      const phoneCanvas = document.getElementById('phone-canvas');
+
+      if (timetableContainer) timetableContainer.classList.toggle('has-font-shadow', this.fontShadowEnabled);
+      if (universalGrid) universalGrid.classList.toggle('has-font-shadow', this.fontShadowEnabled);
+      if (watchCardsList) watchCardsList.classList.toggle('has-font-shadow', this.fontShadowEnabled);
+      if (phoneLockHeader) phoneLockHeader.classList.toggle('has-font-shadow', this.fontShadowEnabled);
+      if (phoneCanvas) phoneCanvas.classList.toggle('has-font-shadow', this.fontShadowEnabled);
+
+      if (toggleFontShadow) {
+        toggleFontShadow.querySelectorAll('.pill-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
+        });
+      }
+
+      this.renderTimetableGrid();
+      if (!skipSave) {
+        this._stagePending();
+      }
+    };
+
+    if (toggleFontShadow) {
+      toggleFontShadow.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
+        btn.addEventListener('click', () => {
+          const isYes = (btn.getAttribute('data-val') === 'yes');
+          this.setFontShadow(isYes);
+        });
       });
     }
   }
@@ -3637,31 +3688,39 @@ class SchedullyApp {
     btnCardRadiusDec?.addEventListener('click', () => updateCardRadius((this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) - 1));
     btnCardRadiusInc?.addEventListener('click', () => updateCardRadius((this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) + 1));
 
-    // SCHEDULE LIST QUICK SETTINGS TOGGLE DRAWER
+    // SCHEDULE LIST QUICK SETTINGS TOGGLE DRAWER & FLOATING POPOVER
     const btnScheduleSettings = document.getElementById('btn-schedule-settings-toggle');
     const quickSettingsPanel = document.getElementById('schedule-quick-settings');
+    const btnCloseQuickSettings = document.getElementById('btn-close-quick-settings');
 
-    btnScheduleSettings?.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.toggleAccordion(btnScheduleSettings, quickSettingsPanel);
-    });
+    if (btnScheduleSettings && quickSettingsPanel) {
+      btnScheduleSettings.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        quickSettingsPanel.classList.toggle('hidden');
+        if (!quickSettingsPanel.classList.contains('hidden')) {
+          setTimeout(window.syncGlassSliders, 20);
+          setTimeout(window.syncGlassSliders, 120);
+        }
+      });
 
-    let setStartX = 0;
-    let setStartY = 0;
-    btnScheduleSettings?.addEventListener('touchstart', (e) => {
-      setStartX = e.touches[0].clientX;
-      setStartY = e.touches[0].clientY;
-    }, { passive: true });
+      btnCloseQuickSettings?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        quickSettingsPanel.classList.add('hidden');
+      });
 
-    btnScheduleSettings?.addEventListener('touchend', (e) => {
-      const setEndX = e.changedTouches[0].clientX;
-      const setEndY = e.changedTouches[0].clientY;
-      const diffX = setEndX - setStartX;
-      const diffY = setEndY - setStartY;
-      if (Math.abs(diffX) > 25 && Math.abs(diffY) < 35) {
-        btnScheduleSettings.click();
-      }
-    }, { passive: true });
+      document.addEventListener('click', (e) => {
+        if (window.isTourActive) return;
+        if (quickSettingsPanel.classList.contains('hidden')) return;
+        const isClickInside = quickSettingsPanel.contains(e.target);
+        const isClickOnToggle = btnScheduleSettings.contains(e.target);
+        const isClickOnProtected = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #floating-undo-redo-row, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
+        if (!isClickInside && !isClickOnToggle && !isClickOnProtected) {
+          quickSettingsPanel.classList.add('hidden');
+        }
+      });
+    }
 
     // Quick Setting: Master Display Time Toggle
     document.querySelectorAll('#toggle-quick-time .pill-btn').forEach(btn => {
@@ -4678,6 +4737,184 @@ class SchedullyApp {
       });
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // SLIM MATERIAL 3 EXPRESSIVE DUAL-MODE FX SLIDER (Left Side: Opacity & Blur)
+    // ═══════════════════════════════════════════════════════════════
+    const sideFxContainer = document.getElementById('side-fx-slider-container');
+    const sideFxTrack     = document.getElementById('side-fx-track');
+    const sideFxFill      = document.getElementById('side-fx-fill');
+    const sideFxBadge     = document.getElementById('side-fx-badge');
+    const fxLabelText     = document.getElementById('fx-label-text');
+    const btnFxOpacity    = document.getElementById('btn-fx-mode-opacity');
+    const btnFxBlur       = document.getElementById('btn-fx-mode-blur');
+
+    let activeFxMode = 'opacity'; // 'opacity' | 'blur'
+    let fxBadgeHideTimeout = null;
+
+    const showFxBadgeTemporarily = (duration = 1400) => {
+      if (!sideFxContainer) return;
+      sideFxContainer.classList.add('is-interacting');
+      if (fxBadgeHideTimeout) clearTimeout(fxBadgeHideTimeout);
+      fxBadgeHideTimeout = setTimeout(() => {
+        sideFxContainer.classList.remove('is-interacting');
+      }, duration);
+    };
+
+    const updateFxSliderUI = (animate = true) => {
+      if (!sideFxTrack || !sideFxFill) return;
+
+      if (btnFxOpacity) btnFxOpacity.classList.toggle('active', activeFxMode === 'opacity');
+      if (btnFxBlur) btnFxBlur.classList.toggle('active', activeFxMode === 'blur');
+
+      let pct = 100;
+      if (activeFxMode === 'opacity') {
+        const val = this.timetableOpacity != null ? this.timetableOpacity : 100;
+        const ratio = Math.max(0, Math.min(1, (val - 20) / 80));
+        pct = Math.round(ratio * 100);
+        if (fxLabelText) fxLabelText.innerText = `${val}%`;
+        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Opacity: ${val}%`);
+        sideFxTrack.setAttribute('aria-valuenow', val);
+        sideFxTrack.setAttribute('aria-label', 'Timetable Opacity');
+      } else {
+        const val = this.bgBlurEnabled ? (this.bgBlurIntensity != null ? this.bgBlurIntensity : 10) : 0;
+        const ratio = Math.max(0, Math.min(1, val / 40));
+        pct = Math.round(ratio * 100);
+        if (fxLabelText) fxLabelText.innerText = `${val}px`;
+        if (sideFxBadge) sideFxBadge.setAttribute('title', `Wallpaper Blur: ${val}px`);
+        sideFxTrack.setAttribute('aria-valuenow', val);
+        sideFxTrack.setAttribute('aria-label', 'Wallpaper Blur');
+      }
+
+      sideFxFill.style.transition = animate ? 'height 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      sideFxFill.style.setProperty('height', `${pct}%`, 'important');
+    };
+
+    this.syncLeftFxSlider = (animate = true) => updateFxSliderUI(animate);
+
+    if (sideFxContainer && sideFxTrack) {
+      updateFxSliderUI(false);
+
+      if (btnFxOpacity) {
+        btnFxOpacity.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activeFxMode = 'opacity';
+          if (window.soundFX) window.soundFX.play('tap');
+          updateFxSliderUI(true);
+          showFxBadgeTemporarily();
+        });
+      }
+
+      if (btnFxBlur) {
+        btnFxBlur.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activeFxMode = 'blur';
+          if (window.soundFX) window.soundFX.play('tap');
+          updateFxSliderUI(true);
+          showFxBadgeTemporarily();
+        });
+      }
+
+      let isFxDragging = false;
+
+      const updateFxFromPointer = (e, animate = false) => {
+        const rect = sideFxTrack.getBoundingClientRect();
+        let clientY = e.clientY;
+        if (clientY == null && e.touches && e.touches.length > 0) {
+          clientY = e.touches[0].clientY;
+        } else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) {
+          clientY = e.changedTouches[0].clientY;
+        }
+        if (clientY == null) clientY = rect.top + rect.height / 2;
+
+        const offsetY = rect.bottom - clientY;
+        const ratio = Math.max(0, Math.min(1, offsetY / rect.height));
+
+        if (activeFxMode === 'opacity') {
+          const val = Math.round(20 + ratio * 80);
+          this.setTimetableOpacity(val, false);
+        } else {
+          const val = Math.round(ratio * 40);
+          this.setWallpaperBlur(val, val > 0, false);
+        }
+
+        updateFxSliderUI(animate);
+        showFxBadgeTemporarily();
+        this._stagePending(true);
+      };
+
+      const onFxDragStart = (e) => {
+        if (e.button != null && e.button !== 0) return;
+        isFxDragging = true;
+        sideFxContainer.classList.add('active-drag');
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxFromPointer(e, false);
+        if (e.cancelable) e.preventDefault();
+      };
+
+      const onFxDragMove = (e) => {
+        if (!isFxDragging) return;
+        updateFxFromPointer(e, false);
+        if (e.cancelable) e.preventDefault();
+      };
+
+      const onFxDragEnd = () => {
+        if (isFxDragging) {
+          isFxDragging = false;
+          sideFxContainer.classList.remove('active-drag');
+          updateFxSliderUI(true);
+          showFxBadgeTemporarily(1200);
+        }
+      };
+
+      sideFxTrack.addEventListener('pointerdown', onFxDragStart);
+      sideFxTrack.addEventListener('mousedown', onFxDragStart);
+      sideFxTrack.addEventListener('touchstart', onFxDragStart, { passive: false });
+
+      window.addEventListener('pointermove', onFxDragMove, { passive: false });
+      window.addEventListener('mousemove', onFxDragMove);
+      window.addEventListener('touchmove', onFxDragMove, { passive: false });
+
+      window.addEventListener('pointerup', onFxDragEnd);
+      window.addEventListener('mouseup', onFxDragEnd);
+      window.addEventListener('touchend', onFxDragEnd);
+      window.addEventListener('pointercancel', onFxDragEnd);
+      window.addEventListener('touchcancel', onFxDragEnd);
+
+      // Double click track to reset active property
+      sideFxTrack.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        if (activeFxMode === 'opacity') {
+          this.setTimetableOpacity(100, false);
+        } else {
+          this.setWallpaperBlur(0, false, false);
+        }
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+        this._stagePending(true);
+      });
+
+      // Mouse wheel scrub over container
+      sideFxContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1 : -1;
+        if (activeFxMode === 'opacity') {
+          const step = delta * 5;
+          const next = Math.max(20, Math.min(100, (this.timetableOpacity || 100) + step));
+          this.setTimetableOpacity(next, false);
+        } else {
+          const step = delta * 2;
+          const next = Math.max(0, Math.min(40, (this.bgBlurIntensity || 0) + step));
+          this.setWallpaperBlur(next, next > 0, false);
+        }
+        updateFxSliderUI(false);
+        showFxBadgeTemporarily();
+        this._stagePending(true);
+      }, { passive: false });
+    }
+
     // Flush pending changes before page unloads or tab becomes hidden
     window.addEventListener('beforeunload', () => {
       if (this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
@@ -5560,10 +5797,11 @@ class SchedullyApp {
            }
            
            // Forcefully clear the UI immediately
-           if (this.classListContainer) this.classListContainer.innerHTML = '';
-           if (this.universalTimetableGrid) this.universalTimetableGrid.innerHTML = '';
-           if (this.slotsBadgeCount) this.slotsBadgeCount.innerText = '0';
-           if (this.clashAlert) this.clashAlert.classList.add('hidden');
+            if (this.classListContainer) this.classListContainer.innerHTML = '';
+            if (this.universalTimetableGrid) this.universalTimetableGrid.innerHTML = '';
+            if (this.slotsBadgeCount) this.slotsBadgeCount.innerText = '0';
+            if (this.settingsCoursesBadge) this.settingsCoursesBadge.innerText = '0';
+            if (this.clashAlert) this.clashAlert.classList.add('hidden');
            
            // Update undo/redo button states & render to reset empty states
            this.updateHistoryButtonUI();
@@ -7717,7 +7955,8 @@ class SchedullyApp {
 
   renderAll() {
     const count = this.classes.length;
-    this.slotsBadgeCount.innerText = count;
+    if (this.slotsBadgeCount) this.slotsBadgeCount.innerText = count;
+    if (this.settingsCoursesBadge) this.settingsCoursesBadge.innerText = count;
 
     // Reset clashing state first
     this.classes.forEach(c => c.isClashing = false);
@@ -7789,8 +8028,19 @@ class SchedullyApp {
       timetableContainer.style.transform = 'none';
       timetableContainer.style.marginTop = `${this.gridYPosVal || 0}px`;
       timetableContainer.style.transition = 'margin-top 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease';
-        timetableContainer.style.borderRadius = this.tableCornerStyle === 'sharp' ? '0px' : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8) + 'px';
-        timetableContainer.style.overflow = 'hidden';
+      timetableContainer.style.borderRadius = this.tableCornerStyle === 'sharp' ? '0px' : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8) + 'px';
+      timetableContainer.style.overflow = 'hidden';
+      timetableContainer.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
+    }
+    if (this.universalTimetableGrid) {
+      this.universalTimetableGrid.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
+    }
+    const phoneLockHeader = document.getElementById('phone-lock-header');
+    if (phoneLockHeader) {
+      phoneLockHeader.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
+    }
+    if (this.phoneCanvas) {
+      this.phoneCanvas.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
     }
 
     const timeSlots = [];
