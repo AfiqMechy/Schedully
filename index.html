@@ -158,6 +158,9 @@
         if (zoomLabel) {
           zoomLabel.innerText = Math.round(activeZoom * 100) + '%';
         }
+        var pct = Math.round((Math.max(0, Math.min(1, (activeZoom - 0.4) / 1.1))) * 100);
+        var fill = document.getElementById('side-zoom-fill');
+        if (fill) fill.style.setProperty('height', pct + '%', 'important');
       });
     } catch(e) {}
   })();
@@ -167,14 +170,16 @@
   body:not(.app-ready) #canvas-scaler-container,
   body:not(.app-ready) #header-desktop-bar,
   body:not(.app-ready) #floating-controls-container,
-  body:not(.app-ready) #mobile-export-bar {
+  body:not(.app-ready) #mobile-export-bar,
+  body:not(.app-ready) #side-zoom-slider-container {
     opacity: 0 !important;
     pointer-events: none !important;
   }
   #canvas-scaler-container,
   #header-desktop-bar,
   #floating-controls-container,
-  #mobile-export-bar {
+  #mobile-export-bar,
+  #side-zoom-slider-container {
     transition: opacity 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
   }
 </style>
@@ -225,7 +230,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=545">
+<link rel="stylesheet" href="styles.css?v=582">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -245,76 +250,180 @@
 </svg>
 
 <!-- BEGIN: Left Sidebar Navigation -->
-<button id="btn-expand-left-floating" class="fixed top-5 left-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
-  <svg class="w-4 h-4 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-  <span>Menu</span>
-</button>
-
-<!-- MOBILE: single centered Export button with dropdown -->
-<div id="mobile-export-bar" class="show-mobile-only fixed top-4 left-1/2 -translate-x-1/2 z-50">
-  <!-- Single Export trigger button -->
-  <button id="btn-mobile-export-toggle" class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold active:scale-95 transition-all shadow-lg">
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-    <span>Export</span>
-    <svg id="mobile-export-chevron" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<div id="left-action-container" class="top-action-wrapper fixed top-4 left-4 z-40">
+  <button id="btn-expand-left-floating" class="top-action-pill" title="Menu" aria-label="Menu">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
   </button>
-
-  <!-- Dropdown card: expands downward from the button, vertically scrollable in landscape -->
-  <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 rounded-3xl shadow-2xl z-50 overflow-y-auto">
-    <div class="p-2 flex flex-col gap-1.5">
-      <!-- Download Image (Primary) -->
-      <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </span>
-        <div>
-          <p class="font-extrabold text-sm text-white">Download Image</p>
-          <p class="text-[11px] font-medium text-blue-100 opacity-90">Save as wallpaper PNG</p>
-        </div>
-      </button>
-
-      <!-- Divider -->
-      <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
-
-      <!-- Calendar ICS -->
-      <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </span>
-        <div>
-          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Calendar (.ics)</p>
-          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Sync to Google / Apple</p>
-        </div>
-      </button>
-
-      <!-- CSV Export -->
-      <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </span>
-        <div>
-          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Export CSV</p>
-          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Spreadsheet format</p>
-        </div>
-      </button>
-
-      <!-- Save PDF -->
-      <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-        <span class="w-8 h-8 rounded-xl bg-red-500/15 text-red-500 flex items-center justify-center shrink-0 border border-red-500/20">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </span>
-        <div>
-          <p class="font-extrabold text-sm text-gray-800 dark:text-gray-100">Save as PDF</p>
-          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Print-ready document</p>
-        </div>
-      </button>
-
-    </div>
-  </div>
+  <span class="top-action-outside-label">Menu</span>
 </div>
 
+<!-- UNIFIED TOP RIGHT ACTION BAR (Auth, Language, Coffee, Export, Schedule) -->
+<div id="right-action-container" class="top-action-bar-right fixed top-3.5 right-4 z-50 flex items-center gap-2.5">
+  <!-- UNIFIED SINGLE AUTH CIRCLE (Merged Logged Out + Logged In) -->
+  <div id="user-auth-action-wrapper" class="top-action-wrapper relative">
+    <button id="btn-toggle-auth-menu" type="button" class="top-action-pill p-0 overflow-hidden" title="Account" aria-label="Account">
+      <!-- Logged Out Icon State -->
+      <span id="auth-icon-logged-out" class="w-full h-full flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+      </span>
+      <!-- Logged In Avatar State -->
+      <div id="user-avatar-badge" class="hidden w-full h-full rounded-full flex items-center justify-center font-bold text-xs">
+        U
+      </div>
+    </button>
+    <span id="user-auth-outside-label" class="top-action-outside-label">Login</span>
 
+    <!-- 1. Expandable Login Providers Options Menu (When Logged Out) -->
+    <div id="login-providers-menu" class="hidden absolute top-full right-0 mt-2.5 w-60 p-2 rounded-2xl border shadow-2xl flex flex-col gap-1.5 z-50">
+      <div class="popover-header px-2 py-1 flex items-center justify-between">
+        <span data-i18n="signInProvider" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sign In Provider</span>
+      </div>
 
+      <!-- Google Login Option -->
+      <button id="btn-google-login" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 border border-gray-200/50">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>
+          </div>
+          <div>
+            <p class="popover-item-title text-xs font-bold transition-colors">Google Account</p>
+            <p data-i18n="continueGoogle" class="popover-item-desc text-[9px]">Continue with Google</p>
+          </div>
+        </div>
+        <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    <!-- 2. Expandable Account Settings Menu (When Logged In) -->
+    <div id="profile-settings-menu" class="hidden absolute top-full right-0 mt-2.5 w-60 p-2 rounded-2xl border shadow-2xl flex flex-col gap-1.5 z-50">
+      <div class="popover-header px-2 py-1 flex items-center justify-between">
+        <span data-i18n="accountSettings" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Settings</span>
+      </div>
+
+      <!-- Reset Cloud Data Option -->
+      <button id="btn-google-reset-cloud" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </div>
+          <div>
+            <p data-i18n="resetCloudData" class="popover-item-title text-xs font-bold group-hover:text-amber-500 transition-colors">Reset Cloud Data</p>
+            <p data-i18n="resetDesc" class="popover-item-desc text-[9px]">Restore fresh default schedule</p>
+          </div>
+        </div>
+        <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+
+      <div class="popover-divider h-[1px] my-0.5"></div>
+
+      <!-- Sign Out Option -->
+      <button id="btn-google-logout" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-red-500/15 text-red-500 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          </div>
+          <div>
+            <p data-i18n="signOut" class="popover-item-title text-xs font-bold group-hover:text-red-500 transition-colors">Sign Out</p>
+            <p data-i18n="signOutDesc" class="popover-item-desc text-[9px]">Log out of your account</p>
+          </div>
+        </div>
+        <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Globe Language Selector Circle Pill -->
+  <div class="top-action-wrapper">
+    <button id="btn-open-language-modal" type="button" title="Language" aria-label="Language" class="top-action-pill">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 00-3.5 9 14.5 14.5 0 003.5 9 14.5 14.5 0 003.5-9 14.5 14.5 0 00-3.5-9z"></path>
+      </svg>
+    </button>
+    <span class="top-action-outside-label">Language</span>
+  </div>
+
+  <!-- Buy Me a Coffee Support Circle Pill -->
+  <div class="top-action-wrapper">
+    <button id="btn-open-coffee-modal" type="button" title="Coffee" aria-label="Coffee" class="top-action-pill">
+      <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+        <line x1="6" y1="1" x2="6" y2="4"></line>
+        <line x1="10" y1="1" x2="10" y2="4"></line>
+        <line x1="14" y1="1" x2="14" y2="4"></line>
+      </svg>
+    </button>
+    <span class="top-action-outside-label">Support</span>
+  </div>
+
+  <!-- Export Trigger with Dropdown -->
+  <div class="top-action-wrapper relative">
+    <button id="btn-mobile-export-toggle" class="top-action-pill" title="Export" aria-label="Export">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+    </button>
+    <span class="top-action-outside-label">Export</span>
+
+    <!-- Dropdown card: expands downward from the Export button -->
+    <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full right-0 mt-2.5 w-64 rounded-3xl shadow-2xl z-50 overflow-y-auto">
+      <div class="p-2 flex flex-col gap-1.5">
+        <!-- Download Image (Primary) -->
+        <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
+          <span class="mobile-export-icon-primary w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div>
+            <p class="mobile-export-primary-title font-extrabold text-sm leading-snug">Download Image</p>
+            <p class="mobile-export-primary-sub text-[11px] font-medium leading-tight">Save as wallpaper PNG</p>
+          </div>
+        </button>
+
+        <!-- Divider -->
+        <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
+
+        <!-- Calendar ICS -->
+        <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-cal w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div>
+            <p class="mobile-export-title font-extrabold text-sm leading-snug">Calendar (.ics)</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Sync to Google / Apple</p>
+          </div>
+        </button>
+
+        <!-- CSV Export -->
+        <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-csv w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div>
+            <p class="mobile-export-title font-extrabold text-sm leading-snug">Export CSV</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Spreadsheet format</p>
+          </div>
+        </button>
+
+        <!-- Save PDF -->
+        <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-pdf w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div>
+            <p class="mobile-export-title font-extrabold text-sm leading-snug">Save as PDF</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Print-ready document</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Trigger -->
+  <div class="top-action-wrapper">
+    <button id="btn-expand-right-floating" class="top-action-pill" title="Schedule" aria-label="Schedule">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+    </button>
+    <span class="top-action-outside-label">Schedule</span>
+  </div>
+</div>
 
 <aside id="left-sidebar" class="sidebar-collapsed-left w-80 m-3 rounded-3xl flex flex-col justify-between overflow-y-auto no-scrollbar p-6 z-20 shrink-0">
 <!-- Top Section: Logo and Nav Items -->
@@ -1560,129 +1669,8 @@
         </div><!-- end layout-card-inner -->
 </nav>
 </div>
-  <!-- Bottom Section: Floating User Profile / Login & Language Switcher -->
+  <!-- Bottom Section: App Creator Disclaimer / Footer -->
   <div class="sidebar-bottom-container">
-    <div class="user-profile-wrapper flex items-center gap-1.5">
-      <!-- Logged Out State: Single Adaptive Action Card with Expandable Providers -->
-      <div id="user-logged-out-state" class="flex-1 relative min-w-0">
-        <!-- Main Collapsed Login Action Button -->
-        <button id="btn-toggle-login-menu" type="button" class="btn-adaptive-auth w-full py-2 px-3 rounded-full flex items-center justify-between shadow-sm transition-all cursor-pointer border border-transparent min-w-0">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="auth-icon-circle w-6 h-6 rounded-full bg-black/10 flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-            </div>
-            <span data-i18n="login" class="text-xs font-extrabold tracking-wide truncate">Login</span>
-          </div>
-          <div class="flex items-center shrink-0">
-            <svg id="login-chevron" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </button>
-
-        <!-- Expandable Login Providers Options Menu (Expands Upward or Downward) -->
-        <div id="login-providers-menu" class="hidden absolute bottom-full left-0 right-0 mb-2 p-2 rounded-2xl border shadow-2xl flex flex-col gap-1.5 z-50">
-          <div class="popover-header px-2 py-1 flex items-center justify-between">
-            <span data-i18n="signInProvider" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sign In Provider</span>
-          </div>
-
-          <!-- Google Login Option -->
-          <button id="btn-google-login" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 border border-gray-200/50">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>
-              </div>
-              <div>
-                <p class="popover-item-title text-xs font-bold transition-colors">Google Account</p>
-                <p data-i18n="continueGoogle" class="popover-item-desc text-[9px]">Continue with Google</p>
-              </div>
-            </div>
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Logged In State: User Avatar, Name, and Expandable Profile Settings Popover -->
-      <div id="user-logged-in-state" class="hidden flex-1 relative min-w-0">
-        <!-- Main Clickable Profile Card Capsule -->
-        <button id="btn-toggle-profile-menu" type="button" class="user-profile-card flex items-center justify-between w-full rounded-full border transition-all cursor-pointer shadow-xs text-left min-w-0">
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <div id="user-avatar-badge" class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs bg-blue-100 text-blue-600 overflow-hidden shrink-0 border border-blue-200 shadow-xs">
-              U
-            </div>
-            <div class="truncate min-w-0 flex-1">
-              <p id="user-display-name" class="font-bold text-xs leading-tight truncate">User</p>
-              <p id="user-status-text" class="text-[9px] font-medium truncate opacity-70">Online</p>
-            </div>
-          </div>
-          <div class="flex items-center shrink-0 text-gray-400 pl-1">
-            <svg id="profile-chevron" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </button>
-
-        <!-- Expandable Account Settings Menu Popup (Expands Upward) -->
-        <div id="profile-settings-menu" class="hidden absolute bottom-full left-0 right-0 mb-2 p-2 rounded-2xl border shadow-2xl flex flex-col gap-1.5 z-50">
-          <div class="popover-header px-2 py-1 flex items-center justify-between">
-            <span data-i18n="accountSettings" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Settings</span>
-          </div>
-
-          <!-- Reset Cloud Data Option -->
-          <button id="btn-google-reset-cloud" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </div>
-              <div>
-                <p data-i18n="resetCloudData" class="popover-item-title text-xs font-bold group-hover:text-amber-500 transition-colors">Reset Cloud Data</p>
-                <p data-i18n="resetDesc" class="popover-item-desc text-[9px]">Restore fresh default schedule</p>
-              </div>
-            </div>
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-          </button>
-
-          <div class="popover-divider h-[1px] my-0.5"></div>
-
-          <!-- Sign Out Option -->
-          <button id="btn-google-logout" type="button" class="w-full py-2 px-2.5 rounded-xl flex items-center justify-between transition-all text-left group cursor-pointer border border-transparent">
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded-lg bg-red-500/15 text-red-500 flex items-center justify-center shrink-0">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-              </div>
-              <div>
-                <p data-i18n="signOut" class="popover-item-title text-xs font-bold group-hover:text-red-500 transition-colors">Sign Out</p>
-                <p data-i18n="signOutDesc" class="popover-item-desc text-[9px]">Log out of your account</p>
-              </div>
-            </div>
-            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Interactive Guide Rounded Square Button (Desktop & Mobile) -->
-      <button id="btn-open-guide-modal" type="button" title="Interactive Quick Guide" class="btn-guide-tour shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs cursor-pointer">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-        </svg>
-      </button>
-
-      <!-- Globe Language Selector Rounded Square Button -->
-      <button id="btn-open-language-modal" type="button" title="Select Language" class="btn-globe-language shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs cursor-pointer">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 00-3.5 9 14.5 14.5 0 003.5 9 14.5 14.5 0 003.5-9 14.5 14.5 0 00-3.5-9z"></path>
-        </svg>
-      </button>
-
-      <!-- Buy Me a Coffee Support Rounded Square Button -->
-      <button id="btn-open-coffee-modal" type="button" title="Buy Me a Coffee" class="btn-coffee-support shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs cursor-pointer">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-          <line x1="6" y1="1" x2="6" y2="4"></line>
-          <line x1="10" y1="1" x2="10" y2="4"></line>
-          <line x1="14" y1="1" x2="14" y2="4"></line>
-        </svg>
-      </button>
-    </div>
-    
-    <!-- App Creator Disclaimer / Footer -->
     <div class="creator-footer">
       <p>Schedully © 2026 • Developed by <span>Afiq</span></p>
     </div>
@@ -1694,24 +1682,12 @@
 <!-- Top Action Bar -->
 <header class="h-auto flex items-center justify-center border-none bg-transparent pointer-events-none z-20 relative pt-4 pb-2">
 
-  <!-- DESKTOP: full pill bar (hidden on mobile) -->
-  <div id="header-desktop-bar" class="hidden-mobile pointer-events-auto inline-flex items-center gap-2 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-gray-200/90 dark:border-slate-700/90 rounded-full shadow-lg">
-    <button id="btn-export-ical" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      <span data-i18n="exportIcs">Calendar (.ics)</span>
-    </button>
-    <button id="btn-export-csv" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      <span data-i18n="exportCsv">Export CSV</span>
-    </button>
-    <button id="btn-download-hd" class="btn-theme-primary flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-extrabold active:scale-95 transition-all shadow-md">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      <span data-i18n="downloadImage">Download Image</span>
-    </button>
-    <button id="btn-save-pdf" class="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold text-gray-700 dark:text-gray-200 adaptive-icon-btn transition-all">
-      <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      <span data-i18n="savePdf">Save as PDF</span>
-    </button>
+  <!-- Headless desktop proxy triggers (Visually hidden, unified into top Export pill dropdown) -->
+  <div id="header-desktop-bar" class="hidden" aria-hidden="true">
+    <button id="btn-export-ical" type="button"></button>
+    <button id="btn-export-csv" type="button"></button>
+    <button id="btn-download-hd" type="button"></button>
+    <button id="btn-save-pdf" type="button"></button>
   </div>
 </header>
 
@@ -1842,198 +1818,154 @@
 
 </div>
 
-<!-- Floating Mobile-Friendly Controls Container: 2-Row Stacked Pills + Popover Windows -->
-<div id="floating-controls-container" class="absolute bottom-6 left-0 right-0 mx-auto flex flex-col items-center justify-center gap-2 z-30 pointer-events-none w-fit max-w-[calc(100%-24px)]">
+<!-- Floating Mobile-Friendly Controls Container: Split Left (Theme/Controls) & Right (Undo/Redo) Islands -->
+<div id="floating-controls-container" class="absolute bottom-6 left-0 right-0 px-4 md:px-6 w-full flex items-end justify-between z-30 pointer-events-none">
   
-  <!-- Window 2: Separate Floating Aspect Ratio Popover Window (Floats above Controls Window) -->
-  <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3 min-w-[320px] max-w-[92vw] shadow-2xl transition-all mb-1">
-    <!-- Popover Header -->
-    <div class="flex items-center justify-between w-full border-b border-white/20 pb-2 px-1">
-      <div class="flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-        </svg>
-        <span class="text-[10.5px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase" data-i18n="screenAspectRatio">SCREEN ASPECT RATIO</span>
-      </div>
-      <button type="button" id="btn-close-ratio-popover" class="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Ratio Menu">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <!-- 2x2 Ratio Cards -->
-    <div class="grid grid-cols-2 gap-2 w-full" id="screen-ratio-toggles">
-      <!-- Auto (Match) -->
-      <button type="button" class="ratio-card-btn pill-btn active" data-ratio="auto" title="Auto-match original image aspect ratio">
-        <div class="ratio-card-icon-box bg-amber-500/10 text-amber-500">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-        </div>
-        <div class="ratio-card-text">
-          <span class="ratio-card-title">Auto</span>
-          <span class="ratio-card-sub">Match</span>
-        </div>
-      </button>
-
-      <!-- Android (20:9) -->
-      <button type="button" class="ratio-card-btn pill-btn" data-ratio="android" title="Android Devices (20:9)">
-        <div class="ratio-card-icon-box bg-emerald-500/10 text-emerald-500">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-          </svg>
-        </div>
-        <div class="ratio-card-text">
-          <span class="ratio-card-title">Android</span>
-          <span class="ratio-card-sub">20:9</span>
-        </div>
-      </button>
-
-      <!-- iOS (19.5:9) -->
-      <button type="button" class="ratio-card-btn pill-btn" data-ratio="ios" title="iOS Devices (19.5:9)">
-        <div class="ratio-card-icon-box bg-blue-500/10 text-blue-500">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v1h6V3m-7 4h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z"/>
-          </svg>
-        </div>
-        <div class="ratio-card-text">
-          <span class="ratio-card-title">iOS</span>
-          <span class="ratio-card-sub">19.5:9</span>
-        </div>
-      </button>
-
-      <!-- 18:9 (Classic) -->
-      <button type="button" class="ratio-card-btn pill-btn" data-ratio="standard" title="Standard 18:9">
-        <div class="ratio-card-icon-box bg-indigo-500/10 text-indigo-500">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <!-- Left Side Floating Island: Canvas Popovers & Theme / Controls Pill Bar -->
+  <div id="floating-left-cluster" class="flex flex-col items-start gap-2 pointer-events-none min-w-0 max-w-[calc(100%-110px)]">
+    <!-- Window 2: Separate Floating Aspect Ratio Popover Window (Floats above Controls Window) -->
+    <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3 min-w-[320px] max-w-[92vw] shadow-2xl transition-all mb-1">
+      <!-- Popover Header -->
+      <div class="flex items-center justify-between w-full border-b border-white/20 pb-2 px-1">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
           </svg>
+          <span class="text-[10.5px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase" data-i18n="screenAspectRatio">SCREEN ASPECT RATIO</span>
         </div>
-        <div class="ratio-card-text">
-          <span class="ratio-card-title">Classic</span>
-          <span class="ratio-card-sub">18:9</span>
-        </div>
-      </button>
-    </div>
-  </div>
-
-  <!-- Window 1: Main Canvas Controls Popover Window -->
-  <div id="canvas-controls-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3.5 min-w-[320px] max-w-[92vw] transition-all mb-1">
-    <!-- Popover Header with Aspect Ratio Toggle Button -->
-    <div class="flex items-center justify-between w-full border-b border-white/20 pb-2.5 px-1">
-      <span id="stage-device-label" class="text-[10px] font-extrabold tracking-wider text-slate-600 uppercase">LIVE PHONE LOCKSCREEN PREVIEW</span>
-      
-      <!-- Aspect Ratio Button in Header (Replaces Display Options) -->
-      <button type="button" id="btn-controls-ratio-toggle" class="btn-ratio-pill-toggle" title="Open Aspect Ratio Window">
-        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-        </svg>
-        <span id="current-ratio-badge">Auto (Match)</span>
-      </button>
-    </div>
-
-    <!-- Title Input Row with Integrated Enable/Disable Toggle -->
-    <div class="relative w-full flex items-center gap-1.5" id="controls-title-row">
-      <button type="button" id="btn-toggle-title-visibility" class="title-visibility-toggle-btn active shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-all" title="Toggle Title (Show / Hide)">
-        <!-- Eye Open Icon (Visible) -->
-        <svg class="w-4 h-4 icon-title-visible text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        </svg>
-        <!-- Eye Closed / Slash Icon (Hidden) -->
-        <svg class="w-4 h-4 icon-title-hidden hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
-        </svg>
-      </button>
-      <div class="relative flex-1 min-w-0 flex items-center">
-        <input class="w-full text-center py-2 px-4 rounded-full text-xs font-bold text-gray-800 focus:outline-none transition-all" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
-        <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 pointer-events-none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- Device Type Toggles (Clean 4-Segment Text-Only Layout) -->
-    <div class="grid grid-cols-4 p-1 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
-      <button data-device="phone" class="capsule-btn active flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-        <span data-i18n="phone">Phone</span>
-      </button>
-      <button data-device="tablet" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-        <span data-i18n="tablet">Tablet</span>
-      </button>
-      <button data-device="watch" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-        <span data-i18n="watch">Watch</span>
-      </button>
-      <button data-device="paper" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-        <span data-i18n="paper">Paper</span>
-      </button>
-    </div>
-
-    <!-- Toggles Row -->
-    <div class="flex items-center justify-center gap-3 w-full">
-      <!-- Lock UI Toggle -->
-      <div class="pill-toggle-group" id="toggle-lock-ui">
-        <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="uiOn">UI ON</span></button>
-        <button type="button" class="pill-btn" data-val="no"><span data-i18n="uiOff">UI OFF</span></button>
-      </div>
-      <!-- Show/Hide Timetable Grid Toggle -->
-      <div class="pill-toggle-group" id="toggle-show-table">
-        <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="table">TABLE</span></button>
-        <button type="button" class="pill-btn" data-val="no"><span data-i18n="bgOnly">BG ONLY</span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Row 0: Dedicated Floating Notification Pill Slot (Directly above Undo / Redo Row) -->
-  <div id="floating-notification-row" class="pointer-events-auto flex items-center justify-center w-full min-h-[0px] transition-all">
-    <div id="grid-swap-toast" class="grid-swap-toast-pill hidden">
-      <span id="grid-swap-toast-msg">Course moved</span>
-      <button id="btn-grid-swap-undo" type="button" class="btn-grid-swap-undo">Undo</button>
-    </div>
-  </div>
-    
-    <!-- Top Pill: Undo & Redo Only -->
-    <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 rounded-full shadow-lg transition-all">
-      <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
-        <button id="btn-history-undo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 14 4 9l5-5"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>
-          </svg>
+        <button type="button" id="btn-close-ratio-popover" class="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Ratio Menu">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
-        <div class="w-[1px] h-3.5 bg-gray-200 dark:bg-slate-600 mx-0.5 opacity-60"></div>
-        <button id="btn-history-redo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Redo (Ctrl+Y)" disabled>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m15 14 5-5-5-5"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/>
-          </svg>
+      </div>
+
+      <!-- 2x2 Ratio Cards -->
+      <div class="grid grid-cols-2 gap-2 w-full" id="screen-ratio-toggles">
+        <!-- Auto (Match) -->
+        <button type="button" class="ratio-card-btn pill-btn active" data-ratio="auto" title="Auto-match original image aspect ratio">
+          <div class="ratio-card-icon-box bg-amber-500/10 text-amber-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div class="ratio-card-text">
+            <span class="ratio-card-title">Auto</span>
+            <span class="ratio-card-sub">Match</span>
+          </div>
+        </button>
+
+        <!-- Android (20:9) -->
+        <button type="button" class="ratio-card-btn pill-btn" data-ratio="android" title="Android Devices (20:9)">
+          <div class="ratio-card-icon-box bg-emerald-500/10 text-emerald-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="ratio-card-text">
+            <span class="ratio-card-title">Android</span>
+            <span class="ratio-card-sub">20:9</span>
+          </div>
+        </button>
+
+        <!-- iOS (19.5:9) -->
+        <button type="button" class="ratio-card-btn pill-btn" data-ratio="ios" title="iOS Devices (19.5:9)">
+          <div class="ratio-card-icon-box bg-blue-500/10 text-blue-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v1h6V3m-7 4h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z"/>
+            </svg>
+          </div>
+          <div class="ratio-card-text">
+            <span class="ratio-card-title">iOS</span>
+            <span class="ratio-card-sub">19.5:9</span>
+          </div>
+        </button>
+
+        <!-- 18:9 (Classic) -->
+        <button type="button" class="ratio-card-btn pill-btn" data-ratio="standard" title="Standard 18:9">
+          <div class="ratio-card-icon-box bg-indigo-500/10 text-indigo-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+            </svg>
+          </div>
+          <div class="ratio-card-text">
+            <span class="ratio-card-title">Classic</span>
+            <span class="ratio-card-sub">18:9</span>
+          </div>
         </button>
       </div>
     </div>
 
-    <!-- Bottom Floating Capsule Pill Bar: Zoom, Theme Colors, Light/Dark Mode, Controls -->
+    <!-- Window 1: Main Canvas Controls Popover Window -->
+    <div id="canvas-controls-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3.5 min-w-[320px] max-w-[92vw] transition-all mb-1">
+      <!-- Popover Header with Aspect Ratio Toggle Button -->
+      <div class="flex items-center justify-between w-full border-b border-white/20 pb-2.5 px-1">
+        <span id="stage-device-label" class="text-[10px] font-extrabold tracking-wider text-slate-600 uppercase">LIVE PHONE LOCKSCREEN PREVIEW</span>
+        
+        <!-- Aspect Ratio Button in Header (Replaces Display Options) -->
+        <button type="button" id="btn-controls-ratio-toggle" class="btn-ratio-pill-toggle" title="Open Aspect Ratio Window">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+          <span id="current-ratio-badge">Auto (Match)</span>
+        </button>
+      </div>
+
+      <!-- Title Input Row with Integrated Enable/Disable Toggle -->
+      <div class="relative w-full flex items-center gap-1.5" id="controls-title-row">
+        <button type="button" id="btn-toggle-title-visibility" class="title-visibility-toggle-btn active shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-all" title="Toggle Title (Show / Hide)">
+          <!-- Eye Open Icon (Visible) -->
+          <svg class="w-4 h-4 icon-title-visible" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <!-- Eye Closed / Slash Icon (Hidden) -->
+          <svg class="w-4 h-4 icon-title-hidden hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+          </svg>
+        </button>
+        <div class="relative flex-1 min-w-0 flex items-center">
+          <input class="w-full text-center py-2 px-4 rounded-full text-xs font-bold text-gray-800 focus:outline-none transition-all" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
+          <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 pointer-events-none">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Device Type Toggles (Clean 4-Segment Text-Only Layout) -->
+      <div class="grid grid-cols-4 p-1 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
+        <button data-device="phone" class="capsule-btn active flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
+          <span data-i18n="phone">Phone</span>
+        </button>
+        <button data-device="tablet" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
+          <span data-i18n="tablet">Tablet</span>
+        </button>
+        <button data-device="watch" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
+          <span data-i18n="watch">Watch</span>
+        </button>
+        <button data-device="paper" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
+          <span data-i18n="paper">Paper</span>
+        </button>
+      </div>
+
+      <!-- Toggles Row -->
+      <div class="flex items-center justify-center gap-3 w-full">
+        <!-- Lock UI Toggle -->
+        <div class="pill-toggle-group" id="toggle-lock-ui">
+          <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="uiOn">UI ON</span></button>
+          <button type="button" class="pill-btn" data-val="no"><span data-i18n="uiOff">UI OFF</span></button>
+        </div>
+        <!-- Show/Hide Timetable Grid Toggle -->
+        <div class="pill-toggle-group" id="toggle-show-table">
+          <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="table">TABLE</span></button>
+          <button type="button" class="pill-btn" data-val="no"><span data-i18n="bgOnly">BG ONLY</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Floating Capsule Pill Bar: Theme Colors, Light/Dark Mode, Controls (Leftmost Position) -->
     <div id="bottom-floating-pill-bar" class="pointer-events-auto flex items-center gap-2.5 p-1.5 rounded-full shadow-xl transition-all">
       
-      <!-- Capsule 1: Zoom & Randomize Theme Controls -->
+      <!-- Capsule 1: Randomize Theme & Course Colors -->
       <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5">
-        <button id="btn-zoom-out" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom Out">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </button>
-        <span id="zoom-label-text" class="text-xs font-extrabold text-gray-800 dark:text-gray-100 px-1 w-10 text-center">85%</span>
-        <script>
-          (function() {
-            var z = parseFloat(localStorage.getItem('schedully_zoom_scale'));
-            if (!isNaN(z) && z >= 0.4 && z <= 1.5) {
-              var el = document.getElementById('zoom-label-text');
-              if (el) el.innerText = Math.round(z * 100) + '%';
-            }
-          })();
-        </script>
-        <button id="btn-zoom-in" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Zoom In">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </button>
-
-        <div class="w-[1px] h-4 bg-gray-200 dark:bg-slate-600 mx-0.5 opacity-60"></div>
-
         <button id="btn-randomize-theme" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Randomize Overall Theme Palette">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
@@ -2067,7 +1999,7 @@
         </button>
       </div>
 
-      <!-- Capsule 3: Minimal Icon Controls Button (Option 2) -->
+      <!-- Capsule 3: Minimal Icon Controls Button -->
       <div class="flex items-center rounded-full shadow-xs p-0.5">
         <button id="btn-toggle-canvas-popover" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Canvas Controls & Settings">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -2078,14 +2010,66 @@
 
     </div>
   </div>
+
+  <!-- Right Side Floating Island: Toast Notification Slot + Undo / Redo Capsule (Rightmost Position) -->
+  <div id="floating-right-cluster" class="flex flex-col items-end gap-2 pointer-events-none shrink-0">
+
+
+    <!-- Undo & Redo Capsule Pill -->
+    <div id="floating-undo-redo-row" class="pointer-events-auto flex items-center p-1 rounded-full shadow-lg transition-all">
+      <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
+        <button id="btn-history-undo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Undo (Ctrl+Z)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 14 4 9l5-5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>
+          </svg>
+        </button>
+        <div class="w-[1px] h-3.5 bg-gray-200 dark:bg-slate-600 mx-0.5 opacity-60"></div>
+        <button id="btn-history-redo" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors opacity-40 cursor-not-allowed" title="Redo (Ctrl+Y)" disabled>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m15 14 5-5-5-5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- Slim Material Expressive Floating Volume Zoom Slider (Right Side) -->
+  <div id="side-zoom-slider-container" class="m3-expressive-zoom-container pointer-events-auto" aria-label="Zoom Controls">
+    <!-- Outside Percentage Indicator Badge -->
+    <div id="side-zoom-badge" class="m3-zoom-outside-badge" title="Current Zoom Scale">
+      <span id="zoom-label-text">85%</span>
+    </div>
+
+    <div class="m3-expressive-pill" id="m3-expressive-slider-pill">
+      <!-- M3 Expressive Zoom In Action (+) -->
+      <button id="btn-zoom-in" type="button" class="m3-zoom-action-btn m3-zoom-in" title="Zoom In (+15%)" aria-label="Zoom In">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
+      <!-- M3 Expressive Slim Continuous Fill Slider Track -->
+      <div id="side-zoom-track" class="m3-zoom-track" role="slider" aria-valuemin="40" aria-valuemax="150" aria-valuenow="85" title="Slide or tap to adjust zoom (Double tap to reset)">
+        <!-- Active Primary Fill Level (Continuous Volume Capsule) -->
+        <div id="side-zoom-fill" class="m3-zoom-fill"></div>
+      </div>
+
+      <!-- M3 Expressive Zoom Out Action (-) -->
+      <button id="btn-zoom-out" type="button" class="m3-zoom-action-btn m3-zoom-out" title="Zoom Out (-15%)" aria-label="Zoom Out">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
 </main>
 <!-- END: Center Workspace -->
 <!-- BEGIN: Right Sidebar Schedule List -->
-<button id="btn-expand-right-floating" class="fixed top-5 right-5 z-40 flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-xs font-extrabold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all">
-  <svg class="w-4 h-4 theme-primary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-  <span>Schedule</span>
-</button>
-
 <aside id="right-sidebar" class="sidebar-collapsed-right w-80 m-3 rounded-3xl flex flex-col overflow-hidden z-20 shrink-0">
     <!-- Header -->
     <div class="p-3 border-b border-gray-100 dark:border-gray-800">
@@ -2418,7 +2402,7 @@
     <div class="language-modal-card rounded-3xl shadow-2xl border max-w-xs w-full p-5 animate-scaleIn flex flex-col gap-3.5 max-h-[88vh]">
       <div class="popover-header flex items-center justify-between border-b pb-3 shrink-0">
         <div class="flex items-center gap-2.5">
-          <div class="modal-lang-icon-plate w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+          <div class="modal-lang-icon-plate w-8 h-8 rounded-xl flex items-center justify-center">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 00-3.5 9 14.5 14.5 0 003.5 9 14.5 14.5 0 003.5-9 14.5 14.5 0 00-3.5-9z"></path>
             </svg>
@@ -2437,43 +2421,43 @@
       <div class="flex flex-col gap-2 max-h-[62vh] overflow-y-auto pr-1 pb-1.5 custom-modal-scrollbar">
         <button type="button" class="lang-option-pill" data-lang="en">
           <span>ENGLISH</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="en-slang">
           <span>CHRONICALLY ONLINE</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="fr">
           <span>FRANÇAIS</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="zh-cn">
           <span>中文</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="zh-tw">
           <span>繁體中文</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ko">
           <span>한국어</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ja">
           <span>日本語</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="ms">
           <span>MELAYU</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="id">
           <span>BAHASA INDONESIA</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
         <button type="button" class="lang-option-pill" data-lang="es">
           <span>ESPAÑOL</span>
-          <svg class="w-4 h-4 lang-check-icon hidden text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <svg class="w-4 h-4 lang-check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
         </button>
       </div>
     </div>
@@ -2742,7 +2726,15 @@
     });
   }
 </script>
+
+<!-- ═══ Swap / Move Toast — Fixed Center-Bottom Overlay ═══ -->
+<div id="grid-swap-toast" class="grid-swap-toast-pill hidden">
+  <span id="grid-swap-toast-msg">Course moved</span>
+  <button id="btn-grid-swap-undo" type="button" class="btn-grid-swap-undo">Undo</button>
+</div>
+
 </body></html>
+
 
 
 

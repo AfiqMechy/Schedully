@@ -4431,33 +4431,40 @@ class SchedullyApp {
     };
     window.centerCanvasModel = centerCanvasModel;
 
-    const applyZoom = (smooth = true) => {
+    // ═══════════════════════════════════════════════════════════════
+    // IPHONE CAMERA-GRADE FLUID CONTINUOUS OPTICAL ZOOM ENGINE
+    // Exponential Spring Damping + 120FPS Subpixel Hardware Render
+    // ═══════════════════════════════════════════════════════════════
+    let renderedZoom = this.zoomScale || 0.85;
+    let targetZoom = renderedZoom;
+    let zoomRaf = null;
+
+    const renderZoomFrame = (scale) => {
       const scalerContainer = document.getElementById('canvas-scaler-container');
       const wrapper = document.getElementById('main-phone-wrapper');
-      if (!scalerContainer || !wrapper || !zoomLabel) return;
+      if (!scalerContainer || !wrapper) return;
 
-      const scale = this.zoomScale || 0.85;
       const dims = getBaseModelDimensions();
-      const visualW = Math.round(dims.width * scale);
-      const visualH = Math.round(dims.height * scale);
+      const visualW = dims.width * scale;
+      const visualH = dims.height * scale;
 
-      // Scaler footprint container defines the exact scaled pixel boundary for 100% boundary panning & center flex
-      scalerContainer.style.transition = smooth ? 'width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
-      scalerContainer.style.width = `${visualW}px`;
-      scalerContainer.style.height = `${visualH}px`;
+      // Scaler footprint container defines exact scaled boundary for flex centering & panning
+      scalerContainer.style.transition = 'none';
+      scalerContainer.style.width = `${visualW.toFixed(2)}px`;
+      scalerContainer.style.height = `${visualH.toFixed(2)}px`;
       scalerContainer.style.margin = 'auto';
       scalerContainer.style.display = 'block';
       scalerContainer.style.position = 'relative';
 
-      // Wrapper holds unscaled dimensions and scales with transform: scale(zoom) from 0 0
-      wrapper.style.transition = smooth ? 'width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      // Pure hardware-accelerated matrix transformation
+      wrapper.style.transition = 'none';
       wrapper.style.width = `${dims.width}px`;
       wrapper.style.height = `${dims.height}px`;
       wrapper.style.position = 'absolute';
       wrapper.style.top = '0';
       wrapper.style.left = '0';
       wrapper.style.transformOrigin = '0 0';
-      wrapper.style.transform = `scale(${scale})`;
+      wrapper.style.transform = `scale(${scale.toFixed(4)}) translateZ(0)`;
       wrapper.style.flexShrink = '0';
 
       const phoneCanvas = document.getElementById('phone-canvas');
@@ -4466,38 +4473,205 @@ class SchedullyApp {
       }
 
       const displayPercent = Math.round(scale * 100);
-      zoomLabel.innerText = `${displayPercent}%`;
+      if (zoomLabel) {
+        zoomLabel.innerText = `${displayPercent}%`;
+      }
 
-      try {
-        localStorage.setItem('schedully_zoom_scale', String(scale));
-      } catch (e) {}
+      const minZ = 0.4;
+      const maxZ = 1.5;
+      const ratio = Math.max(0, Math.min(1, (scale - minZ) / (maxZ - minZ)));
+      const pct = Math.round(ratio * 100);
 
-      centerCanvasModel(smooth);
+      const sideZoomFill = document.getElementById('side-zoom-fill');
+      if (sideZoomFill) {
+        sideZoomFill.style.transition = 'none';
+        sideZoomFill.style.setProperty('height', `${pct}%`, 'important');
+      }
     };
+
+    const startZoomPhysics = (immediate = false) => {
+      if (immediate) {
+        if (zoomRaf) {
+          cancelAnimationFrame(zoomRaf);
+          zoomRaf = null;
+        }
+        renderedZoom = targetZoom;
+        this.zoomScale = targetZoom;
+        renderZoomFrame(renderedZoom);
+        try { localStorage.setItem('schedully_zoom_scale', String(targetZoom)); } catch (e) {}
+        return;
+      }
+
+      if (zoomRaf) return; // Physics loop is already active
+
+      let lastTime = performance.now();
+
+      const physicsTick = (now) => {
+        const dt = Math.min(0.064, (now - lastTime) / 1000);
+        lastTime = now;
+
+        const diff = targetZoom - renderedZoom;
+
+        // Threshold check for clean finish
+        if (Math.abs(diff) < 0.0008) {
+          renderedZoom = targetZoom;
+          this.zoomScale = targetZoom;
+          renderZoomFrame(renderedZoom);
+          zoomRaf = null;
+          try { localStorage.setItem('schedully_zoom_scale', String(targetZoom)); } catch (e) {}
+          return;
+        }
+
+        // Apple Camera-grade exponential spring curve (buttery smooth camera glide)
+        const lambda = 11.5; // camera zoom response speed
+        renderedZoom += diff * (1 - Math.exp(-lambda * dt));
+        renderZoomFrame(renderedZoom);
+
+        zoomRaf = requestAnimationFrame(physicsTick);
+      };
+
+      zoomRaf = requestAnimationFrame(physicsTick);
+    };
+
+    const applyZoom = (smooth = true) => {
+      targetZoom = Math.max(0.4, Math.min(1.5, this.zoomScale || 0.85));
+      startZoomPhysics(!smooth);
+    };
+
     this.applyCanvasZoom = applyZoom;
     window.applyZoom = applyZoom;
 
-    if (btnZoomIn && btnZoomOut && zoomLabel && mainPhoneWrapper) {
+    if (btnZoomIn && btnZoomOut && mainPhoneWrapper) {
       // Set initial zoom on page load (without animation on first paint)
       applyZoom(false);
 
+      const sideZoomTrack = document.getElementById('side-zoom-track');
+      const sideZoomContainer = document.getElementById('side-zoom-slider-container');
+      
+      let badgeHideTimeout = null;
+      const showZoomBadgeTemporarily = (duration = 1400) => {
+        if (!sideZoomContainer) return;
+        sideZoomContainer.classList.add('is-interacting');
+        if (badgeHideTimeout) clearTimeout(badgeHideTimeout);
+        badgeHideTimeout = setTimeout(() => {
+          sideZoomContainer.classList.remove('is-interacting');
+        }, duration);
+      };
+
       btnZoomIn.addEventListener('click', () => {
-        if (this.zoomScale < 1.5) {
-          this.zoomScale = Math.min(1.5, Math.round((this.zoomScale + 0.15) * 100) / 100);
+        if (targetZoom < 1.5) {
+          targetZoom = Math.min(1.5, Math.round((targetZoom + 0.15) * 100) / 100);
+          this.zoomScale = targetZoom;
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
+          showZoomBadgeTemporarily();
           this._stagePending(true);
         }
       });
 
       btnZoomOut.addEventListener('click', () => {
-        if (this.zoomScale > 0.4) {
-          this.zoomScale = Math.max(0.4, Math.round((this.zoomScale - 0.15) * 100) / 100);
+        if (targetZoom > 0.4) {
+          targetZoom = Math.max(0.4, Math.round((targetZoom - 0.15) * 100) / 100);
+          this.zoomScale = targetZoom;
           if (window.soundFX) window.soundFX.play('zoom');
           applyZoom(true);
+          showZoomBadgeTemporarily();
           this._stagePending(true);
         }
       });
+
+      if (sideZoomTrack) {
+        let isDragging = false;
+
+        const updateZoomFromPointer = (e, smooth = true) => {
+          const rect = sideZoomTrack.getBoundingClientRect();
+          let clientY = e.clientY;
+          if (clientY == null && e.touches && e.touches.length > 0) {
+            clientY = e.touches[0].clientY;
+          } else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) {
+            clientY = e.changedTouches[0].clientY;
+          }
+          if (clientY == null) clientY = rect.top + rect.height / 2;
+
+          const offsetY = rect.bottom - clientY;
+          const ratio = Math.max(0, Math.min(1, offsetY / rect.height));
+
+          const minZ = 0.4;
+          const maxZ = 1.5;
+          const target = Math.round((minZ + ratio * (maxZ - minZ)) * 100) / 100;
+          
+          if (Math.abs(target - targetZoom) >= 0.005) {
+            targetZoom = Math.max(0.4, Math.min(1.5, target));
+            this.zoomScale = targetZoom;
+            applyZoom(smooth);
+            this._stagePending(true);
+          }
+        };
+
+        const onDragStart = (e) => {
+          if (e.button != null && e.button !== 0) return;
+          isDragging = true;
+          if (sideZoomContainer) sideZoomContainer.classList.add('active-drag');
+          if (window.soundFX) window.soundFX.play('zoom');
+          updateZoomFromPointer(e, true);
+          if (e.cancelable) e.preventDefault();
+        };
+
+        const onDragMove = (e) => {
+          if (!isDragging) return;
+          updateZoomFromPointer(e, true);
+          if (e.cancelable) e.preventDefault();
+        };
+
+        const onDragEnd = (e) => {
+          if (isDragging) {
+            isDragging = false;
+            if (sideZoomContainer) sideZoomContainer.classList.remove('active-drag');
+            applyZoom(true);
+            showZoomBadgeTemporarily(1200);
+          }
+        };
+
+        // Pointer, Mouse, and Touch Start
+        sideZoomTrack.addEventListener('pointerdown', onDragStart);
+        sideZoomTrack.addEventListener('mousedown', onDragStart);
+        sideZoomTrack.addEventListener('touchstart', onDragStart, { passive: false });
+
+        // Window-level tracking so drag continues smoothly anywhere on the page
+        window.addEventListener('pointermove', onDragMove, { passive: false });
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('touchmove', onDragMove, { passive: false });
+
+        window.addEventListener('pointerup', onDragEnd);
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('touchend', onDragEnd);
+        window.addEventListener('pointercancel', onDragEnd);
+        window.addEventListener('touchcancel', onDragEnd);
+
+        // Double click track to reset zoom to default 85%
+        sideZoomTrack.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          targetZoom = 0.85;
+          this.zoomScale = 0.85;
+          if (window.soundFX) window.soundFX.play('zoom');
+          applyZoom(true);
+          showZoomBadgeTemporarily();
+          this._stagePending(true);
+        });
+
+        // Mouse wheel over slider to zoom smoothly
+        if (sideZoomContainer) {
+          sideZoomContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.05 : -0.05;
+            targetZoom = Math.min(1.5, Math.max(0.4, Math.round((targetZoom + delta) * 100) / 100));
+            this.zoomScale = targetZoom;
+            applyZoom(true);
+            showZoomBadgeTemporarily();
+            this._stagePending(true);
+          }, { passive: false });
+        }
+      }
 
       window.addEventListener('resize', () => {
         centerCanvasModel(false);
@@ -5677,7 +5851,7 @@ class SchedullyApp {
     // Close dropdown when tapping elsewhere (do not close on tour overlay clicks)
     document.addEventListener('click', (e) => {
       if (window.isTourActive) return;
-      if (!e.target.closest('#mobile-export-bar, #interactive-tour-overlay, #tour-popover-card')) {
+      if (!e.target.closest('#mobile-export-bar, #right-action-container, #mobile-export-dropdown, #btn-mobile-export-toggle, #interactive-tour-overlay, #tour-popover-card')) {
         closeMobileDropdown();
       }
     });
@@ -6423,46 +6597,30 @@ class SchedullyApp {
 
     const btnResetCloud = document.getElementById('btn-google-reset-cloud');
 
-    // â”€â”€ Revamped Expandable Login Menu â”€â”€
-    const btnToggleLogin = document.getElementById('btn-toggle-login-menu');
+    // ── Unified Expandable Auth Menu (Single Merged Circle) ──
+    const btnToggleAuth = document.getElementById('btn-toggle-auth-menu');
+    const authIconLoggedOut = document.getElementById('auth-icon-logged-out');
+    const authOutsideLabel = document.getElementById('user-auth-outside-label');
     const loginProvidersMenu = document.getElementById('login-providers-menu');
-    const loginChevron = document.getElementById('login-chevron');
-
-    if (btnToggleLogin && loginProvidersMenu) {
-      btnToggleLogin.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isHidden = loginProvidersMenu.classList.toggle('hidden');
-        if (loginChevron) {
-          loginChevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#user-logged-out-state')) {
-          loginProvidersMenu.classList.add('hidden');
-          if (loginChevron) loginChevron.style.transform = 'rotate(0deg)';
-        }
-      });
-    }
-
-    // â”€â”€ Revamped Expandable Profile & Account Settings Menu â”€â”€
-    const btnToggleProfile = document.getElementById('btn-toggle-profile-menu');
     const profileSettingsMenu = document.getElementById('profile-settings-menu');
-    const profileChevron = document.getElementById('profile-chevron');
 
-    if (btnToggleProfile && profileSettingsMenu) {
-      btnToggleProfile.addEventListener('click', (e) => {
+    if (btnToggleAuth) {
+      btnToggleAuth.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isHidden = profileSettingsMenu.classList.toggle('hidden');
-        if (profileChevron) {
-          profileChevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        const isLoggedIn = window.schedullyFirebase?.currentUser != null;
+        if (isLoggedIn) {
+          loginProvidersMenu?.classList.add('hidden');
+          profileSettingsMenu?.classList.toggle('hidden');
+        } else {
+          profileSettingsMenu?.classList.add('hidden');
+          loginProvidersMenu?.classList.toggle('hidden');
         }
       });
 
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('#user-logged-in-state')) {
-          profileSettingsMenu.classList.add('hidden');
-          if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
+        if (!e.target.closest('#user-auth-action-wrapper')) {
+          loginProvidersMenu?.classList.add('hidden');
+          profileSettingsMenu?.classList.add('hidden');
         }
       });
     }
@@ -6470,7 +6628,6 @@ class SchedullyApp {
     if (btnLogin) {
       btnLogin.addEventListener('click', async () => {
         loginProvidersMenu?.classList.add('hidden');
-        if (loginChevron) loginChevron.style.transform = 'rotate(0deg)';
 
         if (!window.schedullyFirebase?.auth) {
           alert("Firebase is not initialized yet. Please check your config.");
@@ -6487,7 +6644,6 @@ class SchedullyApp {
     if (btnResetCloud) {
       btnResetCloud.addEventListener('click', async () => {
         profileSettingsMenu?.classList.add('hidden');
-        if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
 
         const confirmed = confirm("Are you sure you want to reset your account data in the cloud to fresh defaults? This will clear any presets, wallpaper, and classes.");
         if (!confirmed) return;
@@ -6595,7 +6751,6 @@ class SchedullyApp {
     if (btnLogout) {
       btnLogout.addEventListener('click', async () => {
         profileSettingsMenu?.classList.add('hidden');
-        if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
 
         if (this._autoSaveTimer) clearTimeout(this._autoSaveTimer);
 
@@ -6664,17 +6819,22 @@ class SchedullyApp {
             if (displayNameEl) displayNameEl.innerText = user.displayName || 'User';
             if (statusTextEl) statusTextEl.innerText = user.email || 'Online';
             if (avatarBadge) {
+              avatarBadge.classList.remove('hidden');
               if (user.photoURL) {
-                avatarBadge.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover" alt="User Avatar" />`;
+                avatarBadge.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover rounded-full" alt="User Avatar" />`;
               } else {
                 avatarBadge.innerText = (user.displayName || 'U').charAt(0).toUpperCase();
               }
             }
-            if (loggedOutState) loggedOutState.classList.add('hidden');
-            if (loggedInState) loggedInState.classList.remove('hidden');
+            if (authIconLoggedOut) authIconLoggedOut.classList.add('hidden');
+            if (authOutsideLabel) authOutsideLabel.innerText = 'Profile';
           } else {
-            if (loggedOutState) loggedOutState.classList.remove('hidden');
-            if (loggedInState) loggedInState.classList.add('hidden');
+            if (avatarBadge) {
+              avatarBadge.classList.add('hidden');
+              avatarBadge.innerHTML = 'U';
+            }
+            if (authIconLoggedOut) authIconLoggedOut.classList.remove('hidden');
+            if (authOutsideLabel) authOutsideLabel.innerText = 'Login';
           }
         };
 
