@@ -348,6 +348,7 @@ class SchedullyApp {
 
     this.inputTitleStage = document.getElementById('input-title-text-stage');
     this.inputTitleSidebar = document.getElementById('input-title-text-sidebar');
+    this.currentTitleBarMode = 'title';
 
     this.inputTrademark = document.getElementById('input-trademark-text');
     this.lockTrademarkFooter = document.getElementById('lock-trademark-footer');
@@ -406,6 +407,97 @@ class SchedullyApp {
     this.pendingScanFile = null;
     window.schedullyApp = this;
     this.updateGeminiKeyStatusBadge();
+    this.initHideUiFeature();
+  }
+
+  initHideUiFeature() {
+    const btnToggleHideUi = document.getElementById('btn-toggle-hide-ui');
+    const floatingHideUiIsland = document.getElementById('floating-hide-ui-island');
+    const iconHideUi = document.getElementById('icon-hide-ui');
+    let hideUiTimeout = null;
+
+    if (!btnToggleHideUi || !floatingHideUiIsland) return;
+
+    const eyeOffSvg = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+    const eyeOnSvg = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+
+    const startHideUiTimer = () => {
+      if (hideUiTimeout) clearTimeout(hideUiTimeout);
+      if (!document.body.classList.contains('ui-hidden-mode')) return;
+      hideUiTimeout = setTimeout(() => {
+        if (document.body.classList.contains('ui-hidden-mode')) {
+          floatingHideUiIsland.classList.add('hide-ui-circle-faded');
+        }
+      }, 3000);
+    };
+
+    const wakeHideUiCircle = () => {
+      if (document.body.classList.contains('ui-hidden-mode')) {
+        floatingHideUiIsland.classList.remove('hide-ui-circle-faded');
+        startHideUiTimer();
+      }
+    };
+
+    btnToggleHideUi.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = document.body.classList.toggle('ui-hidden-mode');
+      if (isHidden) {
+        // Entered Hide UI mode
+        btnToggleHideUi.setAttribute('title', 'Show UI');
+        btnToggleHideUi.setAttribute('aria-label', 'Show UI');
+        floatingHideUiIsland.setAttribute('title', 'Show UI');
+        if (iconHideUi) iconHideUi.innerHTML = eyeOnSvg;
+        
+        // Close sidebars & popovers if open
+        const popover = document.getElementById('canvas-controls-popover');
+        const ratioPopover = document.getElementById('canvas-ratio-popover');
+        if (popover) popover.classList.add('hidden');
+        if (ratioPopover) ratioPopover.classList.add('hidden');
+        if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
+        if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
+        const leftSidebar = document.getElementById('left-sidebar');
+        const rightSidebar = document.getElementById('right-sidebar');
+        if (leftSidebar) {
+          leftSidebar.classList.add('sidebar-collapsed-left');
+          leftSidebar.classList.remove('sidebar-open-left', 'sidebar-expanded');
+        }
+        if (rightSidebar) {
+          rightSidebar.classList.add('sidebar-collapsed-right');
+          rightSidebar.classList.remove('sidebar-open-right', 'sidebar-expanded');
+        }
+
+        floatingHideUiIsland.classList.remove('hide-ui-circle-faded');
+        startHideUiTimer();
+      } else {
+        // Exited Hide UI mode — keep sidebars safely collapsed
+        if (hideUiTimeout) clearTimeout(hideUiTimeout);
+        floatingHideUiIsland.classList.remove('hide-ui-circle-faded');
+        btnToggleHideUi.setAttribute('title', 'Hide UI');
+        btnToggleHideUi.setAttribute('aria-label', 'Hide UI');
+        floatingHideUiIsland.setAttribute('title', 'Hide UI');
+        if (iconHideUi) iconHideUi.innerHTML = eyeOffSvg;
+        const leftSidebar = document.getElementById('left-sidebar');
+        const rightSidebar = document.getElementById('right-sidebar');
+        if (leftSidebar) {
+          leftSidebar.classList.add('sidebar-collapsed-left');
+          leftSidebar.classList.remove('sidebar-open-left', 'sidebar-expanded');
+        }
+        if (rightSidebar) {
+          rightSidebar.classList.add('sidebar-collapsed-right');
+          rightSidebar.classList.remove('sidebar-open-right', 'sidebar-expanded');
+        }
+      }
+    });
+
+    // Touch/click screen anywhere wakes up the Hide UI circle in hidden mode
+    const wakeEvents = ['pointerdown', 'touchstart', 'mousedown'];
+    wakeEvents.forEach(evt => {
+      window.addEventListener(evt, () => {
+        if (document.body.classList.contains('ui-hidden-mode')) {
+          wakeHideUiCircle();
+        }
+      }, { passive: true });
+    });
   }
 
   getContrastColor(hexColor) {
@@ -723,20 +815,16 @@ class SchedullyApp {
 
     // If Photo Wallpaper is active, seamlessly adapt the app's primary color & container to the extracted wallpaper palette
     if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
-      const primaryHex = this.wallpaperSwatches[0];
+      const primaryHex = this.wallpaperPrimary || this.wallpaperSwatches[0];
       const isDarkHex = this._isColorDark(primaryHex);
       const onPrimaryHex = isDarkHex ? '#FFFFFF' : '#0F172A';
       root.style.setProperty('--m3-sys-color-primary', primaryHex);
       root.style.setProperty('--m3-sys-color-primary-container', primaryHex + (resolvedMode === 'dark' ? '30' : '18'));
       root.style.setProperty('--m3-sys-color-on-primary', onPrimaryHex);
-    }
 
-    // Auto-check lockscreen clock contrast on theme change
-    this.updateClockContrast(selectedTheme.bg);
+      // Auto-check lockscreen clock contrast on theme change
+      this.updateClockContrast(selectedTheme.bg);
 
-    // Imperatively push primary color to all hardcoded-blue elements
-    if (hasPhotoWallpaper && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
-      const primaryHex = this.wallpaperSwatches[0];
       let pr = 37, pg = 99, pb = 235;
       if (primaryHex.startsWith('#') && primaryHex.length === 7) {
         pr = parseInt(primaryHex.slice(1, 3), 16) || 37;
@@ -755,11 +843,14 @@ class SchedullyApp {
 
       this.applyDynamicThemeToElements({
         ...selectedTheme,
+        top: primaryHex,
+        onPrimary: onPrimaryHex,
         isWallpaperAdaptive: true,
         wallpaperDotTint,
         wallpaperBgTint
       });
     } else {
+      this.updateClockContrast(selectedTheme.bg);
       root.style.setProperty('--dot-matrix-color', resolvedMode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(15, 23, 42, 0.08)');
       this.applyDynamicThemeToElements(selectedTheme);
     }
@@ -1169,7 +1260,7 @@ class SchedullyApp {
     }
   }
 
-  // Helper: detect if a hex or rgb/rgba color is "dark" (luminance < 0.25)
+  // Helper: detect if a hex or rgb/rgba color is "dark" based on standard YIQ luminance formula (< 140)
   _isColorDark(colorStr) {
     if (!colorStr) return false;
     let r = 255, g = 255, b = 255;
@@ -1193,8 +1284,8 @@ class SchedullyApp {
     } else {
       return false;
     }
-    const lum = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
-    return lum < 0.25;
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq < 140;
   }
 
 
@@ -1261,10 +1352,46 @@ class SchedullyApp {
     }
   }
 
+  syncTitleBarModeUI() {
+    const isTitle = (this.currentTitleBarMode !== 'trademark');
+    const isVisible = isTitle ? !!this.showTitle : !!this.showTrademark;
+    
+    // 1. Sync segment buttons in #title-trademark-mode-toggles
+    document.querySelectorAll('#title-trademark-mode-toggles button, #title-trademark-mode-toggles .capsule-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === (isTitle ? 'title' : 'trademark'));
+    });
+    
+    // 2. Sync visibility toggle eye button
+    const btnToggleVis = document.getElementById('btn-toggle-title-visibility');
+    if (btnToggleVis) {
+      btnToggleVis.classList.toggle('active', isVisible);
+      btnToggleVis.classList.toggle('title-hidden', !isVisible);
+      const iconVis = btnToggleVis.querySelector('.icon-title-visible');
+      const iconHid = btnToggleVis.querySelector('.icon-title-hidden');
+      if (iconVis) iconVis.classList.toggle('hidden', !isVisible);
+      if (iconHid) iconHid.classList.toggle('hidden', isVisible);
+      btnToggleVis.setAttribute('title', isTitle
+        ? (this.showTitle ? 'Hide Title' : 'Show Title')
+        : (this.showTrademark ? 'Hide Trademark' : 'Show Trademark')
+      );
+    }
+    
+    // 3. Sync stage input value, placeholder, and disabled state
+    if (this.inputTitleStage) {
+      this.inputTitleStage.value = isTitle ? (this.timetableTitleText || 'Untitled') : (this.trademarkText || 'Schedully • Student Edition');
+      this.inputTitleStage.placeholder = isTitle ? 'Timetable Title' : 'Trademark Text';
+      this.inputTitleStage.classList.toggle('title-disabled', !isVisible);
+      this.inputTitleStage.disabled = !isVisible;
+    }
+    window.syncGlassSliders?.();
+  }
+
   updateTitleText(newText) {
     this.timetableTitleText = newText.trim() || 'Untitled';
     if (this.lockTitleText) this.lockTitleText.innerText = this.timetableTitleText;
-    if (this.inputTitleStage) this.inputTitleStage.value = newText;
+    if (this.inputTitleStage && this.currentTitleBarMode !== 'trademark') {
+      this.inputTitleStage.value = newText;
+    }
     if (this.inputTitleSidebar) this.inputTitleSidebar.value = newText;
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
@@ -1277,28 +1404,12 @@ class SchedullyApp {
       this.lockGridTitle.style.setProperty('display', this.showTitle ? 'block' : 'none', 'important');
     }
 
-    // Sync Controls Popover inline eye toggle button
-    const btnToggleTitle = document.getElementById('btn-toggle-title-visibility');
-    if (btnToggleTitle) {
-      btnToggleTitle.classList.toggle('active', this.showTitle);
-      btnToggleTitle.classList.toggle('title-hidden', !this.showTitle);
-      const iconVis = btnToggleTitle.querySelector('.icon-title-visible');
-      const iconHid = btnToggleTitle.querySelector('.icon-title-hidden');
-      if (iconVis) iconVis.classList.toggle('hidden', !this.showTitle);
-      if (iconHid) iconHid.classList.toggle('hidden', this.showTitle);
-      btnToggleTitle.setAttribute('title', this.showTitle ? 'Hide Title' : 'Show Title');
-    }
-
-    // Dim or enable stage title input
-    if (this.inputTitleStage) {
-      this.inputTitleStage.classList.toggle('title-disabled', !this.showTitle);
-      this.inputTitleStage.disabled = !this.showTitle;
-    }
-
     // Sync Sidebar #toggle-title pill toggle (YES / NO)
     document.querySelectorAll('#toggle-title .pill-btn').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-val') === (this.showTitle ? 'yes' : 'no'));
     });
+
+    this.syncTitleBarModeUI();
 
     if (save) {
       this._stagePending();
@@ -1314,9 +1425,46 @@ class SchedullyApp {
     if (this.inputTrademark) {
       this.inputTrademark.value = this.trademarkText;
     }
+    if (this.inputTitleStage && this.currentTitleBarMode === 'trademark') {
+      this.inputTitleStage.value = this.trademarkText;
+    }
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
     }
+  }
+
+  setTrademarkVisibility(show, save = true) {
+    this.showTrademark = !!show;
+    if (this.lockTrademarkFooter) {
+      this.lockTrademarkFooter.style.display = this.showTrademark ? 'inline-flex' : 'none';
+    }
+    const toggleTrademark = document.getElementById('toggle-trademark');
+    if (toggleTrademark) {
+      toggleTrademark.querySelectorAll('.pill-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-val') === (this.showTrademark ? 'yes' : 'no'));
+      });
+    }
+    const rowTrademark = document.getElementById('row-trademark-text');
+    const rowStyle = document.getElementById('row-trademark-style');
+    if (rowTrademark) {
+      rowTrademark.style.display = this.showTrademark ? 'flex' : 'none';
+    }
+    if (rowStyle) {
+      rowStyle.style.display = this.showTrademark ? 'flex' : 'none';
+    }
+
+    this.syncTitleBarModeUI();
+
+    if (typeof this.updateMobilePip === 'function') {
+      this.updateMobilePip();
+    }
+    if (this.showTrademark && typeof window.syncGlassSliders === 'function') {
+      setTimeout(window.syncGlassSliders, 40);
+    }
+    if (save) {
+      this._stagePending();
+    }
+    window.syncGlassSliders?.();
   }
 
   applyTrademarkStyle(style) {
@@ -1425,6 +1573,51 @@ class SchedullyApp {
         this._stagePending();
       });
     }
+
+    // Timetable Dimensions & Positioning (Width, Height, Y-Position Offset)
+    this.setTimetableWidthScale = (val, syncSlider = true) => {
+      const widthVal = Math.max(50, Math.min(100, parseInt(val, 10) || 100));
+      this.gridWidthVal = widthVal;
+      const gridWidthValEl = document.getElementById('grid-width-val');
+      if (gridWidthValEl) gridWidthValEl.value = this.gridWidthVal;
+      
+      const timetableContainer = document.getElementById('lock-timetable-container');
+      if (timetableContainer) {
+        timetableContainer.style.width = `${this.gridWidthVal}%`;
+      }
+      this.renderTimetableGrid();
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+    };
+
+    this.setTimetableHeightScale = (val, syncSlider = true) => {
+      const heightVal = Math.max(25, Math.min(90, parseInt(val, 10) || 49));
+      this.gridHeightVal = heightVal;
+      const gridHeightValEl = document.getElementById('grid-height-val');
+      if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
+      
+      this.renderTimetableGrid();
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+    };
+
+    this.setTimetableOffsetY = (val, syncSlider = true) => {
+      const yVal = Math.max(-120, Math.min(150, parseInt(val, 10) || 0));
+      this.gridYPosVal = yVal;
+      const gridYPosValEl = document.getElementById('grid-ypos-val');
+      if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
+      
+      const timetableContainer = document.getElementById('lock-timetable-container');
+      if (timetableContainer) {
+        timetableContainer.style.marginTop = `${this.gridYPosVal}px`;
+      }
+      this.renderTimetableGrid();
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+    };
 
     // Screen Aspect Ratio Engine (Zero-Crop Technology)
     this.currentScreenRatio = localStorage.getItem('schedully_screen_ratio') || 'auto';
@@ -3493,21 +3686,49 @@ class SchedullyApp {
       });
     }
 
-    // INSTANT TITLE INPUT SYNC (STAGE BAR & SIDEBAR)
-    this.inputTitleStage.addEventListener('input', (e) => {
-      this.updateTitleText(e.target.value);
-    });
+    // Title vs Trademark Mode Switcher Tabs
+    const titleTmModeToggles = document.getElementById('title-trademark-mode-toggles');
+    if (titleTmModeToggles) {
+      titleTmModeToggles.querySelectorAll('button, .capsule-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const mode = btn.getAttribute('data-mode') || 'title';
+          this.currentTitleBarMode = mode;
+          if (window.soundFX) window.soundFX.play('tap');
+          this.syncTitleBarModeUI();
+        });
+      });
+    }
 
-    this.inputTitleSidebar.addEventListener('input', (e) => {
-      this.updateTitleText(e.target.value);
-    });
+    // INSTANT TITLE / TRADEMARK INPUT SYNC (SHARED STAGE BAR & SIDEBAR)
+    if (this.inputTitleStage) {
+      this.inputTitleStage.addEventListener('input', (e) => {
+        if (this.currentTitleBarMode === 'trademark') {
+          this.updateTrademarkText(e.target.value);
+          this._stagePending();
+        } else {
+          this.updateTitleText(e.target.value);
+        }
+      });
+    }
 
-    // Controls Popover Inline Eye Toggle Button (Show/Hide Title)
+    if (this.inputTitleSidebar) {
+      this.inputTitleSidebar.addEventListener('input', (e) => {
+        this.updateTitleText(e.target.value);
+      });
+    }
+
+    // Shared Visibility Eye Button (Title vs Trademark)
     const btnToggleTitleVis = document.getElementById('btn-toggle-title-visibility');
     if (btnToggleTitleVis) {
       btnToggleTitleVis.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.setTitleVisibility(!this.showTitle, true);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (this.currentTitleBarMode === 'trademark') {
+          this.setTrademarkVisibility(!this.showTrademark, true);
+        } else {
+          this.setTitleVisibility(!this.showTitle, true);
+        }
       });
     }
 
@@ -3531,28 +3752,8 @@ class SchedullyApp {
     if (toggleTrademark) {
       toggleTrademark.querySelectorAll('.pill-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          toggleTrademark.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
           const isYes = (btn.getAttribute('data-val') === 'yes');
-          this.showTrademark = isYes;
-          const rowTrademark = document.getElementById('row-trademark-text');
-          const rowStyle = document.getElementById('row-trademark-style');
-          if (rowTrademark) {
-            rowTrademark.style.display = isYes ? 'flex' : 'none';
-          }
-          if (rowStyle) {
-            rowStyle.style.display = isYes ? 'flex' : 'none';
-          }
-          if (this.lockTrademarkFooter) {
-            this.lockTrademarkFooter.style.display = isYes ? 'inline-flex' : 'none';
-          }
-          if (typeof this.updateMobilePip === 'function') {
-            this.updateMobilePip();
-          }
-          if (isYes && typeof window.syncGlassSliders === 'function') {
-            setTimeout(window.syncGlassSliders, 40);
-          }
-          this._stagePending();
+          this.setTrademarkVisibility(isYes, true);
         });
       });
     }
@@ -3570,6 +3771,8 @@ class SchedullyApp {
         });
       });
     }
+
+    this.syncTitleBarModeUI();
 
     // Timetable Frame Corners Toggle
     document.querySelectorAll('#toggle-table-corners .pill-btn').forEach(btn => {
@@ -4738,17 +4941,20 @@ class SchedullyApp {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SLIM MATERIAL 3 EXPRESSIVE DUAL-MODE FX SLIDER (Left Side: Opacity & Blur)
+    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE FX SLIDER (Left Side: Width, Height, Y-Pos, Opacity, Blur)
     // ═══════════════════════════════════════════════════════════════
     const sideFxContainer = document.getElementById('side-fx-slider-container');
     const sideFxTrack     = document.getElementById('side-fx-track');
     const sideFxFill      = document.getElementById('side-fx-fill');
     const sideFxBadge     = document.getElementById('side-fx-badge');
     const fxLabelText     = document.getElementById('fx-label-text');
+    const btnFxWidth      = document.getElementById('btn-fx-mode-width');
+    const btnFxHeight     = document.getElementById('btn-fx-mode-height');
+    const btnFxPosy       = document.getElementById('btn-fx-mode-posy');
     const btnFxOpacity    = document.getElementById('btn-fx-mode-opacity');
     const btnFxBlur       = document.getElementById('btn-fx-mode-blur');
 
-    let activeFxMode = 'opacity'; // 'opacity' | 'blur'
+    let activeFxMode = 'width'; // 'width' | 'height' | 'posy' | 'opacity' | 'blur'
     let fxBadgeHideTimeout = null;
 
     const showFxBadgeTemporarily = (duration = 1400) => {
@@ -4763,11 +4969,39 @@ class SchedullyApp {
     const updateFxSliderUI = (animate = true) => {
       if (!sideFxTrack || !sideFxFill) return;
 
+      if (btnFxWidth)   btnFxWidth.classList.toggle('active', activeFxMode === 'width');
+      if (btnFxHeight)  btnFxHeight.classList.toggle('active', activeFxMode === 'height');
+      if (btnFxPosy)    btnFxPosy.classList.toggle('active', activeFxMode === 'posy');
       if (btnFxOpacity) btnFxOpacity.classList.toggle('active', activeFxMode === 'opacity');
-      if (btnFxBlur) btnFxBlur.classList.toggle('active', activeFxMode === 'blur');
+      if (btnFxBlur)    btnFxBlur.classList.toggle('active', activeFxMode === 'blur');
 
       let pct = 100;
-      if (activeFxMode === 'opacity') {
+      if (activeFxMode === 'width') {
+        const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
+        const ratio = Math.max(0, Math.min(1, (val - 50) / 50));
+        pct = Math.round(ratio * 100);
+        if (fxLabelText) fxLabelText.innerText = `W: ${val}%`;
+        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Width: ${val}%`);
+        sideFxTrack.setAttribute('aria-valuenow', val);
+        sideFxTrack.setAttribute('aria-label', 'Timetable Width');
+      } else if (activeFxMode === 'height') {
+        const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
+        const ratio = Math.max(0, Math.min(1, (val - 25) / 65));
+        pct = Math.round(ratio * 100);
+        if (fxLabelText) fxLabelText.innerText = `H: ${val}px`;
+        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Height: ${val}px`);
+        sideFxTrack.setAttribute('aria-valuenow', val);
+        sideFxTrack.setAttribute('aria-label', 'Timetable Height');
+      } else if (activeFxMode === 'posy') {
+        const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
+        const ratio = Math.max(0, Math.min(1, (val + 120) / 270));
+        pct = Math.round(ratio * 100);
+        const sign = val > 0 ? '+' : '';
+        if (fxLabelText) fxLabelText.innerText = `Y: ${sign}${val}px`;
+        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Y-Position: ${sign}${val}px`);
+        sideFxTrack.setAttribute('aria-valuenow', val);
+        sideFxTrack.setAttribute('aria-label', 'Timetable Y-Position');
+      } else if (activeFxMode === 'opacity') {
         const val = this.timetableOpacity != null ? this.timetableOpacity : 100;
         const ratio = Math.max(0, Math.min(1, (val - 20) / 80));
         pct = Math.round(ratio * 100);
@@ -4794,27 +5028,23 @@ class SchedullyApp {
     if (sideFxContainer && sideFxTrack) {
       updateFxSliderUI(false);
 
-      if (btnFxOpacity) {
-        btnFxOpacity.addEventListener('click', (e) => {
+      const attachModeBtn = (btn, modeName) => {
+        if (!btn) return;
+        btn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          activeFxMode = 'opacity';
+          activeFxMode = modeName;
           if (window.soundFX) window.soundFX.play('tap');
           updateFxSliderUI(true);
           showFxBadgeTemporarily();
         });
-      }
+      };
 
-      if (btnFxBlur) {
-        btnFxBlur.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          activeFxMode = 'blur';
-          if (window.soundFX) window.soundFX.play('tap');
-          updateFxSliderUI(true);
-          showFxBadgeTemporarily();
-        });
-      }
+      attachModeBtn(btnFxWidth, 'width');
+      attachModeBtn(btnFxHeight, 'height');
+      attachModeBtn(btnFxPosy, 'posy');
+      attachModeBtn(btnFxOpacity, 'opacity');
+      attachModeBtn(btnFxBlur, 'blur');
 
       let isFxDragging = false;
 
@@ -4831,7 +5061,16 @@ class SchedullyApp {
         const offsetY = rect.bottom - clientY;
         const ratio = Math.max(0, Math.min(1, offsetY / rect.height));
 
-        if (activeFxMode === 'opacity') {
+        if (activeFxMode === 'width') {
+          const val = Math.round(50 + ratio * 50);
+          this.setTimetableWidthScale(val, false);
+        } else if (activeFxMode === 'height') {
+          const val = Math.round(25 + ratio * 65);
+          this.setTimetableHeightScale(val, false);
+        } else if (activeFxMode === 'posy') {
+          const val = Math.round(-120 + ratio * 270);
+          this.setTimetableOffsetY(val, false);
+        } else if (activeFxMode === 'opacity') {
           const val = Math.round(20 + ratio * 80);
           this.setTimetableOpacity(val, false);
         } else {
@@ -4885,7 +5124,13 @@ class SchedullyApp {
       // Double click track to reset active property
       sideFxTrack.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        if (activeFxMode === 'opacity') {
+        if (activeFxMode === 'width') {
+          this.setTimetableWidthScale(100, false);
+        } else if (activeFxMode === 'height') {
+          this.setTimetableHeightScale(49, false);
+        } else if (activeFxMode === 'posy') {
+          this.setTimetableOffsetY(0, false);
+        } else if (activeFxMode === 'opacity') {
           this.setTimetableOpacity(100, false);
         } else {
           this.setWallpaperBlur(0, false, false);
@@ -4900,7 +5145,22 @@ class SchedullyApp {
       sideFxContainer.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 1 : -1;
-        if (activeFxMode === 'opacity') {
+        if (activeFxMode === 'width') {
+          const step = delta * 2;
+          const current = this.gridWidthVal != null ? this.gridWidthVal : 100;
+          const next = Math.max(50, Math.min(100, current + step));
+          this.setTimetableWidthScale(next, false);
+        } else if (activeFxMode === 'height') {
+          const step = delta * 2;
+          const current = this.gridHeightVal != null ? this.gridHeightVal : 49;
+          const next = Math.max(25, Math.min(90, current + step));
+          this.setTimetableHeightScale(next, false);
+        } else if (activeFxMode === 'posy') {
+          const step = delta * 4;
+          const current = this.gridYPosVal != null ? this.gridYPosVal : 0;
+          const next = Math.max(-120, Math.min(150, current + step));
+          this.setTimetableOffsetY(next, false);
+        } else if (activeFxMode === 'opacity') {
           const step = delta * 5;
           const next = Math.max(20, Math.min(100, (this.timetableOpacity || 100) + step));
           this.setTimetableOpacity(next, false);
@@ -5967,6 +6227,8 @@ class SchedullyApp {
         timetableContainer.style.setProperty('width', '100%', 'important');
         timetableContainer.style.setProperty('min-width', '100%', 'important');
         timetableContainer.style.setProperty('max-width', 'none', 'important');
+        timetableContainer.style.setProperty('transform', `translateY(${this.timetableOffsetY || 0}px) scale(${this.timetableScaleW || 1}, ${this.timetableScaleH || 1})`, 'important');
+        timetableContainer.style.setProperty('transform-origin', 'center top', 'important');
       }
 
       // Hide clock/date lockscreen widget while preserving exact layout height & Y-positioning
