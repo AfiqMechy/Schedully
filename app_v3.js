@@ -5411,26 +5411,35 @@ class SchedullyApp {
       const mobileDropdown = document.getElementById('mobile-export-dropdown');
       const mobileChevron = document.getElementById('mobile-export-chevron');
 
+      const floatingImportWrapper = document.getElementById('floating-import-wrapper');
+      const importMenuPopover = document.getElementById('import-menu-popover');
+
       if (isMobile()) {
-        // MOBILE / TABLET: If EITHER sidebar is open, hide ALL 3 floating top buttons
+        // MOBILE / TABLET: If EITHER sidebar is open, hide ALL floating top buttons
         if (!leftCollapsed || !rightCollapsed) {
           hideFloatingBtn(btnExpandLeftFloating);
+          hideFloatingBtn(floatingImportWrapper);
           hideFloatingBtn(btnExpandRightFloating);
+          if (importMenuPopover) importMenuPopover.classList.add('hidden');
           if (mobileExportBar && !window.isTourActive) mobileExportBar.style.display = 'none';
           if (mobileDropdown && !window.isTourActive) mobileDropdown.classList.add('hidden');
           if (mobileChevron && !window.isTourActive) mobileChevron.classList.remove('mobile-export-chevron-open');
         } else {
-          // Both sidebars closed: show all 3 floating top buttons
+          // Both sidebars closed: show all floating top buttons
           showFloatingBtn(btnExpandLeftFloating);
+          showFloatingBtn(floatingImportWrapper);
           showFloatingBtn(btnExpandRightFloating);
           if (mobileExportBar) mobileExportBar.style.display = 'flex';
         }
       } else {
-        // DESKTOP: Show floating Menu/Schedule buttons whenever respective sidebar is collapsed
+        // DESKTOP: Show floating Menu/Import/Schedule buttons whenever respective sidebar is collapsed
         if (leftCollapsed) {
           showFloatingBtn(btnExpandLeftFloating);
+          showFloatingBtn(floatingImportWrapper);
         } else {
           hideFloatingBtn(btnExpandLeftFloating);
+          hideFloatingBtn(floatingImportWrapper);
+          if (importMenuPopover) importMenuPopover.classList.add('hidden');
         }
 
         if (rightCollapsed) {
@@ -5494,6 +5503,49 @@ class SchedullyApp {
     btnToggleRight?.addEventListener('click', () => toggleRightSidebar(true));
     btnExpandRightFloating?.addEventListener('click', () => toggleRightSidebar(false));
 
+    // Floating Import Button & Popover Setup
+    const btnFloatingImport = document.getElementById('btn-floating-import');
+    const importMenuPopover = document.getElementById('import-menu-popover');
+    const btnQuickImportTimetable = document.getElementById('btn-quick-import-timetable');
+    const btnQuickImportWallpaper = document.getElementById('btn-quick-import-wallpaper');
+    const universalFileInput = document.getElementById('universal-file-input');
+    const wallpaperImageInput = document.getElementById('wallpaper-image-input');
+
+    if (btnFloatingImport && importMenuPopover) {
+      btnFloatingImport.addEventListener('click', (e) => {
+        e.stopPropagation();
+        importMenuPopover.classList.toggle('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+      });
+
+      // Close popover when tapping outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#floating-import-wrapper') && !importMenuPopover.classList.contains('hidden')) {
+          importMenuPopover.classList.add('hidden');
+        }
+      });
+
+      // Quick Import Timetable Action
+      btnQuickImportTimetable?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        importMenuPopover.classList.add('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (universalFileInput) {
+          universalFileInput.click();
+        }
+      });
+
+      // Quick Import Wallpaper Action
+      btnQuickImportWallpaper?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        importMenuPopover.classList.add('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (wallpaperImageInput) {
+          wallpaperImageInput.click();
+        }
+      });
+    }
+
     // Initial sidebar state on web app load:
     // Mobile, Tablet, & Desktop: BOTH Menu and Schedule start COLLAPSED by default for a clean workspace
     leftSidebar?.classList.add('sidebar-collapsed-left');
@@ -5510,7 +5562,7 @@ class SchedullyApp {
     // Close open floating sidebars on mobile/tablet when user taps workspace canvas
     document.querySelector('main')?.addEventListener('click', (e) => {
       if (isMobile()) {
-        const clickedFloating = e.target.closest('#btn-expand-left-floating, #btn-expand-right-floating');
+        const clickedFloating = e.target.closest('#btn-expand-left-floating, #btn-expand-right-floating, #floating-import-wrapper');
         if (!clickedFloating) {
           toggleLeftSidebar(true);
           toggleRightSidebar(true);

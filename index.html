@@ -235,7 +235,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=606">
+<link rel="stylesheet" href="styles.css?v=608">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -254,12 +254,50 @@
   </defs>
 </svg>
 
-<!-- BEGIN: Left Sidebar Navigation -->
-<div id="left-action-container" class="top-action-wrapper fixed top-4 left-4 z-40">
-  <button id="btn-expand-left-floating" class="top-action-pill" title="Menu" aria-label="Menu">
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
-  </button>
-  <span class="top-action-outside-label">Menu</span>
+<!-- BEGIN: Left Floating Action Container (Menu + Import) -->
+<div id="left-action-container" class="fixed top-4 left-4 z-40 flex flex-col gap-3 pointer-events-auto">
+  <!-- Menu Button Wrapper -->
+  <div class="top-action-wrapper relative">
+    <button id="btn-expand-left-floating" class="top-action-pill" title="Menu" aria-label="Menu">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+    </button>
+    <span class="top-action-outside-label">Menu</span>
+  </div>
+
+  <!-- Import Button Wrapper + Expanded Menu Card -->
+  <div id="floating-import-wrapper" class="top-action-wrapper relative">
+    <button id="btn-floating-import" class="top-action-pill" title="Import" aria-label="Import">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+      </svg>
+    </button>
+    <span class="top-action-outside-label">Import</span>
+
+    <!-- Expandable Mini Menu Card (Contains 2 Circles: Timetable & Wallpaper) -->
+    <div id="import-menu-popover" class="hidden absolute top-0 left-full ml-3 p-2.5 rounded-2xl border shadow-2xl flex items-center gap-3 z-50">
+      <!-- 1. Circle Button: Import Timetable -->
+      <button id="btn-quick-import-timetable" type="button" class="import-popover-item flex flex-col items-center gap-1.5 p-2 rounded-xl group cursor-pointer border border-transparent transition-all" title="Import Timetable">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 import-popover-circle bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25 shadow-xs">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <span class="text-[11px] font-bold text-gray-800 dark:text-gray-100 leading-tight whitespace-nowrap">Timetable</span>
+      </button>
+
+      <div class="w-[1px] h-8 bg-gray-200/60 dark:bg-white/10 shrink-0"></div>
+
+      <!-- 2. Circle Button: Import Wallpaper -->
+      <button id="btn-quick-import-wallpaper" type="button" class="import-popover-item flex flex-col items-center gap-1.5 p-2 rounded-xl group cursor-pointer border border-transparent transition-all" title="Import Wallpaper">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 import-popover-circle bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/25 shadow-xs">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <span class="text-[11px] font-bold text-gray-800 dark:text-gray-100 leading-tight whitespace-nowrap">Wallpaper</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- UNIFIED TOP RIGHT ACTION BAR (Auth, Language, Coffee, Export, Schedule) -->
@@ -2842,7 +2880,7 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=543"></script>
+  <script src="app_v3.js?v=545"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>

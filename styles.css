@@ -335,6 +335,7 @@ body.dark-mode .m3-right-sidebar,
 
   .top-action-pill,
   #btn-expand-left-floating,
+  #btn-floating-import,
   #btn-expand-right-floating,
   #btn-mobile-export-toggle {
     width: 38px !important;
@@ -364,6 +365,7 @@ body.dark-mode .m3-right-sidebar,
 
     .top-action-pill,
     #btn-expand-left-floating,
+    #btn-floating-import,
     #btn-expand-right-floating,
     #btn-mobile-export-toggle {
       width: 36px !important;
@@ -9205,9 +9207,11 @@ body.dark-mode.theme-style-glass .top-action-pill,
 
 /* 1. Default Solid Style — Light Mode (Clean Solid Color, No 3D Effect) */
 #btn-expand-left-floating,
+#btn-floating-import,
 #btn-mobile-export-toggle,
 #btn-expand-right-floating,
 body.theme-style-default #btn-expand-left-floating,
+body.theme-style-default #btn-floating-import,
 body.theme-style-default #btn-mobile-export-toggle,
 body.theme-style-default #btn-expand-right-floating {
   background-color: var(--m3-sys-color-primary, #2563EB) !important;
@@ -9220,9 +9224,11 @@ body.theme-style-default #btn-expand-right-floating {
 }
 
 #btn-expand-left-floating svg,
+#btn-floating-import svg,
 #btn-mobile-export-toggle svg,
 #btn-expand-right-floating svg,
 body.theme-style-default #btn-expand-left-floating svg,
+body.theme-style-default #btn-floating-import svg,
 body.theme-style-default #btn-mobile-export-toggle svg,
 body.theme-style-default #btn-expand-right-floating svg {
   color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
@@ -9230,9 +9236,11 @@ body.theme-style-default #btn-expand-right-floating svg {
 }
 
 #btn-expand-left-floating:hover,
+#btn-floating-import:hover,
 #btn-mobile-export-toggle:hover,
 #btn-expand-right-floating:hover,
 body.theme-style-default #btn-expand-left-floating:hover,
+body.theme-style-default #btn-floating-import:hover,
 body.theme-style-default #btn-mobile-export-toggle:hover,
 body.theme-style-default #btn-expand-right-floating:hover {
   transform: translateY(-2px) scale(1.06) !important;
@@ -9245,9 +9253,11 @@ body.theme-style-default #btn-expand-right-floating:hover {
 }
 
 #btn-expand-left-floating:active,
+#btn-floating-import:active,
 #btn-mobile-export-toggle:active,
 #btn-expand-right-floating:active,
 body.theme-style-default #btn-expand-left-floating:active,
+body.theme-style-default #btn-floating-import:active,
 body.theme-style-default #btn-mobile-export-toggle:active,
 body.theme-style-default #btn-expand-right-floating:active {
   transform: scale(0.94) !important;
@@ -9255,12 +9265,15 @@ body.theme-style-default #btn-expand-right-floating:active {
 
 /* 2. Default Solid Style — Dark Mode (Clean Solid Color, No 3D Effect) */
 body.dark-mode #btn-expand-left-floating,
+body.dark-mode #btn-floating-import,
 body.dark-mode #btn-mobile-export-toggle,
 body.dark-mode #btn-expand-right-floating,
 .theme-dark #btn-expand-left-floating,
+.theme-dark #btn-floating-import,
 .theme-dark #btn-mobile-export-toggle,
 .theme-dark #btn-expand-right-floating,
 body.theme-style-default.dark-mode #btn-expand-left-floating,
+body.theme-style-default.dark-mode #btn-floating-import,
 body.theme-style-default.dark-mode #btn-mobile-export-toggle,
 body.theme-style-default.dark-mode #btn-expand-right-floating {
   background-color: var(--m3-sys-color-primary, #3B82F6) !important;
@@ -9273,12 +9286,15 @@ body.theme-style-default.dark-mode #btn-expand-right-floating {
 }
 
 body.dark-mode #btn-expand-left-floating svg,
+body.dark-mode #btn-floating-import svg,
 body.dark-mode #btn-mobile-export-toggle svg,
 body.dark-mode #btn-expand-right-floating svg,
 .theme-dark #btn-expand-left-floating svg,
+.theme-dark #btn-floating-import svg,
 .theme-dark #btn-mobile-export-toggle svg,
 .theme-dark #btn-expand-right-floating svg,
 body.theme-style-default.dark-mode #btn-expand-left-floating svg,
+body.theme-style-default.dark-mode #btn-floating-import svg,
 body.theme-style-default.dark-mode #btn-mobile-export-toggle svg,
 body.theme-style-default.dark-mode #btn-expand-right-floating svg {
   color: #FFFFFF !important;
@@ -9286,12 +9302,15 @@ body.theme-style-default.dark-mode #btn-expand-right-floating svg {
 }
 
 body.dark-mode #btn-expand-left-floating:hover,
+body.dark-mode #btn-floating-import:hover,
 body.dark-mode #btn-mobile-export-toggle:hover,
 body.dark-mode #btn-expand-right-floating:hover,
 .theme-dark #btn-expand-left-floating:hover,
+.theme-dark #btn-floating-import:hover,
 .theme-dark #btn-mobile-export-toggle:hover,
 .theme-dark #btn-expand-right-floating:hover,
 body.theme-style-default.dark-mode #btn-expand-left-floating:hover,
+body.theme-style-default.dark-mode #btn-floating-import:hover,
 body.theme-style-default.dark-mode #btn-mobile-export-toggle:hover,
 body.theme-style-default.dark-mode #btn-expand-right-floating:hover {
   transform: translateY(-2px) scale(1.06) !important;
@@ -9304,6 +9323,7 @@ body.theme-style-default.dark-mode #btn-expand-right-floating:hover {
 
 /* 3. Liquid Glass Style — Light Mode */
 body.theme-style-glass #btn-expand-left-floating,
+body.theme-style-glass #btn-floating-import,
 body.theme-style-glass #btn-mobile-export-toggle,
 body.theme-style-glass #btn-expand-right-floating {
   background: linear-gradient(
@@ -9323,6 +9343,7 @@ body.theme-style-glass #btn-expand-right-floating {
 }
 
 body.theme-style-glass #btn-expand-left-floating svg,
+body.theme-style-glass #btn-floating-import svg,
 body.theme-style-glass #btn-mobile-export-toggle svg,
 body.theme-style-glass #btn-expand-right-floating svg {
   color: #FFFFFF !important;
@@ -9330,6 +9351,7 @@ body.theme-style-glass #btn-expand-right-floating svg {
 }
 
 body.theme-style-glass #btn-expand-left-floating:hover,
+body.theme-style-glass #btn-floating-import:hover,
 body.theme-style-glass #btn-mobile-export-toggle:hover,
 body.theme-style-glass #btn-expand-right-floating:hover {
   transform: translateY(-2px) scale(1.06) !important;
@@ -9341,12 +9363,15 @@ body.theme-style-glass #btn-expand-right-floating:hover {
 
 /* 4. Liquid Glass Style — Dark Mode */
 body.theme-style-glass.dark-mode #btn-expand-left-floating,
+body.theme-style-glass.dark-mode #btn-floating-import,
 body.theme-style-glass.dark-mode #btn-mobile-export-toggle,
 body.theme-style-glass.dark-mode #btn-expand-right-floating,
 body.theme-style-glass.theme-dark #btn-expand-left-floating,
+body.theme-style-glass.theme-dark #btn-floating-import,
 body.theme-style-glass.theme-dark #btn-mobile-export-toggle,
 body.theme-style-glass.theme-dark #btn-expand-right-floating,
 body.theme-style-glass .dark #btn-expand-left-floating,
+body.theme-style-glass .dark #btn-floating-import,
 body.theme-style-glass .dark #btn-mobile-export-toggle,
 body.theme-style-glass .dark #btn-expand-right-floating {
   background: linear-gradient(
@@ -9366,12 +9391,14 @@ body.theme-style-glass .dark #btn-expand-right-floating {
 }
 
 body.theme-style-glass.dark-mode #btn-expand-left-floating svg,
-body.theme-style-glass.dark-mode #btn-mobile-export-toggle svg,
+body.theme-style-glass.dark-mode #btn-floating-import svg,
 body.theme-style-glass.dark-mode #btn-expand-right-floating svg,
 body.theme-style-glass.theme-dark #btn-expand-left-floating svg,
+body.theme-style-glass.theme-dark #btn-floating-import svg,
 body.theme-style-glass.theme-dark #btn-mobile-export-toggle svg,
 body.theme-style-glass.theme-dark #btn-expand-right-floating svg,
 body.theme-style-glass .dark #btn-expand-left-floating svg,
+body.theme-style-glass .dark #btn-floating-import svg,
 body.theme-style-glass .dark #btn-mobile-export-toggle svg,
 body.theme-style-glass .dark #btn-expand-right-floating svg {
   color: #FFFFFF !important;
@@ -9379,9 +9406,11 @@ body.theme-style-glass .dark #btn-expand-right-floating svg {
 }
 
 body.theme-style-glass.dark-mode #btn-expand-left-floating:hover,
+body.theme-style-glass.dark-mode #btn-floating-import:hover,
 body.theme-style-glass.dark-mode #btn-mobile-export-toggle:hover,
 body.theme-style-glass.dark-mode #btn-expand-right-floating:hover,
 body.theme-style-glass.theme-dark #btn-expand-left-floating:hover,
+body.theme-style-glass.theme-dark #btn-floating-import:hover,
 body.theme-style-glass.theme-dark #btn-mobile-export-toggle:hover,
 body.theme-style-glass.theme-dark #btn-expand-right-floating:hover {
   transform: translateY(-2px) scale(1.06) !important;
@@ -16385,6 +16414,8 @@ body.dark-mode .card-expand-header h3,
    Keeps only #floating-hide-ui-island, which auto-hides after 3s.
    ═══════════════════════════════════════════════════════════════ */
 body.ui-hidden-mode #left-action-container,
+body.ui-hidden-mode #floating-import-wrapper,
+body.ui-hidden-mode #import-menu-popover,
 body.ui-hidden-mode #right-action-container,
 body.ui-hidden-mode .top-action-bar-right,
 body.ui-hidden-mode .top-action-wrapper:not(#floating-hide-ui-island),
@@ -16464,4 +16495,85 @@ body.ui-hidden-mode #floating-hide-ui-island.hide-ui-circle-faded {
   pointer-events: none !important;
   visibility: hidden !important;
   transform: scale(0.8) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPORT FLOATING ACTION POPOVER CARD
+   2 Circular Action Buttons: Timetable & Wallpaper
+   ═══════════════════════════════════════════════════════════════ */
+#import-menu-popover {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 16px 36px -4px rgba(0, 0, 0, 0.16),
+    0 6px 14px -2px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.95);
+  animation: importPopoverFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top left;
+}
+
+@keyframes importPopoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+body.dark-mode #import-menu-popover,
+.theme-dark #import-menu-popover,
+.dark #import-menu-popover {
+  background: rgba(22, 27, 38, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 20px 44px -4px rgba(0, 0, 0, 0.5),
+    0 8px 18px -2px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.theme-style-glass #import-menu-popover {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 16px 36px -4px rgba(37, 99, 235, 0.22),
+    0 6px 14px -2px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.theme-style-glass.dark-mode #import-menu-popover,
+body.theme-style-glass.theme-dark #import-menu-popover,
+body.theme-style-glass .dark #import-menu-popover {
+  background: rgba(15, 20, 32, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 20px 44px -4px rgba(0, 0, 0, 0.6),
+    0 8px 18px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+.import-popover-item {
+  transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.import-popover-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.dark-mode .import-popover-item:hover,
+.theme-dark .import-popover-item:hover,
+.dark .import-popover-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.import-popover-circle {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.import-popover-item:hover .import-popover-circle {
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.12);
 }
