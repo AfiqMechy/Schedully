@@ -4865,6 +4865,7 @@ class SchedullyApp {
           if (Math.abs(target - targetZoom) >= 0.005) {
             targetZoom = Math.max(0.4, Math.min(1.5, target));
             this.zoomScale = targetZoom;
+            if (window.haptics) window.haptics.trigger('slider');
             applyZoom(smooth);
             this._stagePending(true);
           }
@@ -5080,6 +5081,7 @@ class SchedullyApp {
 
         updateFxSliderUI(animate);
         showFxBadgeTemporarily();
+        if (window.haptics) window.haptics.trigger('slider');
         this._stagePending(true);
       };
 
@@ -10807,6 +10809,86 @@ function initThemeStyleEngine() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// NATIVE WEB HAPTIC FEEDBACK ENGINE (Vibration & Tactile Pulses)
+// ═══════════════════════════════════════════════════════════════
+class HapticFeedbackEngine {
+  constructor() {
+    this.enabled = localStorage.getItem('schedully_haptics_enabled') !== 'false';
+    this.hasSupport = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+    this.lastTriggerTime = 0;
+  }
+
+  trigger(pattern = 'light') {
+    if (!this.enabled || !this.hasSupport) return;
+    try {
+      const now = performance.now();
+      // Throttle micro vibrations to prevent queue congestions during rapid scrubbing
+      if (pattern === 'micro' || pattern === 'slider' || pattern === 'tick') {
+        if (now - this.lastTriggerTime < 24) return;
+      }
+      this.lastTriggerTime = now;
+
+      let vibrationPattern;
+      switch (pattern) {
+        case 'micro':
+        case 'tick':
+        case 'slider':
+          vibrationPattern = 8;
+          break;
+        case 'light':
+        case 'tap':
+        case 'zoom':
+          vibrationPattern = 14;
+          break;
+        case 'medium':
+        case 'click':
+        case 'preset':
+        case 'palette':
+        case 'glass':
+          vibrationPattern = 22;
+          break;
+        case 'heavy':
+        case 'toggle':
+        case 'switch':
+          vibrationPattern = 32;
+          break;
+        case 'success':
+          vibrationPattern = [15, 60, 25];
+          break;
+        case 'warning':
+        case 'delete':
+        case 'undo':
+          vibrationPattern = [28, 50, 22];
+          break;
+        case 'error':
+          vibrationPattern = [40, 50, 40, 50, 40];
+          break;
+        default:
+          if (Array.isArray(pattern) || typeof pattern === 'number') {
+            vibrationPattern = pattern;
+          } else {
+            vibrationPattern = 15;
+          }
+      }
+      navigator.vibrate(vibrationPattern);
+    } catch (e) {}
+  }
+
+  toggle() {
+    this.enabled = !this.enabled;
+    try {
+      localStorage.setItem('schedully_haptics_enabled', this.enabled ? 'true' : 'false');
+    } catch (e) {}
+    if (this.enabled) {
+      this.trigger('medium');
+    }
+    return this.enabled;
+  }
+}
+window.haptics = new HapticFeedbackEngine();
+window.haptic = (pattern) => window.haptics.trigger(pattern);
+
+// ═══════════════════════════════════════════════════════════════
 // NATIVE WEB AUDIO SOUND ENGINE (Apple-Style Micro Haptics)
 // ═══════════════════════════════════════════════════════════════
 class SoundEffectsEngine {
@@ -10854,6 +10936,11 @@ class SoundEffectsEngine {
   }
 
   play(type = 'click') {
+    // Coordinate tactile haptic vibration with every audio cue
+    if (window.haptics) {
+      window.haptics.trigger(type);
+    }
+
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
