@@ -4710,11 +4710,11 @@ class SchedullyApp {
       const visualW = dims.width * scale;
       const visualH = dims.height * scale;
 
-      // Scaler footprint container defines exact scaled boundary for flex centering & panning
+      // Scaler footprint container defines exact scaled boundary for grid centering & panning
       scalerContainer.style.transition = 'none';
       scalerContainer.style.width = `${visualW.toFixed(2)}px`;
       scalerContainer.style.height = `${visualH.toFixed(2)}px`;
-      scalerContainer.style.margin = 'auto';
+      scalerContainer.style.margin = '0 auto';
       scalerContainer.style.display = 'block';
       scalerContainer.style.position = 'relative';
 
