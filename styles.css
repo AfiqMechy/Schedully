@@ -14307,7 +14307,7 @@ body.theme-style-glass.dark-mode #device-type-toggles .capsule-btn.active svg {
 #side-zoom-slider-container,
 .m3-expressive-zoom-container {
   position: absolute !important;
-  top: 50% !important;
+  top: calc(50% + 40px) !important;
   right: max(18px, env(safe-area-inset-right, 18px)) !important;
   transform: translateY(-50%) !important;
   z-index: 35 !important;
@@ -14671,7 +14671,7 @@ body.theme-style-glass.theme-dark .m3-zoom-track {
 #side-fx-slider-container,
 .m3-expressive-fx-container {
   position: absolute !important;
-  top: 50% !important;
+  top: calc(50% + 40px) !important;
   left: max(18px, env(safe-area-inset-left, 18px)) !important;
   transform: translateY(-50%) !important;
   z-index: 35 !important;
