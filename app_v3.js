@@ -9782,15 +9782,17 @@ class SchedullyApp {
         // Fires on login (initial load) and whenever cloud data updates
         window.schedullyFirebase.onDataSyncedCallback = (data) => {
           try {
-            // Case 1: Brand new user with NO cloud data yet
-            if (!data || (!data.presets && !data.classes && !data.settings)) {
-              console.log("New user or empty cloud data detected.");
-              // If local workspace already has classes or custom presets, SYNC LOCAL TO CLOUD! DO NOT WIPE!
-              const hasLocalClasses = this.classes && this.classes.length > 0;
-              const hasCustomPresets = this.presets && Object.keys(this.presets).length > 1;
-              const hasWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
-              
-              if (hasLocalClasses || hasCustomPresets || hasWallpaper) {
+            const hasLocalClasses = this.classes && this.classes.length > 0;
+            const hasLocalCustomPresets = this.presets && Object.keys(this.presets).length > 1;
+            const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
+            const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
+
+            const isCloudEmpty = !data || (!data.presets && !data.classes && !data.settings) ||
+              ((!data.classes || data.classes.length === 0) && !data.wallpaper && (!data.presets || (Object.keys(data.presets).length <= 1 && (!data.presets.default?.classes || data.presets.default.classes.length === 0) && !data.presets.default?.wallpaper)));
+
+            // Case 1: If cloud has no custom data, but local device has work, preserve local & sync up to cloud!
+            if (isCloudEmpty) {
+              if (hasLocalWork) {
                 console.log("Preserving existing local schedule & syncing up to cloud account...");
                 this._stagePending(true);
                 return;

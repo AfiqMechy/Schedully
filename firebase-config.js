@@ -216,7 +216,7 @@ class SchedullyFirebaseService {
       });
 
       await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
-      setTimeout(() => { this._isSaving = false; }, 1500);
+      setTimeout(() => { this._isSaving = false; }, 300);
       return true;
     } catch (error) {
       this._isSaving = false;
@@ -261,7 +261,7 @@ class SchedullyFirebaseService {
         displayName: this.currentUser.displayName || ''
       });
       await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
-      setTimeout(() => { this._isSaving = false; }, 1500);
+      setTimeout(() => { this._isSaving = false; }, 300);
       return true;
     } catch (error) {
       this._isSaving = false;
