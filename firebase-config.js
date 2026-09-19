@@ -27,15 +27,44 @@ class SchedullyFirebaseService {
     this.firestore = null;
     this.currentUser = null;
     this.provider = null;
-    this.onUserChangedCallback = null;
-    // Called when another device saves — updates your UI with their changes
-    this.onDataSyncedCallback = null;
-    // True while we are the ones writing, so we ignore our own echo
+    this._onUserChangedCallback = null;
+    this._onDataSyncedCallback = null;
+    this.lastSyncedData = null;
     this._isSaving = false;
     this._activeListener = null;
     this._firestoreUnsub = null;
 
     this.init();
+  }
+
+  set onDataSyncedCallback(fn) {
+    this._onDataSyncedCallback = fn;
+    if (fn && this.lastSyncedData) {
+      try {
+        fn(this.lastSyncedData);
+      } catch (e) {
+        console.warn("Error calling newly attached onDataSyncedCallback:", e);
+      }
+    }
+  }
+
+  get onDataSyncedCallback() {
+    return this._onDataSyncedCallback;
+  }
+
+  set onUserChangedCallback(fn) {
+    this._onUserChangedCallback = fn;
+    if (fn && this.currentUser !== undefined) {
+      try {
+        fn(this.currentUser);
+      } catch (e) {
+        console.warn("Error calling newly attached onUserChangedCallback:", e);
+      }
+    }
+  }
+
+  get onUserChangedCallback() {
+    return this._onUserChangedCallback;
   }
 
   getSavedConfig() {
