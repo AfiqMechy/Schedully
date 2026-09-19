@@ -5256,22 +5256,7 @@ class SchedullyApp {
 
     const applyZoom = (smooth = true) => {
       let optimalScale = this.zoomScale;
-      const scrollArea = document.getElementById('canvas-scroll-area');
-      const originalCanvas = document.getElementById('phone-canvas');
-      const isTabletOrPaper = originalCanvas && (originalCanvas.classList.contains('canvas-tablet') || originalCanvas.classList.contains('canvas-paper'));
-      const isCompactScreen = (window.innerWidth <= 1280 || window.innerHeight <= 850);
-      
-      if (isTabletOrPaper && isCompactScreen && (!optimalScale || optimalScale >= 0.85)) {
-        if (scrollArea && scrollArea.clientWidth > 0 && scrollArea.clientHeight > 0) {
-          const availW = scrollArea.clientWidth - 110;
-          const availH = scrollArea.clientHeight - 100;
-          const baseW = originalCanvas.classList.contains('canvas-tablet') ? 920 : 720;
-          const baseH = originalCanvas.classList.contains('canvas-tablet') ? 690 : 540;
-          optimalScale = Math.max(0.4, Math.min(0.72, availW / baseW, availH / baseH));
-        } else {
-          optimalScale = 0.68;
-        }
-      } else if (!optimalScale) {
+      if (optimalScale === undefined || optimalScale === null || isNaN(optimalScale)) {
         optimalScale = 0.85;
       }
       targetZoom = Math.max(0.4, Math.min(1.5, optimalScale));
