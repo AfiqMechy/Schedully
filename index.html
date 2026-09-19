@@ -235,11 +235,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260919_v591">
+<link rel="stylesheet" href="styles.css?v=20260919_v595">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
-<script src="firebase-config.js?v=20260919_v591" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260919_v595" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -1637,7 +1637,7 @@
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
       <div class="flex items-center gap-1.5">
-        <button type="button" id="btn-add-course-header-import" class="flex items-center gap-1 py-1 px-2.5 rounded-full bg-blue-500/15 hover:bg-blue-500/25 active:scale-95 text-blue-600 dark:text-blue-400 font-extrabold text-[10.5px] border border-blue-500/25 transition-all cursor-pointer" title="Import Timetable">
+        <button type="button" id="btn-add-course-header-import" class="add-course-header-import-btn flex items-center gap-1 py-1 px-2.5 rounded-full font-extrabold text-[10.5px] transition-all cursor-pointer" title="Import Timetable">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           <span data-i18n="import">Import</span>
         </button>
@@ -1648,7 +1648,7 @@
     </div>
 
     <!-- Step Indicator Tabs / Carousel Bar -->
-    <div class="floating-course-step-tabs flex items-center justify-between gap-1 p-1 bg-gray-100/80 dark:bg-slate-800/80 rounded-2xl mb-2.5 border border-gray-200/50 dark:border-white/10">
+    <div class="floating-course-step-tabs flex items-center justify-between gap-1 p-1 rounded-2xl mb-2.5">
       <!-- Step 1 Tab Button -->
       <button type="button" id="btn-floating-course-step1-tab" class="floating-course-step-tab active flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[10.5px] font-bold transition-all flex-1 min-w-0" data-step="1">
         <div class="step-num-badge w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold shrink-0">1</div>
@@ -1667,15 +1667,15 @@
       <!-- Fast-Track Import Timetable Banner -->
       <button type="button" id="btn-add-course-quick-import" class="add-course-import-banner w-full flex items-center justify-between p-2.5 mb-2.5 rounded-2xl border transition-all cursor-pointer group">
         <div class="flex items-center gap-2 min-w-0">
-          <div class="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 bg-blue-500/15 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+          <div class="add-course-import-icon-circle w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           </div>
           <div class="text-left min-w-0">
-            <div class="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 leading-tight" data-i18n="importTimetable">Import Timetable</div>
-            <div class="text-[9.5px] text-gray-500 dark:text-gray-400 truncate" data-i18n="importTimetableSub">Scan image, CSV or .ICS file</div>
+            <div class="add-course-import-title text-[11px] font-extrabold leading-tight" data-i18n="importTimetable">Import Timetable</div>
+            <div class="add-course-import-subtitle text-[9.5px] truncate" data-i18n="importTimetableSub">Scan image, CSV or .ICS file</div>
           </div>
         </div>
-        <div class="text-[10.5px] font-bold text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+        <div class="add-course-import-action-pill text-[10.5px] font-extrabold px-2.5 py-1 rounded-lg shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
           <span data-i18n="import">Import</span>
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
         </div>
@@ -2762,13 +2762,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260919_v591"></script>
+  <script src="app_v3.js?v=20260919_v595"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=591').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=595').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

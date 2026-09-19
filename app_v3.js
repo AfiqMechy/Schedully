@@ -5266,7 +5266,7 @@ class SchedullyApp {
     this.applyCanvasZoom = applyZoom;
     window.applyZoom = applyZoom;
 
-    if (btnZoomIn && btnZoomOut && mainPhoneWrapper) {
+    if (mainPhoneWrapper) {
       // Set initial zoom on page load (without animation on first paint)
       applyZoom(false);
 
@@ -5283,27 +5283,31 @@ class SchedullyApp {
         }, duration);
       };
 
-      btnZoomIn.addEventListener('click', () => {
-        if (targetZoom < 1.5) {
-          targetZoom = Math.min(1.5, Math.round((targetZoom + 0.15) * 100) / 100);
-          this.zoomScale = targetZoom;
-          if (window.soundFX) window.soundFX.play('zoom');
-          applyZoom(true);
-          showZoomBadgeTemporarily();
-          this._stagePending(true);
-        }
-      });
+      if (btnZoomIn) {
+        btnZoomIn.addEventListener('click', () => {
+          if (targetZoom < 1.5) {
+            targetZoom = Math.min(1.5, Math.round((targetZoom + 0.15) * 100) / 100);
+            this.zoomScale = targetZoom;
+            if (window.soundFX) window.soundFX.play('zoom');
+            applyZoom(true);
+            showZoomBadgeTemporarily();
+            this._stagePending(true);
+          }
+        });
+      }
 
-      btnZoomOut.addEventListener('click', () => {
-        if (targetZoom > 0.4) {
-          targetZoom = Math.max(0.4, Math.round((targetZoom - 0.15) * 100) / 100);
-          this.zoomScale = targetZoom;
-          if (window.soundFX) window.soundFX.play('zoom');
-          applyZoom(true);
-          showZoomBadgeTemporarily();
-          this._stagePending(true);
-        }
-      });
+      if (btnZoomOut) {
+        btnZoomOut.addEventListener('click', () => {
+          if (targetZoom > 0.4) {
+            targetZoom = Math.max(0.4, Math.round((targetZoom - 0.15) * 100) / 100);
+            this.zoomScale = targetZoom;
+            if (window.soundFX) window.soundFX.play('zoom');
+            applyZoom(true);
+            showZoomBadgeTemporarily();
+            this._stagePending(true);
+          }
+        });
+      }
 
       if (sideZoomTrack) {
         let isDragging = false;
@@ -5401,65 +5405,67 @@ class SchedullyApp {
 
       // ═══════════════════════════════════════════════════════════════
       // MULTI-TOUCH PINCH-TO-ZOOM FINGER GESTURES (PINCH IN / PINCH OUT)
-      // Natural 2-finger zoom on canvas, tablet, and touch screens
+      // Natural 2-finger zoom on canvas, tablet, phone, and touch screens
       // ═══════════════════════════════════════════════════════════════
       const canvasScrollArea = document.getElementById('canvas-scroll-area');
-      if (canvasScrollArea) {
-        let isPinching = false;
-        let initialPinchDist = 0;
-        let initialPinchZoom = 0.85;
+      let isPinching = false;
+      let initialPinchDist = 0;
+      let initialPinchZoom = 0.85;
 
-        const calcTouchDist = (t1, t2) => {
-          const dx = t1.clientX - t2.clientX;
-          const dy = t1.clientY - t2.clientY;
-          return Math.hypot(dx, dy);
-        };
+      const calcTouchDist = (t1, t2) => {
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        return Math.hypot(dx, dy);
+      };
 
-        canvasScrollArea.addEventListener('touchstart', (e) => {
-          if (e.touches && e.touches.length === 2) {
-            isPinching = true;
-            initialPinchDist = calcTouchDist(e.touches[0], e.touches[1]);
-            initialPinchZoom = targetZoom || this.zoomScale || 0.85;
-            showZoomBadgeTemporarily(1200);
-            if (e.cancelable) e.preventDefault();
-          }
-        }, { passive: false });
+      const handlePinchStart = (e) => {
+        if (e.touches && e.touches.length === 2) {
+          isPinching = true;
+          initialPinchDist = calcTouchDist(e.touches[0], e.touches[1]);
+          initialPinchZoom = targetZoom || this.zoomScale || 0.85;
+          showZoomBadgeTemporarily(1200);
+          if (e.cancelable) e.preventDefault();
+        }
+      };
 
-        canvasScrollArea.addEventListener('touchmove', (e) => {
-          if (isPinching && e.touches && e.touches.length === 2) {
-            const currentDist = calcTouchDist(e.touches[0], e.touches[1]);
-            if (initialPinchDist > 10) {
-              const scaleRatio = currentDist / initialPinchDist;
-              let newScale = initialPinchZoom * scaleRatio;
-              newScale = Math.max(0.4, Math.min(1.5, Math.round(newScale * 100) / 100));
+      const handlePinchMove = (e) => {
+        if (isPinching && e.touches && e.touches.length === 2) {
+          const currentDist = calcTouchDist(e.touches[0], e.touches[1]);
+          if (initialPinchDist > 5) {
+            const scaleRatio = currentDist / initialPinchDist;
+            let newScale = initialPinchZoom * scaleRatio;
+            newScale = Math.max(0.4, Math.min(1.5, Math.round(newScale * 100) / 100));
 
-              if (Math.abs(newScale - targetZoom) >= 0.005) {
-                targetZoom = newScale;
-                this.zoomScale = newScale;
-                startZoomPhysics(true); // Instant 120FPS subpixel response during gesture
-                showZoomBadgeTemporarily(1000);
-                if (window.haptics && (newScale === 0.4 || newScale === 1.5)) {
-                  window.haptics.trigger('boundary');
-                }
+            if (Math.abs(newScale - targetZoom) >= 0.005) {
+              targetZoom = newScale;
+              this.zoomScale = newScale;
+              startZoomPhysics(true); // Instant 120FPS subpixel response during gesture
+              showZoomBadgeTemporarily(1000);
+              if (window.haptics && (newScale === 0.4 || newScale === 1.5)) {
+                window.haptics.trigger('boundary');
               }
             }
-            if (e.cancelable) e.preventDefault();
           }
-        }, { passive: false });
+          if (e.cancelable) e.preventDefault();
+        }
+      };
 
-        const endPinchGesture = (e) => {
-          if (isPinching) {
-            if (!e.touches || e.touches.length < 2) {
-              isPinching = false;
-              startZoomPhysics(false);
-              showZoomBadgeTemporarily(1400);
-              this._stagePending(true);
-            }
+      const handlePinchEnd = (e) => {
+        if (isPinching) {
+          if (!e.touches || e.touches.length < 2) {
+            isPinching = false;
+            startZoomPhysics(false);
+            showZoomBadgeTemporarily(1400);
+            this._stagePending(true);
           }
-        };
+        }
+      };
 
-        canvasScrollArea.addEventListener('touchend', endPinchGesture);
-        canvasScrollArea.addEventListener('touchcancel', endPinchGesture);
+      if (canvasScrollArea) {
+        canvasScrollArea.addEventListener('touchstart', handlePinchStart, { passive: false });
+        canvasScrollArea.addEventListener('touchmove', handlePinchMove, { passive: false });
+        canvasScrollArea.addEventListener('touchend', handlePinchEnd, { passive: false });
+        canvasScrollArea.addEventListener('touchcancel', handlePinchEnd, { passive: false });
 
         // Trackpad Pinch Gesture & Ctrl + Mouse Wheel Zoom
         canvasScrollArea.addEventListener('wheel', (e) => {
@@ -5474,6 +5480,21 @@ class SchedullyApp {
           }
         }, { passive: false });
       }
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length === 2 && e.target && e.target.closest('#canvas-scroll-area, #main-phone-wrapper, #phone-canvas, .canvas-scaler-container')) {
+          handlePinchStart(e);
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (isPinching) {
+          handlePinchMove(e);
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchend', handlePinchEnd);
+      window.addEventListener('touchcancel', handlePinchEnd);
 
       window.addEventListener('resize', () => {
         centerCanvasModel(false);
@@ -12856,57 +12877,57 @@ function initLiquidGlassPresets() {
       glareFactor: 135,
       glareOppositeFactor: 90,
       refFresnelFactor: 18,
-      saturate: '185%',
-      contrast: '108%',
-      brightness: '1.05',
+      saturate: '160%',
+      contrast: '104%',
+      brightness: '1.04',
       mergeRate: 0.04,
       springSizeFactor: 12
     },
     frosted: {
       name: 'Frosted',
-      refThickness: 34,
-      blur: '32px',
+      refThickness: 24,
+      blur: '14px',
       refFactor: 1.15,
       refDispersion: 2.0,
       glareAngle: -35,
       glareFactor: 58,
       glareOppositeFactor: 48,
       refFresnelFactor: 35,
-      saturate: '135%',
-      contrast: '98%',
+      saturate: '140%',
+      contrast: '100%',
       brightness: '1.02',
       mergeRate: 0.08,
       springSizeFactor: 8
     },
     fluid: {
       name: 'Fluid',
-      refThickness: 24,
-      blur: '18px',
+      refThickness: 18,
+      blur: '12px',
       refFactor: 1.48,
-      refDispersion: 9.5,
+      refDispersion: 8.0,
       glareAngle: -45,
       glareFactor: 110,
       glareOppositeFactor: 95,
       refFresnelFactor: 28,
-      saturate: '235%',
-      contrast: '112%',
-      brightness: '1.06',
+      saturate: '170%',
+      contrast: '106%',
+      brightness: '1.05',
       mergeRate: 0.16,
       springSizeFactor: 18
     },
     prism: {
       name: 'Prism',
-      refThickness: 30,
-      blur: '20px',
+      refThickness: 22,
+      blur: '14px',
       refFactor: 1.72,
-      refDispersion: 22.0,
+      refDispersion: 16.0,
       glareAngle: -60,
       glareFactor: 135,
       glareOppositeFactor: 100,
       refFresnelFactor: 45,
-      saturate: '215%',
-      contrast: '110%',
-      brightness: '1.08',
+      saturate: '170%',
+      contrast: '106%',
+      brightness: '1.06',
       mergeRate: 0.06,
       springSizeFactor: 15
     }

@@ -42,10 +42,10 @@
   --ease-m3-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* 🔮 Dynamic Liquid Glass Physics Variables */
-  --glass-thickness: 20px;
-  --glass-blur: 20px;
+  --glass-thickness: 16px;
+  --glass-blur: 12px;
   --glass-ref-factor: 1.4;
-  --glass-dispersion: 7;
+  --glass-dispersion: 5;
   --glass-dispersion-cyan: rgba(96, 165, 250, 0.45);
   --glass-dispersion-pink: rgba(244, 114, 182, 0.35);
   --glass-glare-angle: -45deg;
@@ -426,8 +426,8 @@ body.dark-mode .m3-right-sidebar,
     transform: none !important;
     z-index: 10000 !important;
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.88 + 0.1)) 0%, rgba(255, 255, 255, 0.72) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.65)) 100%) !important;
-    backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(200%) !important;
+    backdrop-filter: blur(14px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
     border-radius: 24px !important;
     box-shadow: 
@@ -445,6 +445,7 @@ body.dark-mode .m3-right-sidebar,
     scrollbar-width: thin;
     animation: dropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     transform-origin: top center;
+    contain: layout paint;
   }
 }
 
@@ -455,9 +456,9 @@ body.dark-mode .m3-right-sidebar,
 
 .mobile-export-option {
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.65) !important;
-  backdrop-filter: blur(12px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -517,8 +518,8 @@ body.dark-mode .m3-right-sidebar,
 body.dark-mode .mobile-export-dropdown,
 .theme-dark .mobile-export-dropdown {
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.35) 45%, rgba(15, 23, 42, 0.55) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.65),
@@ -531,7 +532,9 @@ body.dark-mode .mobile-export-dropdown,
 
 body.dark-mode .mobile-export-option:not(.mobile-export-primary),
 .theme-dark .mobile-export-option:not(.mobile-export-primary) {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
@@ -811,8 +814,8 @@ body.dark-mode .mobile-export-divider,
 .card-expand-content {
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.28) !important;
-  backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.9),
@@ -829,8 +832,8 @@ body.dark-mode .card-expand-content,
 .theme-dark .expandable-content,
 .theme-dark .card-expand-content {
   background: rgba(255, 255, 255, 0.04) !important;
-  backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 
     inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.18),
@@ -863,8 +866,8 @@ body.dark-mode .card-expand-content,
     rgba(226, 238, 248, 0.15) 55%,
     rgba(186, 207, 225, 0.32) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(210%) contrast(106%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) contrast(106%) brightness(1.04) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.88) !important;
   box-shadow: 
     0 20px 50px -10px rgba(15, 23, 42, 0.14),
@@ -879,6 +882,7 @@ body.dark-mode .card-expand-content,
               opacity 0.3s ease,
               box-shadow 0.3s ease,
               background 0.3s ease !important;
+  contain: layout paint;
 }
 
 #canvas-controls-popover,
@@ -891,8 +895,8 @@ body.dark-mode .card-expand-content,
     rgba(244, 249, 255, 0.68) 45%,
     rgba(226, 238, 250, 0.78) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.03) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
   box-shadow: 
     0 24px 60px -10px rgba(15, 23, 42, 0.18),
@@ -902,6 +906,7 @@ body.dark-mode .card-expand-content,
     inset 0 -2px 3px 0 rgba(148, 163, 184, 0.22),
     inset 2px 0 5px 0 rgba(147, 197, 253, 0.35),
     inset -2px 0 5px 0 rgba(244, 114, 182, 0.22) !important;
+  contain: layout paint;
 }
 
 body.dark-mode #left-sidebar,
@@ -919,8 +924,8 @@ body.dark-mode #bottom-floating-pill-bar,
     rgba(15, 23, 42, 0.55) 70%,
     rgba(10, 15, 29, 0.65) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(210%) brightness(1.12) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) brightness(1.12) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   color: #F8FAFC !important;
   box-shadow: 
@@ -946,8 +951,8 @@ body.dark-mode #schedule-quick-settings,
     rgba(15, 23, 42, 0.78) 45%,
     rgba(10, 15, 29, 0.84) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) brightness(1.1) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) brightness(1.1) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.75),
@@ -1528,8 +1533,8 @@ body.theme-style-glass .btn-adaptive-auth {
     rgba(255, 255, 255, 0.18) 50%,
     rgba(241, 245, 249, 0.30) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   color: var(--m3-sys-text-primary, #1E293B) !important;
   box-shadow: 
@@ -1553,8 +1558,8 @@ body.theme-style-glass .dark .btn-adaptive-auth {
     rgba(15, 23, 42, 0.38) 50%,
     rgba(15, 23, 42, 0.50) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   color: #F1F5F9 !important;
   box-shadow: 
@@ -1731,11 +1736,12 @@ body.dark-mode .btn-coffee-support:hover,
 body.theme-style-glass #login-providers-menu,
 body.theme-style-glass #profile-settings-menu {
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.75)) 0%, rgba(255, 255, 255, 0.32) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.5)) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) contrast(108%) brightness(1.06) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 8px)) saturate(220%) contrast(108%) brightness(1.06) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
   box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.2), inset 0 1.5px 2px 0 rgba(255, 255, 255, 1) !important;
   color: var(--m3-sys-text-primary, #0F172A) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass #login-providers-menu .popover-header,
@@ -1760,11 +1766,12 @@ body.theme-style-glass.theme-dark #profile-settings-menu,
 body.theme-style-glass .dark #login-providers-menu,
 body.theme-style-glass .dark #profile-settings-menu {
   background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.35)) 0%, rgba(15, 23, 42, 0.35) 45%, rgba(15, 23, 42, 0.55) 100%) !important;
-  backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 20px) + 12px)) saturate(220%) brightness(1.15) contrast(1.1) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65) !important;
   color: #F8FAFC !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode #login-providers-menu button:hover,
@@ -9357,8 +9364,8 @@ body.theme-style-glass .top-action-pill {
     rgba(255, 255, 255, 0.22) 50%,
     rgba(241, 245, 249, 0.35) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(210%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) contrast(106%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
     0 14px 34px -4px rgba(15, 23, 42, 0.12),
@@ -9388,8 +9395,8 @@ body.dark-mode.theme-style-glass .top-action-pill,
     rgba(15, 23, 42, 0.45) 50%,
     rgba(15, 23, 42, 0.60) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(210%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) brightness(1.08) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
 }
 
@@ -9525,8 +9532,8 @@ body.theme-style-glass #btn-expand-right-floating {
     var(--m3-sys-color-primary, #2563EB) 50%,
     color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 85%, #000000) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(220%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
   color: #FFFFFF !important;
   box-shadow: 
@@ -9573,8 +9580,8 @@ body.theme-style-glass .dark #btn-expand-right-floating {
     var(--m3-sys-color-primary, #3B82F6) 50%,
     color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 85%, #000000) 100%
   ) !important;
-  backdrop-filter: blur(28px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(220%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
   color: #FFFFFF !important;
   box-shadow: 
@@ -13618,8 +13625,8 @@ body.theme-style-glass #bottom-floating-pill-bar {
     rgba(255, 255, 255, 0.18) 50%,
     rgba(241, 245, 249, 0.30) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
     0 24px 60px -10px rgba(15, 23, 42, 0.16),
@@ -13628,6 +13635,7 @@ body.theme-style-glass #bottom-floating-pill-bar {
     inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.04),
     inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.35)),
     inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.25)) !important;
+  contain: layout paint;
 }
 
 #bottom-floating-pill-bar {
@@ -13655,8 +13663,8 @@ body.theme-style-glass #bottom-floating-pill-bar > div {
     rgba(255, 255, 255, 0.38) 0%,
     rgba(255, 255, 255, 0.12) 100%
   ) !important;
-  backdrop-filter: blur(24px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.75) !important;
   box-shadow: 
     inset 0 1px 2px 0 rgba(255, 255, 255, 0.85),
@@ -13674,8 +13682,8 @@ body.theme-style-glass.theme-dark #bottom-floating-pill-bar {
     rgba(15, 23, 42, 0.38) 50%,
     rgba(15, 23, 42, 0.50) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.85),
@@ -13683,6 +13691,7 @@ body.theme-style-glass.theme-dark #bottom-floating-pill-bar {
     inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.5),
     inset calc(var(--glass-dispersion, 7) * 0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-cyan, rgba(96, 165, 250, 0.45)),
     inset calc(var(--glass-dispersion, 7) * -0.4px) 0 calc(var(--glass-dispersion, 7) * 0.7px) 0 var(--glass-dispersion-pink, rgba(244, 114, 182, 0.35)) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode #floating-undo-redo-row #history-undo-redo-capsule,
@@ -13690,6 +13699,8 @@ body.theme-style-glass.theme-dark #floating-undo-redo-row #history-undo-redo-cap
 body.theme-style-glass.dark-mode #bottom-floating-pill-bar > div,
 body.theme-style-glass.theme-dark #bottom-floating-pill-bar > div {
   background: linear-gradient(135deg, rgba(51, 65, 85, 0.35) 0%, rgba(15, 23, 42, 0.25) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
@@ -13756,7 +13767,7 @@ body.theme-style-glass.theme-dark #bottom-floating-pill-bar > div {
    PREMIUM LIQUID GLASS EFFECT SUITE (Applied Exclusively to App UI & Controls)
    ═══════════════════════════════════════════════════════════════ */
 
-/* 1. Sidebars Liquid Glass Panels (Desktop & Mobile Drawers) */
+/* /* 1. Sidebars Liquid Glass Panels (Desktop & Mobile Drawers) */
 body.theme-style-glass #left-sidebar,
 body.theme-style-glass #right-sidebar {
   background: linear-gradient(
@@ -13765,12 +13776,13 @@ body.theme-style-glass #right-sidebar {
     rgba(255, 255, 255, 0.24) 50%,
     rgba(241, 245, 249, 0.38) 100%
   ) !important;
-  backdrop-filter: blur(34px) saturate(210%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(34px) saturate(210%) contrast(106%) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border-color: rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
     0 24px 60px -10px rgba(15, 23, 42, 0.14),
     inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode #left-sidebar,
@@ -13783,19 +13795,20 @@ body.theme-style-glass.theme-dark #right-sidebar {
     rgba(15, 23, 42, 0.38) 50%,
     rgba(15, 23, 42, 0.52) 100%
   ) !important;
-  backdrop-filter: blur(34px) saturate(210%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(34px) saturate(210%) brightness(1.08) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.75),
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
+  contain: layout paint;
 }
 
 /* Left Sidebar Navigation Pills (.nav-item / Category Accordions) */
 body.theme-style-glass .nav-item {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.42) 100%) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -13811,8 +13824,8 @@ body.theme-style-glass .nav-item:hover {
 body.theme-style-glass.dark-mode .nav-item,
 body.theme-style-glass.theme-dark .nav-item {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.50) 100%) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.2) !important;
 }
@@ -13832,12 +13845,13 @@ body.theme-style-glass #header-desktop-bar {
     rgba(255, 255, 255, 0.24) 50%,
     rgba(241, 245, 249, 0.38) 100%
   ) !important;
-  backdrop-filter: blur(34px) saturate(210%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(34px) saturate(210%) contrast(106%) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
     0 20px 50px -10px rgba(15, 23, 42, 0.14),
     inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode #header-desktop-bar,
@@ -13848,18 +13862,19 @@ body.theme-style-glass.theme-dark #header-desktop-bar {
     rgba(15, 23, 42, 0.55) 50%,
     rgba(15, 23, 42, 0.72) 100%
   ) !important;
-  backdrop-filter: blur(30px) saturate(200%) brightness(1.12) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.12) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
     0 28px 70px -10px rgba(0, 0, 0, 0.75),
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass #header-desktop-bar button:not(#btn-download-hd) {
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
   color: #1E293B !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
@@ -13876,8 +13891,8 @@ body.theme-style-glass #header-desktop-bar button:not(#btn-download-hd):hover {
 body.theme-style-glass.dark-mode #header-desktop-bar button:not(#btn-download-hd),
 body.theme-style-glass.theme-dark #header-desktop-bar button:not(#btn-download-hd) {
   background: rgba(30, 41, 59, 0.65) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   color: #F8FAFC !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.18), 0 2px 6px rgba(0, 0, 0, 0.4) !important;
@@ -13910,13 +13925,14 @@ body.theme-style-glass .course-search-widget {
     rgba(255, 255, 255, 0.18) 50%,
     rgba(241, 245, 249, 0.30) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: 
     0 26px 65px -10px rgba(15, 23, 42, 0.14),
     0 8px 24px -4px rgba(15, 23, 42, 0.05),
     inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode #canvas-controls-popover,
@@ -13951,20 +13967,21 @@ body.theme-style-glass.theme-dark .course-search-widget {
     rgba(15, 23, 42, 0.38) 50%,
     rgba(15, 23, 42, 0.50) 100%
   ) !important;
-  backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(220%) contrast(106%) brightness(1.08) !important;
+  backdrop-filter: blur(14px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
     0 30px 75px -10px rgba(0, 0, 0, 0.7),
     0 10px 30px rgba(0, 0, 0, 0.4),
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.28) !important;
+  contain: layout paint;
 }
 
 /* Center Controls: Title Input Row */
 body.theme-style-glass #input-title-text-stage {
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   color: #0F172A !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(15, 23, 42, 0.04) !important;
@@ -13973,8 +13990,8 @@ body.theme-style-glass #input-title-text-stage {
 body.theme-style-glass.dark-mode #input-title-text-stage,
 body.theme-style-glass.theme-dark #input-title-text-stage {
   background: rgba(15, 23, 42, 0.6) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   color: #F8FAFC !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
@@ -13982,8 +13999,8 @@ body.theme-style-glass.theme-dark #input-title-text-stage {
 
 body.theme-style-glass #btn-toggle-title-visibility {
   background: rgba(255, 255, 255, 0.65) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), inset 0 1px 1.5px #FFFFFF !important;
 }
@@ -13991,6 +14008,8 @@ body.theme-style-glass #btn-toggle-title-visibility {
 body.theme-style-glass.dark-mode #btn-toggle-title-visibility,
 body.theme-style-glass.theme-dark #btn-toggle-title-visibility {
   background: rgba(30, 41, 59, 0.7) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.2) !important;
 }
@@ -13998,8 +14017,8 @@ body.theme-style-glass.theme-dark #btn-toggle-title-visibility {
 /* Center Controls: Device Type Capsule Toggles (#device-type-toggles) */
 body.theme-style-glass #device-type-toggles {
   background: rgba(255, 255, 255, 0.50) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
@@ -14007,6 +14026,8 @@ body.theme-style-glass #device-type-toggles {
 body.theme-style-glass.dark-mode #device-type-toggles,
 body.theme-style-glass.theme-dark #device-type-toggles {
   background: rgba(15, 23, 42, 0.55) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
@@ -14039,8 +14060,8 @@ body.theme-style-glass.theme-dark #device-type-toggles .capsule-btn.active {
 /* Center Controls: UI ON / OFF & Table Toggles (#toggle-lock-ui, #toggle-show-table) */
 body.theme-style-glass .pill-toggle-group {
   background: rgba(255, 255, 255, 0.50) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
@@ -14048,6 +14069,8 @@ body.theme-style-glass .pill-toggle-group {
 body.theme-style-glass.dark-mode .pill-toggle-group,
 body.theme-style-glass.theme-dark .pill-toggle-group {
   background: rgba(15, 23, 42, 0.55) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
@@ -14079,8 +14102,8 @@ body.theme-style-glass.theme-dark .pill-toggle-group .pill-btn.active {
 /* Aspect Ratio Toggle Button (#btn-controls-ratio-toggle) & Cards (.ratio-card-btn) */
 body.theme-style-glass #btn-controls-ratio-toggle {
   background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.9) !important;
   color: #1E293B !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), inset 0 1px 1.5px #FFFFFF !important;
@@ -14089,6 +14112,8 @@ body.theme-style-glass #btn-controls-ratio-toggle {
 body.theme-style-glass.dark-mode #btn-controls-ratio-toggle,
 body.theme-style-glass.theme-dark #btn-controls-ratio-toggle {
   background: rgba(30, 41, 59, 0.7) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: #F8FAFC !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.2) !important;
@@ -14096,8 +14121,8 @@ body.theme-style-glass.theme-dark #btn-controls-ratio-toggle {
 
 body.theme-style-glass .ratio-card-btn {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(241, 245, 249, 0.5) 100%) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.88) !important;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04), inset 0 1.5px 2px #FFFFFF !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -14119,6 +14144,8 @@ body.theme-style-glass .ratio-card-btn.active {
 body.theme-style-glass.dark-mode .ratio-card-btn,
 body.theme-style-glass.theme-dark .ratio-card-btn {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.6) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.18) !important;
 }
@@ -14130,8 +14157,6 @@ body.theme-style-glass.theme-dark .ratio-card-btn.active {
   color: #FFFFFF !important;
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5), inset 0 1.5px 2px rgba(255, 255, 255, 0.3) !important;
 }
-
-
 
 /* Controls Trigger Button in Bottom Pill Bar */
 body.theme-style-glass #btn-toggle-canvas-popover {
@@ -14156,8 +14181,8 @@ body.theme-style-glass #btn-toggle-canvas-popover:hover {
 body.theme-style-glass .class-card-item,
 body.theme-style-glass .mobile-export-option:not(.mobile-export-primary) {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(241, 245, 249, 0.52) 100%) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
   border-radius: 20px !important;
   box-shadow: 
@@ -14180,8 +14205,8 @@ body.theme-style-glass.dark-mode .mobile-export-option:not(.mobile-export-primar
 body.theme-style-glass.theme-dark .class-card-item,
 body.theme-style-glass.theme-dark .mobile-export-option:not(.mobile-export-primary) {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.62) 100%) !important;
-  backdrop-filter: blur(22px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(190%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 20px !important;
   box-shadow: 
@@ -14211,8 +14236,8 @@ body.theme-style-glass.theme-dark .mobile-export-divider {
 
 body.theme-style-glass .schedule-header-capsule {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(241, 245, 249, 0.4) 100%) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow: inset 0 1px 1.5px #fff, 0 3px 8px rgba(15, 23, 42, 0.04) !important;
 }
@@ -14234,8 +14259,8 @@ body.theme-style-glass .schedule-capsule-divider {
 
 body.theme-style-glass #preset-schedule-select {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(241, 245, 249, 0.48) 100%) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
   box-shadow: inset 0 1px 1.5px #fff, 0 3px 8px rgba(15, 23, 42, 0.05) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -14244,8 +14269,8 @@ body.theme-style-glass #preset-schedule-select {
 body.theme-style-glass.dark-mode .schedule-header-capsule,
 body.theme-style-glass.theme-dark .schedule-header-capsule {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.5) 100%) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.15), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
 }
@@ -14271,8 +14296,8 @@ body.theme-style-glass.theme-dark .schedule-capsule-divider {
 body.theme-style-glass.dark-mode #preset-schedule-select,
 body.theme-style-glass.theme-dark #preset-schedule-select {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.6) 100%) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   color: #F8FAFC !important;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.2), 0 3px 10px rgba(0, 0, 0, 0.45) !important;
@@ -17212,26 +17237,36 @@ body.dark-mode .floating-reset-days-btn,
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FLOATING PALETTE & MODE CARD STYLING
+/* ═══════════════════════════════════════════════════════════════
+   FLOATING PALETTE & MODE CARD STYLING (SMART ADAPTIVE FIT)
    ═══════════════════════════════════════════════════════════════ */
 .floating-palette-card {
-  left: max(18px, env(safe-area-inset-left, 18px)) !important;
+  left: max(14px, env(safe-area-inset-left, 14px)) !important;
   right: auto !important;
-  bottom: max(112px, calc(env(safe-area-inset-bottom, 0px) + 104px)) !important;
-  top: auto !important;
+  bottom: max(64px, calc(env(safe-area-inset-bottom, 0px) + 64px)) !important;
+  top: max(14px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
   transform: none !important;
   z-index: 100 !important;
-  max-height: calc(100vh - 180px) !important;
+  width: 248px !important;
+  max-width: min(268px, calc(100vw - 28px)) !important;
+  max-height: calc(100dvh - 78px) !important;
+  height: fit-content !important;
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
   scrollbar-width: thin !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 12px !important;
+  border-radius: 20px !important;
   animation: floatingPaletteCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
 }
 
 @keyframes floatingPaletteCardEnter {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.94);
+    transform: translateY(12px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -17313,14 +17348,14 @@ body.dark-mode #floating-palette-circle-island > div,
 .floating-palette-grid {
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 8px !important;
+  gap: 6px !important;
   justify-items: center;
   align-items: center;
 }
 
 .floating-palette-grid .palette-dot {
-  width: 32px !important;
-  height: 32px !important;
+  width: 28px !important;
+  height: 28px !important;
   border-radius: 50% !important;
   cursor: pointer;
   position: relative;
@@ -17334,20 +17369,20 @@ body.dark-mode #floating-palette-circle-island > div,
 }
 
 .floating-palette-grid .palette-dot.active {
-  box-shadow: 0 0 0 2.5px #FFFFFF, 0 0 0 4.5px var(--m3-sys-color-primary, #6366F1), 0 6px 14px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 40%, transparent) !important;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--m3-sys-color-primary, #6366F1), 0 6px 14px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 40%, transparent) !important;
   transform: scale(1.08);
 }
 
 body.dark-mode .floating-palette-grid .palette-dot.active,
 .theme-dark .floating-palette-grid .palette-dot.active {
-  box-shadow: 0 0 0 2.5px #1E293B, 0 0 0 4.5px var(--m3-sys-color-primary, #818CF8), 0 6px 16px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 50%, transparent) !important;
+  box-shadow: 0 0 0 2px #1E293B, 0 0 0 4px var(--m3-sys-color-primary, #818CF8), 0 6px 16px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 50%, transparent) !important;
 }
 
 /* Page 2: Custom Colors & Theme Swatches Grid (Compact & Sleek) */
 .floating-color-swatches-grid {
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 4px !important;
+  gap: 3px !important;
   justify-items: center;
   align-items: center;
 }
@@ -17355,8 +17390,8 @@ body.dark-mode .floating-palette-grid .palette-dot.active,
 .floating-color-swatch-btn {
   width: 100% !important;
   aspect-ratio: 1 !important;
-  max-width: 24px;
-  max-height: 24px;
+  max-width: 21px !important;
+  max-height: 21px !important;
   border-radius: 50% !important;
   cursor: pointer;
   position: relative;
@@ -17375,21 +17410,21 @@ body.dark-mode .floating-color-swatch-btn,
 }
 
 .floating-color-swatch-btn.active {
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3.5px var(--m3-sys-color-primary, #475569), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #000) 25%, transparent) !important;
+  box-shadow: 0 0 0 1.5px #FFFFFF, 0 0 0 3px var(--m3-sys-color-primary, #475569), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #000) 25%, transparent) !important;
   transform: scale(1.06);
   z-index: 3;
 }
 
 body.dark-mode .floating-color-swatch-btn.active,
 .theme-dark .floating-color-swatch-btn.active {
-  box-shadow: 0 0 0 2px #1E293B, 0 0 0 3.5px var(--m3-sys-color-primary, #818CF8), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #000) 50%, transparent) !important;
+  box-shadow: 0 0 0 1.5px #1E293B, 0 0 0 3px var(--m3-sys-color-primary, #818CF8), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #000) 50%, transparent) !important;
 }
 
 .floating-color-custom-btn {
   width: 100% !important;
   aspect-ratio: 1 !important;
-  max-width: 24px;
-  max-height: 24px;
+  max-width: 21px !important;
+  max-height: 21px !important;
   border-radius: 50% !important;
   background: #FFFFFF;
   border: 1.2px solid rgba(0, 0, 0, 0.12);
@@ -17411,8 +17446,8 @@ body.dark-mode .floating-color-custom-btn,
 }
 
 .floating-color-custom-btn svg {
-  width: 11px !important;
-  height: 11px !important;
+  width: 10px !important;
+  height: 10px !important;
 }
 
 .floating-color-custom-btn:hover {
@@ -17435,13 +17470,13 @@ body.dark-mode .floating-color-custom-btn,
 
 /* Compact theme-picker-section spacing on page 2 */
 #floating-palette-page-2 .theme-picker-section {
-  margin-bottom: 5px !important;
+  margin-bottom: 3.5px !important;
 }
 
 #floating-palette-page-2 .opt-label {
-  font-size: 10.5px !important;
-  line-height: 1.2 !important;
-  margin-bottom: 3px !important;
+  font-size: 10px !important;
+  line-height: 1.15 !important;
+  margin-bottom: 2px !important;
   letter-spacing: -0.01em;
 }
 
@@ -17450,13 +17485,13 @@ body.dark-mode .floating-color-custom-btn,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
-  margin: 6px 0 6px 0;
+  padding: 3px 6px;
+  margin: 4px 0 5px 0;
 }
 
 .palette-page-arrow-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -17633,10 +17668,10 @@ body.dark-mode .palette-page-indicator.inactive,
   background: var(--m3-sys-color-primary-container, rgba(99, 102, 241, 0.12)) !important;
   color: var(--m3-sys-color-primary, #4F46E5) !important;
   font-weight: 800;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.04em;
-  padding: 8px 10px;
-  border-radius: 9999px;
+  padding: 6px 8px;
+  border-radius: 12px;
   border: 1px solid var(--m3-sys-color-outline, rgba(99, 102, 241, 0.25)) !important;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -18081,6 +18116,55 @@ body.dark-mode #floating-add-course-circle-island,
   animation: floatingCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
 }
 
+/* Header Import Action Button */
+.add-course-header-import-btn {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 15%, transparent) !important;
+  color: var(--m3-sys-color-primary, #2563EB) !important;
+  border: 1px solid color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 30%, transparent) !important;
+}
+
+.add-course-header-import-btn:hover {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 25%, transparent) !important;
+  transform: scale(1.03);
+}
+
+.add-course-header-import-btn:active {
+  transform: scale(0.96);
+}
+
+body.dark-mode .add-course-header-import-btn,
+.theme-dark .add-course-header-import-btn,
+.dark .add-course-header-import-btn {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 20%, transparent) !important;
+  color: var(--m3-sys-color-primary, #60A5FA) !important;
+  border-color: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 35%, transparent) !important;
+}
+
+/* Step Indicator Tabs Bar */
+.floating-course-step-tabs {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dark-mode .floating-course-step-tabs,
+.theme-dark .floating-course-step-tabs,
+.dark .floating-course-step-tabs {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-style-glass .floating-course-step-tabs {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+body.theme-style-glass.dark-mode .floating-course-step-tabs,
+body.theme-style-glass.theme-dark .floating-course-step-tabs,
+body.theme-style-glass .dark .floating-course-step-tabs {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 .floating-course-step-tab {
   color: #64748B !important;
   background: transparent !important;
@@ -18091,44 +18175,48 @@ body.dark-mode #floating-add-course-circle-island,
 }
 
 body.dark-mode .floating-course-step-tab,
-.theme-dark .floating-course-step-tab {
+.theme-dark .floating-course-step-tab,
+.dark .floating-course-step-tab {
   color: #94A3B8 !important;
 }
 
 .floating-course-step-tab .step-num-badge {
-  background: rgba(148, 163, 184, 0.2) !important;
+  background: rgba(148, 163, 184, 0.25) !important;
   color: #64748B !important;
 }
 
 body.dark-mode .floating-course-step-tab .step-num-badge,
-.theme-dark .floating-course-step-tab .step-num-badge {
-  background: rgba(255, 255, 255, 0.1) !important;
+.theme-dark .floating-course-step-tab .step-num-badge,
+.dark .floating-course-step-tab .step-num-badge {
+  background: rgba(255, 255, 255, 0.12) !important;
   color: #CBD5E1 !important;
 }
 
-/* Active State */
+/* Active Tab State (Adaptive Themed) */
 .floating-course-step-tab.active {
-  background: #FFFFFF !important;
-  color: var(--m3-sys-color-primary, #2563EB) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 35%, transparent) !important;
 }
 
 .floating-course-step-tab.active .step-num-badge {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 18%, transparent) !important;
-  color: var(--m3-sys-color-primary, #2563EB) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #FFFFFF !important;
 }
 
 body.dark-mode .floating-course-step-tab.active,
-.theme-dark .floating-course-step-tab.active {
-  background: #1E293B !important;
-  color: var(--m3-sys-color-primary, #818CF8) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+.theme-dark .floating-course-step-tab.active,
+.dark .floating-course-step-tab.active {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
 body.dark-mode .floating-course-step-tab.active .step-num-badge,
-.theme-dark .floating-course-step-tab.active .step-num-badge {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 25%, transparent) !important;
-  color: var(--m3-sys-color-primary, #818CF8) !important;
+.theme-dark .floating-course-step-tab.active .step-num-badge,
+.dark .floating-course-step-tab.active .step-num-badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #FFFFFF !important;
 }
 
 .floating-step-next-btn {
@@ -18146,35 +18234,113 @@ body.dark-mode .floating-course-step-tab.active .step-num-badge,
   transform: scale(0.98);
 }
 
+/* Fast-Track Import Timetable Banner (Full Adaptive Color Support) */
 .add-course-import-banner {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 7%, #FFFFFF) !important;
-  border: 1.5px dashed color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 35%, transparent) !important;
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 10%, #FFFFFF) !important;
+  border: 1.5px dashed color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 40%, transparent) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .add-course-import-banner:hover {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 14%, #FFFFFF) !important;
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 16%, #FFFFFF) !important;
   border-color: var(--m3-sys-color-primary, #2563EB) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 18%, transparent) !important;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 22%, transparent) !important;
 }
 
 .add-course-import-banner:active {
   transform: scale(0.985) !important;
 }
 
+.add-course-import-banner .add-course-import-icon-circle {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 18%, transparent) !important;
+  color: var(--m3-sys-color-primary, #2563EB) !important;
+}
+
+.add-course-import-banner .add-course-import-title {
+  color: var(--m3-sys-text-primary, #0F172A) !important;
+}
+
+.add-course-import-banner .add-course-import-subtitle {
+  color: var(--m3-sys-text-secondary, #64748B) !important;
+}
+
+.add-course-import-banner .add-course-import-action-pill {
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 35%, transparent) !important;
+}
+
+.add-course-import-banner .add-course-import-action-pill span,
+.add-course-import-banner .add-course-import-action-pill svg {
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+  stroke: var(--m3-sys-color-on-primary, #FFFFFF) !important;
+}
+
+/* Dark Mode Fast-Track Import Banner */
 body.dark-mode .add-course-import-banner,
 .theme-dark .add-course-import-banner,
 .dark .add-course-import-banner {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #60A5FA) 12%, rgba(30, 41, 59, 0.7)) !important;
-  border-color: color-mix(in srgb, var(--m3-sys-color-primary, #60A5FA) 40%, transparent) !important;
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 14%, rgba(15, 23, 42, 0.75)) !important;
+  border-color: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 45%, transparent) !important;
 }
 
 body.dark-mode .add-course-import-banner:hover,
 .theme-dark .add-course-import-banner:hover,
 .dark .add-course-import-banner:hover {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #60A5FA) 20%, rgba(30, 41, 59, 0.95)) !important;
-  border-color: var(--m3-sys-color-primary, #60A5FA) !important;
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 22%, rgba(15, 23, 42, 0.9)) !important;
+  border-color: var(--m3-sys-color-primary, #3B82F6) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .add-course-import-banner .add-course-import-icon-circle,
+.theme-dark .add-course-import-banner .add-course-import-icon-circle,
+.dark .add-course-import-banner .add-course-import-icon-circle {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 25%, transparent) !important;
+  color: var(--m3-sys-color-primary, #60A5FA) !important;
+}
+
+body.dark-mode .add-course-import-banner .add-course-import-title,
+.theme-dark .add-course-import-banner .add-course-import-title,
+.dark .add-course-import-banner .add-course-import-title {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .add-course-import-banner .add-course-import-subtitle,
+.theme-dark .add-course-import-banner .add-course-import-subtitle,
+.dark .add-course-import-banner .add-course-import-subtitle {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode .add-course-import-banner .add-course-import-action-pill,
+.theme-dark .add-course-import-banner .add-course-import-action-pill,
+.dark .add-course-import-banner .add-course-import-action-pill {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .add-course-import-banner .add-course-import-action-pill span,
+body.dark-mode .add-course-import-banner .add-course-import-action-pill svg,
+.theme-dark .add-course-import-banner .add-course-import-action-pill span,
+.theme-dark .add-course-import-banner .add-course-import-action-pill svg,
+.dark .add-course-import-banner .add-course-import-action-pill span,
+.dark .add-course-import-banner .add-course-import-action-pill svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Glass Style (theme-style-glass) */
+body.theme-style-glass .add-course-import-banner {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 12%, rgba(255, 255, 255, 0.55)) !important;
+  border: 1.5px dashed color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 50%, rgba(255, 255, 255, 0.7)) !important;
+}
+
+body.theme-style-glass.dark-mode .add-course-import-banner,
+body.theme-style-glass.theme-dark .add-course-import-banner,
+body.theme-style-glass .dark .add-course-import-banner {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 16%, rgba(15, 23, 42, 0.6)) !important;
+  border: 1.5px dashed color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 50%, rgba(255, 255, 255, 0.18)) !important;
 }
 
 .floating-save-course-btn {
@@ -18291,14 +18457,15 @@ body.theme-style-glass #floating-schedule-settings-card,
 body.theme-style-glass #canvas-controls-popover,
 body.theme-style-glass #canvas-ratio-popover {
   background: rgba(255, 255, 255, 0.65) !important;
-  backdrop-filter: blur(var(--glass-blur, 32px)) saturate(var(--glass-preset-saturate, 190%)) contrast(var(--glass-preset-contrast, 102%)) brightness(var(--glass-preset-brightness, 102%)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur, 32px)) saturate(var(--glass-preset-saturate, 190%)) contrast(var(--glass-preset-contrast, 102%)) brightness(var(--glass-preset-brightness, 102%)) !important;
+  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-preset-saturate, 160%)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-preset-saturate, 160%)) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.04),
     0 24px 50px -8px rgba(0, 0, 0, 0.16),
     0 8px 20px -4px rgba(0, 0, 0, 0.08) !important;
+  contain: layout paint;
 }
 
 body.theme-style-glass.dark-mode .floating-font-card,
@@ -18326,14 +18493,15 @@ body.theme-style-glass.dark-mode #canvas-ratio-popover,
 body.theme-style-glass.theme-dark #canvas-ratio-popover,
 body.theme-style-glass .dark #canvas-ratio-popover {
   background: rgba(15, 23, 42, 0.72) !important;
-  backdrop-filter: blur(var(--glass-blur, 36px)) saturate(var(--glass-preset-saturate, 200%)) contrast(var(--glass-preset-contrast, 105%)) brightness(var(--glass-preset-brightness, 105%)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur, 36px)) saturate(var(--glass-preset-saturate, 200%)) contrast(var(--glass-preset-contrast, 105%)) brightness(var(--glass-preset-brightness, 105%)) !important;
+  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-preset-saturate, 160%)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-preset-saturate, 160%)) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.35),
     0 28px 60px -8px rgba(0, 0, 0, 0.6),
     0 10px 24px -4px rgba(0, 0, 0, 0.4) !important;
+  contain: layout paint;
 }
 
 /* Glass Header Buttons & Pills */
@@ -18341,8 +18509,8 @@ body.theme-style-glass .floating-card-close-btn,
 body.theme-style-glass .floating-card-back-btn,
 body.theme-style-glass .palette-page-arrow-btn {
   background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.8) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
 }
@@ -18357,16 +18525,16 @@ body.theme-style-glass.dark-mode .palette-page-arrow-btn,
 body.theme-style-glass.theme-dark .palette-page-arrow-btn,
 body.theme-style-glass .dark .palette-page-arrow-btn {
   background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
 }
 
 body.theme-style-glass .floating-card-title-pill {
   background: rgba(255, 255, 255, 0.5) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.75) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.85) !important;
 }
@@ -18375,8 +18543,8 @@ body.theme-style-glass.dark-mode .floating-card-title-pill,
 body.theme-style-glass.theme-dark .floating-card-title-pill,
 body.theme-style-glass .dark .floating-card-title-pill {
   background: rgba(255, 255, 255, 0.07) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
 }
@@ -18388,9 +18556,9 @@ body.theme-style-glass .floating-add-course-input,
 body.theme-style-glass #floating-grid-start-time,
 body.theme-style-glass #floating-grid-end-time,
 body.theme-style-glass #btn-floating-font-trigger {
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.2px solid rgba(255, 255, 255, 0.8) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
 }
@@ -18413,9 +18581,9 @@ body.theme-style-glass .dark #floating-grid-end-time,
 body.theme-style-glass.dark-mode #btn-floating-font-trigger,
 body.theme-style-glass.theme-dark #btn-floating-font-trigger,
 body.theme-style-glass .dark #btn-floating-font-trigger {
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1.2px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
@@ -18426,8 +18594,8 @@ body.theme-style-glass #toggle-floating-axis-mode,
 body.theme-style-glass #toggle-floating-clock-type,
 body.theme-style-glass #floating-add-course-card .pill-toggle-group {
   background: rgba(0, 0, 0, 0.05) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
@@ -18445,8 +18613,8 @@ body.theme-style-glass.dark-mode #floating-add-course-card .pill-toggle-group,
 body.theme-style-glass.theme-dark #floating-add-course-card .pill-toggle-group,
 body.theme-style-glass .dark #floating-add-course-card .pill-toggle-group {
   background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
@@ -18454,8 +18622,8 @@ body.theme-style-glass .dark #floating-add-course-card .pill-toggle-group {
 /* Glass Day Checkboxes Tray */
 body.theme-style-glass .floating-days-checkbox-tray {
   background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.75) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
 }
@@ -18464,8 +18632,8 @@ body.theme-style-glass.dark-mode .floating-days-checkbox-tray,
 body.theme-style-glass.theme-dark .floating-days-checkbox-tray,
 body.theme-style-glass .dark .floating-days-checkbox-tray {
   background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
@@ -18474,8 +18642,9 @@ body.theme-style-glass .dark .floating-days-checkbox-tray {
 body.theme-style-glass .floating-reset-palette-btn,
 body.theme-style-glass .floating-reset-font-btn,
 body.theme-style-glass .floating-reset-days-btn {
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.7) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), inset 0 1px 1.5px rgba(255, 255, 255, 0.85) !important;
 }
@@ -18489,8 +18658,9 @@ body.theme-style-glass .dark .floating-reset-font-btn,
 body.theme-style-glass.dark-mode .floating-reset-days-btn,
 body.theme-style-glass.theme-dark .floating-reset-days-btn,
 body.theme-style-glass .dark .floating-reset-days-btn {
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.15) !important;
 }
@@ -18499,8 +18669,8 @@ body.theme-style-glass .dark .floating-reset-days-btn {
 body.theme-style-glass .floating-step-next-btn,
 body.theme-style-glass .floating-save-course-btn,
 body.theme-style-glass #floating-btn-resync-wallpaper-colors {
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.35) !important;
 }
@@ -18508,8 +18678,8 @@ body.theme-style-glass #floating-btn-resync-wallpaper-colors {
 /* Glass Wizard Steps Indicator */
 body.theme-style-glass .wizard-step-track {
   background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.7) !important;
 }
 
@@ -18517,8 +18687,8 @@ body.theme-style-glass.dark-mode .wizard-step-track,
 body.theme-style-glass.theme-dark .wizard-step-track,
 body.theme-style-glass .dark .wizard-step-track {
   background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
@@ -18553,6 +18723,11 @@ body.theme-style-glass .dark .floating-days-hero-icon {
 .floating-circle-island,
 .top-action-pill,
 .floating-font-card,
+#floating-palette-mode-card,
+#floating-add-course-card,
+#floating-font-style-card,
+#floating-days-time-card,
+#floating-schedule-settings-card,
 #canvas-controls-popover,
 #canvas-ratio-popover,
 #schedule-quick-settings,
@@ -18568,6 +18743,11 @@ body.theme-style-glass .dark .floating-days-hero-icon {
 
 /* Smooth GPU accelerated transitions and responsive viewport clamping for popups */
 .floating-font-card,
+#floating-palette-mode-card,
+#floating-add-course-card,
+#floating-font-style-card,
+#floating-days-time-card,
+#floating-schedule-settings-card,
 #canvas-controls-popover,
 #canvas-ratio-popover,
 #schedule-quick-settings,
