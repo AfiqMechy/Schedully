@@ -9787,17 +9787,22 @@ class SchedullyApp {
             const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
             const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
 
+            const cloudTime = data && data.updatedAt ? new Date(data.updatedAt).getTime() : 0;
+            const localSavedTimeStr = localStorage.getItem('schedully_updated_at');
+            const localTime = localSavedTimeStr ? new Date(localSavedTimeStr).getTime() : 0;
+
             const isCloudEmpty = !data || (!data.presets && !data.classes && !data.settings) ||
               ((!data.classes || data.classes.length === 0) && !data.wallpaper && (!data.presets || (Object.keys(data.presets).length <= 1 && (!data.presets.default?.classes || data.presets.default.classes.length === 0) && !data.presets.default?.wallpaper)));
 
-            // Case 1: If cloud has no custom data, but local device has work, preserve local & sync up to cloud!
-            if (isCloudEmpty) {
-              if (hasLocalWork) {
-                console.log("Preserving existing local schedule & syncing up to cloud account...");
-                this._stagePending(true);
-                return;
-              }
+            // Case 1: If local device has newer unsynced edits or cloud is empty, upload local work to cloud!
+            if ((localTime > cloudTime && hasLocalWork) || (isCloudEmpty && hasLocalWork)) {
+              console.log("Local device has newer/active work. Publishing to cloud...", { localTime, cloudTime });
+              this._stagePending(true);
+              return;
+            }
 
+            // Case 2: If cloud is completely empty and local has no work, reset to fresh defaults
+            if (isCloudEmpty) {
               // Otherwise initialize clean fresh workspace
               localStorage.removeItem('schedully_presets');
               localStorage.removeItem('schedully_active_preset');
@@ -10036,6 +10041,8 @@ class SchedullyApp {
 
     // Instant local storage write so current browser session never loses data
     try {
+      const nowIso = new Date().toISOString();
+      localStorage.setItem('schedully_updated_at', nowIso);
       localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
       localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
