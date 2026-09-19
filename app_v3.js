@@ -1765,17 +1765,22 @@ class SchedullyApp {
         const straps = document.querySelectorAll('.watch-strap');
         straps.forEach(s => s.classList.remove('strap-band', 'strap-capsule', 'strap-round', 'strap-squircle'));
         phoneCanvas.classList.remove('watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
+        const mainWrapper = document.getElementById('main-phone-wrapper');
+        if (mainWrapper) mainWrapper.classList.remove('watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
 
         if (ratio === 'android' || ratio === 'band') {
           phoneCanvas.classList.add('watch-shape-band');
+          if (mainWrapper) mainWrapper.classList.add('watch-shape-band');
           straps.forEach(s => s.classList.add('strap-band'));
           badgeLabel = 'Smart Band (1:1.9)';
         } else if (ratio === 'ios' || ratio === 'capsule') {
           phoneCanvas.classList.add('watch-shape-capsule');
+          if (mainWrapper) mainWrapper.classList.add('watch-shape-capsule');
           straps.forEach(s => s.classList.add('strap-capsule'));
           badgeLabel = 'Pill Capsule (1:2.5)';
         } else if (ratio === 'standard' || ratio === 'round') {
           phoneCanvas.classList.add('watch-shape-round');
+          if (mainWrapper) mainWrapper.classList.add('watch-shape-round');
           straps.forEach(s => s.classList.add('strap-round'));
           badgeLabel = 'Round (1:1)';
         } else {
@@ -5250,7 +5255,26 @@ class SchedullyApp {
     };
 
     const applyZoom = (smooth = true) => {
-      targetZoom = Math.max(0.4, Math.min(1.5, this.zoomScale || 0.85));
+      let optimalScale = this.zoomScale;
+      const scrollArea = document.getElementById('canvas-scroll-area');
+      const originalCanvas = document.getElementById('phone-canvas');
+      const isTabletOrPaper = originalCanvas && (originalCanvas.classList.contains('canvas-tablet') || originalCanvas.classList.contains('canvas-paper'));
+      const isCompactScreen = (window.innerWidth <= 1280 || window.innerHeight <= 850);
+      
+      if (isTabletOrPaper && isCompactScreen && (!optimalScale || optimalScale >= 0.85)) {
+        if (scrollArea && scrollArea.clientWidth > 0 && scrollArea.clientHeight > 0) {
+          const availW = scrollArea.clientWidth - 110;
+          const availH = scrollArea.clientHeight - 100;
+          const baseW = originalCanvas.classList.contains('canvas-tablet') ? 920 : 720;
+          const baseH = originalCanvas.classList.contains('canvas-tablet') ? 690 : 540;
+          optimalScale = Math.max(0.4, Math.min(0.72, availW / baseW, availH / baseH));
+        } else {
+          optimalScale = 0.68;
+        }
+      } else if (!optimalScale) {
+        optimalScale = 0.85;
+      }
+      targetZoom = Math.max(0.4, Math.min(1.5, optimalScale));
       startZoomPhysics(!smooth);
     };
 
@@ -5388,6 +5412,82 @@ class SchedullyApp {
             this._stagePending(true);
           }, { passive: false });
         }
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // MULTI-TOUCH PINCH-TO-ZOOM FINGER GESTURES (PINCH IN / PINCH OUT)
+      // Natural 2-finger zoom on canvas, tablet, and touch screens
+      // ═══════════════════════════════════════════════════════════════
+      const canvasScrollArea = document.getElementById('canvas-scroll-area');
+      if (canvasScrollArea) {
+        let isPinching = false;
+        let initialPinchDist = 0;
+        let initialPinchZoom = 0.85;
+
+        const calcTouchDist = (t1, t2) => {
+          const dx = t1.clientX - t2.clientX;
+          const dy = t1.clientY - t2.clientY;
+          return Math.hypot(dx, dy);
+        };
+
+        canvasScrollArea.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches.length === 2) {
+            isPinching = true;
+            initialPinchDist = calcTouchDist(e.touches[0], e.touches[1]);
+            initialPinchZoom = targetZoom || this.zoomScale || 0.85;
+            showZoomBadgeTemporarily(1200);
+            if (e.cancelable) e.preventDefault();
+          }
+        }, { passive: false });
+
+        canvasScrollArea.addEventListener('touchmove', (e) => {
+          if (isPinching && e.touches && e.touches.length === 2) {
+            const currentDist = calcTouchDist(e.touches[0], e.touches[1]);
+            if (initialPinchDist > 10) {
+              const scaleRatio = currentDist / initialPinchDist;
+              let newScale = initialPinchZoom * scaleRatio;
+              newScale = Math.max(0.4, Math.min(1.5, Math.round(newScale * 100) / 100));
+
+              if (Math.abs(newScale - targetZoom) >= 0.005) {
+                targetZoom = newScale;
+                this.zoomScale = newScale;
+                startZoomPhysics(true); // Instant 120FPS subpixel response during gesture
+                showZoomBadgeTemporarily(1000);
+                if (window.haptics && (newScale === 0.4 || newScale === 1.5)) {
+                  window.haptics.trigger('boundary');
+                }
+              }
+            }
+            if (e.cancelable) e.preventDefault();
+          }
+        }, { passive: false });
+
+        const endPinchGesture = (e) => {
+          if (isPinching) {
+            if (!e.touches || e.touches.length < 2) {
+              isPinching = false;
+              startZoomPhysics(false);
+              showZoomBadgeTemporarily(1400);
+              this._stagePending(true);
+            }
+          }
+        };
+
+        canvasScrollArea.addEventListener('touchend', endPinchGesture);
+        canvasScrollArea.addEventListener('touchcancel', endPinchGesture);
+
+        // Trackpad Pinch Gesture & Ctrl + Mouse Wheel Zoom
+        canvasScrollArea.addEventListener('wheel', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            const delta = -e.deltaY * 0.004;
+            targetZoom = Math.min(1.5, Math.max(0.4, Math.round((targetZoom + delta) * 100) / 100));
+            this.zoomScale = targetZoom;
+            applyZoom(true);
+            showZoomBadgeTemporarily(1000);
+            this._stagePending(true);
+          }
+        }, { passive: false });
       }
 
       window.addEventListener('resize', () => {
@@ -6694,6 +6794,22 @@ class SchedullyApp {
         if (window.soundFX) window.soundFX.play('tap');
         if (window.haptics) window.haptics.trigger('selection');
       });
+
+      // Quick Import from within Add Course Modal (Dual Import Flow)
+      const handleAddCourseImportClick = (e) => {
+        e.stopPropagation();
+        floatingAddCourseCard.classList.add('hidden');
+        btnFloatingAddCourseToggle.classList.remove('active');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+        const universalInput = document.getElementById('universal-file-input');
+        if (universalInput) {
+          universalInput.value = '';
+          universalInput.click();
+        }
+      };
+      document.getElementById('btn-add-course-quick-import')?.addEventListener('click', handleAddCourseImportClick);
+      document.getElementById('btn-add-course-header-import')?.addEventListener('click', handleAddCourseImportClick);
 
       btnFloatingCourseStep1Tab?.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -9533,35 +9649,28 @@ class SchedullyApp {
         // Fires on login (initial load) and whenever cloud data updates
         window.schedullyFirebase.onDataSyncedCallback = (data) => {
           try {
-            // Case 1: Brand new user with NO cloud data yet -> Clear local storage & start completely fresh
+            // Case 1: Brand new user with NO cloud data yet
             if (!data || (!data.presets && !data.classes && !data.settings)) {
-              console.log("New user detected (no cloud data) - initializing clean fresh workspace.");
+              console.log("New user or empty cloud data detected.");
+              // If local workspace already has classes or custom presets, SYNC LOCAL TO CLOUD! DO NOT WIPE!
+              const hasLocalClasses = this.classes && this.classes.length > 0;
+              const hasCustomPresets = this.presets && Object.keys(this.presets).length > 1;
+              const hasWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
+              
+              if (hasLocalClasses || hasCustomPresets || hasWallpaper) {
+                console.log("Preserving existing local schedule & syncing up to cloud account...");
+                this._stagePending(true);
+                return;
+              }
+
+              // Otherwise initialize clean fresh workspace
               localStorage.removeItem('schedully_presets');
               localStorage.removeItem('schedully_active_preset');
               localStorage.removeItem('schedully_classes');
               localStorage.removeItem('schedully_wallpaper_data');
 
               this.classes = [];
-              const freshSettings = {
-                cardCornerStyle: 'rounded',
-                cardCornerRadiusVal: 8,
-                currentMode: 'light',
-                currentPalette: 'nord',
-                gridWidthVal: 100,
-                gridHeightVal: 49,
-                gridYPosVal: 0,
-                fontSizeVal: 9,
-                clockFormat: '12-hour',
-                bgBlurEnabled: false,
-                bgBlurIntensity: 10,
-                fontFamily: 'default',
-                timetableOpacity: 100,
-                showTitle: true,
-                titleText: 'Untitled',
-                activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                gridStartHour: 8,
-                gridEndHour: 20
-              };
+              const freshSettings = this.getPresetSettings();
               this.presets = {
                 default: { name: 'Default', classes: [], settings: freshSettings, wallpaper: null, wallpaperSwatches: null }
               };
@@ -9700,6 +9809,18 @@ class SchedullyApp {
       }
     };
 
+    window.addEventListener('beforeunload', () => {
+      if (this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
+        this.saveToCloud();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
+        this.saveToCloud();
+      }
+    });
+
     initAuthListener();
   }
 
@@ -9820,44 +9941,11 @@ class SchedullyApp {
   }
 
   saveToLocal() {
-    try {
-      if (!this.presets) this.presets = {};
-      if (!this.activePresetKey) this.activePresetKey = 'default';
-
-      const currentWallpaper = this.currentWallpaperData || this.presets[this.activePresetKey]?.wallpaper || localStorage.getItem('schedully_wallpaper_data') || null;
-      const currentSettings = this.getPresetSettings();
-
-      this.presets[this.activePresetKey] = {
-        name: this.presets[this.activePresetKey]?.name || 'Default',
-        classes: this.classes,
-        wallpaper: currentWallpaper,
-        wallpaperSwatches: this.wallpaperSwatches || null,
-        wallpaperPrimary: this.wallpaperPrimary || null,
-        wallpaperSecondary: this.wallpaperSecondary || null,
-        wallpaperTertiary: this.wallpaperTertiary || null,
-        wallpaperHeader: this.wallpaperHeader || null,
-        settings: currentSettings
-      };
-
-      localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
-      localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
-      localStorage.setItem('schedully_active_preset', this.activePresetKey);
-      localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
-      localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
-      if (this.wallpaperSwatches) {
-        localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
-      }
-      if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
-      if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
-      if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
-      if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
-    } catch (e) {
-      console.warn("Could not save to local storage", e);
-    }
+    this._stagePending(false);
   }
 
   saveClasses() {
-    this.saveToLocal();
+    this._stagePending(false);
   }
 
   markUnsaved() {

@@ -83,8 +83,12 @@ class SchedullyFirebaseService {
           this.onUserChangedCallback(user);
         }
         if (user) {
-          // Fetch cloud data ONLY ONCE upon login
+          // 1. Initial fetch of cloud data
           await this.fetchUserData();
+          // 2. Start continuous real-time cross-device sync listener
+          this._startRealtimeListener();
+        } else {
+          this._stopRealtimeListener();
         }
       });
     } catch (err) {
@@ -92,8 +96,32 @@ class SchedullyFirebaseService {
     }
   }
 
-  // Fetch data ON DEMAND (only on login, page refresh, or manual pull-to-refresh)
-  // NO continuous listening, so devices will NEVER hijack or overwrite each other live!
+  _startRealtimeListener() {
+    if (!this.db || !this.currentUser) return;
+    this._stopRealtimeListener();
+    const userRef = this.db.ref('users/' + this.currentUser.uid);
+    this._activeListener = userRef.on('value', (snapshot) => {
+      // Ignore incoming echo while we are saving
+      if (this._isSaving) return;
+      const data = snapshot.val();
+      if (data && this.onDataSyncedCallback) {
+        this.onDataSyncedCallback(data);
+      }
+    }, (err) => {
+      console.warn("Firebase Realtime listener error:", err);
+    });
+  }
+
+  _stopRealtimeListener() {
+    if (this._activeListener && this.db && this.currentUser) {
+      try {
+        this.db.ref('users/' + this.currentUser.uid).off('value');
+      } catch (e) {}
+      this._activeListener = null;
+    }
+  }
+
+  // Fetch data on demand
   async fetchUserData() {
     if (!this.db || !this.currentUser) return null;
     try {
@@ -122,6 +150,7 @@ class SchedullyFirebaseService {
   }
 
   async logout() {
+    this._stopRealtimeListener();
     if (!this.auth) return;
     try {
       await this.auth.signOut();
