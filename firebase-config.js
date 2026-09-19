@@ -24,6 +24,7 @@ class SchedullyFirebaseService {
     this.app = null;
     this.auth = null;
     this.db = null;
+    this.firestore = null;
     this.currentUser = null;
     this.provider = null;
     this.onUserChangedCallback = null;
@@ -32,6 +33,7 @@ class SchedullyFirebaseService {
     // True while we are the ones writing, so we ignore our own echo
     this._isSaving = false;
     this._activeListener = null;
+    this._firestoreUnsub = null;
 
     this.init();
   }
@@ -53,21 +55,21 @@ class SchedullyFirebaseService {
   }
 
   init() {
-    if (this._initialized && this.auth && this.db) return;
+    if (this._initialized && this.auth && (this.db || this.firestore)) return;
     const config = this.getSavedConfig();
-    if (!config || !config.apiKey || typeof firebase === 'undefined' || typeof firebase.database === 'undefined' || typeof firebase.auth === 'undefined') {
+    if (!config || !config.apiKey || typeof firebase === 'undefined' || typeof firebase.auth === 'undefined') {
       console.log("Schedully: Waiting for Firebase Compat SDKs / Config...");
       if (typeof window !== 'undefined' && !this._retryScheduled) {
         this._retryScheduled = true;
         const retry = () => {
-          if (!this._initialized || !this.db) this.init();
+          if (!this._initialized || (!this.db && !this.firestore)) this.init();
         };
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', retry, { once: true });
         }
         window.addEventListener('load', retry, { once: true });
-        setTimeout(retry, 400);
-        setTimeout(retry, 1200);
+        setTimeout(retry, 300);
+        setTimeout(retry, 1000);
       }
       return;
     }
@@ -86,8 +88,20 @@ class SchedullyFirebaseService {
         prompt: 'select_account'
       });
 
-      if (firebase.database) {
-        this.db = firebase.database();
+      if (typeof firebase.firestore === 'function') {
+        try {
+          this.firestore = firebase.firestore();
+        } catch (e) {
+          console.warn("Firestore init notice:", e);
+        }
+      }
+
+      if (typeof firebase.database === 'function') {
+        try {
+          this.db = firebase.database();
+        } catch (e) {
+          console.warn("RTDB init notice:", e);
+        }
       }
 
       this._initialized = true;
@@ -100,7 +114,7 @@ class SchedullyFirebaseService {
         if (user) {
           // 1. Initial fetch of cloud data
           await this.fetchUserData();
-          // 2. Start continuous real-time cross-device sync listener
+          // 2. Start continuous real-time cross-device sync listeners
           this._startRealtimeListener();
         } else {
           this._stopRealtimeListener();
@@ -113,19 +127,41 @@ class SchedullyFirebaseService {
   }
 
   _startRealtimeListener() {
-    if (!this.db || !this.currentUser) return;
+    if (!this.currentUser) return;
     this._stopRealtimeListener();
-    const userRef = this.db.ref('users/' + this.currentUser.uid);
-    this._activeListener = userRef.on('value', (snapshot) => {
-      // Ignore incoming echo while we are saving
-      if (this._isSaving) return;
-      const data = snapshot.val();
-      if (data && this.onDataSyncedCallback) {
-        this.onDataSyncedCallback(data);
-      }
-    }, (err) => {
-      console.warn("Firebase Realtime listener error:", err);
-    });
+
+    // 1. Realtime DB Listener
+    if (this.db) {
+      try {
+        const userRef = this.db.ref('users/' + this.currentUser.uid);
+        this._activeListener = userRef.on('value', (snapshot) => {
+          if (this._isSaving) return;
+          const data = snapshot.val();
+          if (data && this.onDataSyncedCallback) {
+            this.onDataSyncedCallback(data);
+          }
+        }, (err) => {
+          console.warn("RTDB listener notice:", err);
+        });
+      } catch (e) {}
+    }
+
+    // 2. Firestore onSnapshot Listener
+    if (this.firestore) {
+      try {
+        this._firestoreUnsub = this.firestore.collection('users').doc(this.currentUser.uid).onSnapshot((doc) => {
+          if (this._isSaving) return;
+          if (doc.exists) {
+            const data = doc.data();
+            if (data && this.onDataSyncedCallback) {
+              this.onDataSyncedCallback(data);
+            }
+          }
+        }, (err) => {
+          console.warn("Firestore snapshot notice:", err);
+        });
+      } catch (e) {}
+    }
   }
 
   _stopRealtimeListener() {
@@ -135,22 +171,45 @@ class SchedullyFirebaseService {
       } catch (e) {}
       this._activeListener = null;
     }
+    if (this._firestoreUnsub) {
+      try {
+        this._firestoreUnsub();
+      } catch (e) {}
+      this._firestoreUnsub = null;
+    }
   }
 
   // Fetch data on demand
   async fetchUserData() {
-    if (!this.db || !this.currentUser) return null;
-    try {
-      const snapshot = await this.db.ref('users/' + this.currentUser.uid).once('value');
-      const data = snapshot.val();
-      if (data && this.onDataSyncedCallback) {
-        this.onDataSyncedCallback(data);
+    if (!this.currentUser) return null;
+    let data = null;
+
+    // 1. Try Firestore first
+    if (this.firestore) {
+      try {
+        const doc = await this.firestore.collection('users').doc(this.currentUser.uid).get();
+        if (doc.exists) {
+          data = doc.data();
+        }
+      } catch (e) {
+        console.warn("Firestore fetch notice:", e);
       }
-      return data;
-    } catch (err) {
-      console.warn("Error fetching user cloud data:", err);
-      return null;
     }
+
+    // 2. Fallback to RTDB if needed
+    if (!data && this.db) {
+      try {
+        const snapshot = await this.db.ref('users/' + this.currentUser.uid).once('value');
+        data = snapshot.val();
+      } catch (e) {
+        console.warn("RTDB fetch notice:", e);
+      }
+    }
+
+    if (data && this.onDataSyncedCallback) {
+      this.onDataSyncedCallback(data);
+    }
+    return data;
   }
 
   async loginWithGoogle() {
@@ -176,7 +235,7 @@ class SchedullyFirebaseService {
     }
   }
 
-  // Helper to deep sanitize objects (replaces undefined with null since Firebase RTDB rejects undefined)
+  // Helper to deep sanitize objects (replaces undefined with null since Firebase rejects undefined)
   _sanitizeData(obj) {
     if (obj === undefined) return null;
     if (obj === null || typeof obj !== 'object') return obj;
@@ -191,9 +250,9 @@ class SchedullyFirebaseService {
     return clean;
   }
 
-  // MANUAL SAVE — called when user triggers save or debounced auto-save
+  // MANUAL / AUTO SAVE — called on any schedule or theme change
   async saveUserData(userData) {
-    if (!this.db || !this.currentUser) return false;
+    if (!this.currentUser) return false;
     try {
       this._isSaving = true;
       const cleanPayload = this._sanitizeData({
@@ -215,19 +274,40 @@ class SchedullyFirebaseService {
         displayName: this.currentUser.displayName || ''
       });
 
-      await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
+      let saved = false;
+
+      // 1. Save to Firestore
+      if (this.firestore) {
+        try {
+          await this.firestore.collection('users').doc(this.currentUser.uid).set(cleanPayload, { merge: true });
+          saved = true;
+        } catch (fErr) {
+          console.warn("Firestore save warning:", fErr);
+        }
+      }
+
+      // 2. Save to Realtime Database
+      if (this.db) {
+        try {
+          await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
+          saved = true;
+        } catch (dbErr) {
+          console.warn("RTDB save warning:", dbErr);
+        }
+      }
+
       setTimeout(() => { this._isSaving = false; }, 300);
-      return true;
+      return saved;
     } catch (error) {
       this._isSaving = false;
-      console.error("Error saving data to Database:", error);
+      console.error("Error saving data to Firebase:", error);
       return false;
     }
   }
 
   // RESET USER CLOUD DATA — completely wipes damaged/broken data and writes fresh default state
   async resetUserData(freshPresetSettings) {
-    if (!this.db || !this.currentUser) return false;
+    if (!this.currentUser) return false;
     try {
       this._isSaving = true;
       const defaultState = this._sanitizeData({
@@ -260,7 +340,18 @@ class SchedullyFirebaseService {
         userEmail: this.currentUser.email || '',
         displayName: this.currentUser.displayName || ''
       });
-      await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
+
+      if (this.firestore) {
+        try {
+          await this.firestore.collection('users').doc(this.currentUser.uid).set(defaultState);
+        } catch (e) {}
+      }
+      if (this.db) {
+        try {
+          await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
+        } catch (e) {}
+      }
+
       setTimeout(() => { this._isSaving = false; }, 300);
       return true;
     } catch (error) {

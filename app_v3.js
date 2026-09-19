@@ -2101,8 +2101,8 @@ class SchedullyApp {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const MAX_WIDTH = 1440;
-        const MAX_HEIGHT = 3200;
+        const MAX_WIDTH = 1080;
+        const MAX_HEIGHT = 1920;
         let width = img.width;
         let height = img.height;
 
@@ -2124,8 +2124,8 @@ class SchedullyApp {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // JPEG at 0.88 quality produces crisp 4K wallpaper with lightweight payload
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+        // JPEG at 0.78 quality produces crystal-clear 1080p mobile wallpaper with ultra-fast cloud payload (<200KB)
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
         callback(compressedDataUrl);
       };
       img.src = e.target.result;

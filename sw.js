@@ -1,10 +1,10 @@
-const CACHE_NAME = 'schedully-cache-v606';
+const CACHE_NAME = 'schedully-cache-v607';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=20260919_v606',
-  '/app_v3.js?v=20260919_v606',
-  '/firebase-config.js?v=20260919_v606',
+  '/styles.css?v=20260919_v607',
+  '/app_v3.js?v=20260919_v607',
+  '/firebase-config.js?v=20260919_v607',
   '/ocr_parser.js?v=20260919_v602',
   '/ics_csv_parser_v3.js',
   '/timetable_engine.js?v=20260907_v471',
