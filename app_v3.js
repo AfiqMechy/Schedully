@@ -267,6 +267,8 @@ class SchedullyApp {
     this.ocrLoadingBar = document.getElementById('ocr-loading-bar');
     this.ocrLoadingText = document.getElementById('ocr-loading-text');
     this.aiScanOverlay = document.getElementById('ai-scan-fullscreen-overlay');
+    this.ocrParsingToast = document.getElementById('ocr-parsing-toast-banner');
+    this.ocrParsingToastText = document.getElementById('ocr-parsing-toast-text');
     
     const inputApiKey = document.getElementById('input-api-key');
     if (inputApiKey) {
@@ -2791,15 +2793,15 @@ class SchedullyApp {
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
       try {
-        // ── Draw image to 160×160 canvas ─────────────────────────────────────
+        // ── Draw image to 180×180 canvas ─────────────────────────────────────
         const canvas = document.createElement('canvas');
         const ctx    = canvas.getContext('2d');
-        const SIZE   = 160;
+        const SIZE   = 180;
         canvas.width = canvas.height = SIZE;
         ctx.drawImage(img, 0, 0, SIZE, SIZE);
         const data = ctx.getImageData(0, 0, SIZE, SIZE).data;
 
-        // ── Helpers ──────────────────────────────────────────────────────────
+        // ── Color Space Conversion Helpers ────────────────────────────────────
         const rgbToHex = (r, g, b) =>
           '#' + [r, g, b].map(x =>
             Math.min(255, Math.max(0, Math.round(x))).toString(16).padStart(2, '0')
@@ -2845,109 +2847,165 @@ class SchedullyApp {
         const dist = (r1, g1, b1, r2, g2, b2) =>
           Math.sqrt((r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2);
 
-        // ── Phase 1: Filter valid pixels into RGB samples ────────────────────
-        const samplePixels = [];
+        // ── Phase 1: Background & Dominant Neutral Detection ─────────────────
+        const rawHistogram = {};
         let topLumSum = 0, topPxCount = 0;
+        let totalValidPx = 0;
 
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
           if (a < 128) continue;
+          totalValidPx++;
 
           const py = Math.floor((i / 4) / SIZE);
-          if (py < SIZE * 0.25) {
+          if (py < SIZE * 0.3) {
             topLumSum += 0.299 * r + 0.587 * g + 0.114 * b;
             topPxCount++;
           }
 
-          // Skip extreme blown-out highlights and absolute black
-          if (r + g + b < 30 || (r > 248 && g > 248 && b > 248)) continue;
-
-          samplePixels.push([r, g, b]);
+          const qr = Math.round(r / 12) * 12;
+          const qg = Math.round(g / 12) * 12;
+          const qb = Math.round(b / 12) * 12;
+          const key = `${qr},${qg},${qb}`;
+          if (!rawHistogram[key]) {
+            const [h, s, l] = rgbToHsl(qr, qg, qb);
+            rawHistogram[key] = { r: qr, g: qg, b: qb, h, s, l, count: 0 };
+          }
+          rawHistogram[key].count++;
         }
 
-        // ── Phase 2: Quantize into fine color clusters (16-step quantization) ─
-        const clusters = {};
-        samplePixels.forEach(([r, g, b]) => {
+        // Sort histogram by frequency
+        const sortedHist = Object.values(rawHistogram).sort((a, b) => b.count - a.count);
+        const mostFrequent = sortedHist[0] || { r: 245, g: 240, b: 235, h: 35, s: 0.15, l: 0.94 };
+
+        // Check if wallpaper background is warm beige / cream / ivory / sand
+        const isWarmBeige = (mostFrequent.l >= 0.65 && (mostFrequent.s <= 0.48 && (mostFrequent.h <= 75 || mostFrequent.h >= 335)));
+
+        // ── Phase 2: Sample Artwork Accents & Prevent Muddy Olive Hues ───────
+        const accentClusters = {};
+        for (const bucket of sortedHist) {
+          // Skip pure black / near black and background-identical pixels for accent sampling
+          if (bucket.l < 0.08 || (bucket.l > 0.96 && bucket.s < 0.1)) continue;
+          if (dist(bucket.r, bucket.g, bucket.b, mostFrequent.r, mostFrequent.g, mostFrequent.b) < 30 && mostFrequent.count > totalValidPx * 0.12) {
+            continue;
+          }
+
+          let { r, g, b, h, s, l, count } = bucket;
+
+          // ── Clean Up Muddy Yellow-Green / Olive (Hue 52°–84°) ──
+          if (h >= 52 && h <= 84 && s > 0.15) {
+            if (h < 68) {
+              h = 40; // Warm Golden Amber
+            } else {
+              h = 125; // Fresh Sage Green
+            }
+            [r, g, b] = hslToRgb(h, s, l);
+          }
+
           const qr = Math.round(r / 16) * 16;
           const qg = Math.round(g / 16) * 16;
           const qb = Math.round(b / 16) * 16;
           const key = `${qr},${qg},${qb}`;
-          if (!clusters[key]) {
-            const [, s, l] = rgbToHsl(qr, qg, qb);
-            clusters[key] = { r: qr, g: qg, b: qb, count: 0, s, l };
+          if (!accentClusters[key]) {
+            accentClusters[key] = { r: qr, g: qg, b: qb, h, s, l, count: 0 };
           }
-          clusters[key].count++;
-        });
+          accentClusters[key].count += count;
+        }
 
-        // ── Phase 3: Rank clusters by visual significance & vibrancy ─────────
-        const rankedClusters = Object.values(clusters).map(c => {
-          const vibranceScore = c.s * 1.5 + (1 - Math.abs(c.l - 0.45));
-          const score = c.count * (vibranceScore + 0.2);
+        // ── Phase 3: Rank Accent Clusters by Vibrancy & Visual Harmony ────────
+        const rankedAccents = Object.values(accentClusters).map(c => {
+          let chromaBonus = 1.0;
+          if ((c.h >= 170 && c.h <= 230) || (c.h >= 345 || c.h <= 30)) chromaBonus = 1.45; // Teal & Coral/Terracotta
+          else if (c.h >= 30 && c.h <= 50) chromaBonus = 1.30; // Warm Sand / Amber
+          else if (c.h >= 230 && c.h <= 270) chromaBonus = 1.25; // Navy / Indigo
+
+          const vibranceScore = c.s * 1.8 * chromaBonus + (1 - Math.abs(c.l - 0.45));
+          const score = c.count * (vibranceScore + 0.3);
           return { ...c, score };
         }).sort((a, b) => b.score - a.score);
 
-        // ── Phase 4: Pick dominant key colors with smart distance ─────────────
-        const picked = [];
-        for (const cluster of rankedClusters) {
-          if (picked.length >= 6) break;
-          const isDistinct = picked.every(p => dist(cluster.r, cluster.g, cluster.b, p.r, p.g, p.b) >= 36);
+        // ── Phase 4: Pick 6 Distinct Dominant Accents (Hue & RGB Spacing) ───────
+        const pickedAccents = [];
+        for (const cluster of rankedAccents) {
+          if (pickedAccents.length >= 6) break;
+          const isDistinct = pickedAccents.every(p => {
+            const colorDist = dist(cluster.r, cluster.g, cluster.b, p.r, p.g, p.b);
+            const hueDiff = Math.abs(cluster.h - p.h);
+            const circHueDiff = Math.min(hueDiff, 360 - hueDiff);
+            return colorDist >= 36 && (circHueDiff >= 18 || Math.abs(cluster.l - p.l) >= 0.22);
+          });
           if (isDistinct) {
-            picked.push(cluster);
+            pickedAccents.push(cluster);
           }
         }
 
-        if (picked.length === 0 && rankedClusters.length > 0) {
-          picked.push(rankedClusters[0]);
-        }
-
-        // ── Phase 5: Build harmonious 8-swatch palette from dominant themes ────
+        // ── Phase 5: Build Harmonious 8-Swatch Course Palette ─────────────────
         const isDark = (this.currentMode === 'dark' || (this.currentMode === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
 
         const calibrateColor = (r, g, b, targetLShift = 0) => {
           let [h, s, l] = rgbToHsl(r, g, b);
+          if (h >= 52 && h <= 84) h = h < 68 ? 40 : 125;
           if (isDark) {
-            l = Math.max(0.30, Math.min(0.68, l + targetLShift));
+            l = Math.max(0.36, Math.min(0.68, l + targetLShift));
+            s = Math.max(0.40, Math.min(0.85, s));
           } else {
-            l = Math.max(0.24, Math.min(0.60, l + targetLShift));
+            l = Math.max(0.34, Math.min(0.56, l + targetLShift));
+            s = Math.max(0.45, Math.min(0.88, s));
           }
           return rgbToHex(...hslToRgb(h, s, l));
         };
 
         const courseSwatches = [];
-        picked.forEach(p => {
-          courseSwatches.push(calibrateColor(p.r, p.g, p.b));
+        pickedAccents.forEach(p => {
+          const hex = calibrateColor(p.r, p.g, p.b);
+          if (!courseSwatches.includes(hex)) courseSwatches.push(hex);
         });
 
-        let srcIdx = 0;
-        const shifts = isDark ? [0.12, -0.10, 0.20, -0.16, 0.26, -0.22] : [-0.10, 0.12, -0.16, 0.18, -0.22, 0.24];
-        let shiftIdx = 0;
-        let attempts = 0;
-        while (courseSwatches.length < 8 && picked.length > 0 && attempts < 30) {
-          attempts++;
-          const src = picked[srcIdx % picked.length];
-          const shift = shifts[shiftIdx % shifts.length];
-          const comp = calibrateColor(src.r, src.g, src.b, shift);
-          if (!courseSwatches.includes(comp)) {
-            courseSwatches.push(comp);
+        // Designer fallback palette for beige/warm wallpapers if image has few accents
+        const BEIGE_HARMONY_FALLBACKS = [
+          '#1E6F82', // Deep Teal / Marine
+          '#D65A31', // Terracotta / Burnt Sienna
+          '#D49A3D', // Warm Golden Amber
+          '#C05C7E', // Dusty Rose
+          '#2C4A6F', // Slate Navy
+          '#52796F', // Sage Forest
+          '#7C4D38', // Warm Espresso
+          '#E07A5F'  // Coral Peach
+        ];
+
+        for (const fb of BEIGE_HARMONY_FALLBACKS) {
+          if (courseSwatches.length >= 8) break;
+          if (!courseSwatches.includes(fb)) {
+            courseSwatches.push(fb);
           }
-          srcIdx++;
-          shiftIdx++;
         }
 
-        while (courseSwatches.length < 8) {
-          const baseHex = courseSwatches[courseSwatches.length - 1] || '#B91C1C';
-          const [br, bg, bb] = hexToRgb(baseHex);
-          let [bh, bs, bl] = rgbToHsl(br, bg, bb);
-          bl = Math.max(0.25, Math.min(0.70, bl + (courseSwatches.length % 2 === 0 ? 0.08 : -0.08)));
-          courseSwatches.push(rgbToHex(...hslToRgb((bh + 24 * courseSwatches.length) % 360, bs, bl)));
+        // ── Phase 6: Select Sophisticated Header & Primary Accents ────────────
+        let primaryCluster = pickedAccents[0] || { r: 30, g: 111, b: 130, h: 192, s: 0.62, l: 0.31 };
+        
+        let bestHeaderHex = null;
+        for (const p of pickedAccents) {
+          const isIdealHeaderHue = (p.h >= 170 && p.h <= 260) || (p.h >= 345 || p.h <= 45);
+          if (isIdealHeaderHue) {
+            let [hh, hs, hl] = [p.h, Math.min(0.9, Math.max(0.45, p.s)), isDark ? 0.32 : 0.28];
+            if (hh >= 52 && hh <= 84) hh = 40;
+            bestHeaderHex = rgbToHex(...hslToRgb(hh, hs, hl));
+            break;
+          }
         }
 
-        // ── Phase 6: Set primary, secondary & tertiary for UI ────────────────
-        const primaryHex   = courseSwatches[0];
-        const secondaryHex = courseSwatches[1] || courseSwatches[0];
-        const tertiaryHex  = courseSwatches[2] || courseSwatches[1] || courseSwatches[0];
+        if (!bestHeaderHex) {
+          let [ph, ps] = [primaryCluster.h, Math.min(0.9, Math.max(0.45, primaryCluster.s))];
+          if (ph >= 52 && ph <= 84) ph = 40;
+          bestHeaderHex = rgbToHex(...hslToRgb(ph, ps, isDark ? 0.32 : 0.28));
+        }
 
-        // ── Phase 7: Apply CSS + theme ────────────────────────────────────────
+        const primaryHex   = courseSwatches[0] || '#1E6F82';
+        const secondaryHex = courseSwatches[1] || '#D65A31';
+        const tertiaryHex  = courseSwatches[2] || '#D49A3D';
+        const headerHex    = bestHeaderHex;
+
+        // ── Phase 7: Apply Theme CSS, Beige Timetable Surface & Swatches ──────
         const avgTopLum   = topPxCount > 0 ? topLumSum / topPxCount : 128;
         const clockColor  = avgTopLum > 130 ? '#111827' : '#FFFFFF';
         const clockShadow = avgTopLum > 130 ? 'none'    : '0 2px 12px rgba(0,0,0,0.7)';
@@ -2963,11 +3021,13 @@ class SchedullyApp {
         root.style.setProperty('--m3-sys-color-on-tertiary',         this._isColorDark(tertiaryHex)  ? '#FFFFFF' : '#111827');
         root.style.setProperty('--m3-sys-color-tertiary-container',  tertiaryHex + (isDark ? '28' : '1E'));
 
-        // Header color: deeper, richly framing companion tone
-        const [pr, pg, pb] = hexToRgb(primaryHex);
-        let [ph, ps, pl] = rgbToHsl(pr, pg, pb);
-        const headerL = isDark ? Math.max(0.18, Math.min(0.38, pl * 0.70)) : Math.min(0.42, Math.max(0.24, pl * 0.82));
-        const headerHex = rgbToHex(...hslToRgb(ph, Math.min(1, ps * 1.15), headerL));
+        // If beige/warm background detected, adapt timetable container surface to warm cream
+        if (isWarmBeige && !isDark) {
+          root.style.setProperty('--m3-sys-color-background', '#F9F5EE');
+          root.style.setProperty('--m3-sys-color-surface', '#FCFAF6');
+          root.style.setProperty('--m3-sys-color-surface-variant', 'rgba(247, 241, 233, 0.92)');
+          root.style.setProperty('--m3-grid-surface-bg', '#FCFAF6');
+        }
 
         this.wallpaperHeader    = headerHex;
         this.wallpaperPrimary   = primaryHex;
@@ -5111,8 +5171,10 @@ class SchedullyApp {
     const zoomLabel = document.getElementById('zoom-label-text');
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     const mainPhoneWrapper = document.getElementById('main-phone-wrapper');
-    
-    const getBaseModelDimensions = () => {
+    let rightSliderMode = 'zoom'; // 'zoom' | 'radius' | 'font'
+    let radiusScope = 'both'; // 'both' | 'table' | 'cards'
+    let fontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
+        const getBaseModelDimensions = () => {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return { width: 380, height: 770 };
       if (originalCanvas.classList.contains('canvas-tablet')) return { width: 920, height: 690 };
@@ -5194,20 +5256,44 @@ class SchedullyApp {
       }
 
       const displayPercent = Math.round(scale * 100);
-      if (zoomLabel) {
-        zoomLabel.innerText = `${displayPercent}%`;
-      }
-
       const minZ = 0.4;
       const maxZ = 1.5;
       const ratio = Math.max(0, Math.min(1, (scale - minZ) / (maxZ - minZ)));
       const pct = Math.round(ratio * 100);
 
+      // 1. Sync Left Floating Slider Visuals
+      if (zoomLabel) {
+        zoomLabel.innerText = `${displayPercent}%`;
+      }
       const sideZoomFill = document.getElementById('side-zoom-fill');
       if (sideZoomFill) {
         sideZoomFill.style.transition = 'none';
         sideZoomFill.style.setProperty('height', `${pct}%`, 'important');
       }
+      const sideZoomTrack = document.getElementById('side-zoom-track');
+      if (sideZoomTrack) {
+        sideZoomTrack.setAttribute('aria-valuenow', pct);
+      }
+
+      // 2. Sync Right Multi-Mode Slider Visuals (when in zoom mode)
+      const sideRightFill = document.getElementById('side-right-fill');
+      const rightSliderLabel = document.getElementById('right-slider-label-text');
+      const sideRightTrack = document.getElementById('side-right-track');
+      if (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom') {
+        if (sideRightFill) {
+          sideRightFill.style.transition = 'none';
+          sideRightFill.style.setProperty('height', `${pct}%`, 'important');
+        }
+        if (rightSliderLabel) {
+          rightSliderLabel.innerText = `${displayPercent}%`;
+        }
+        if (sideRightTrack) {
+          sideRightTrack.setAttribute('aria-valuenow', pct);
+        }
+      }
+
+      // 3. Keep Canvas Centered — Middle In and Middle Out on Mobile and Desktop
+      centerCanvasModel(false);
     };
 
     const startZoomPhysics = (immediate = false) => {
@@ -5274,13 +5360,23 @@ class SchedullyApp {
       const sideZoomContainer = document.getElementById('side-zoom-slider-container');
       
       let badgeHideTimeout = null;
+      let rightBadgeTimeout = null;
       const showZoomBadgeTemporarily = (duration = 1400) => {
-        if (!sideZoomContainer) return;
-        sideZoomContainer.classList.add('is-interacting');
-        if (badgeHideTimeout) clearTimeout(badgeHideTimeout);
-        badgeHideTimeout = setTimeout(() => {
-          sideZoomContainer.classList.remove('is-interacting');
-        }, duration);
+        if (sideZoomContainer) {
+          sideZoomContainer.classList.add('is-interacting');
+          if (badgeHideTimeout) clearTimeout(badgeHideTimeout);
+          badgeHideTimeout = setTimeout(() => {
+            sideZoomContainer.classList.remove('is-interacting');
+          }, duration);
+        }
+        const rightSlider = document.getElementById('side-right-slider-container');
+        if (rightSlider && (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom')) {
+          rightSlider.classList.add('is-interacting');
+          if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
+          rightBadgeTimeout = setTimeout(() => {
+            rightSlider.classList.remove('is-interacting');
+          }, duration);
+        }
       };
 
       if (btnZoomIn) {
@@ -5342,6 +5438,10 @@ class SchedullyApp {
           if (e.button != null && e.button !== 0) return;
           isDragging = true;
           if (sideZoomContainer) sideZoomContainer.classList.add('active-drag');
+          const rightSlider = document.getElementById('side-right-slider-container');
+          if (rightSlider && (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom')) {
+            rightSlider.classList.add('active-drag');
+          }
           if (window.soundFX) window.soundFX.play('zoom');
           updateZoomFromPointer(e, true);
           if (e.cancelable) e.preventDefault();
@@ -5357,6 +5457,8 @@ class SchedullyApp {
           if (isDragging) {
             isDragging = false;
             if (sideZoomContainer) sideZoomContainer.classList.remove('active-drag');
+            const rightSlider = document.getElementById('side-right-slider-container');
+            if (rightSlider) rightSlider.classList.remove('active-drag');
             applyZoom(true);
             showZoomBadgeTemporarily(1200);
           }
@@ -5423,6 +5525,14 @@ class SchedullyApp {
           isPinching = true;
           initialPinchDist = calcTouchDist(e.touches[0], e.touches[1]);
           initialPinchZoom = targetZoom || this.zoomScale || 0.85;
+
+          const sideZoom = document.getElementById('side-zoom-slider-container');
+          if (sideZoom) sideZoom.classList.add('active-drag');
+          const rightSlider = document.getElementById('side-right-slider-container');
+          if (rightSlider && (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom')) {
+            rightSlider.classList.add('active-drag');
+          }
+
           showZoomBadgeTemporarily(1200);
           if (e.cancelable) e.preventDefault();
         }
@@ -5454,6 +5564,11 @@ class SchedullyApp {
         if (isPinching) {
           if (!e.touches || e.touches.length < 2) {
             isPinching = false;
+            const sideZoom = document.getElementById('side-zoom-slider-container');
+            if (sideZoom) sideZoom.classList.remove('active-drag');
+            const rightSlider = document.getElementById('side-right-slider-container');
+            if (rightSlider) rightSlider.classList.remove('active-drag');
+
             startZoomPhysics(false);
             showZoomBadgeTemporarily(1400);
             this._stagePending(true);
@@ -5531,10 +5646,6 @@ class SchedullyApp {
     const btnFontScopeHeader    = document.getElementById('btn-font-scope-header');
     const btnFontScopeTitle     = document.getElementById('btn-font-scope-title');
     const btnFontScopeTrademark = document.getElementById('btn-font-scope-trademark');
-
-    let rightSliderMode = 'zoom'; // 'zoom' | 'radius' | 'font'
-    let radiusScope = 'both'; // 'both' | 'table' | 'cards'
-    let fontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
 
     const updateRightScopeUI = () => {
       if (rightRadiusScopeGroup) {
@@ -7721,8 +7832,10 @@ class SchedullyApp {
         e.stopPropagation();
         importMenuPopover.classList.add('hidden');
         if (window.soundFX) window.soundFX.play('tap');
-        if (universalFileInput) {
-          universalFileInput.click();
+        const universalInput = document.getElementById('universal-file-input');
+        if (universalInput) {
+          universalInput.value = '';
+          universalInput.click();
         }
       });
 
@@ -7731,9 +7844,10 @@ class SchedullyApp {
         e.stopPropagation();
         importMenuPopover.classList.add('hidden');
         if (window.soundFX) window.soundFX.play('tap');
-        if (wallpaperImageInput) {
-          wallpaperImageInput.value = '';
-          wallpaperImageInput.click();
+        const wpInput = document.getElementById('wallpaper-image-input');
+        if (wpInput) {
+          wpInput.value = '';
+          wpInput.click();
         }
       });
 
@@ -7752,8 +7866,10 @@ class SchedullyApp {
         e.stopPropagation();
         importMenuPopover.classList.add('hidden');
         if (window.soundFX) window.soundFX.play('tap');
-        if (customFontUploadInput) {
-          customFontUploadInput.click();
+        const fontInput = document.getElementById('custom-font-upload') || document.getElementById('floating-custom-font-upload');
+        if (fontInput) {
+          fontInput.value = '';
+          fontInput.click();
         }
       });
     }
@@ -7955,7 +8071,11 @@ class SchedullyApp {
             if (scanErrorAlert) scanErrorAlert.classList.add('hidden');
 
             if (this.aiScanOverlay) this.aiScanOverlay.classList.add('active');
-            this.ocrLoadingBar.classList.remove('hidden');
+            if (this.ocrLoadingBar) this.ocrLoadingBar.classList.remove('hidden');
+            if (this.ocrParsingToast) {
+              this.ocrParsingToast.classList.remove('hidden');
+              if (this.ocrParsingToastText) this.ocrParsingToastText.innerText = "Reading timetable image...";
+            }
             let extracted = [];
             try {
               const provider = 'gemini';
@@ -7967,7 +8087,8 @@ class SchedullyApp {
               ).trim();
               
               const scanResult = await window.ocrParser.scanWithCloudAPI(file, provider, apiKey, (msg) => {
-                this.ocrLoadingText.innerText = msg;
+                if (this.ocrLoadingText) this.ocrLoadingText.innerText = msg;
+                if (this.ocrParsingToastText) this.ocrParsingToastText.innerText = msg;
               });
               
               extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
@@ -7980,8 +8101,8 @@ class SchedullyApp {
                 const scanErrorDesc = document.getElementById('scan-error-desc');
                 if (scanErrorAlert) {
                   scanErrorAlert.classList.remove('hidden');
-                  if (scanErrorTitle) scanErrorTitle.innerText = "Scanning Failed: Image Unreadable";
-                  if (scanErrorDesc) scanErrorDesc.innerText = "The scanner could not recognize valid timetable text in this image. Please ensure the image is clear.";
+                  if (scanErrorTitle) scanErrorTitle.innerText = "Import Failed: Image Unreadable";
+                  if (scanErrorDesc) scanErrorDesc.innerText = "Could not recognize timetable text in this image. Please ensure the image is clear.";
                 }
                 return;
               }
@@ -8009,21 +8130,22 @@ class SchedullyApp {
               const scanErrorDesc = document.getElementById('scan-error-desc');
               if (scanErrorAlert) {
                 scanErrorAlert.classList.remove('hidden');
-                if (scanErrorTitle) scanErrorTitle.innerText = "Scanning Temporarily Unavailable";
+                if (scanErrorTitle) scanErrorTitle.innerText = "Import Temporarily Unavailable";
                 
                 const rawMsg = (err && err.message) ? err.message : '';
-                // Friendly, polished messaging for public users
+                // Friendly, clean messaging without AI buzzwords
                 if (rawMsg.includes('429') || rawMsg.toLowerCase().includes('quota') || rawMsg.toLowerCase().includes('rate limit')) {
                   if (scanErrorDesc) scanErrorDesc.innerText = "High server traffic right now. Please wait a moment and try again.";
                 } else if (rawMsg.toLowerCase().includes('clear') || rawMsg.toLowerCase().includes('unreadable')) {
                   if (scanErrorDesc) scanErrorDesc.innerText = "Could not detect timetable text. Please ensure the image is clear and well-lit.";
                 } else {
-                  if (scanErrorDesc) scanErrorDesc.innerText = "AI timetable scanner is undergoing quick maintenance. Please try again shortly.";
+                  if (scanErrorDesc) scanErrorDesc.innerText = "Schedule reader is undergoing quick maintenance. Please try again shortly.";
                 }
               }
             } finally {
               if (this.aiScanOverlay) this.aiScanOverlay.classList.remove('active');
-              this.ocrLoadingBar.classList.add('hidden');
+              if (this.ocrLoadingBar) this.ocrLoadingBar.classList.add('hidden');
+              if (this.ocrParsingToast) this.ocrParsingToast.classList.add('hidden');
               this.setUploadBusy(false);
               e.target.value = '';
             }
@@ -8309,10 +8431,15 @@ class SchedullyApp {
           this.pendingScanFile = null;
           this.setUploadBusy(true);
           if (this.ocrLoadingBar) this.ocrLoadingBar.classList.remove('hidden');
-          if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Reading your timetable...";
+          if (this.ocrLoadingText) this.ocrLoadingText.innerText = "Reading timetable image...";
+          if (this.ocrParsingToast) {
+            this.ocrParsingToast.classList.remove('hidden');
+            if (this.ocrParsingToastText) this.ocrParsingToastText.innerText = "Reading timetable image...";
+          }
           try {
             const scanResult = await window.ocrParser.scanWithCloudAPI(fileToScan, 'gemini', rawKey, (msg) => {
               if (this.ocrLoadingText) this.ocrLoadingText.innerText = msg;
+              if (this.ocrParsingToastText) this.ocrParsingToastText.innerText = msg;
             });
             const extracted = Array.isArray(scanResult) ? scanResult : (scanResult.courses || []);
             const detectedLang = scanResult.detectedLanguage || 'English';
@@ -8330,6 +8457,7 @@ class SchedullyApp {
             console.error("Scan error after key save:", err);
           } finally {
             if (this.ocrLoadingBar) this.ocrLoadingBar.classList.add('hidden');
+            if (this.ocrParsingToast) this.ocrParsingToast.classList.add('hidden');
             this.setUploadBusy(false);
           }
         }

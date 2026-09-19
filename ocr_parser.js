@@ -14,19 +14,18 @@ class OCRTimetableParser {
    */
   async scanWithCloudAPI(file, provider, apiKey, onProgress = () => {}) {
     const statusMessages = [
-      "Reading your timetable image...",
-      "Mapping matrix grid and time axes...",
-      "Deeply analyzing every cell from morning to late night...",
-      "Extracting course names, codes, venues and professors...",
-      "Cross-referencing multi-hour blocks & validating schedule...",
-      "Finalizing your timetable..."
+      "Reading timetable image...",
+      "Mapping matrix grid and time columns...",
+      "Extracting course names, codes, rooms & slots...",
+      "Cross-referencing schedule blocks...",
+      "Finalizing timetable..."
     ];
     let msgIdx = 0;
     onProgress(statusMessages[0]);
     const progressTimer = setInterval(() => {
       msgIdx = (msgIdx + 1) % statusMessages.length;
       onProgress(statusMessages[msgIdx]);
-    }, 2400);
+    }, 2200);
 
     try {
       const base64Data = await new Promise((resolve) => {

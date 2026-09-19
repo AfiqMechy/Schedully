@@ -167,6 +167,13 @@
         if (slotsEl) slotsEl.innerText = initialClasses;
         if (settingsBadgeEl) settingsBadgeEl.innerText = initialClasses;
       });
+
+      // Fallback: ensure app-ready is applied quickly so canvas is never blank
+      setTimeout(function() {
+        if (document.body && !document.body.classList.contains('app-ready')) {
+          document.body.classList.add('app-ready');
+        }
+      }, 300);
     } catch(e) {}
   })();
 </script>
@@ -235,11 +242,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260919_v596">
+<link rel="stylesheet" href="styles.css?v=20260919_v602">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260919_v596" defer></script>
+<script src="firebase-config.js?v=20260919_v602" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -560,6 +567,8 @@
 
     <!-- Hidden Core File Inputs & Alerts Required by App Engine -->
     <input type="file" id="universal-file-input" accept=".csv,.ics,text/csv,text/calendar,text/plain,application/ics,image/*,*/*" class="hidden">
+    <input type="file" id="wallpaper-image-input" accept="image/*" class="hidden">
+    <input type="file" id="custom-font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
     <div id="ocr-loading-bar" class="m3-loading-banner hidden">
       <span class="material-symbols-outlined spin-icon">sync</span>
       <span id="ocr-loading-text">Analyzing schedule...</span>
@@ -2152,8 +2161,8 @@
         </div>
       </div>
 
-      <!-- 3. Colors Resync Button (Dark Red Primary Action) -->
-      <button id="floating-btn-resync-wallpaper-colors" type="button" class="w-full py-2.5 px-3 rounded-2xl bg-[#7A0000] hover:bg-[#600000] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all mb-2" title="Resync Colors">
+      <!-- 3. Colors Resync Button (Adaptive Primary Action) -->
+      <button id="floating-btn-resync-wallpaper-colors" type="button" class="w-full py-2.5 px-3 rounded-2xl active:scale-[0.98] text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all mb-2 cursor-pointer" title="Resync Colors">
         <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         <span data-i18n="colorsResync">Colors Resync</span>
       </button>
@@ -2399,7 +2408,7 @@
   </div>
 
 <script src="timetable_engine.js" defer></script>
-<script src="ocr_parser.js?v=20260907_v451" defer></script>
+<script src="ocr_parser.js?v=20260919_v602" defer></script>
 <script src="ics_csv_parser_v3.js" defer></script>
   <!-- Firebase Project Credentials Setup Modal -->
   <div id="firebase-config-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -2756,18 +2765,25 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260919_v596"></script>
+  <script src="app_v3.js?v=20260919_v602"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=596').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=602').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
   }
 </script>
+
+<!-- ═══ Universal Parsing Progress Toast — Floating Top Glass Pill ═══ -->
+<div id="ocr-parsing-toast-banner" class="m3-parsing-toast-banner hidden" role="status" aria-live="polite">
+  <div class="m3-parsing-spinner"></div>
+  <span id="ocr-parsing-toast-text">Reading timetable image...</span>
+  <div class="m3-parsing-pulse-dot"></div>
+</div>
 
 <!-- ═══ Swap / Move Toast — Fixed Center-Bottom Overlay ═══ -->
 <div id="grid-swap-toast" class="grid-swap-toast-pill hidden">
