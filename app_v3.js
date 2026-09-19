@@ -188,6 +188,7 @@ class SchedullyApp {
     this.gridHeightVal = 49;
     this.gridFontSizeVal = 9;
     this.gridYPosVal = 0;
+    this.gridXPosVal = 0;
 
     const storedZoom = parseFloat(localStorage.getItem('schedully_zoom_scale'));
     const getOptimalFitScale = () => {
@@ -357,6 +358,13 @@ class SchedullyApp {
     this.trademarkText = 'Schedully • Student Edition';
     this.trademarkStyle = 'default';
 
+    this.fontScaleAll = 1.0;
+    this.fontScaleCards = 1.0;
+    this.fontScaleHeader = 1.0;
+    this.fontScaleTitle = 1.0;
+    this.fontScaleTrademark = 1.0;
+    this.gridFontScale = 1.0;
+
     // Universal Importer
     this.universalFileInput = document.getElementById('universal-file-input');
     
@@ -451,8 +459,21 @@ class SchedullyApp {
         // Close sidebars & popovers if open
         const popover = document.getElementById('canvas-controls-popover');
         const ratioPopover = document.getElementById('canvas-ratio-popover');
+        const addCourseCard = document.getElementById('floating-add-course-wizard-card');
+        const settingsCard = document.getElementById('floating-schedule-settings-card');
+        const paletteCard = document.getElementById('floating-palette-mode-card');
+        const fontCard = document.getElementById('floating-font-style-card');
+        const daysCard = document.getElementById('floating-days-time-card');
+        const importPopover = document.getElementById('import-menu-popover');
+
         if (popover) popover.classList.add('hidden');
         if (ratioPopover) ratioPopover.classList.add('hidden');
+        if (addCourseCard) addCourseCard.classList.add('hidden');
+        if (settingsCard) settingsCard.classList.add('hidden');
+        if (paletteCard) paletteCard.classList.add('hidden');
+        if (fontCard) fontCard.classList.add('hidden');
+        if (daysCard) daysCard.classList.add('hidden');
+        if (importPopover) importPopover.classList.add('hidden');
         if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
         if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
         const leftSidebar = document.getElementById('left-sidebar');
@@ -616,6 +637,25 @@ class SchedullyApp {
     }
   }
 
+  setMode(mode, save = true) {
+    if (!mode) return;
+    this.currentMode = mode;
+    if (save) {
+      try {
+        localStorage.setItem('schedully_theme_mode', mode);
+      } catch (e) {}
+    }
+    // Sync UI mode dots
+    document.querySelectorAll('.theme-mode-dot').forEach(d => {
+      d.classList.toggle('active', d.getAttribute('data-mode') === mode);
+    });
+    this.applyThemeEngine();
+    this.renderAll();
+    if (save && typeof this._stagePending === 'function') {
+      this._stagePending(true);
+    }
+  }
+
   setPalette(paletteKey, save = true) {
     if (!paletteKey) return;
     this.currentPalette = paletteKey;
@@ -685,19 +725,11 @@ class SchedullyApp {
       }
 
       const onPrimaryHex = isDarkHex ? '#FFFFFF' : '#0F172A';
-      const adaptiveBg = resolvedMode === 'dark'
-        ? `rgba(${Math.max(10, Math.round(pr * 0.10))}, ${Math.max(15, Math.round(pg * 0.10))}, ${Math.max(25, Math.round(pb * 0.10))}, 1)`
-        : `rgba(${Math.min(255, Math.round(246 + (pr - 128) * 0.05))}, ${Math.min(255, Math.round(248 + (pg - 128) * 0.05))}, ${Math.min(255, Math.round(252 + (pb - 128) * 0.05))}, 1)`;
-      // Surface tinted by secondary for more variety
-      const adaptiveSurface = resolvedMode === 'dark'
-        ? `rgba(${Math.max(14, Math.round(sr * 0.14 + 10))}, ${Math.max(20, Math.round(sg * 0.14 + 12))}, ${Math.max(32, Math.round(sb * 0.14 + 16))}, 0.90)`
-        : '#FFFFFF';
-      const adaptiveVariant = resolvedMode === 'dark'
-        ? `rgba(${Math.max(20, Math.round(sr * 0.18 + 15))}, ${Math.max(28, Math.round(sg * 0.18 + 18))}, ${Math.max(44, Math.round(sb * 0.18 + 22))}, 1)`
-        : `rgba(${sr}, ${sg}, ${sb}, 0.12)`;
-      const adaptiveGridSurface = resolvedMode === 'dark'
-        ? `rgba(${Math.max(12, Math.round(pr * 0.12 + 8))}, ${Math.max(18, Math.round(pg * 0.12 + 10))}, ${Math.max(30, Math.round(pb * 0.12 + 14))}, 0.80)`
-        : '#FFFFFF';
+      const isDarkTheme = (resolvedMode === 'dark');
+      const adaptiveBg = isDarkTheme ? '#0B0F19' : '#F6F8FB';
+      const adaptiveSurface = isDarkTheme ? '#111827' : '#FFFFFF';
+      const adaptiveVariant = isDarkTheme ? 'rgba(30, 41, 59, 0.85)' : 'rgba(241, 245, 249, 0.85)';
+      const adaptiveGridSurface = isDarkTheme ? '#111827' : '#FFFFFF';
 
       // Dedicated distinct header color: slightly deeper & rich framing shade
       let headerColorHex = this.wallpaperHeader;
@@ -1308,6 +1340,29 @@ class SchedullyApp {
     root.style.setProperty('--m3-header-outline-color', headerOutline);
   }
 
+  applyTrademarkColor(colorVal) {
+    const root = document.documentElement;
+    if (!colorVal) {
+      this.userHasPickedTrademarkColor = false;
+      this.trademarkCustomBg = null;
+      root.style.removeProperty('--trademark-pill-custom-bg');
+      root.style.removeProperty('--trademark-pill-outline-color');
+      root.style.removeProperty('--trademark-custom-text-color');
+      return;
+    }
+    this.userHasPickedTrademarkColor = true;
+    this.trademarkCustomBg = colorVal;
+    root.style.setProperty('--trademark-pill-custom-bg', colorVal);
+
+    // Auto-calculate luminance contrast for trademark text & outline
+    const textColor = this.getContrastColor(colorVal);
+    const isDark = (textColor === '#FFFFFF');
+    const trademarkOutline = isDark ? 'rgba(255, 255, 255, 0.22)' : 'var(--m3-sys-color-outline)';
+
+    root.style.setProperty('--trademark-custom-text-color', textColor);
+    root.style.setProperty('--trademark-pill-outline-color', trademarkOutline);
+  }
+
   isColorDark(hex) {
     if (!hex || typeof hex !== 'string') return false;
     let c = hex.trim();
@@ -1383,6 +1438,18 @@ class SchedullyApp {
       this.inputTitleStage.classList.toggle('title-disabled', !isVisible);
       this.inputTitleStage.disabled = !isVisible;
     }
+
+    // 4. Auto-expand Floating Layout & Style Card when controls popover is open
+    const floatingTitleCard = document.getElementById('floating-title-card');
+    const canvasPopover = document.getElementById('canvas-controls-popover');
+    if (floatingTitleCard && canvasPopover && !canvasPopover.classList.contains('hidden')) {
+      floatingTitleCard.classList.remove('hidden');
+    }
+
+    if (typeof this.syncFloatingEditorUI === 'function') {
+      this.syncFloatingEditorUI();
+    }
+
     window.syncGlassSliders?.();
   }
 
@@ -1436,7 +1503,9 @@ class SchedullyApp {
   setTrademarkVisibility(show, save = true) {
     this.showTrademark = !!show;
     if (this.lockTrademarkFooter) {
-      this.lockTrademarkFooter.style.display = this.showTrademark ? 'inline-flex' : 'none';
+      this.lockTrademarkFooter.style.setProperty('display', this.showTrademark ? 'inline-flex' : 'none', 'important');
+      this.lockTrademarkFooter.classList.toggle('hidden', !this.showTrademark);
+      this.lockTrademarkFooter.classList.toggle('is-hidden', !this.showTrademark);
     }
     const toggleTrademark = document.getElementById('toggle-trademark');
     if (toggleTrademark) {
@@ -1576,7 +1645,7 @@ class SchedullyApp {
 
     // Timetable Dimensions & Positioning (Width, Height, Y-Position Offset)
     this.setTimetableWidthScale = (val, syncSlider = true) => {
-      const widthVal = Math.max(50, Math.min(100, parseInt(val, 10) || 100));
+      const widthVal = Math.max(50, Math.min(130, parseInt(val, 10) || 100));
       this.gridWidthVal = widthVal;
       const gridWidthValEl = document.getElementById('grid-width-val');
       if (gridWidthValEl) gridWidthValEl.value = this.gridWidthVal;
@@ -1612,6 +1681,19 @@ class SchedullyApp {
       const timetableContainer = document.getElementById('lock-timetable-container');
       if (timetableContainer) {
         timetableContainer.style.marginTop = `${this.gridYPosVal}px`;
+      }
+      this.renderTimetableGrid();
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+    };
+
+    this.setTimetableOffsetX = (val, syncSlider = true) => {
+      const xVal = Math.max(-150, Math.min(150, parseInt(val, 10) || 0));
+      this.gridXPosVal = xVal;
+      const timetableContainer = document.getElementById('lock-timetable-container');
+      if (timetableContainer) {
+        timetableContainer.style.marginLeft = `${this.gridXPosVal}px`;
       }
       this.renderTimetableGrid();
       if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
@@ -1844,6 +1926,7 @@ class SchedullyApp {
         e.preventDefault();
         e.stopPropagation();
         canvasRatioPopover.classList.toggle('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
       });
     }
 
@@ -1900,7 +1983,7 @@ class SchedullyApp {
     } catch (e) {}
 
     input?.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (!file) return;
 
       this.compressWallpaperImage(file, (compressedDataUrl) => {
@@ -1911,6 +1994,16 @@ class SchedullyApp {
         this.wallpaperHeader = null;
         this.applyWallpaper(compressedDataUrl, true);
         this._stagePending(true);
+      });
+
+      // Clear input value so selecting the same file again triggers reliably
+      e.target.value = '';
+    });
+
+    // Reset file input on label click before file picker opens
+    document.querySelectorAll('label[for="wallpaper-image-input"]').forEach(lbl => {
+      lbl.addEventListener('click', () => {
+        if (input) input.value = '';
       });
     });
 
@@ -1926,40 +2019,7 @@ class SchedullyApp {
       e.stopPropagation();
 
       if (window.soundFX) window.soundFX.play('palette');
-
-      this.userHasPickedBgColor = false;
-      this.userHasPickedHeaderColor = false;
-      this.userHasPickedSurfaceColor = false;
-      this.userHasPickedFontColor = false;
-      this.globalAdaptiveColor = true;
-
-      // Update Quick Setting Pill if exists
-      document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-val') === 'yes');
-      });
-
-      // Clear all manual overrides on all classes so they strictly re-sync with the palette/wallpaper theme
-      (this.classes || []).forEach(c => {
-        delete c.customColor;
-        delete c.isManualCustomColor;
-        delete c.fontColor;
-      });
-
-      const wallpaperData = this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data');
-      if (wallpaperData) {
-        this.extractColorsFromImage(wallpaperData, false, true);
-      } else {
-        this.applyThemeEngine();
-      }
-
-      this.renderAll();
-      if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
-        this.renderWatchGlance();
-      }
-      this._stagePending();
-      if (typeof showToast === 'function') {
-        showToast('Theme & course colors resynced!', 'info');
-      }
+      this.resyncColors(false);
 
       // Subtle icon rotation without changing button label or adding tick icon
       const icon = resyncBtn.querySelector('svg');
@@ -1972,6 +2032,61 @@ class SchedullyApp {
         }, 500);
       }
     });
+  }
+
+  resyncColors(skipToast = true) {
+    this.userHasPickedBgColor = false;
+    this.userHasPickedHeaderColor = false;
+    this.userHasPickedSurfaceColor = false;
+    this.userHasPickedFontColor = false;
+    this.globalAdaptiveColor = true;
+
+    // Update Quick Setting Pill if exists
+    document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-val') === 'yes');
+    });
+
+    // Clear all manual overrides on all classes so they strictly re-sync with the palette/wallpaper theme
+    (this.classes || []).forEach(c => {
+      delete c.customColor;
+      delete c.isManualCustomColor;
+      delete c.fontColor;
+    });
+
+    const wallpaperData = this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data');
+    if (wallpaperData) {
+      this.extractColorsFromImage(wallpaperData, false, true);
+    } else {
+      let resolvedMode = this.currentMode;
+      if (resolvedMode === 'auto') {
+        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        resolvedMode = isDark ? 'dark' : 'light';
+      }
+      const paletteGroup = THEME_PALETTES[resolvedMode] || THEME_PALETTES.light;
+      const selectedTheme = paletteGroup[this.currentPalette] || paletteGroup.indigo;
+      if (selectedTheme && selectedTheme.courseSwatches) {
+        (this.classes || []).forEach((c, idx) => {
+          c.customColor = selectedTheme.courseSwatches[idx % selectedTheme.courseSwatches.length];
+          c.color = selectedTheme.courseSwatches[idx % selectedTheme.courseSwatches.length];
+        });
+      }
+      this.applyThemeEngine();
+    }
+
+    this.renderAll();
+    if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
+      this.renderWatchGlance();
+    }
+    if (typeof this.syncFloatingEditorUI === 'function') {
+      this.syncFloatingEditorUI();
+    }
+    if (typeof this.syncTitleBarModeUI === 'function') {
+      this.syncTitleBarModeUI();
+    }
+    if (!skipToast && typeof showToast === 'function') {
+      showToast('Theme & course colors resynced!', 'info');
+    }
+    this._stagePending(true);
   }
 
   compressWallpaperImage(file, callback) {
@@ -2017,12 +2132,14 @@ class SchedullyApp {
     const btnRandTheme = document.getElementById('btn-randomize-theme');
     const btnRandCourse = document.getElementById('btn-randomize-course-colors');
     const btnRandSchedule = document.getElementById('btn-randomize-colors');
+    const quickRemoveWp = document.getElementById('btn-quick-remove-wallpaper');
     const quickAdaptiveRow = document.getElementById('toggle-quick-adaptive')?.closest('.opt-row');
 
     if (isActive) {
       paletteRow?.classList.add('disabled-by-wallpaper');
       quickAdaptiveRow?.classList.add('disabled-by-wallpaper');
       badge?.classList.remove('hidden');
+      quickRemoveWp?.classList.remove('hidden');
 
       // Theme shuffle (🔄) stays active to shuffle extracted wallpaper swatches and anchor colors
       if (btnRandTheme) {
@@ -2046,6 +2163,7 @@ class SchedullyApp {
       paletteRow?.classList.remove('disabled-by-wallpaper');
       quickAdaptiveRow?.classList.remove('disabled-by-wallpaper');
       badge?.classList.add('hidden');
+      quickRemoveWp?.classList.add('hidden');
 
       [btnRandTheme, btnRandCourse, btnRandSchedule].forEach(btn => {
         if (btn) {
@@ -2065,6 +2183,9 @@ class SchedullyApp {
     const controlsBar = document.getElementById('wallpaper-controls-bar');
     const uploadContainer = document.getElementById('wallpaper-upload-container');
     const thumbPreview = document.getElementById('wallpaper-thumb-preview');
+    const floatingControlsBar = document.getElementById('floating-wallpaper-controls-bar');
+    const floatingUploadContainer = document.getElementById('floating-wallpaper-upload-container');
+    const floatingThumbPreview = document.getElementById('floating-wallpaper-thumb-preview');
 
     if (wallpaperLayer) {
       wallpaperLayer.style.backgroundImage = `url("${dataUrl}")`;
@@ -2082,6 +2203,15 @@ class SchedullyApp {
 
     if (uploadContainer) {
       uploadContainer.classList.add('hidden');
+    }
+
+    if (floatingControlsBar && floatingThumbPreview) {
+      floatingThumbPreview.src = dataUrl;
+      floatingControlsBar.classList.remove('hidden');
+    }
+
+    if (floatingUploadContainer) {
+      floatingUploadContainer.classList.add('hidden');
     }
 
     // Auto grey out & disable color palette and randomizer buttons
@@ -2131,6 +2261,8 @@ class SchedullyApp {
     const wallpaperLayer = document.getElementById('phone-wallpaper-layer');
     const controlsBar = document.getElementById('wallpaper-controls-bar');
     const uploadContainer = document.getElementById('wallpaper-upload-container');
+    const floatingControlsBar = document.getElementById('floating-wallpaper-controls-bar');
+    const floatingUploadContainer = document.getElementById('floating-wallpaper-upload-container');
     const input = document.getElementById('wallpaper-image-input');
 
     this.wallpaperAspect = null;
@@ -2156,15 +2288,30 @@ class SchedullyApp {
       uploadContainer.classList.remove('hidden');
     }
 
-    if (input) input.value = '';
+    if (floatingControlsBar) {
+      floatingControlsBar.classList.add('hidden');
+    }
+
+    if (floatingUploadContainer) {
+      floatingUploadContainer.classList.remove('hidden');
+    }
 
     this.wallpaperSwatches = null;
+    this.wallpaperPrimary = null;
+    this.wallpaperSecondary = null;
+    this.wallpaperTertiary = null;
+    this.wallpaperHeader = null;
 
     // Un-grey and re-enable color palette and randomizer buttons
     this.setWallpaperModeUI(false);
 
     try {
       localStorage.removeItem('schedully_wallpaper_data');
+      localStorage.removeItem('schedully_wallpaper_swatches');
+      localStorage.removeItem('schedully_wallpaper_primary');
+      localStorage.removeItem('schedully_wallpaper_secondary');
+      localStorage.removeItem('schedully_wallpaper_tertiary');
+      localStorage.removeItem('schedully_wallpaper_header');
     } catch (e) {}
 
     // Only wipe from active preset if user explicitly tapped the Remove Wallpaper button (not when switching presets)
@@ -2173,23 +2320,33 @@ class SchedullyApp {
       if (this.activePresetKey && this.presets && this.presets[this.activePresetKey]) {
         this.presets[this.activePresetKey].wallpaper = null;
         this.presets[this.activePresetKey].wallpaperSwatches = null;
+        this.presets[this.activePresetKey].wallpaperPrimary = null;
+        this.presets[this.activePresetKey].wallpaperSecondary = null;
+        this.presets[this.activePresetKey].wallpaperTertiary = null;
+        this.presets[this.activePresetKey].wallpaperHeader = null;
       }
-      this._stagePending();
     }
 
-    // Reset back to active preset theme palette
-    this.applyThemeEngine();
-    this.renderTimetableGrid();
+    // Automatically seamless full-color resync back to the clean theme palette
+    this.resyncColors(true);
   }
 
   setupFontFamilyEngine() {
     const fontSelect = document.getElementById('select-font-family');
     const customFontInput = document.getElementById('custom-font-upload');
+    const floatingCustomFontInput = document.getElementById('floating-custom-font-upload');
     const dropdownContainer = document.getElementById('font-dropdown-container');
+    const floatingDropdownContainer = document.getElementById('floating-font-dropdown-container');
     const triggerBtn = document.getElementById('btn-font-dropdown-trigger');
+    const floatingTriggerBtn = document.getElementById('btn-floating-font-trigger');
     const dropdownMenu = document.getElementById('font-dropdown-menu');
+    const floatingDropdownMenu = document.getElementById('floating-font-dropdown-menu');
     const triggerName = document.getElementById('font-trigger-name');
+    const floatingTriggerName = document.getElementById('floating-font-trigger-name');
     const triggerBadge = document.getElementById('font-trigger-badge');
+    const floatingTriggerBadge = document.getElementById('floating-font-trigger-badge');
+    const triggerSub = document.getElementById('font-trigger-sub');
+    const floatingTriggerSub = document.getElementById('floating-font-trigger-sub');
 
     const fontMap = {
       'default': "'Google Sans', 'Product Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -2247,7 +2404,14 @@ class SchedullyApp {
       'custom': 'Custom Uploaded Font'
     };
 
-    const triggerSub = document.getElementById('font-trigger-sub');
+    // Populate floating dropdown menu options by cloning from main dropdown
+    if (dropdownMenu && floatingDropdownMenu) {
+      const sourceScroll = dropdownMenu.querySelector('.custom-font-menu-scroll');
+      const targetScroll = floatingDropdownMenu.querySelector('.custom-font-menu-scroll');
+      if (sourceScroll && targetScroll) {
+        targetScroll.innerHTML = sourceScroll.innerHTML;
+      }
+    }
 
     this.currentFontKey = 'default';
 
@@ -2263,23 +2427,25 @@ class SchedullyApp {
 
       document.documentElement.style.setProperty('--timetable-font-family', stack);
       
-      // Update custom trigger UI
-      if (triggerName) {
-        triggerName.innerText = displayName;
-      }
-      if (triggerSub) {
-        triggerSub.innerText = fontSubtitles[fontKey] || 'Custom Font';
-      }
-      if (triggerBadge) {
-        triggerBadge.style.fontFamily = stack;
-      }
+      // Update custom trigger UI in both locations
+      [triggerName, floatingTriggerName].forEach(el => {
+        if (el) el.innerText = displayName;
+      });
+      [triggerSub, floatingTriggerSub].forEach(el => {
+        if (el) el.innerText = fontSubtitles[fontKey] || 'Custom Font';
+      });
+      [triggerBadge, floatingTriggerBadge].forEach(el => {
+        if (el) el.style.fontFamily = stack;
+      });
 
-      // Update active state in custom popover items
-      if (dropdownMenu) {
-        dropdownMenu.querySelectorAll('.font-option-item').forEach(item => {
-          item.classList.toggle('active', item.getAttribute('data-font') === fontKey);
-        });
-      }
+      // Update active state in both menus
+      [dropdownMenu, floatingDropdownMenu].forEach(menu => {
+        if (menu) {
+          menu.querySelectorAll('.font-option-item').forEach(item => {
+            item.classList.toggle('active', item.getAttribute('data-font') === fontKey);
+          });
+        }
+      });
 
       // Ensure browser font cache is primed
       if (document.fonts && document.fonts.ready) {
@@ -2300,40 +2466,42 @@ class SchedullyApp {
       }
     };
 
-    // Toggle Popover Menu
-    if (triggerBtn && dropdownMenu) {
-      triggerBtn.addEventListener('click', (e) => {
+    // Toggle and selection handlers for both dropdown menus
+    const wireDropdown = (btn, menu, container) => {
+      if (!btn || !menu) return;
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isOpen = !dropdownMenu.classList.contains('hidden');
+        const isOpen = !menu.classList.contains('hidden');
         if (isOpen) {
-          dropdownMenu.classList.add('hidden');
-          triggerBtn.classList.remove('is-open');
+          menu.classList.add('hidden');
+          btn.classList.remove('is-open');
         } else {
-          dropdownMenu.classList.remove('hidden');
-          triggerBtn.classList.add('is-open');
+          menu.classList.remove('hidden');
+          btn.classList.add('is-open');
         }
       });
 
-      // Option item selection
-      dropdownMenu.querySelectorAll('.font-option-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const fontKey = item.getAttribute('data-font');
-          if (fontKey) {
-            this.applyFontFamily(fontKey);
-            dropdownMenu.classList.add('hidden');
-            triggerBtn.classList.remove('is-open');
-          }
-        });
+      menu.addEventListener('click', (e) => {
+        const item = e.target.closest('.font-option-item');
+        if (!item) return;
+        const fontKey = item.getAttribute('data-font');
+        if (fontKey) {
+          this.applyFontFamily(fontKey);
+          menu.classList.add('hidden');
+          btn.classList.remove('is-open');
+        }
       });
 
-      // Close menu on outside click
       document.addEventListener('click', (e) => {
-        if (!dropdownContainer?.contains(e.target)) {
-          dropdownMenu.classList.add('hidden');
-          triggerBtn.classList.remove('is-open');
+        if (!container?.contains(e.target)) {
+          menu.classList.add('hidden');
+          btn.classList.remove('is-open');
         }
       });
-    }
+    };
+
+    wireDropdown(triggerBtn, dropdownMenu, dropdownContainer);
+    wireDropdown(floatingTriggerBtn, floatingDropdownMenu, floatingDropdownContainer);
 
     if (fontSelect) {
       fontSelect.addEventListener('change', (e) => {
@@ -2341,84 +2509,71 @@ class SchedullyApp {
       });
     }
 
-    if (customFontInput) {
-      customFontInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Handle font upload across inputs
+    const handleFontUpload = async (file) => {
+      if (!file) return;
+      try {
+        const fontName = 'CustomFont_' + Date.now();
+        const buffer = await file.arrayBuffer();
+        const fontFace = new FontFace(fontName, buffer);
+        await fontFace.load();
+        document.fonts.add(fontFace);
 
-        try {
-          const fontName = 'CustomFont_' + Date.now();
-          const buffer = await file.arrayBuffer();
-          const fontFace = new FontFace(fontName, buffer);
-          await fontFace.load();
-          document.fonts.add(fontFace);
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        this.customLoadedCleanName = cleanName;
 
-          const cleanName = file.name.replace(/\.[^/.]+$/, "");
-          this.customLoadedCleanName = cleanName;
+        [dropdownMenu, floatingDropdownMenu].forEach(menu => {
+          if (!menu) return;
+          let customItem = menu.querySelector('.font-option-item[data-font="custom"]');
+          if (!customItem) {
+            const scrollContainer = menu.querySelector('.custom-font-menu-scroll');
+            if (scrollContainer) {
+              const customHeader = document.createElement('div');
+              customHeader.className = 'font-group-header';
+              customHeader.innerHTML = `
+                <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                <span>Uploaded Custom Font</span>
+              `;
+              scrollContainer.appendChild(customHeader);
 
-          // Add or update custom item in custom dropdown menu
-          if (dropdownMenu) {
-            let customItem = dropdownMenu.querySelector('.font-option-item[data-font="custom"]');
-            if (!customItem) {
-              const scrollContainer = dropdownMenu.querySelector('.custom-font-menu-scroll');
-              if (scrollContainer) {
-                const customHeader = document.createElement('div');
-                customHeader.className = 'font-group-header';
-                customHeader.innerHTML = `
-                  <svg class="w-3.5 h-3.5 shrink-0 font-header-icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                  </svg>
-                  <span>Uploaded Custom Font</span>
-                `;
-                scrollContainer.appendChild(customHeader);
-
-                const customGroup = document.createElement('div');
-                customGroup.className = 'font-group-items';
-                customItem = document.createElement('button');
-                customItem.type = 'button';
-                customItem.className = 'font-option-item active';
-                customItem.setAttribute('data-font', 'custom');
-                customItem.innerHTML = `
-                  <div class="font-option-info">
-                    <span class="font-option-title">${cleanName}</span>
-                    <span class="font-option-desc">Custom Uploaded Font</span>
-                  </div>
-                  <span class="font-check-icon">✓</span>
-                `;
-                customItem.addEventListener('click', () => {
-                  this.applyFontFamily('custom', fontName);
-                  dropdownMenu.classList.add('hidden');
-                  triggerBtn?.classList.remove('is-open');
-                });
-                customGroup.appendChild(customItem);
-                scrollContainer.appendChild(customGroup);
-              }
-            } else {
-              customItem.querySelector('.font-option-title').innerText = cleanName;
+              const customGroup = document.createElement('div');
+              customGroup.className = 'font-group-items';
+              customItem = document.createElement('button');
+              customItem.type = 'button';
+              customItem.className = 'font-option-item active';
+              customItem.setAttribute('data-font', 'custom');
+              customItem.innerHTML = `
+                <div class="font-option-info">
+                  <span class="font-option-title">${cleanName}</span>
+                  <span class="font-option-desc">Custom Uploaded Font</span>
+                </div>
+                <span class="font-check-icon">✓</span>
+              `;
+              customGroup.appendChild(customItem);
+              scrollContainer.appendChild(customGroup);
             }
+          } else {
+            const titleEl = customItem.querySelector('.font-option-title');
+            if (titleEl) titleEl.innerText = cleanName;
           }
+        });
 
-          // Fallback select element
-          let customOpt = fontSelect.querySelector('option[value="custom"]');
-          if (!customOpt) {
-            customOpt = document.createElement('option');
-            customOpt.value = 'custom';
-            fontSelect.appendChild(customOpt);
-          }
-          customOpt.innerText = `Custom: ${cleanName}`;
-          customOpt.selected = true;
+        this.customLoadedFontName = fontName;
+        await this.applyFontFamily('custom', fontName);
+      } catch (err) {
+        console.error("Font loading error:", err);
+        alert("Could not load font. Please ensure the file is a valid .ttf, .otf, or .woff2 font file.");
+      }
+    };
 
-          this.customLoadedFontName = fontName;
-          await this.applyFontFamily('custom', fontName);
-        } catch (err) {
-          console.error("Font loading error:", err);
-          alert("Could not load font. Please ensure the file is a valid .ttf, .otf, or .woff2 font file.");
-        }
-      });
-    }
+    customFontInput?.addEventListener('change', (e) => handleFontUpload(e.target.files[0]));
+    floatingCustomFontInput?.addEventListener('change', (e) => handleFontUpload(e.target.files[0]));
 
     // Font Shadow Toggle
     const toggleFontShadow = document.getElementById('toggle-font-shadow');
+    const toggleFloatingFontShadow = document.getElementById('toggle-floating-font-shadow');
     const savedFontShadow = (localStorage.getItem('schedully_font_shadow') === 'yes');
     this.fontShadowEnabled = savedFontShadow;
 
@@ -2438,11 +2593,13 @@ class SchedullyApp {
       if (phoneLockHeader) phoneLockHeader.classList.toggle('has-font-shadow', this.fontShadowEnabled);
       if (phoneCanvas) phoneCanvas.classList.toggle('has-font-shadow', this.fontShadowEnabled);
 
-      if (toggleFontShadow) {
-        toggleFontShadow.querySelectorAll('.pill-btn').forEach(btn => {
-          btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
-        });
-      }
+      [toggleFontShadow, toggleFloatingFontShadow].forEach(group => {
+        if (group) {
+          group.querySelectorAll('.pill-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
+          });
+        }
+      });
 
       this.renderTimetableGrid();
       if (!skipSave) {
@@ -2450,15 +2607,178 @@ class SchedullyApp {
       }
     };
 
-    if (toggleFontShadow) {
-      toggleFontShadow.querySelectorAll('.pill-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
-        btn.addEventListener('click', () => {
-          const isYes = (btn.getAttribute('data-val') === 'yes');
-          this.setFontShadow(isYes);
+    [toggleFontShadow, toggleFloatingFontShadow].forEach(group => {
+      if (group) {
+        group.querySelectorAll('.pill-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-val') === (this.fontShadowEnabled ? 'yes' : 'no'));
+          btn.addEventListener('click', () => {
+            const isYes = (btn.getAttribute('data-val') === 'yes');
+            this.setFontShadow(isYes);
+          });
         });
+      }
+    });
+
+    // Reset Font & Style to Default
+    const btnFloatingResetFont = document.getElementById('btn-floating-reset-font');
+    btnFloatingResetFont?.addEventListener('click', () => {
+      this.applyFontFamily('default');
+      this.setFontShadow(false);
+      this.fontScaleAll = 1.0;
+      this.fontScaleCards = 1.0;
+      this.fontScaleHeader = 1.0;
+      this.fontScaleTitle = 1.0;
+      this.fontScaleTrademark = 1.0;
+      this.gridFontScale = 1.0;
+      this.gridFontSizeVal = 9;
+      try { localStorage.setItem('schedully_font_scale', '1.0'); } catch (e) {}
+      this.renderTimetableGrid();
+      window.soundFX?.play?.('zoom');
+      window.haptics?.trigger?.('selection');
+    });
+  }
+
+  setupDaysAndTimeEngine() {
+    const floatingStartSelect = document.getElementById('floating-grid-start-time');
+    const floatingEndSelect = document.getElementById('floating-grid-end-time');
+    const toggleFloatingAxis = document.getElementById('toggle-floating-axis-mode');
+    const toggleFloatingClock = document.getElementById('toggle-floating-clock-type');
+    const btnFloatingResetDays = document.getElementById('btn-floating-reset-days');
+    const floatingDayChecks = document.querySelectorAll('.floating-day-check');
+    const sidebarDayChecks = document.querySelectorAll('.day-toggle');
+
+    // Helper: sync active days UI across floating card and sidebar
+    const syncDaysUI = () => {
+      floatingDayChecks.forEach(chk => {
+        chk.checked = this.activeDays.includes(chk.value);
       });
-    }
+      sidebarDayChecks.forEach(chk => {
+        chk.checked = this.activeDays.includes(chk.value);
+      });
+    };
+
+    // Helper: sync start/end time select dropdowns
+    const syncTimeSelects = () => {
+      const startStr = `${String(this.gridStartHour).padStart(2, '0')}:00`;
+      const endStr = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+      if (this.gridStartTimeSelect) this.gridStartTimeSelect.value = startStr;
+      if (floatingStartSelect) floatingStartSelect.value = startStr;
+      if (this.gridEndTimeSelect) this.gridEndTimeSelect.value = endStr;
+      if (floatingEndSelect) floatingEndSelect.value = endStr;
+    };
+
+    // Helper: sync axis mode toggles (TIME vs PERIOD)
+    const syncAxisUI = () => {
+      const mode = this.axisMode || 'time';
+      document.querySelectorAll('#toggle-axis-mode .pill-btn, #toggle-floating-axis-mode .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === mode);
+      });
+      const rowFloatingStart = document.getElementById('row-floating-start-time');
+      const rowFloatingEnd = document.getElementById('row-floating-end-time');
+      const rowFloatingClock = document.getElementById('row-floating-clock-type');
+      const isPeriod = (mode === 'period');
+      if (rowFloatingStart) rowFloatingStart.style.display = isPeriod ? 'none' : 'flex';
+      if (rowFloatingEnd) rowFloatingEnd.style.display = isPeriod ? 'none' : 'flex';
+      if (rowFloatingClock) rowFloatingClock.style.display = isPeriod ? 'none' : 'flex';
+    };
+
+    // Helper: sync clock format toggles (12-HOUR vs 24-HOUR)
+    const syncClockUI = () => {
+      const format = this.clockFormat || '12';
+      document.querySelectorAll('#toggle-clock-type .pill-btn, #toggle-floating-clock-type .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === format);
+      });
+    };
+
+    // Expose sync helper to class instance for loadPreset & external calls
+    this.syncDaysAndTimeControlsUI = () => {
+      syncDaysUI();
+      syncTimeSelects();
+      syncAxisUI();
+      syncClockUI();
+    };
+
+    // 1. Floating Day Checkbox change handler
+    floatingDayChecks.forEach(chk => {
+      chk.addEventListener('change', () => {
+        const checked = Array.from(document.querySelectorAll('.floating-day-check:checked')).map(c => c.value);
+        this.activeDays = checked.length > 0 ? checked : ['Mon'];
+        syncDaysUI();
+        this.renderTimetableGrid();
+        this._stagePending();
+        window.soundFX?.play?.('tap');
+        window.haptics?.trigger?.('selection');
+      });
+    });
+
+    // 2. Floating Axis Mode Toggle (TIME vs PERIOD)
+    toggleFloatingAxis?.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-val') || 'time';
+        this.axisMode = val;
+        syncAxisUI();
+        this.updateCourseFormMode();
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+          this.renderWatchGlance();
+        }
+        this._stagePending();
+        window.soundFX?.play?.('tap');
+        window.haptics?.trigger?.('selection');
+      });
+    });
+
+    // 3. Floating Start Time Select
+    floatingStartSelect?.addEventListener('change', (e) => {
+      this.gridStartHour = parseInt(e.target.value.split(':')[0], 10);
+      syncTimeSelects();
+      this.renderTimetableGrid();
+      this._stagePending();
+      window.soundFX?.play?.('tap');
+    });
+
+    // 4. Floating End Time Select
+    floatingEndSelect?.addEventListener('change', (e) => {
+      this.gridEndHour = parseInt(e.target.value.split(':')[0], 10);
+      syncTimeSelects();
+      this.renderTimetableGrid();
+      this._stagePending();
+      window.soundFX?.play?.('tap');
+    });
+
+    // 5. Floating Clock Format Toggle (12-HOUR vs 24-HOUR)
+    toggleFloatingClock?.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-val') || '12';
+        this.clockFormat = val;
+        syncClockUI();
+        this.renderTimetableGrid();
+        this._stagePending();
+        window.soundFX?.play?.('tap');
+        window.haptics?.trigger?.('selection');
+      });
+    });
+
+    // 6. Reset to Default Button in Floating Card
+    btnFloatingResetDays?.addEventListener('click', () => {
+      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      this.gridStartHour = 8;
+      this.gridEndHour = 20;
+      this.axisMode = 'time';
+      this.clockFormat = '12';
+      this.syncDaysAndTimeControlsUI();
+      this.updateCourseFormMode();
+      this.renderTimetableGrid();
+      if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
+        this.renderWatchGlance();
+      }
+      this._stagePending();
+      window.soundFX?.play?.('zoom');
+      window.haptics?.trigger?.('selection');
+    });
+
+    // Run initial synchronization
+    this.syncDaysAndTimeControlsUI();
   }
 
   extractColorsFromImage(dataUrl, skipAutoStage = false, forceOverrideAll = false) {
@@ -2474,7 +2794,7 @@ class SchedullyApp {
         ctx.drawImage(img, 0, 0, SIZE, SIZE);
         const data = ctx.getImageData(0, 0, SIZE, SIZE).data;
 
-        // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Helpers ──────────────────────────────────────────────────────────
         const rgbToHex = (r, g, b) =>
           '#' + [r, g, b].map(x =>
             Math.min(255, Math.max(0, Math.round(x))).toString(16).padStart(2, '0')
@@ -2555,9 +2875,7 @@ class SchedullyApp {
         });
 
         // ── Phase 3: Rank clusters by visual significance & vibrancy ─────────
-        // Favor colors with good presence and rich tone (saturation + midtone presence)
         const rankedClusters = Object.values(clusters).map(c => {
-          // Boost vibrant & rich tones, but allow high-count neutrals
           const vibranceScore = c.s * 1.5 + (1 - Math.abs(c.l - 0.45));
           const score = c.count * (vibranceScore + 0.2);
           return { ...c, score };
@@ -2567,21 +2885,18 @@ class SchedullyApp {
         const picked = [];
         for (const cluster of rankedClusters) {
           if (picked.length >= 6) break;
-          // Distinct color threshold
-          const isDistinct = picked.every(p => dist(cluster.r, cluster.g, cluster.b, p.r, p.g, p.b) >= 42);
+          const isDistinct = picked.every(p => dist(cluster.r, cluster.g, cluster.b, p.r, p.g, p.b) >= 36);
           if (isDistinct) {
             picked.push(cluster);
           }
         }
 
-        // Fallback if very few clusters picked
         if (picked.length === 0 && rankedClusters.length > 0) {
           picked.push(rankedClusters[0]);
         }
 
         // ── Phase 5: Build harmonious 8-swatch palette from dominant themes ────
-        // The most dominant extracted color sets the primary aesthetic anchor
-        const isDark = this.currentMode === 'dark';
+        const isDark = (this.currentMode === 'dark' || (this.currentMode === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
 
         const calibrateColor = (r, g, b, targetLShift = 0) => {
           let [h, s, l] = rgbToHsl(r, g, b);
@@ -2594,17 +2909,16 @@ class SchedullyApp {
         };
 
         const courseSwatches = [];
-        
-        // 1. Add calibrated direct picked colors
         picked.forEach(p => {
           courseSwatches.push(calibrateColor(p.r, p.g, p.b));
         });
 
-        // 2. Synthesize tonal companions from dominant colors to reach 8 harmonious swatches
         let srcIdx = 0;
-        const shifts = isDark ? [0.12, -0.10, 0.20, -0.16] : [-0.10, 0.12, -0.16, 0.18];
+        const shifts = isDark ? [0.12, -0.10, 0.20, -0.16, 0.26, -0.22] : [-0.10, 0.12, -0.16, 0.18, -0.22, 0.24];
         let shiftIdx = 0;
-        while (courseSwatches.length < 8 && picked.length > 0) {
+        let attempts = 0;
+        while (courseSwatches.length < 8 && picked.length > 0 && attempts < 30) {
+          attempts++;
           const src = picked[srcIdx % picked.length];
           const shift = shifts[shiftIdx % shifts.length];
           const comp = calibrateColor(src.r, src.g, src.b, shift);
@@ -2615,9 +2929,12 @@ class SchedullyApp {
           shiftIdx++;
         }
 
-        // Fallback default if needed
         while (courseSwatches.length < 8) {
-          courseSwatches.push(courseSwatches[0] || '#B91C1C');
+          const baseHex = courseSwatches[courseSwatches.length - 1] || '#B91C1C';
+          const [br, bg, bb] = hexToRgb(baseHex);
+          let [bh, bs, bl] = rgbToHsl(br, bg, bb);
+          bl = Math.max(0.25, Math.min(0.70, bl + (courseSwatches.length % 2 === 0 ? 0.08 : -0.08)));
+          courseSwatches.push(rgbToHex(...hslToRgb((bh + 24 * courseSwatches.length) % 360, bs, bl)));
         }
 
         // ── Phase 6: Set primary, secondary & tertiary for UI ────────────────
@@ -2688,6 +3005,15 @@ class SchedullyApp {
 
         this.applyThemeEngine();
         this.renderAll();
+        if (typeof this.syncFloatingEditorUI === 'function') {
+          this.syncFloatingEditorUI();
+        }
+        if (typeof this.syncTitleBarModeUI === 'function') {
+          this.syncTitleBarModeUI();
+        }
+        if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
+          this.renderWatchGlance();
+        }
         if (!skipAutoStage) this._stagePending();
 
       } catch (err) {
@@ -3329,6 +3655,7 @@ class SchedullyApp {
     this.setupMobilePip();
     this.setupWallpaperEngine();
     this.setupFontFamilyEngine();
+    this.setupDaysAndTimeEngine();
     this.setupCustomColorModalEngine();
     this.setupCourseListDelegation();
     this.setupWatchGlanceEvents();
@@ -3514,17 +3841,17 @@ class SchedullyApp {
     });
 
     // Expandable Card Accordions
-    this.headerTheme.addEventListener('click', (e) => {
+    this.headerTheme?.addEventListener('click', (e) => {
       e.preventDefault();
       this.toggleAccordion(this.headerTheme, this.contentTheme);
     });
 
-    this.headerLayoutOptions.addEventListener('click', (e) => {
+    this.headerLayoutOptions?.addEventListener('click', (e) => {
       e.preventDefault();
       this.toggleAccordion(this.headerLayoutOptions, this.contentLayoutOptions);
     });
 
-    this.headerAddCourse.addEventListener('click', (e) => {
+    this.headerAddCourse?.addEventListener('click', (e) => {
       e.preventDefault();
       this.toggleAccordion(this.headerAddCourse, this.contentAddCourse);
     });
@@ -3900,8 +4227,17 @@ class SchedullyApp {
       btnScheduleSettings.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const willOpen = quickSettingsPanel.classList.contains('hidden');
         quickSettingsPanel.classList.toggle('hidden');
-        if (!quickSettingsPanel.classList.contains('hidden')) {
+        if (willOpen) {
+          // Close conflicting popovers to avoid overlapping on iPad Mini / small tablet
+          document.getElementById('canvas-controls-popover')?.classList.add('hidden');
+          document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
+          document.getElementById('floating-title-card')?.classList.add('hidden');
+          document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
+          document.getElementById('floating-add-course-card')?.classList.add('hidden');
+          document.getElementById('floating-font-style-card')?.classList.add('hidden');
+          document.getElementById('floating-days-time-card')?.classList.add('hidden');
           setTimeout(window.syncGlassSliders, 20);
           setTimeout(window.syncGlassSliders, 120);
         }
@@ -4043,6 +4379,120 @@ class SchedullyApp {
       });
     });
 
+    // Quick Settings Popover Pagination (< | > Navigation)
+    const page1 = document.getElementById('quick-settings-page-1');
+    const page2 = document.getElementById('quick-settings-page-2');
+    const prevBtn = document.getElementById('btn-quick-settings-prev');
+    const nextBtn = document.getElementById('btn-quick-settings-next');
+    const dots = document.querySelectorAll('.quick-page-dot');
+    let currentQuickPage = 1;
+
+    const setQuickPage = (page) => {
+      currentQuickPage = page;
+      if (page === 1) {
+        page1?.classList.remove('hidden');
+        page2?.classList.add('hidden');
+        if (prevBtn) {
+          prevBtn.disabled = true;
+          prevBtn.classList.add('opacity-40', 'cursor-not-allowed');
+          prevBtn.classList.remove('hover:scale-110', 'cursor-pointer');
+        }
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          nextBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+          nextBtn.classList.add('hover:scale-110', 'cursor-pointer');
+        }
+      } else {
+        page1?.classList.add('hidden');
+        page2?.classList.remove('hidden');
+        if (prevBtn) {
+          prevBtn.disabled = false;
+          prevBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+          prevBtn.classList.add('hover:scale-110', 'cursor-pointer');
+        }
+        if (nextBtn) {
+          nextBtn.disabled = true;
+          nextBtn.classList.add('opacity-40', 'cursor-not-allowed');
+          nextBtn.classList.remove('hover:scale-110', 'cursor-pointer');
+        }
+      }
+      dots.forEach(d => {
+        d.classList.toggle('active', parseInt(d.getAttribute('data-page'), 10) === page);
+      });
+      window.haptics?.light?.();
+    };
+
+    prevBtn?.addEventListener('click', () => {
+      if (currentQuickPage > 1) setQuickPage(currentQuickPage - 1);
+    });
+
+    nextBtn?.addEventListener('click', () => {
+      if (currentQuickPage < 2) setQuickPage(currentQuickPage + 1);
+    });
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const targetPage = parseInt(dot.getAttribute('data-page'), 10) || 1;
+        setQuickPage(targetPage);
+      });
+    });
+
+    // Quick Setting Section 2: Grid Borders Toggle
+    this.setGridBorders = (show, skipSave = false) => {
+      this.showGridBorders = !!show;
+      if (!skipSave) {
+        try { localStorage.setItem('schedully_show_grid_borders', this.showGridBorders ? 'yes' : 'no'); } catch (e) {}
+      }
+      const grid = document.getElementById('universal-timetable-grid');
+      const container = document.getElementById('lock-timetable-container');
+      if (grid) grid.classList.toggle('hide-grid-borders', !this.showGridBorders);
+      if (container) container.classList.toggle('hide-grid-borders', !this.showGridBorders);
+
+      document.querySelectorAll('#toggle-quick-grid-borders .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === (this.showGridBorders ? 'yes' : 'no'));
+      });
+    };
+
+    const savedGridBorders = (localStorage.getItem('schedully_show_grid_borders') !== 'no');
+    this.setGridBorders(savedGridBorders, true);
+
+    document.querySelectorAll('#toggle-quick-grid-borders .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const show = (btn.getAttribute('data-val') === 'yes');
+        this.setGridBorders(show);
+        window.haptics?.selection?.();
+        this._stagePending();
+      });
+    });
+
+    // Quick Setting Section 2: Side Sliders (Zoom & FX Controls) Toggle
+    this.setSideSliders = (show, skipSave = false) => {
+      this.showSideSliders = !!show;
+      if (!skipSave) {
+        try { localStorage.setItem('schedully_show_side_sliders', this.showSideSliders ? 'yes' : 'no'); } catch (e) {}
+      }
+      const leftSlider = document.getElementById('side-fx-slider-container');
+      const rightSlider = document.getElementById('side-right-slider-container') || document.getElementById('side-zoom-slider-container');
+      if (leftSlider) leftSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
+      if (rightSlider) rightSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
+
+      document.querySelectorAll('#toggle-quick-side-sliders .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === (this.showSideSliders ? 'yes' : 'no'));
+      });
+    };
+
+    const savedSideSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
+    this.setSideSliders(savedSideSliders, true);
+
+    document.querySelectorAll('#toggle-quick-side-sliders .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const show = (btn.getAttribute('data-val') === 'yes');
+        this.setSideSliders(show);
+        window.haptics?.selection?.();
+        this._stagePending();
+      });
+    });
+
     // Randomize Subject Card Colors (Dice Button)
     document.getElementById('btn-randomize-colors')?.addEventListener('click', () => {
       const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
@@ -4146,20 +4596,23 @@ class SchedullyApp {
         document.querySelectorAll('#toggle-clock-type .pill-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.clockFormat = btn.getAttribute('data-val');
+        if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
         this.renderTimetableGrid();
         this._stagePending();
       });
     });
 
     // Filter Start/End Time Selects
-    this.gridStartTimeSelect.addEventListener('change', (e) => {
+    this.gridStartTimeSelect?.addEventListener('change', (e) => {
       this.gridStartHour = parseInt(e.target.value.split(':')[0]);
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
       this.renderTimetableGrid();
       this._stagePending();
     });
 
-    this.gridEndTimeSelect.addEventListener('change', (e) => {
+    this.gridEndTimeSelect?.addEventListener('change', (e) => {
       this.gridEndHour = parseInt(e.target.value.split(':')[0]);
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
       this.renderTimetableGrid();
       this._stagePending();
     });
@@ -4169,12 +4622,13 @@ class SchedullyApp {
       chk.addEventListener('change', () => {
         const checked = Array.from(document.querySelectorAll('.day-toggle:checked')).map(c => c.value);
         this.activeDays = checked.length > 0 ? checked : ['Mon'];
+        if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
         this.renderTimetableGrid();
         this._stagePending();
       });
     });
 
-    // Grid Width Steppers & Input (50% to 100%)
+    // Grid Width Steppers & Input (50% to 130%)
     const btnWidthDec = document.getElementById('btn-width-dec');
     const btnWidthInc = document.getElementById('btn-width-inc');
     const gridWidthValEl = document.getElementById('grid-width-val');
@@ -4182,7 +4636,7 @@ class SchedullyApp {
     gridWidthValEl?.addEventListener('input', (e) => {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
-        this.gridWidthVal = Math.min(100, Math.max(50, val));
+        this.gridWidthVal = Math.min(130, Math.max(50, val));
         this.requestGridRender();
         this._stagePending();
       }
@@ -4190,7 +4644,7 @@ class SchedullyApp {
     gridWidthValEl?.addEventListener('blur', (e) => {
       let val = parseInt(e.target.value, 10);
       if (isNaN(val) || val < 50) e.target.value = 50;
-      else if (val > 100) e.target.value = 100;
+      else if (val > 130) e.target.value = 130;
       this.gridWidthVal = parseInt(e.target.value, 10);
       this.requestGridRender();
       this._stagePending();
@@ -4206,7 +4660,7 @@ class SchedullyApp {
     });
 
     btnWidthInc?.addEventListener('click', () => {
-      if (this.gridWidthVal < 100) {
+      if (this.gridWidthVal < 130) {
         this.gridWidthVal += 5;
         if (gridWidthValEl) gridWidthValEl.value = this.gridWidthVal;
         this.requestGridRender();
@@ -4483,7 +4937,7 @@ class SchedullyApp {
     });
 
     // Reset Layout Button
-    this.btnResetLayout.addEventListener('click', () => {
+    this.btnResetLayout?.addEventListener('click', () => {
       this.showTitle = true;
       this.showTable = true;
       this.showLockUI = true;
@@ -4512,16 +4966,16 @@ class SchedullyApp {
 
       this.updateTitleText('Untitled');
 
-      this.lockGridTitle.style.display = 'block';
-      this.phoneLockHeader.style.display = 'block';
-      this.phoneCanvas.style.backgroundColor = '';
+      if (this.lockGridTitle) this.lockGridTitle.style.display = 'block';
+      if (this.phoneLockHeader) this.phoneLockHeader.style.display = 'block';
+      if (this.phoneCanvas) this.phoneCanvas.style.backgroundColor = '';
       this.applyHeaderColor('');
       this.applyFontColor('');
       // Reset per-card font colors
       document.getElementById('content-add-course')?.closest('section')?.style.removeProperty('--m3-card-text-color');
       document.querySelector('.m3-right-sidebar')?.style.removeProperty('--m3-card-text-color');
 
-      document.querySelectorAll('#toggle-title .pill-btn')[0].click();
+      document.querySelectorAll('#toggle-title .pill-btn')[0]?.click();
 
       this.updateTrademarkText('Schedully • Student Edition');
       this.applyTrademarkStyle('default');
@@ -4556,11 +5010,11 @@ class SchedullyApp {
       const rowCardRadius = document.getElementById('row-card-radius');
       if (rowCardRadius) rowCardRadius.style.display = 'flex';
       
-      document.querySelectorAll('#toggle-display-time .pill-btn')[0].click();
-      document.querySelectorAll('#toggle-clock-type .pill-btn')[0].click();
+      document.querySelectorAll('#toggle-display-time .pill-btn')[0]?.click();
+      document.querySelectorAll('#toggle-clock-type .pill-btn')[0]?.click();
 
-      this.gridStartTimeSelect.value = '09:00';
-      this.gridEndTimeSelect.value = '17:00';
+      if (this.gridStartTimeSelect) this.gridStartTimeSelect.value = '09:00';
+      if (this.gridEndTimeSelect) this.gridEndTimeSelect.value = '17:00';
 
       this.renderAll();
     });
@@ -4942,20 +5396,440 @@ class SchedullyApp {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE FX SLIDER (Left Side: Width, Height, Y-Pos, Opacity, Blur)
+    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE RIGHT SLIDER
+    // 3 Modes: 'zoom' (40%-150%), 'radius' (0px-28px), 'font' (70%-140%)
     // ═══════════════════════════════════════════════════════════════
-    const sideFxContainer = document.getElementById('side-fx-slider-container');
-    const sideFxTrack     = document.getElementById('side-fx-track');
-    const sideFxFill      = document.getElementById('side-fx-fill');
-    const sideFxBadge     = document.getElementById('side-fx-badge');
-    const fxLabelText     = document.getElementById('fx-label-text');
-    const btnFxWidth      = document.getElementById('btn-fx-mode-width');
-    const btnFxHeight     = document.getElementById('btn-fx-mode-height');
-    const btnFxPosy       = document.getElementById('btn-fx-mode-posy');
-    const btnFxOpacity    = document.getElementById('btn-fx-mode-opacity');
-    const btnFxBlur       = document.getElementById('btn-fx-mode-blur');
+    const rightSliderContainer = document.getElementById('side-right-slider-container');
+    const rightSliderTrack     = document.getElementById('side-right-track');
+    const rightSliderFill      = document.getElementById('side-right-fill');
+    const rightSliderBadge     = document.getElementById('side-right-badge');
+    const rightSliderLabelText = document.getElementById('right-slider-label-text');
 
-    let activeFxMode = 'width'; // 'width' | 'height' | 'posy' | 'opacity' | 'blur'
+    const btnRightZoom   = document.getElementById('btn-right-mode-zoom');
+    const btnRightRadius = document.getElementById('btn-right-mode-radius');
+    const btnRightFont   = document.getElementById('btn-right-mode-font');
+
+    const rightRadiusScopeGroup = document.getElementById('right-radius-scope-group');
+    const btnRadiusScopeBoth    = document.getElementById('btn-radius-scope-both');
+    const btnRadiusScopeTable   = document.getElementById('btn-radius-scope-table');
+    const btnRadiusScopeCards   = document.getElementById('btn-radius-scope-cards');
+
+    const rightFontTopGroup     = document.getElementById('right-font-top-group');
+    const btnRightFontPanelToggle = document.getElementById('btn-right-font-panel-toggle');
+    const floatingFontStyleCard = document.getElementById('floating-font-style-card');
+    const btnCloseFloatingFont  = document.getElementById('btn-close-floating-font');
+
+    const rightFontScopeGroup   = document.getElementById('right-font-scope-group');
+    const btnFontScopeAll       = document.getElementById('btn-font-scope-all');
+    const btnFontScopeCards     = document.getElementById('btn-font-scope-cards');
+    const btnFontScopeHeader    = document.getElementById('btn-font-scope-header');
+    const btnFontScopeTitle     = document.getElementById('btn-font-scope-title');
+    const btnFontScopeTrademark = document.getElementById('btn-font-scope-trademark');
+
+    let rightSliderMode = 'zoom'; // 'zoom' | 'radius' | 'font'
+    let radiusScope = 'both'; // 'both' | 'table' | 'cards'
+    let fontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
+
+    const updateRightScopeUI = () => {
+      if (rightRadiusScopeGroup) {
+        if (rightSliderMode === 'radius') {
+          rightRadiusScopeGroup.classList.remove('hidden');
+        } else {
+          rightRadiusScopeGroup.classList.add('hidden');
+        }
+      }
+      if (rightFontScopeGroup) {
+        if (rightSliderMode === 'font') {
+          rightFontScopeGroup.classList.remove('hidden');
+          rightFontTopGroup?.classList.remove('hidden');
+        } else {
+          rightFontScopeGroup.classList.add('hidden');
+          rightFontTopGroup?.classList.add('hidden');
+          floatingFontStyleCard?.classList.add('hidden');
+          btnRightFontPanelToggle?.classList.remove('active');
+        }
+      }
+
+      [btnRadiusScopeBoth, btnRadiusScopeTable, btnRadiusScopeCards].forEach(b => b?.classList.remove('active'));
+      if (radiusScope === 'both') btnRadiusScopeBoth?.classList.add('active');
+      else if (radiusScope === 'table') btnRadiusScopeTable?.classList.add('active');
+      else if (radiusScope === 'cards') btnRadiusScopeCards?.classList.add('active');
+
+      [btnFontScopeAll, btnFontScopeCards, btnFontScopeHeader, btnFontScopeTitle, btnFontScopeTrademark].forEach(b => b?.classList.remove('active'));
+      if (fontScope === 'all') btnFontScopeAll?.classList.add('active');
+      else if (fontScope === 'cards') btnFontScopeCards?.classList.add('active');
+      else if (fontScope === 'header') btnFontScopeHeader?.classList.add('active');
+      else if (fontScope === 'title') btnFontScopeTitle?.classList.add('active');
+      else if (fontScope === 'trademark') btnFontScopeTrademark?.classList.add('active');
+    };
+
+    btnRightFontPanelToggle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!floatingFontStyleCard) return;
+      const willOpen = floatingFontStyleCard.classList.contains('hidden');
+      floatingFontStyleCard.classList.toggle('hidden', !willOpen);
+      btnRightFontPanelToggle.classList.toggle('active', willOpen);
+      if (willOpen) {
+        document.getElementById('floating-days-time-card')?.classList.add('hidden');
+        document.getElementById('btn-left-days-panel-toggle')?.classList.remove('active');
+        document.getElementById('schedule-quick-settings')?.classList.add('hidden');
+        document.getElementById('canvas-controls-popover')?.classList.add('hidden');
+        document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
+        document.getElementById('floating-title-card')?.classList.add('hidden');
+        document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
+      }
+      window.soundFX?.play?.('tap');
+      window.haptics?.trigger?.('selection');
+    });
+
+    btnCloseFloatingFont?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      floatingFontStyleCard?.classList.add('hidden');
+      btnRightFontPanelToggle?.classList.remove('active');
+      window.soundFX?.play?.('tap');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (floatingFontStyleCard && !floatingFontStyleCard.classList.contains('hidden')) {
+        const insideCard = floatingFontStyleCard.contains(e.target);
+        const insideToggle = rightFontTopGroup?.contains(e.target);
+        if (!insideCard && !insideToggle) {
+          floatingFontStyleCard.classList.add('hidden');
+          btnRightFontPanelToggle?.classList.remove('active');
+        }
+      }
+    });
+
+    const setRadiusScope = (scope) => {
+      radiusScope = scope;
+      updateRightScopeUI();
+      updateRightSliderFill();
+      showRightBadgeTemporarily();
+      window.soundFX?.play?.('zoom');
+      window.haptics?.trigger?.('selection');
+    };
+
+    const setFontScope = (scope) => {
+      fontScope = scope;
+      updateRightScopeUI();
+      updateRightSliderFill();
+      showRightBadgeTemporarily();
+      window.soundFX?.play?.('zoom');
+      window.haptics?.trigger?.('selection');
+    };
+
+    btnRadiusScopeBoth?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setRadiusScope('both');
+    });
+    btnRadiusScopeTable?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setRadiusScope('table');
+    });
+    btnRadiusScopeCards?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setRadiusScope('cards');
+    });
+
+    btnFontScopeAll?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFontScope('all');
+    });
+    btnFontScopeCards?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFontScope('cards');
+    });
+    btnFontScopeHeader?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFontScope('header');
+    });
+    btnFontScopeTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFontScope('title');
+    });
+    btnFontScopeTrademark?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFontScope('trademark');
+    });
+
+    const getRightModeConfig = () => {
+      if (rightSliderMode === 'radius') {
+        let val = 18;
+        if (radiusScope === 'cards') {
+          val = this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6;
+        } else {
+          val = this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18;
+        }
+        return { min: 0, max: 28, val: val, label: val === 0 ? 'Sharp' : `${val}px`, step: 1 };
+      } else if (rightSliderMode === 'font') {
+        let val = 1.0;
+        let min = 0.4, max = 1.6;
+        if (fontScope === 'all') {
+          val = this.fontScaleAll !== undefined ? this.fontScaleAll : (this.gridFontScale || 1.0);
+          min = 0.4; max = 1.6;
+        } else if (fontScope === 'cards') {
+          val = this.fontScaleCards !== undefined ? this.fontScaleCards : 1.0;
+          min = 0.4; max = 1.6;
+        } else if (fontScope === 'header') {
+          val = this.fontScaleHeader !== undefined ? this.fontScaleHeader : 1.0;
+          min = 0.5; max = 1.8;
+        } else if (fontScope === 'title') {
+          val = this.fontScaleTitle !== undefined ? this.fontScaleTitle : 1.0;
+          min = 0.5; max = 2.0;
+        } else if (fontScope === 'trademark') {
+          val = this.fontScaleTrademark !== undefined ? this.fontScaleTrademark : 1.0;
+          min = 0.5; max = 2.0;
+        }
+        return { min, max, val, label: `${Math.round(val * 100)}%`, step: 0.05 };
+      } else {
+        const val = targetZoom || 0.85;
+        return { min: 0.4, max: 1.5, val: val, label: `${Math.round(val * 100)}%`, step: 0.05 };
+      }
+    };
+
+    const updateRightSliderFill = () => {
+      const config = getRightModeConfig();
+      const pct = Math.max(0, Math.min(100, ((config.val - config.min) / (config.max - config.min)) * 100));
+      if (rightSliderFill) rightSliderFill.style.height = `${pct}%`;
+      if (rightSliderLabelText) rightSliderLabelText.innerText = config.label;
+      if (rightSliderTrack) rightSliderTrack.setAttribute('aria-valuenow', Math.round(pct));
+    };
+
+    let rightBadgeTimeout = null;
+    const showRightBadgeTemporarily = (duration = 1400) => {
+      if (!rightSliderContainer) return;
+      rightSliderContainer.classList.add('is-interacting');
+      if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
+      rightBadgeTimeout = setTimeout(() => {
+        rightSliderContainer.classList.remove('is-interacting');
+      }, duration);
+    };
+
+    const setRightSliderMode = (mode) => {
+      rightSliderMode = mode;
+      [btnRightZoom, btnRightRadius, btnRightFont].forEach(b => b?.classList.remove('active'));
+      if (mode === 'zoom') btnRightZoom?.classList.add('active');
+      else if (mode === 'radius') btnRightRadius?.classList.add('active');
+      else if (mode === 'font') btnRightFont?.classList.add('active');
+
+      updateRightScopeUI();
+      updateRightSliderFill();
+      showRightBadgeTemporarily();
+      window.soundFX?.play?.('zoom');
+      window.haptics?.trigger?.('selection');
+    };
+
+    btnRightZoom?.addEventListener('click', () => setRightSliderMode('zoom'));
+    btnRightRadius?.addEventListener('click', () => setRightSliderMode('radius'));
+    btnRightFont?.addEventListener('click', () => setRightSliderMode('font'));
+
+    // Apply value from slider track interaction
+    const applyRightSliderValue = (ratio, smooth = true) => {
+      const r = Math.max(0, Math.min(1, ratio));
+      if (rightSliderMode === 'zoom') {
+        const minZ = 0.4, maxZ = 1.5;
+        const newZ = Math.round((minZ + r * (maxZ - minZ)) * 100) / 100;
+        if (Math.abs(newZ - targetZoom) >= 0.005) {
+          targetZoom = newZ;
+          this.zoomScale = targetZoom;
+          applyZoom(smooth);
+          updateRightSliderFill();
+          this._stagePending(true);
+        }
+      } else if (rightSliderMode === 'radius') {
+        const minR = 0, maxR = 28;
+        const newR = Math.round(minR + r * (maxR - minR));
+        let changed = false;
+
+        if (radiusScope === 'both') {
+          if (newR !== this.tableCornerRadiusVal || newR !== this.cardCornerRadiusVal) {
+            this.tableCornerRadiusVal = newR;
+            this.cardCornerRadiusVal = newR;
+            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            const container = document.getElementById('lock-timetable-container');
+            if (container) container.style.borderRadius = `${newR}px`;
+            changed = true;
+          }
+        } else if (radiusScope === 'table') {
+          if (newR !== this.tableCornerRadiusVal) {
+            this.tableCornerRadiusVal = newR;
+            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            const container = document.getElementById('lock-timetable-container');
+            if (container) container.style.borderRadius = `${newR}px`;
+            changed = true;
+          }
+        } else if (radiusScope === 'cards') {
+          if (newR !== this.cardCornerRadiusVal) {
+            this.cardCornerRadiusVal = newR;
+            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            changed = true;
+          }
+        }
+
+        if (changed) {
+          this.renderTimetableGrid();
+          updateRightSliderFill();
+          this._stagePending(true);
+        }
+      } else if (rightSliderMode === 'font') {
+        let minF = 0.4, maxF = 1.6;
+        if (fontScope === 'header') { minF = 0.5; maxF = 1.8; }
+        else if (fontScope === 'title' || fontScope === 'trademark') { minF = 0.5; maxF = 2.0; }
+
+        const newF = Math.round((minF + r * (maxF - minF)) * 100) / 100;
+
+        if (fontScope === 'all') {
+          this.fontScaleAll = newF;
+          this.gridFontScale = newF;
+          this.gridFontSizeVal = Math.round(9 * newF * 10) / 10;
+          try { localStorage.setItem('schedully_font_scale', String(newF)); } catch (e) {}
+        } else if (fontScope === 'cards') {
+          this.fontScaleCards = newF;
+        } else if (fontScope === 'header') {
+          this.fontScaleHeader = newF;
+        } else if (fontScope === 'title') {
+          this.fontScaleTitle = newF;
+        } else if (fontScope === 'trademark') {
+          this.fontScaleTrademark = newF;
+        }
+
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
+          this.renderWatchGlance();
+        }
+        updateRightSliderFill();
+        this._stagePending(true);
+      }
+    };
+
+    if (rightSliderTrack) {
+      let isDraggingRight = false;
+
+      const updateRightFromPointer = (e) => {
+        const rect = rightSliderTrack.getBoundingClientRect();
+        let clientY = e.clientY;
+        if (clientY == null && e.touches && e.touches.length > 0) clientY = e.touches[0].clientY;
+        else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) clientY = e.changedTouches[0].clientY;
+        if (clientY == null) clientY = rect.top + rect.height / 2;
+
+        const offsetY = rect.bottom - clientY;
+        const ratio = offsetY / rect.height;
+        applyRightSliderValue(ratio, true);
+        window.haptics?.trigger?.('slider');
+      };
+
+      const onRightDragStart = (e) => {
+        if (e.button != null && e.button !== 0) return;
+        isDraggingRight = true;
+        rightSliderContainer?.classList.add('active-drag');
+        window.soundFX?.play?.('zoom');
+        updateRightFromPointer(e);
+        if (e.cancelable) e.preventDefault();
+      };
+
+      const onRightDragMove = (e) => {
+        if (!isDraggingRight) return;
+        updateRightFromPointer(e);
+        if (e.cancelable) e.preventDefault();
+      };
+
+      const onRightDragEnd = () => {
+        if (isDraggingRight) {
+          isDraggingRight = false;
+          rightSliderContainer?.classList.remove('active-drag');
+          showRightBadgeTemporarily(1200);
+        }
+      };
+
+      rightSliderTrack.addEventListener('pointerdown', onRightDragStart);
+      rightSliderTrack.addEventListener('mousedown', onRightDragStart);
+      rightSliderTrack.addEventListener('touchstart', onRightDragStart, { passive: false });
+
+      window.addEventListener('pointermove', onRightDragMove, { passive: false });
+      window.addEventListener('mousemove', onRightDragMove);
+      window.addEventListener('touchmove', onRightDragMove, { passive: false });
+
+      window.addEventListener('pointerup', onRightDragEnd);
+      window.addEventListener('mouseup', onRightDragEnd);
+      window.addEventListener('touchend', onRightDragEnd);
+
+      // Double-tap track to reset current mode to default
+      rightSliderTrack.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        if (rightSliderMode === 'zoom') {
+          targetZoom = 0.85;
+          this.zoomScale = 0.85;
+          applyZoom(true);
+        } else if (rightSliderMode === 'radius') {
+          if (radiusScope === 'both' || radiusScope === 'table') {
+            this.tableCornerRadiusVal = 18;
+            this.tableCornerStyle = 'rounded';
+            const container = document.getElementById('lock-timetable-container');
+            if (container) container.style.borderRadius = '18px';
+          }
+          if (radiusScope === 'both' || radiusScope === 'cards') {
+            this.cardCornerRadiusVal = (radiusScope === 'both') ? 18 : 6;
+            this.cardCornerStyle = 'rounded';
+          }
+          this.renderTimetableGrid();
+        } else if (rightSliderMode === 'font') {
+          if (fontScope === 'all') {
+            this.fontScaleAll = 1.0;
+            this.fontScaleCards = 1.0;
+            this.fontScaleHeader = 1.0;
+            this.fontScaleTitle = 1.0;
+            this.fontScaleTrademark = 1.0;
+            this.gridFontScale = 1.0;
+            this.gridFontSizeVal = 9;
+            try { localStorage.setItem('schedully_font_scale', '1.0'); } catch (err) {}
+          } else if (fontScope === 'cards') {
+            this.fontScaleCards = 1.0;
+          } else if (fontScope === 'header') {
+            this.fontScaleHeader = 1.0;
+          } else if (fontScope === 'title') {
+            this.fontScaleTitle = 1.0;
+          } else if (fontScope === 'trademark') {
+            this.fontScaleTrademark = 1.0;
+          }
+          this.renderTimetableGrid();
+        }
+        updateRightSliderFill();
+        showRightBadgeTemporarily();
+        window.soundFX?.play?.('zoom');
+        this._stagePending(true);
+      });
+    }
+
+    // Sync initial right slider fill
+    updateRightScopeUI();
+    updateRightSliderFill();
+
+    // ═══════════════════════════════════════════════════════════════
+    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE FX SLIDER (Left Side: Layout Adjustment, Opacity, Blur)
+    // ═══════════════════════════════════════════════════════════════
+    const sideFxContainer     = document.getElementById('side-fx-slider-container');
+    const sideFxTrack         = document.getElementById('side-fx-track');
+    const sideFxFill          = document.getElementById('side-fx-fill');
+    const sideFxBadge         = document.getElementById('side-fx-badge');
+    const fxLabelText         = document.getElementById('fx-label-text');
+    const btnFxLayout         = document.getElementById('btn-fx-mode-layout');
+    const btnFxOpacity        = document.getElementById('btn-fx-mode-opacity');
+    const btnFxBlur           = document.getElementById('btn-fx-mode-blur');
+
+    const leftLayoutTopGroup    = document.getElementById('left-layout-top-group');
+    const btnLeftDaysPanelToggle = document.getElementById('btn-left-days-panel-toggle');
+    const floatingDaysTimeCard   = document.getElementById('floating-days-time-card');
+    const btnCloseFloatingDays   = document.getElementById('btn-close-floating-days');
+
+    const leftLayoutScopeGroup = document.getElementById('left-layout-scope-group');
+    const btnFxWidth           = document.getElementById('btn-fx-mode-width');
+    const btnFxHeight          = document.getElementById('btn-fx-mode-height');
+    const btnFxPosx            = document.getElementById('btn-fx-mode-posx');
+    const btnFxPosy            = document.getElementById('btn-fx-mode-posy');
+
+    let fxMasterMode = 'layout'; // 'layout' | 'opacity' | 'blur'
+    let activeLayoutSubMode = 'width'; // 'width' | 'height' | 'posx' | 'posy'
     let fxBadgeHideTimeout = null;
 
     const showFxBadgeTemporarily = (duration = 1400) => {
@@ -4967,42 +5841,114 @@ class SchedullyApp {
       }, duration);
     };
 
+    const updateLeftLayoutScopeUI = () => {
+      if (leftLayoutTopGroup) {
+        if (fxMasterMode === 'layout') {
+          leftLayoutTopGroup.classList.remove('hidden');
+        } else {
+          leftLayoutTopGroup.classList.add('hidden');
+          floatingDaysTimeCard?.classList.add('hidden');
+          btnLeftDaysPanelToggle?.classList.remove('active');
+        }
+      }
+      if (leftLayoutScopeGroup) {
+        if (fxMasterMode === 'layout') {
+          leftLayoutScopeGroup.classList.remove('hidden');
+        } else {
+          leftLayoutScopeGroup.classList.add('hidden');
+        }
+      }
+      [btnFxWidth, btnFxHeight, btnFxPosx, btnFxPosy].forEach(b => b?.classList.remove('active'));
+      if (activeLayoutSubMode === 'width') btnFxWidth?.classList.add('active');
+      else if (activeLayoutSubMode === 'height') btnFxHeight?.classList.add('active');
+      else if (activeLayoutSubMode === 'posx') btnFxPosx?.classList.add('active');
+      else if (activeLayoutSubMode === 'posy') btnFxPosy?.classList.add('active');
+    };
+
+    btnLeftDaysPanelToggle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!floatingDaysTimeCard) return;
+      const willOpen = floatingDaysTimeCard.classList.contains('hidden');
+      floatingDaysTimeCard.classList.toggle('hidden', !willOpen);
+      btnLeftDaysPanelToggle.classList.toggle('active', willOpen);
+      if (willOpen) {
+        document.getElementById('floating-font-style-card')?.classList.add('hidden');
+        document.getElementById('btn-right-font-panel-toggle')?.classList.remove('active');
+        document.getElementById('schedule-quick-settings')?.classList.add('hidden');
+        document.getElementById('canvas-controls-popover')?.classList.add('hidden');
+        document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
+        document.getElementById('floating-title-card')?.classList.add('hidden');
+        document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
+      }
+      window.soundFX?.play?.('tap');
+      window.haptics?.trigger?.('selection');
+    });
+
+    btnCloseFloatingDays?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      floatingDaysTimeCard?.classList.add('hidden');
+      btnLeftDaysPanelToggle?.classList.remove('active');
+      window.soundFX?.play?.('tap');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (floatingDaysTimeCard && !floatingDaysTimeCard.classList.contains('hidden')) {
+        const insideCard = floatingDaysTimeCard.contains(e.target);
+        const insideToggle = leftLayoutTopGroup?.contains(e.target);
+        if (!insideCard && !insideToggle) {
+          floatingDaysTimeCard.classList.add('hidden');
+          btnLeftDaysPanelToggle?.classList.remove('active');
+        }
+      }
+    });
+
     const updateFxSliderUI = (animate = true) => {
       if (!sideFxTrack || !sideFxFill) return;
 
-      if (btnFxWidth)   btnFxWidth.classList.toggle('active', activeFxMode === 'width');
-      if (btnFxHeight)  btnFxHeight.classList.toggle('active', activeFxMode === 'height');
-      if (btnFxPosy)    btnFxPosy.classList.toggle('active', activeFxMode === 'posy');
-      if (btnFxOpacity) btnFxOpacity.classList.toggle('active', activeFxMode === 'opacity');
-      if (btnFxBlur)    btnFxBlur.classList.toggle('active', activeFxMode === 'blur');
+      if (btnFxLayout)  btnFxLayout.classList.toggle('active', fxMasterMode === 'layout');
+      if (btnFxOpacity) btnFxOpacity.classList.toggle('active', fxMasterMode === 'opacity');
+      if (btnFxBlur)    btnFxBlur.classList.toggle('active', fxMasterMode === 'blur');
+
+      updateLeftLayoutScopeUI();
 
       let pct = 100;
-      if (activeFxMode === 'width') {
-        const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
-        const ratio = Math.max(0, Math.min(1, (val - 50) / 50));
-        pct = Math.round(ratio * 100);
-        if (fxLabelText) fxLabelText.innerText = `W: ${val}%`;
-        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Width: ${val}%`);
-        sideFxTrack.setAttribute('aria-valuenow', val);
-        sideFxTrack.setAttribute('aria-label', 'Timetable Width');
-      } else if (activeFxMode === 'height') {
-        const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
-        const ratio = Math.max(0, Math.min(1, (val - 25) / 65));
-        pct = Math.round(ratio * 100);
-        if (fxLabelText) fxLabelText.innerText = `H: ${val}px`;
-        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Height: ${val}px`);
-        sideFxTrack.setAttribute('aria-valuenow', val);
-        sideFxTrack.setAttribute('aria-label', 'Timetable Height');
-      } else if (activeFxMode === 'posy') {
-        const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
-        const ratio = Math.max(0, Math.min(1, (val + 120) / 270));
-        pct = Math.round(ratio * 100);
-        const sign = val > 0 ? '+' : '';
-        if (fxLabelText) fxLabelText.innerText = `Y: ${sign}${val}px`;
-        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Y-Position: ${sign}${val}px`);
-        sideFxTrack.setAttribute('aria-valuenow', val);
-        sideFxTrack.setAttribute('aria-label', 'Timetable Y-Position');
-      } else if (activeFxMode === 'opacity') {
+      if (fxMasterMode === 'layout') {
+        if (activeLayoutSubMode === 'width') {
+          const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
+          const ratio = Math.max(0, Math.min(1, (val - 50) / 80));
+          pct = Math.round(ratio * 100);
+          if (fxLabelText) fxLabelText.innerText = `W: ${val}%`;
+          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Width: ${val}%`);
+          sideFxTrack.setAttribute('aria-valuenow', val);
+          sideFxTrack.setAttribute('aria-label', 'Timetable Width');
+        } else if (activeLayoutSubMode === 'height') {
+          const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
+          const ratio = Math.max(0, Math.min(1, (val - 25) / 65));
+          pct = Math.round(ratio * 100);
+          if (fxLabelText) fxLabelText.innerText = `H: ${val}px`;
+          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Height: ${val}px`);
+          sideFxTrack.setAttribute('aria-valuenow', val);
+          sideFxTrack.setAttribute('aria-label', 'Timetable Height');
+        } else if (activeLayoutSubMode === 'posx') {
+          const val = this.gridXPosVal != null ? this.gridXPosVal : 0;
+          const ratio = Math.max(0, Math.min(1, (val + 150) / 300));
+          pct = Math.round(ratio * 100);
+          const sign = val > 0 ? '+' : '';
+          if (fxLabelText) fxLabelText.innerText = `X: ${sign}${val}px`;
+          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable X-Position: ${sign}${val}px`);
+          sideFxTrack.setAttribute('aria-valuenow', val);
+          sideFxTrack.setAttribute('aria-label', 'Timetable X-Position');
+        } else if (activeLayoutSubMode === 'posy') {
+          const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
+          const ratio = Math.max(0, Math.min(1, (val + 120) / 270));
+          pct = Math.round(ratio * 100);
+          const sign = val > 0 ? '+' : '';
+          if (fxLabelText) fxLabelText.innerText = `Y: ${sign}${val}px`;
+          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Y-Position: ${sign}${val}px`);
+          sideFxTrack.setAttribute('aria-valuenow', val);
+          sideFxTrack.setAttribute('aria-label', 'Timetable Y-Position');
+        }
+      } else if (fxMasterMode === 'opacity') {
         const val = this.timetableOpacity != null ? this.timetableOpacity : 100;
         const ratio = Math.max(0, Math.min(1, (val - 20) / 80));
         pct = Math.round(ratio * 100);
@@ -5010,7 +5956,7 @@ class SchedullyApp {
         if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Opacity: ${val}%`);
         sideFxTrack.setAttribute('aria-valuenow', val);
         sideFxTrack.setAttribute('aria-label', 'Timetable Opacity');
-      } else {
+      } else if (fxMasterMode === 'blur') {
         const val = this.bgBlurEnabled ? (this.bgBlurIntensity != null ? this.bgBlurIntensity : 10) : 0;
         const ratio = Math.max(0, Math.min(1, val / 40));
         pct = Math.round(ratio * 100);
@@ -5027,25 +5973,75 @@ class SchedullyApp {
     this.syncLeftFxSlider = (animate = true) => updateFxSliderUI(animate);
 
     if (sideFxContainer && sideFxTrack) {
+      updateLeftLayoutScopeUI();
       updateFxSliderUI(false);
 
-      const attachModeBtn = (btn, modeName) => {
-        if (!btn) return;
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          activeFxMode = modeName;
-          if (window.soundFX) window.soundFX.play('tap');
-          updateFxSliderUI(true);
-          showFxBadgeTemporarily();
-        });
-      };
+      btnFxLayout?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'layout';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
 
-      attachModeBtn(btnFxWidth, 'width');
-      attachModeBtn(btnFxHeight, 'height');
-      attachModeBtn(btnFxPosy, 'posy');
-      attachModeBtn(btnFxOpacity, 'opacity');
-      attachModeBtn(btnFxBlur, 'blur');
+      btnFxOpacity?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'opacity';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
+
+      btnFxBlur?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'blur';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
+
+      btnFxWidth?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'layout';
+        activeLayoutSubMode = 'width';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
+
+      btnFxHeight?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'layout';
+        activeLayoutSubMode = 'height';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
+
+      btnFxPosx?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'layout';
+        activeLayoutSubMode = 'posx';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
+
+      btnFxPosy?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fxMasterMode = 'layout';
+        activeLayoutSubMode = 'posy';
+        if (window.soundFX) window.soundFX.play('tap');
+        updateFxSliderUI(true);
+        showFxBadgeTemporarily();
+      });
 
       let isFxDragging = false;
 
@@ -5062,19 +6058,24 @@ class SchedullyApp {
         const offsetY = rect.bottom - clientY;
         const ratio = Math.max(0, Math.min(1, offsetY / rect.height));
 
-        if (activeFxMode === 'width') {
-          const val = Math.round(50 + ratio * 50);
-          this.setTimetableWidthScale(val, false);
-        } else if (activeFxMode === 'height') {
-          const val = Math.round(25 + ratio * 65);
-          this.setTimetableHeightScale(val, false);
-        } else if (activeFxMode === 'posy') {
-          const val = Math.round(-120 + ratio * 270);
-          this.setTimetableOffsetY(val, false);
-        } else if (activeFxMode === 'opacity') {
+        if (fxMasterMode === 'layout') {
+          if (activeLayoutSubMode === 'width') {
+            const val = Math.round(50 + ratio * 80);
+            this.setTimetableWidthScale(val, false);
+          } else if (activeLayoutSubMode === 'height') {
+            const val = Math.round(25 + ratio * 65);
+            this.setTimetableHeightScale(val, false);
+          } else if (activeLayoutSubMode === 'posx') {
+            const val = Math.round(-150 + ratio * 300);
+            this.setTimetableOffsetX(val, false);
+          } else if (activeLayoutSubMode === 'posy') {
+            const val = Math.round(-120 + ratio * 270);
+            this.setTimetableOffsetY(val, false);
+          }
+        } else if (fxMasterMode === 'opacity') {
           const val = Math.round(20 + ratio * 80);
           this.setTimetableOpacity(val, false);
-        } else {
+        } else if (fxMasterMode === 'blur') {
           const val = Math.round(ratio * 40);
           this.setWallpaperBlur(val, val > 0, false);
         }
@@ -5126,15 +6127,19 @@ class SchedullyApp {
       // Double click track to reset active property
       sideFxTrack.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        if (activeFxMode === 'width') {
-          this.setTimetableWidthScale(100, false);
-        } else if (activeFxMode === 'height') {
-          this.setTimetableHeightScale(49, false);
-        } else if (activeFxMode === 'posy') {
-          this.setTimetableOffsetY(0, false);
-        } else if (activeFxMode === 'opacity') {
+        if (fxMasterMode === 'layout') {
+          if (activeLayoutSubMode === 'width') {
+            this.setTimetableWidthScale(100, false);
+          } else if (activeLayoutSubMode === 'height') {
+            this.setTimetableHeightScale(49, false);
+          } else if (activeLayoutSubMode === 'posx') {
+            this.setTimetableOffsetX(0, false);
+          } else if (activeLayoutSubMode === 'posy') {
+            this.setTimetableOffsetY(0, false);
+          }
+        } else if (fxMasterMode === 'opacity') {
           this.setTimetableOpacity(100, false);
-        } else {
+        } else if (fxMasterMode === 'blur') {
           this.setWallpaperBlur(0, false, false);
         }
         if (window.soundFX) window.soundFX.play('tap');
@@ -5147,26 +6152,33 @@ class SchedullyApp {
       sideFxContainer.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 1 : -1;
-        if (activeFxMode === 'width') {
-          const step = delta * 2;
-          const current = this.gridWidthVal != null ? this.gridWidthVal : 100;
-          const next = Math.max(50, Math.min(100, current + step));
-          this.setTimetableWidthScale(next, false);
-        } else if (activeFxMode === 'height') {
-          const step = delta * 2;
-          const current = this.gridHeightVal != null ? this.gridHeightVal : 49;
-          const next = Math.max(25, Math.min(90, current + step));
-          this.setTimetableHeightScale(next, false);
-        } else if (activeFxMode === 'posy') {
-          const step = delta * 4;
-          const current = this.gridYPosVal != null ? this.gridYPosVal : 0;
-          const next = Math.max(-120, Math.min(150, current + step));
-          this.setTimetableOffsetY(next, false);
-        } else if (activeFxMode === 'opacity') {
+        if (fxMasterMode === 'layout') {
+          if (activeLayoutSubMode === 'width') {
+            const step = delta * 2;
+            const current = this.gridWidthVal != null ? this.gridWidthVal : 100;
+            const next = Math.max(50, Math.min(130, current + step));
+            this.setTimetableWidthScale(next, false);
+          } else if (activeLayoutSubMode === 'height') {
+            const step = delta * 2;
+            const current = this.gridHeightVal != null ? this.gridHeightVal : 49;
+            const next = Math.max(25, Math.min(90, current + step));
+            this.setTimetableHeightScale(next, false);
+          } else if (activeLayoutSubMode === 'posx') {
+            const step = delta * 4;
+            const current = this.gridXPosVal != null ? this.gridXPosVal : 0;
+            const next = Math.max(-150, Math.min(150, current + step));
+            this.setTimetableOffsetX(next, false);
+          } else if (activeLayoutSubMode === 'posy') {
+            const step = delta * 4;
+            const current = this.gridYPosVal != null ? this.gridYPosVal : 0;
+            const next = Math.max(-120, Math.min(150, current + step));
+            this.setTimetableOffsetY(next, false);
+          }
+        } else if (fxMasterMode === 'opacity') {
           const step = delta * 5;
           const next = Math.max(20, Math.min(100, (this.timetableOpacity || 100) + step));
           this.setTimetableOpacity(next, false);
-        } else {
+        } else if (fxMasterMode === 'blur') {
           const step = delta * 2;
           const next = Math.max(0, Math.min(40, (this.bgBlurIntensity || 0) + step));
           this.setWallpaperBlur(next, next > 0, false);
@@ -5186,6 +6198,1043 @@ class SchedullyApp {
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden' && this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
         this.saveToCloud();
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // FLOATING PALETTE & MODE CARD ENGINE (Bottom-Left Circle Island Trigger)
+    // ═══════════════════════════════════════════════════════════════
+    const btnFloatingPaletteToggle = document.getElementById('btn-floating-palette-toggle');
+    const floatingPaletteModeCard  = document.getElementById('floating-palette-mode-card');
+    const btnCloseFloatingPalette  = document.getElementById('btn-close-floating-palette');
+    const floatingResetPaletteBtn  = document.getElementById('btn-floating-reset-palette');
+    const floatingPaletteCircleIsland = document.getElementById('floating-palette-circle-island');
+    const floatingPaletteTitleText = document.getElementById('floating-palette-title-text');
+    const floatingPalettePage1     = document.getElementById('floating-palette-page-1');
+    const floatingPalettePage2     = document.getElementById('floating-palette-page-2');
+    const floatingPalettePage3     = document.getElementById('floating-palette-page-3');
+    const btnPalettePagePrev       = document.getElementById('btn-palette-page-prev');
+    const btnPalettePageNext       = document.getElementById('btn-palette-page-next');
+    const palettePageDot1          = document.getElementById('palette-page-dot-1');
+    const palettePageDot2          = document.getElementById('palette-page-dot-2');
+    const palettePageDot3          = document.getElementById('palette-page-dot-3');
+
+    let currentPalettePage = 1;
+
+    const setPaletteCardPage = (page) => {
+      currentPalettePage = page;
+      if (floatingPalettePage1) floatingPalettePage1.classList.toggle('hidden', page !== 1);
+      if (floatingPalettePage2) floatingPalettePage2.classList.toggle('hidden', page !== 2);
+      if (floatingPalettePage3) floatingPalettePage3.classList.toggle('hidden', page !== 3);
+
+      if (floatingPaletteTitleText) {
+        if (page === 1) {
+          floatingPaletteTitleText.innerText = 'Palette & Mode';
+          floatingPaletteTitleText.setAttribute('data-i18n', 'paletteAndMode');
+        } else if (page === 2) {
+          floatingPaletteTitleText.innerText = 'Colors & Theme';
+          floatingPaletteTitleText.setAttribute('data-i18n', 'colorsAndTheme');
+        } else {
+          floatingPaletteTitleText.innerText = 'Wallpaper & Background';
+          floatingPaletteTitleText.setAttribute('data-i18n', 'wallpaper');
+        }
+      }
+
+      const indicatorsTrack = document.getElementById('floating-palette-indicators');
+      if (indicatorsTrack) {
+        indicatorsTrack.setAttribute('data-active-page', String(page));
+      }
+
+      if (palettePageDot1) {
+        palettePageDot1.classList.toggle('active', page === 1);
+        palettePageDot1.classList.toggle('inactive', page !== 1);
+      }
+      if (palettePageDot2) {
+        palettePageDot2.classList.toggle('active', page === 2);
+        palettePageDot2.classList.toggle('inactive', page !== 2);
+      }
+      if (palettePageDot3) {
+        palettePageDot3.classList.toggle('active', page === 3);
+        palettePageDot3.classList.toggle('inactive', page !== 3);
+      }
+    };
+
+    // Initialize to page 1 on load
+    setPaletteCardPage(1);
+
+    if (btnFloatingPaletteToggle && floatingPaletteModeCard) {
+      btnFloatingPaletteToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = floatingPaletteModeCard.classList.contains('hidden');
+        floatingPaletteModeCard.classList.toggle('hidden', !willOpen);
+        btnFloatingPaletteToggle.classList.toggle('active', willOpen);
+        if (willOpen) {
+          setPaletteCardPage(currentPalettePage || 1);
+          // Close other floating popovers to avoid collisions
+          document.getElementById('floating-font-style-card')?.classList.add('hidden');
+          document.getElementById('floating-days-time-card')?.classList.add('hidden');
+          document.getElementById('canvas-controls-popover')?.classList.add('hidden');
+          document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
+          document.getElementById('schedule-quick-settings')?.classList.add('hidden');
+        }
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      btnCloseFloatingPalette?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        floatingPaletteModeCard.classList.add('hidden');
+        btnFloatingPaletteToggle.classList.remove('active');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      // Carousel Page Navigation Handlers
+      btnPalettePagePrev?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let prevPage = currentPalettePage - 1;
+        if (prevPage < 1) prevPage = 3;
+        setPaletteCardPage(prevPage);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      btnPalettePageNext?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let nextPage = currentPalettePage + 1;
+        if (nextPage > 3) nextPage = 1;
+        setPaletteCardPage(nextPage);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      palettePageDot1?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setPaletteCardPage(1);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      palettePageDot2?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setPaletteCardPage(2);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      palettePageDot3?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setPaletteCardPage(3);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      // Outside dismiss
+      document.addEventListener('click', (e) => {
+        if (!floatingPaletteModeCard.classList.contains('hidden')) {
+          const isInsideCard = floatingPaletteModeCard.contains(e.target);
+          const isInsideToggle = floatingPaletteCircleIsland?.contains(e.target);
+          if (!isInsideCard && !isInsideToggle) {
+            floatingPaletteModeCard.classList.add('hidden');
+            btnFloatingPaletteToggle.classList.remove('active');
+          }
+        }
+      });
+
+      // Floating card palette swatches click delegation (Page 1)
+      document.getElementById('floating-palette-grid')?.addEventListener('click', (e) => {
+        const dot = e.target.closest('.palette-dot');
+        if (!dot) return;
+        const palette = dot.getAttribute('data-palette');
+        if (palette) {
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this.setPalette(palette, true);
+        }
+      });
+
+      // Floating card theme mode dots delegation (Page 1)
+      document.getElementById('floating-theme-mode-row')?.addEventListener('click', (e) => {
+        const modeDot = e.target.closest('.theme-mode-dot');
+        if (!modeDot) return;
+        const mode = modeDot.getAttribute('data-mode');
+        if (mode) {
+          if (window.soundFX) window.soundFX.play('toggle');
+          if (window.haptics) window.haptics.trigger('selection');
+          this.setMode(mode, true);
+        }
+      });
+
+      // Floating card theme style switchers (Default vs Glass)
+      const btnStyleDefault = document.getElementById('btn-floating-style-default');
+      const btnStyleGlass = document.getElementById('btn-floating-style-glass');
+      const styleLabel = document.getElementById('floating-active-theme-style-label');
+
+      const updateFloatingStyleUI = (style) => {
+        btnStyleDefault?.classList.toggle('active', style === 'default');
+        btnStyleGlass?.classList.toggle('active', style === 'glass');
+        if (styleLabel) {
+          styleLabel.innerText = style === 'glass' ? '✦ GLASS' : 'DEFAULT';
+        }
+      };
+
+      btnStyleDefault?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof window.applyThemeStyle === 'function') {
+          window.applyThemeStyle('default');
+        } else {
+          document.body.classList.remove('theme-style-glass');
+          document.body.classList.add('theme-style-default');
+          try { localStorage.setItem('schedully_theme_style', 'default'); } catch (_) {}
+        }
+        updateFloatingStyleUI('default');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      btnStyleGlass?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof window.applyThemeStyle === 'function') {
+          window.applyThemeStyle('glass');
+        } else {
+          document.body.classList.remove('theme-style-default');
+          document.body.classList.add('theme-style-glass');
+          try { localStorage.setItem('schedully_theme_style', 'glass'); } catch (_) {}
+        }
+        updateFloatingStyleUI('glass');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      // ════════════ PAGE 2: CUSTOM COLOR HANDLERS (IMAGE 2) ════════════
+      // 1. Grid Surface Colour
+      document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const colorVal = btn.getAttribute('data-surface');
+          this.userHasPickedSurfaceColor = true;
+          document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this._stagePending();
+        });
+      });
+
+      document.getElementById('floating-custom-surface-color')?.addEventListener('input', (e) => {
+        const colorVal = e.target.value;
+        document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+        this.userHasPickedSurfaceColor = true;
+        document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
+        this._stagePending();
+      });
+
+      // 2. Background Colour
+      document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const colorVal = btn.getAttribute('data-bg');
+          this.userHasPickedBgColor = true;
+          this.phoneCanvas.style.backgroundColor = colorVal;
+          this.updateClockContrast(colorVal);
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this._stagePending();
+        });
+      });
+
+      document.getElementById('floating-custom-bg-color')?.addEventListener('input', (e) => {
+        const colorVal = e.target.value;
+        document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+        this.userHasPickedBgColor = true;
+        this.phoneCanvas.style.backgroundColor = colorVal;
+        this.updateClockContrast(colorVal);
+        this._stagePending();
+      });
+
+      // 3. Header Colour
+      document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const colorVal = btn.getAttribute('data-header');
+          this.userHasPickedHeaderColor = true;
+          this.applyHeaderColor(colorVal);
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this._stagePending();
+        });
+      });
+
+      document.getElementById('floating-custom-header-color')?.addEventListener('input', (e) => {
+        const colorVal = e.target.value;
+        document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+        this.userHasPickedHeaderColor = true;
+        this.applyHeaderColor(colorVal);
+        this._stagePending();
+      });
+
+      // 4. Trademark Colour
+      document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const colorVal = btn.getAttribute('data-trademark');
+          this.applyTrademarkColor(colorVal);
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this._stagePending();
+        });
+      });
+
+      document.getElementById('floating-custom-trademark-color')?.addEventListener('input', (e) => {
+        const colorVal = e.target.value;
+        document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+        this.applyTrademarkColor(colorVal);
+        this._stagePending();
+      });
+
+      // 5. Font Colour
+      document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const colorVal = btn.getAttribute('data-font');
+          this.applyFontColor(colorVal);
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          this._stagePending();
+        });
+      });
+
+      document.getElementById('floating-custom-font-color')?.addEventListener('input', (e) => {
+        const colorVal = e.target.value;
+        document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+        this.applyFontColor(colorVal);
+        this._stagePending();
+      });
+
+      // Page 3: Wallpaper & Background Actions
+      document.getElementById('floating-btn-remove-wallpaper')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+        this.removeWallpaper();
+        if (typeof showToast === 'function') {
+          showToast('Wallpaper removed', 'info');
+        }
+      });
+
+      const floatingResyncBtn = document.getElementById('floating-btn-resync-wallpaper-colors');
+      floatingResyncBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.soundFX) window.soundFX.play('palette');
+        if (window.haptics) window.haptics.trigger('selection');
+        this.resyncColors(false);
+
+        const icon = floatingResyncBtn.querySelector('svg');
+        if (icon) {
+          icon.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)';
+          icon.style.transform = 'rotate(360deg)';
+          setTimeout(() => {
+            icon.style.transition = 'none';
+            icon.style.transform = '';
+          }, 500);
+        }
+      });
+
+      // Reset to Default button
+      floatingResetPaletteBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('success');
+
+        if (currentPalettePage === 1) {
+          // Page 1: Reset theme mode to auto, palette to indigo, style to default
+          this.setMode('auto', true);
+          this.setPalette('indigo', true);
+
+          if (typeof window.applyThemeStyle === 'function') {
+            window.applyThemeStyle('default');
+          } else {
+            document.body.classList.remove('theme-style-glass');
+            document.body.classList.add('theme-style-default');
+            try { localStorage.setItem('schedully_theme_style', 'default'); } catch (_) {}
+          }
+          updateFloatingStyleUI('default');
+
+          if (typeof showToast === 'function') {
+            showToast('Theme reset to defaults!', 'info');
+          }
+        } else if (currentPalettePage === 2) {
+          // Page 2: Reset custom colors (surface, bg, header, trademark, font) back to active theme defaults
+          this.userHasPickedSurfaceColor = false;
+          this.userHasPickedBgColor = false;
+          this.userHasPickedHeaderColor = false;
+          this.userHasPickedTrademarkColor = false;
+          this.phoneCanvas.style.backgroundColor = '';
+          this.applyHeaderColor('');
+          this.applyTrademarkColor('');
+          this.applyFontColor('');
+          document.documentElement.style.removeProperty('--m3-grid-surface-bg');
+          document.documentElement.style.removeProperty('--m3-header-custom-bg');
+          document.documentElement.style.removeProperty('--trademark-pill-custom-bg');
+          document.documentElement.style.removeProperty('--trademark-pill-outline-color');
+          document.documentElement.style.removeProperty('--trademark-custom-text-color');
+          document.documentElement.style.removeProperty('--m3-font-custom-color');
+          this.applyThemeEngine();
+          this.renderAll();
+          this._stagePending(true);
+
+          // Update active states on swatches
+          document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+          document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+          document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+          document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+          document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+          if (typeof showToast === 'function') {
+            showToast('Colors reset to theme defaults!', 'info');
+          }
+        } else if (currentPalettePage === 3) {
+          // Page 3: Reset Wallpaper back to defaults
+          this.removeWallpaper();
+          if (typeof showToast === 'function') {
+            showToast('Wallpaper reset to defaults!', 'info');
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FLOATING ADD COURSE WIZARD ENGINE (Step 1 -> Step 2 -> Save)
+    // ═══════════════════════════════════════════════════════════════
+    const btnFloatingAddCourseToggle = document.getElementById('btn-floating-add-course-toggle');
+    const floatingAddCourseCircleIsland = document.getElementById('floating-add-course-circle-island');
+    const floatingAddCourseCard = document.getElementById('floating-add-course-card');
+    const btnCloseFloatingAddCourse = document.getElementById('btn-close-floating-add-course');
+    const btnFloatingCourseStep1Tab = document.getElementById('btn-floating-course-step1-tab');
+    const btnFloatingCourseStep2Tab = document.getElementById('btn-floating-course-step2-tab');
+    const floatingCourseStep1 = document.getElementById('floating-course-step-1');
+    const floatingCourseStep2 = document.getElementById('floating-course-step-2');
+    const btnFloatingCourseToStep2 = document.getElementById('btn-floating-course-to-step2');
+    const btnFloatingCourseToStep1 = document.getElementById('btn-floating-course-to-step1');
+    const btnFloatingSaveCourse = document.getElementById('btn-floating-save-course');
+
+    let currentAddCourseStep = 1;
+    let floatingCourseSelectedColor = this.selectedColor || '#6366F1';
+    let floatingCourseSelectedFont = '#FFFFFF';
+    let floatingCourseDisplayTime = 'yes';
+
+    const setAddCourseStep = (step) => {
+      currentAddCourseStep = step;
+      if (floatingCourseStep1) floatingCourseStep1.classList.toggle('hidden', step !== 1);
+      if (floatingCourseStep2) floatingCourseStep2.classList.toggle('hidden', step !== 2);
+
+      if (btnFloatingCourseStep1Tab) {
+        btnFloatingCourseStep1Tab.classList.toggle('active', step === 1);
+        btnFloatingCourseStep1Tab.classList.toggle('text-gray-500', step !== 1);
+        btnFloatingCourseStep1Tab.classList.toggle('dark:text-gray-400', step !== 1);
+      }
+      if (btnFloatingCourseStep2Tab) {
+        btnFloatingCourseStep2Tab.classList.toggle('active', step === 2);
+        btnFloatingCourseStep2Tab.classList.toggle('text-gray-500', step !== 2);
+        btnFloatingCourseStep2Tab.classList.toggle('dark:text-gray-400', step !== 2);
+      }
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('selection');
+    };
+
+    if (btnFloatingAddCourseToggle && floatingAddCourseCard) {
+      btnFloatingAddCourseToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = floatingAddCourseCard.classList.contains('hidden');
+        floatingAddCourseCard.classList.toggle('hidden', !willOpen);
+        btnFloatingAddCourseToggle.classList.toggle('active', willOpen);
+
+        if (willOpen) {
+          setAddCourseStep(1);
+          // Close other floating popovers to keep screen clear
+          document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
+          document.getElementById('btn-floating-palette-toggle')?.classList.remove('active');
+          document.getElementById('schedule-quick-settings')?.classList.add('hidden');
+          document.getElementById('floating-font-style-card')?.classList.add('hidden');
+          document.getElementById('floating-days-time-card')?.classList.add('hidden');
+          document.getElementById('floating-title-card')?.classList.add('hidden');
+          document.getElementById('canvas-controls-popover')?.classList.add('hidden');
+          document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
+
+          // Sync period mode visibility
+          const rowPeriod = document.getElementById('floating-row-period-select');
+          const rowStartTime = document.getElementById('floating-row-start-time');
+          const rowEndTime = document.getElementById('floating-row-end-time');
+          if (rowPeriod && rowStartTime && rowEndTime) {
+            const isPeriod = (this.axisMode === 'period');
+            rowPeriod.style.display = isPeriod ? 'flex' : 'none';
+            rowStartTime.style.display = isPeriod ? 'none' : 'flex';
+            rowEndTime.style.display = isPeriod ? 'none' : 'flex';
+          }
+        }
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      btnCloseFloatingAddCourse?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        floatingAddCourseCard.classList.add('hidden');
+        btnFloatingAddCourseToggle.classList.remove('active');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+
+      btnFloatingCourseStep1Tab?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(1);
+      });
+
+      btnFloatingCourseStep2Tab?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(2);
+      });
+
+      btnFloatingCourseToStep2?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const codeInput = document.getElementById('floating-input-course-code');
+        if (codeInput && !codeInput.value.trim()) {
+          codeInput.focus();
+          if (typeof showToast === 'function') {
+            showToast('Please enter a course name first!', 'warning');
+          }
+          if (window.soundFX) window.soundFX.play('error');
+          if (window.haptics) window.haptics.trigger('error');
+          return;
+        }
+        setAddCourseStep(2);
+      });
+
+      btnFloatingCourseToStep1?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(1);
+      });
+
+      // Step 1: Display Time Toggle
+      document.querySelectorAll('#floating-toggle-course-display-time .pill-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-toggle-course-display-time .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          floatingCourseDisplayTime = btn.getAttribute('data-val') || 'yes';
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        });
+      });
+
+      // Step 1: Grid Colour Swatches (Single Row Circular Dots)
+      document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          floatingCourseSelectedColor = btn.getAttribute('data-color') || '#D5C5B5';
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        });
+      });
+
+      document.getElementById('floating-course-custom-color')?.addEventListener('input', (e) => {
+        floatingCourseSelectedColor = e.target.value;
+        document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(b => b.classList.remove('active'));
+      });
+
+      // Step 1: Font Colour Swatches (Single Row Circular Dots)
+      document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          floatingCourseSelectedFont = btn.getAttribute('data-coursefont') || '#FFFFFF';
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        });
+      });
+
+      document.getElementById('floating-course-custom-font')?.addEventListener('input', (e) => {
+        floatingCourseSelectedFont = e.target.value;
+        document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot').forEach(b => b.classList.remove('active'));
+      });
+
+      // Step 2: Save to Timetable
+      btnFloatingSaveCourse?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const codeInput = document.getElementById('floating-input-course-code');
+        const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+        if (!code) {
+          setAddCourseStep(1);
+          if (codeInput) codeInput.focus();
+          if (typeof showToast === 'function') {
+            showToast('Please enter a course name!', 'warning');
+          }
+          if (window.soundFX) window.soundFX.play('error');
+          if (window.haptics) window.haptics.trigger('error');
+          return;
+        }
+
+        let startTime = document.getElementById('floating-input-start-time')?.value || '09:00';
+        let endTime = document.getElementById('floating-input-end-time')?.value || '11:00';
+        let periodNumber = undefined;
+
+        if (this.axisMode === 'period') {
+          const periodSel = document.getElementById('floating-input-period-select');
+          const selOpt = periodSel ? periodSel.selectedOptions[0] : null;
+          periodNumber = selOpt ? parseInt(selOpt.value, 10) : 1;
+          startTime = selOpt ? (selOpt.getAttribute('data-start') || '09:00') : '09:00';
+          endTime = selOpt ? (selOpt.getAttribute('data-end') || '10:30') : '10:30';
+        }
+
+        const courseType = document.getElementById('floating-input-type')?.value.trim() || '';
+        const location = document.getElementById('floating-input-location')?.value.trim() || '';
+        const lecturer = document.getElementById('floating-input-lecturer')?.value.trim() || '';
+        const group = document.getElementById('floating-input-group')?.value.trim() || '';
+
+        const checkedDays = Array.from(document.querySelectorAll('.floating-course-day-check:checked')).map(cb => cb.value);
+        const daysToCreate = checkedDays.length > 0 ? checkedDays : ['Mon'];
+
+        this.recordHistoryState();
+
+        daysToCreate.forEach((day, idx) => {
+          this.classes.push({
+            id: Date.now() + idx,
+            code: code,
+            title: courseType ? `${code} (${courseType})` : code,
+            day: day,
+            periodNumber: periodNumber,
+            startTime: startTime,
+            endTime: endTime,
+            type: courseType,
+            room: location,
+            lecturer: lecturer,
+            group: group,
+            customColor: floatingCourseSelectedColor,
+            fontColor: floatingCourseSelectedFont,
+            displayTime: floatingCourseDisplayTime
+          });
+        });
+
+        // Reset inputs
+        if (codeInput) codeInput.value = '';
+        const typeInput = document.getElementById('floating-input-type');
+        if (typeInput) typeInput.value = '';
+        const locInput = document.getElementById('floating-input-location');
+        if (locInput) locInput.value = '';
+        const lectInput = document.getElementById('floating-input-lecturer');
+        if (lectInput) lectInput.value = '';
+        const grpInput = document.getElementById('floating-input-group');
+        if (grpInput) grpInput.value = '';
+
+        // Close wizard card
+        floatingAddCourseCard.classList.add('hidden');
+        btnFloatingAddCourseToggle.classList.remove('active');
+
+        this.updateHistoryButtonUI();
+        this.renderAll();
+        this._stagePending(true);
+
+        if (window.soundFX) window.soundFX.play('success');
+        if (window.haptics) window.haptics.trigger('success');
+        if (typeof showToast === 'function') {
+          showToast(`Course "${code}" saved to timetable!`, 'success');
+        }
+      });
+
+      // Outside dismiss
+      document.addEventListener('click', (e) => {
+        if (!floatingAddCourseCard.classList.contains('hidden')) {
+          const isInsideCard = floatingAddCourseCard.contains(e.target);
+          const isInsideToggle = floatingAddCourseCircleIsland?.contains(e.target);
+          if (!isInsideCard && !isInsideToggle) {
+            floatingAddCourseCard.classList.add('hidden');
+            btnFloatingAddCourseToggle.classList.remove('active');
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FLOATING TITLE & TRADEMARK STYLE / PLACEMENT CARD ENGINE
+    // ═══════════════════════════════════════════════════════════════
+    const floatingTitleCard          = document.getElementById('floating-title-card');
+    const btnCloseFloatingTitle      = document.getElementById('btn-close-floating-title');
+    const floatingHeaderIcon         = document.getElementById('floating-header-icon');
+    const floatingHeaderTitle        = document.getElementById('floating-header-title');
+    const btnTitlePlacementMerged    = document.getElementById('btn-title-placement-merged');
+    const btnTitlePlacementSeparated = document.getElementById('btn-title-placement-separated');
+    const btnPlacementMergedLabel    = document.getElementById('btn-placement-merged-label');
+    const btnPlacementSeparatedLabel = document.getElementById('btn-placement-separated-label');
+    const btnPlacementMergedIcon     = document.getElementById('btn-placement-merged-icon');
+    const btnPlacementSeparatedIcon  = document.getElementById('btn-placement-separated-icon');
+    const titleSeparatedOptionsCard  = document.getElementById('title-separated-options-card');
+    const sliderTitleUnified         = document.getElementById('slider-title-unified');
+    const titleUnifiedBadge          = document.getElementById('title-unified-badge');
+    const btnFloatingResetTitle      = document.getElementById('btn-floating-reset-title');
+
+    // Title state
+    this.titlePlacement    = localStorage.getItem('schedully_title_placement') || 'merged';
+    this.titleCornerRadius = parseInt(localStorage.getItem('schedully_title_radius') || '14', 10);
+    this.titleGapDistance  = parseInt(localStorage.getItem('schedully_title_gap') || '8', 10);
+    this.titleWidthSize    = parseInt(localStorage.getItem('schedully_title_width') || '100', 10);
+    this.titleActiveParam  = 'radius'; // 'radius' | 'gap' | 'width'
+
+    // Trademark state
+    this.trademarkLayoutMode   = localStorage.getItem('schedully_trademark_layout') || 'borderless';
+    this.trademarkCornerRadius = parseInt(localStorage.getItem('schedully_trademark_radius') || '14', 10);
+    this.trademarkGapDistance  = parseInt(localStorage.getItem('schedully_trademark_gap') || '8', 10);
+    this.trademarkWidthSize    = parseInt(localStorage.getItem('schedully_trademark_width') || '100', 10);
+    this.trademarkActiveParam  = 'radius'; // 'radius' | 'gap' | 'width'
+
+    const syncFloatingEditorUI = () => {
+      const isTitle = (this.currentTitleBarMode !== 'trademark');
+
+      // 1. Header Updates
+      if (floatingHeaderTitle) {
+        floatingHeaderTitle.innerText = isTitle ? 'TITLE' : 'TRADEMARK';
+      }
+      if (floatingHeaderIcon) {
+        floatingHeaderIcon.innerHTML = isTitle
+          ? '<path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'
+          : '<path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>';
+      }
+
+      // 2. Toggle Button 1 & 2 Labels & Icons
+      if (btnPlacementMergedLabel) {
+        btnPlacementMergedLabel.innerText = isTitle ? 'Merged' : 'Borderless';
+      }
+      if (btnPlacementMergedIcon) {
+        btnPlacementMergedIcon.innerHTML = isTitle
+          ? '<rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect><path stroke-linecap="round" stroke-width="2" d="M3 9h18"></path>'
+          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>';
+      }
+
+      if (btnPlacementSeparatedLabel) {
+        btnPlacementSeparatedLabel.innerText = isTitle ? 'Separated' : 'Border';
+      }
+      if (btnPlacementSeparatedIcon) {
+        btnPlacementSeparatedIcon.innerHTML = isTitle
+          ? '<rect x="3" y="2" width="18" height="5" rx="2" stroke-width="2"></rect><rect x="3" y="10" width="18" height="12" rx="4" stroke-width="2"></rect>'
+          : '<rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect>';
+      }
+
+      // 3. Active State on Toggle Buttons
+      const isMode1Active = isTitle ? (this.titlePlacement === 'merged') : (this.trademarkLayoutMode === 'borderless');
+      const isMode2Active = isTitle ? (this.titlePlacement === 'separated') : (this.trademarkLayoutMode === 'border');
+
+      btnTitlePlacementMerged?.classList.toggle('active', isMode1Active);
+      btnTitlePlacementSeparated?.classList.toggle('active', isMode2Active);
+
+      // 4. Options Card Visibility
+      const showOptions = isTitle ? (this.titlePlacement === 'separated') : (this.trademarkLayoutMode === 'border');
+      titleSeparatedOptionsCard?.classList.toggle('hidden', !showOptions);
+
+      // 5. Circle Buttons Active State
+      const currentActiveParam = isTitle ? this.titleActiveParam : this.trademarkActiveParam;
+      document.querySelectorAll('.title-circle-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        btn.classList.toggle('active', param === currentActiveParam);
+      });
+
+      if (!sliderTitleUnified) return;
+
+      const currentRad = isTitle ? this.titleCornerRadius : this.trademarkCornerRadius;
+      const currentGap = isTitle ? this.titleGapDistance : this.trademarkGapDistance;
+      const currentWidth = isTitle ? this.titleWidthSize : this.trademarkWidthSize;
+
+      if (currentActiveParam === 'radius') {
+        sliderTitleUnified.min = '0';
+        sliderTitleUnified.max = '28';
+        sliderTitleUnified.step = '1';
+        sliderTitleUnified.value = currentRad;
+        if (titleUnifiedBadge) {
+          titleUnifiedBadge.innerText = currentRad === 0 ? '0px (Sq)' : `${currentRad}px`;
+          titleUnifiedBadge.className = 'title-adaptive-badge';
+        }
+      } else if (currentActiveParam === 'gap') {
+        sliderTitleUnified.min = '0';
+        sliderTitleUnified.max = '28';
+        sliderTitleUnified.step = '1';
+        sliderTitleUnified.value = currentGap;
+        if (titleUnifiedBadge) {
+          titleUnifiedBadge.innerText = `${currentGap}px`;
+          titleUnifiedBadge.className = 'title-adaptive-badge';
+        }
+      } else if (currentActiveParam === 'width') {
+        sliderTitleUnified.min = '10';
+        sliderTitleUnified.max = '100';
+        sliderTitleUnified.step = '1';
+        sliderTitleUnified.value = currentWidth;
+        if (titleUnifiedBadge) {
+          titleUnifiedBadge.innerText = `${currentWidth}%`;
+          titleUnifiedBadge.className = 'title-adaptive-badge';
+        }
+      }
+    };
+    this.syncFloatingEditorUI = syncFloatingEditorUI;
+
+    const applyTitleLayout = () => {
+      const container = document.getElementById('lock-timetable-container');
+      if (!container) return;
+
+      if (this.titlePlacement === 'separated') {
+        container.classList.add('title-separated');
+        document.documentElement.style.setProperty('--title-separated-radius', `${this.titleCornerRadius}px`);
+        document.documentElement.style.setProperty('--title-separated-gap', `${this.titleGapDistance}px`);
+        document.documentElement.style.setProperty('--title-separated-width', `${this.titleWidthSize}%`);
+        
+        const titleBar = document.getElementById('lock-grid-title');
+        if (titleBar) {
+          titleBar.style.borderRadius = `${this.titleCornerRadius}px`;
+          titleBar.style.marginBottom = `${this.titleGapDistance}px`;
+          titleBar.style.width = `${this.titleWidthSize}%`;
+        }
+
+        const gridExact = container.querySelector('.m3-lock-grid-exact');
+        if (gridExact) {
+          const gridR = (this.tableCornerStyle === 'sharp') ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18);
+          gridExact.style.borderRadius = `${gridR}px`;
+          document.documentElement.style.setProperty('--timetable-corner-radius', `${gridR}px`);
+        }
+      } else {
+        container.classList.remove('title-separated');
+        const titleBar = document.getElementById('lock-grid-title');
+        if (titleBar) {
+          titleBar.style.borderRadius = '';
+          titleBar.style.marginBottom = '';
+          titleBar.style.width = '';
+        }
+        const gridExact = container.querySelector('.m3-lock-grid-exact');
+        if (gridExact) {
+          gridExact.style.borderRadius = '';
+        }
+      }
+
+      try {
+        localStorage.setItem('schedully_title_placement', this.titlePlacement);
+        localStorage.setItem('schedully_title_radius', String(this.titleCornerRadius));
+        localStorage.setItem('schedully_title_gap', String(this.titleGapDistance));
+        localStorage.setItem('schedully_title_width', String(this.titleWidthSize));
+      } catch (_) {}
+
+      syncFloatingEditorUI();
+    };
+    this.applyTitleLayout = applyTitleLayout;
+    applyTitleLayout();
+
+    const applyTrademarkLayout = () => {
+      const footer = document.getElementById('lock-trademark-footer');
+      if (!footer) return;
+
+      if (this.trademarkLayoutMode === 'border') {
+        footer.classList.remove('style-default', 'style-borderless', 'style-rounded', 'style-squared');
+        footer.classList.add('style-custom-border');
+        document.documentElement.style.setProperty('--trademark-corner-radius', `${this.trademarkCornerRadius}px`);
+        document.documentElement.style.setProperty('--trademark-gap-distance', `${this.trademarkGapDistance}px`);
+        document.documentElement.style.setProperty('--trademark-width-size', `${this.trademarkWidthSize}%`);
+      } else {
+        footer.classList.remove('style-custom-border', 'style-rounded', 'style-squared');
+        footer.classList.add('style-borderless');
+      }
+
+      footer.style.setProperty('display', this.showTrademark ? 'inline-flex' : 'none', 'important');
+      footer.classList.toggle('hidden', !this.showTrademark);
+      footer.classList.toggle('is-hidden', !this.showTrademark);
+
+      try {
+        localStorage.setItem('schedully_trademark_layout', this.trademarkLayoutMode);
+        localStorage.setItem('schedully_trademark_radius', String(this.trademarkCornerRadius));
+        localStorage.setItem('schedully_trademark_gap', String(this.trademarkGapDistance));
+        localStorage.setItem('schedully_trademark_width', String(this.trademarkWidthSize));
+      } catch (_) {}
+
+      syncFloatingEditorUI();
+    };
+    this.applyTrademarkLayout = applyTrademarkLayout;
+    applyTrademarkLayout();
+
+    const openFloatingTitleCard = () => {
+      if (!floatingTitleCard) return;
+      floatingTitleCard.classList.remove('hidden');
+      // Ensure bottom preview controls card stays expanded as well
+      const controlsPopover = document.getElementById('canvas-controls-popover');
+      if (controlsPopover && controlsPopover.classList.contains('hidden')) {
+        controlsPopover.classList.remove('hidden');
+      }
+      // Close side popups to avoid side clutter
+      document.getElementById('floating-font-style-card')?.classList.add('hidden');
+      document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
+      document.getElementById('floating-days-time-card')?.classList.add('hidden');
+      syncFloatingEditorUI();
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('selection');
+    };
+    this.openFloatingTitleCard = openFloatingTitleCard;
+
+    // Auto-expand on initial startup if controls popover is visible
+    setTimeout(() => {
+      const controlsPopover = document.getElementById('canvas-controls-popover');
+      if (controlsPopover && !controlsPopover.classList.contains('hidden')) {
+        openFloatingTitleCard();
+      }
+    }, 120);
+
+    // Open when choosing Title or Trademark mode
+    document.querySelectorAll('#title-trademark-mode-toggles button, #title-trademark-mode-toggles .capsule-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openFloatingTitleCard();
+      });
+    });
+
+    document.getElementById('input-title-text-stage')?.addEventListener('focus', () => {
+      openFloatingTitleCard();
+    });
+
+    document.getElementById('controls-title-row')?.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      openFloatingTitleCard();
+    });
+
+    document.getElementById('lock-grid-title')?.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      openFloatingTitleCard();
+    });
+
+    btnCloseFloatingTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      floatingTitleCard?.classList.add('hidden');
+      if (window.soundFX) window.soundFX.play('tap');
+    });
+
+    // Placement / Style Buttons (Merged/Borderless vs Separated/Border)
+    btnTitlePlacementMerged?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isTitle = (this.currentTitleBarMode !== 'trademark');
+      if (isTitle) {
+        this.titlePlacement = 'merged';
+        applyTitleLayout();
+      } else {
+        this.trademarkLayoutMode = 'borderless';
+        applyTrademarkLayout();
+      }
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('selection');
+      this._stagePending();
+    });
+
+    btnTitlePlacementSeparated?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isTitle = (this.currentTitleBarMode !== 'trademark');
+      if (isTitle) {
+        this.titlePlacement = 'separated';
+        applyTitleLayout();
+      } else {
+        this.trademarkLayoutMode = 'border';
+        applyTrademarkLayout();
+      }
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('selection');
+      this._stagePending();
+    });
+
+    // 3 Circle Option Buttons
+    document.querySelectorAll('.title-circle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const param = btn.getAttribute('data-param');
+        if (param) {
+          const isTitle = (this.currentTitleBarMode !== 'trademark');
+          if (isTitle) {
+            this.titleActiveParam = param;
+          } else {
+            this.trademarkActiveParam = param;
+          }
+          syncFloatingEditorUI();
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        }
+      });
+    });
+
+    // Shared Single Slider
+    sliderTitleUnified?.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      const isTitle = (this.currentTitleBarMode !== 'trademark');
+      if (isTitle) {
+        if (this.titleActiveParam === 'radius') {
+          this.titleCornerRadius = isNaN(val) ? 14 : val;
+        } else if (this.titleActiveParam === 'gap') {
+          this.titleGapDistance = isNaN(val) ? 8 : val;
+        } else if (this.titleActiveParam === 'width') {
+          this.titleWidthSize = isNaN(val) ? 100 : val;
+        }
+        applyTitleLayout();
+      } else {
+        if (this.trademarkActiveParam === 'radius') {
+          this.trademarkCornerRadius = isNaN(val) ? 14 : val;
+        } else if (this.trademarkActiveParam === 'gap') {
+          this.trademarkGapDistance = isNaN(val) ? 8 : val;
+        } else if (this.trademarkActiveParam === 'width') {
+          this.trademarkWidthSize = isNaN(val) ? 100 : val;
+        }
+        applyTrademarkLayout();
+      }
+      this._stagePending();
+    });
+
+    // Reset Button
+    btnFloatingResetTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isTitle = (this.currentTitleBarMode !== 'trademark');
+      if (isTitle) {
+        this.titlePlacement = 'merged';
+        this.titleCornerRadius = 14;
+        this.titleGapDistance = 8;
+        this.titleWidthSize = 100;
+        this.titleActiveParam = 'radius';
+        applyTitleLayout();
+        if (typeof showToast === 'function') {
+          showToast('Title layout reset to default!', 'info');
+        }
+      } else {
+        this.trademarkLayoutMode = 'borderless';
+        this.trademarkCornerRadius = 14;
+        this.trademarkGapDistance = 8;
+        this.trademarkWidthSize = 100;
+        this.trademarkActiveParam = 'radius';
+        applyTrademarkLayout();
+        if (typeof showToast === 'function') {
+          showToast('Trademark style reset to default!', 'info');
+        }
+      }
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('success');
+      this._stagePending();
+    });
+
+    // Outside dismiss for title/trademark card
+    document.addEventListener('click', (e) => {
+      if (floatingTitleCard && !floatingTitleCard.classList.contains('hidden')) {
+        const insideCard = floatingTitleCard.contains(e.target);
+        const insidePopover = document.getElementById('canvas-controls-popover')?.contains(e.target);
+        const insideTrigger = document.getElementById('controls-title-wrapper')?.contains(e.target) || document.getElementById('lock-grid-title')?.contains(e.target) || document.getElementById('btn-toggle-canvas-popover')?.contains(e.target);
+        const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
+        if (!insideCard && !insidePopover && !insideTrigger && !isClickOnThemeOrSidebar) {
+          floatingTitleCard.classList.add('hidden');
+        }
       }
     });
 
@@ -5359,10 +7408,24 @@ class SchedullyApp {
       btnTogglePopover.addEventListener('click', (e) => {
         e.stopPropagation();
         const isHidden = canvasPopover.classList.toggle('hidden');
-        if (isHidden && canvasRatioPopover) {
-          canvasRatioPopover.classList.add('hidden');
-        }
-        if (!canvasPopover.classList.contains('hidden')) {
+        document.body.classList.toggle('has-collapsed-controls', isHidden);
+        if (isHidden) {
+          if (canvasRatioPopover) canvasRatioPopover.classList.add('hidden');
+          if (floatingTitleCard) floatingTitleCard.classList.add('hidden');
+        } else {
+          // Close right side popovers to prevent overlapping on iPad Mini / small tablet
+          document.getElementById('schedule-quick-settings')?.classList.add('hidden');
+          document.getElementById('floating-add-course-card')?.classList.add('hidden');
+          document.getElementById('floating-font-style-card')?.classList.add('hidden');
+          document.getElementById('floating-days-time-card')?.classList.add('hidden');
+
+          // Auto-expand title / trademark card directly above when controls popover opens
+          if (floatingTitleCard) {
+            floatingTitleCard.classList.remove('hidden');
+            if (typeof this.syncFloatingEditorUI === 'function') {
+              this.syncFloatingEditorUI();
+            }
+          }
           setTimeout(window.syncGlassSliders, 20);
           setTimeout(window.syncGlassSliders, 120);
           setTimeout(window.syncGlassSliders, 360); // after popoverSpring animation (300ms) fully settles
@@ -5373,13 +7436,15 @@ class SchedullyApp {
       // Do NOT close when clicking sidebars, theme pickers, theme mode toggles, or bottom toolbar!
       document.addEventListener('click', (e) => {
         if (window.isTourActive) return;
-        const isClickInsidePopover = canvasPopover.contains(e.target) || (canvasRatioPopover && canvasRatioPopover.contains(e.target));
+        const isClickInsidePopover = canvasPopover.contains(e.target) || (canvasRatioPopover && canvasRatioPopover.contains(e.target)) || (floatingTitleCard && floatingTitleCard.contains(e.target));
         const isClickOnToggle = btnTogglePopover.contains(e.target);
-        const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
+        const isClickOnThemeOrSidebar = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot, #controls-title-wrapper, #lock-grid-title');
 
         if (!canvasPopover.classList.contains('hidden') && !isClickInsidePopover && !isClickOnToggle && !isClickOnThemeOrSidebar) {
           canvasPopover.classList.add('hidden');
+          document.body.classList.add('has-collapsed-controls');
           if (canvasRatioPopover) canvasRatioPopover.classList.add('hidden');
+          if (floatingTitleCard) floatingTitleCard.classList.add('hidden');
         }
       });
     }
@@ -5453,9 +7518,9 @@ class SchedullyApp {
         if (mobileExportBar) mobileExportBar.style.display = '';
       }
 
-      // Sync Mobile PiP on smartphone screens (<= 640px)
+      // Sync Mobile PiP on smartphone screens (<= 640px) - Only appear for Right Sidebar (Schedule)
       if (typeof this.syncMobilePipVisibility === 'function') {
-        this.syncMobilePipVisibility(!leftCollapsed || !rightCollapsed);
+        this.syncMobilePipVisibility(!rightCollapsed);
       }
     };
 
@@ -5504,14 +7569,17 @@ class SchedullyApp {
 
     btnToggleRight?.addEventListener('click', () => toggleRightSidebar(true));
     btnExpandRightFloating?.addEventListener('click', () => toggleRightSidebar(false));
+    document.getElementById('floating-courses-count-circle')?.addEventListener('click', () => toggleRightSidebar(false));
 
     // Floating Import Button & Popover Setup
     const btnFloatingImport = document.getElementById('btn-floating-import');
     const importMenuPopover = document.getElementById('import-menu-popover');
     const btnQuickImportTimetable = document.getElementById('btn-quick-import-timetable');
     const btnQuickImportWallpaper = document.getElementById('btn-quick-import-wallpaper');
+    const btnQuickImportFont = document.getElementById('btn-quick-import-font');
     const universalFileInput = document.getElementById('universal-file-input');
     const wallpaperImageInput = document.getElementById('wallpaper-image-input');
+    const customFontUploadInput = document.getElementById('custom-font-upload');
 
     if (btnFloatingImport && importMenuPopover) {
       btnFloatingImport.addEventListener('click', (e) => {
@@ -5543,8 +7611,73 @@ class SchedullyApp {
         importMenuPopover.classList.add('hidden');
         if (window.soundFX) window.soundFX.play('tap');
         if (wallpaperImageInput) {
+          wallpaperImageInput.value = '';
           wallpaperImageInput.click();
         }
+      });
+
+      // Quick Remove Wallpaper Action (Red X badge on wallpaper circle)
+      const btnQuickRemoveWallpaper = document.getElementById('btn-quick-remove-wallpaper');
+      btnQuickRemoveWallpaper?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        importMenuPopover.classList.add('hidden');
+        this.removeWallpaper();
+        if (window.soundFX) window.soundFX.play('trash');
+        if (window.haptics) window.haptics.trigger('medium');
+      });
+
+      // Quick Import Font Action (.ttf, .otf, .woff, .woff2)
+      btnQuickImportFont?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        importMenuPopover.classList.add('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+        if (customFontUploadInput) {
+          customFontUploadInput.click();
+        }
+      });
+    }
+
+    // Support / Coffee Modal Handlers
+    const btnAboutCoffee = document.getElementById('btn-about-coffee');
+    const coffeeModal = document.getElementById('coffee-modal');
+    const btnCloseCoffeeModal = document.getElementById('btn-close-coffee-modal');
+    const btnTabBmc = document.getElementById('btn-tab-bmc');
+    const btnTabTng = document.getElementById('btn-tab-tng');
+    const tabBmc = document.getElementById('support-tab-bmc');
+    const tabTng = document.getElementById('support-tab-tng');
+
+    if (btnAboutCoffee && coffeeModal) {
+      btnAboutCoffee.addEventListener('click', () => {
+        coffeeModal.classList.remove('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+      });
+    }
+    if (btnCloseCoffeeModal && coffeeModal) {
+      btnCloseCoffeeModal.addEventListener('click', () => {
+        coffeeModal.classList.add('hidden');
+      });
+    }
+    if (coffeeModal) {
+      coffeeModal.addEventListener('click', (e) => {
+        if (e.target === coffeeModal) {
+          coffeeModal.classList.add('hidden');
+        }
+      });
+    }
+    if (btnTabBmc && btnTabTng && tabBmc && tabTng) {
+      btnTabBmc.addEventListener('click', () => {
+        btnTabBmc.classList.add('active');
+        btnTabTng.classList.remove('active');
+        tabBmc.classList.remove('hidden');
+        tabTng.classList.add('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
+      });
+      btnTabTng.addEventListener('click', () => {
+        btnTabTng.classList.add('active');
+        btnTabBmc.classList.remove('active');
+        tabTng.classList.remove('hidden');
+        tabBmc.classList.add('hidden');
+        if (window.soundFX) window.soundFX.play('tap');
       });
     }
 
@@ -5630,14 +7763,14 @@ class SchedullyApp {
     setupSidebarSwipeGestures();
 
     // Add Course Form Submit
-    this.addCourseForm.addEventListener('submit', (e) => {
+    this.addCourseForm?.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      const code = this.inputCourseCode.value.trim().toUpperCase();
+      const code = this.inputCourseCode ? this.inputCourseCode.value.trim().toUpperCase() : '';
       if (!code) return;
 
-      let startTime = this.inputStartTime.value;
-      let endTime = this.inputEndTime.value;
+      let startTime = this.inputStartTime ? this.inputStartTime.value : '09:00';
+      let endTime = this.inputEndTime ? this.inputEndTime.value : '10:30';
       let periodNumber = undefined;
 
       if (this.axisMode === 'period' && this.inputPeriodSelect) {
@@ -5647,8 +7780,8 @@ class SchedullyApp {
         endTime = selOption ? (selOption.getAttribute('data-end') || '10:30') : '10:30';
       }
 
-      const courseType = this.inputType.value.trim();
-      const location = this.inputLocation.value.trim();
+      const courseType = this.inputType ? this.inputType.value.trim() : '';
+      const location = this.inputLocation ? this.inputLocation.value.trim() : '';
       const lecturer = this.inputLecturer ? this.inputLecturer.value.trim() : '';
       const group = this.inputGroup ? this.inputGroup.value.trim() : '';
 
@@ -5676,9 +7809,9 @@ class SchedullyApp {
         });
       });
 
-      this.inputCourseCode.value = '';
-      this.inputType.value = '';
-      this.inputLocation.value = '';
+      if (this.inputCourseCode) this.inputCourseCode.value = '';
+      if (this.inputType) this.inputType.value = '';
+      if (this.inputLocation) this.inputLocation.value = '';
       if (this.inputGroup) this.inputGroup.value = '';
 
       this.updateHistoryButtonUI();
@@ -6134,8 +8267,8 @@ class SchedullyApp {
     }
 
     // Auto-Resolve Clash Button
-    this.btnAutoResolve.addEventListener('click', () => {
-      const clashes = window.timetableEngine.detectClashes(this.classes);
+    this.btnAutoResolve?.addEventListener('click', () => {
+      const clashes = window.timetableEngine?.detectClashes ? window.timetableEngine.detectClashes(this.classes) : [];
       if (clashes.length > 0) {
         const target = clashes[0].c2;
         target.day = 'Friday';
@@ -6153,7 +8286,7 @@ class SchedullyApp {
     if (btnIgnoreClash) {
       btnIgnoreClash.addEventListener('click', () => {
         this.ignoreClashes = true;
-        this.clashAlert.classList.add('hidden');
+        if (this.clashAlert) this.clashAlert.classList.add('hidden');
         this.renderAll();
       });
     }
@@ -6273,16 +8406,16 @@ class SchedullyApp {
         wallpaperLayer.style.setProperty('filter', 'none', 'important');
       }
 
-      // Explicitly prevent any backdrop-filter blur and ensure full width on timetable container
+      // Explicitly prevent any backdrop-filter blur and faithfully preserve live user layout adjustments
       const timetableContainer = clone.querySelector('#lock-timetable-container');
       if (timetableContainer) {
         timetableContainer.style.setProperty('backdrop-filter', 'none', 'important');
         timetableContainer.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-        timetableContainer.style.setProperty('width', '100%', 'important');
-        timetableContainer.style.setProperty('min-width', '100%', 'important');
+        timetableContainer.style.setProperty('width', `${this.gridWidthVal || 100}%`, 'important');
         timetableContainer.style.setProperty('max-width', 'none', 'important');
-        timetableContainer.style.setProperty('transform', `translateY(${this.timetableOffsetY || 0}px) scale(${this.timetableScaleW || 1}, ${this.timetableScaleH || 1})`, 'important');
-        timetableContainer.style.setProperty('transform-origin', 'center top', 'important');
+        timetableContainer.style.setProperty('margin-left', `${this.gridXPosVal || 0}px`, 'important');
+        timetableContainer.style.setProperty('margin-top', `${this.gridYPosVal || 0}px`, 'important');
+        timetableContainer.style.setProperty('transform', 'none', 'important');
       }
 
       // Hide clock/date lockscreen widget while preserving exact layout height & Y-positioning
@@ -6581,24 +8714,7 @@ class SchedullyApp {
 
       // 8b. Trademark
       if (settings.showTrademark !== undefined) {
-        this.showTrademark = settings.showTrademark;
-        const toggleTrademark = document.getElementById('toggle-trademark');
-        if (toggleTrademark) {
-          toggleTrademark.querySelectorAll('.pill-btn').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-val') === (this.showTrademark ? 'yes' : 'no'));
-          });
-        }
-        const rowTrademark = document.getElementById('row-trademark-text');
-        const rowStyle = document.getElementById('row-trademark-style');
-        if (rowTrademark) {
-          rowTrademark.style.display = this.showTrademark ? 'flex' : 'none';
-        }
-        if (rowStyle) {
-          rowStyle.style.display = this.showTrademark ? 'flex' : 'none';
-        }
-        if (this.lockTrademarkFooter) {
-          this.lockTrademarkFooter.style.display = this.showTrademark ? 'inline-flex' : 'none';
-        }
+        this.setTrademarkVisibility(settings.showTrademark, false);
       }
       if (settings.trademarkText !== undefined) {
         this.updateTrademarkText(settings.trademarkText);
@@ -6752,6 +8868,28 @@ class SchedullyApp {
             b.classList.toggle('active', b.getAttribute('data-val') === (this.globalAdaptiveColor ? 'yes' : 'no'));
           });
         }
+      }
+
+      // 14. Title Placement & Geometry
+      if (settings.titlePlacement) this.titlePlacement = settings.titlePlacement;
+      if (settings.titleCornerRadius !== undefined) this.titleCornerRadius = settings.titleCornerRadius;
+      if (settings.titleGapDistance !== undefined) this.titleGapDistance = settings.titleGapDistance;
+      if (settings.titleWidthSize !== undefined) this.titleWidthSize = settings.titleWidthSize;
+      if (typeof this.applyTitleLayout === 'function') {
+        this.applyTitleLayout();
+      }
+
+      // 15. Trademark Layout & Geometry
+      if (settings.trademarkLayoutMode) this.trademarkLayoutMode = settings.trademarkLayoutMode;
+      if (settings.trademarkCornerRadius !== undefined) this.trademarkCornerRadius = settings.trademarkCornerRadius;
+      if (settings.trademarkGapDistance !== undefined) this.trademarkGapDistance = settings.trademarkGapDistance;
+      if (settings.trademarkWidthSize !== undefined) this.trademarkWidthSize = settings.trademarkWidthSize;
+      if (typeof this.applyTrademarkLayout === 'function') {
+        this.applyTrademarkLayout();
+      }
+
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') {
+        this.syncDaysAndTimeControlsUI();
       }
 
       this.renderTimetableGrid();
@@ -7609,7 +9747,17 @@ class SchedullyApp {
       globalCourseRoom: this.globalCourseRoom !== undefined ? this.globalCourseRoom : true,
       globalCourseLecturer: this.globalCourseLecturer !== undefined ? this.globalCourseLecturer : true,
       globalCourseGroup: this.globalCourseGroup !== undefined ? this.globalCourseGroup : true,
-      globalAdaptiveColor: this.globalAdaptiveColor !== undefined ? this.globalAdaptiveColor : true
+      globalAdaptiveColor: this.globalAdaptiveColor !== undefined ? this.globalAdaptiveColor : true,
+
+      // Title & Trademark Layout & Geometry
+      titlePlacement: this.titlePlacement || 'merged',
+      titleCornerRadius: this.titleCornerRadius !== undefined ? this.titleCornerRadius : 14,
+      titleGapDistance: this.titleGapDistance !== undefined ? this.titleGapDistance : 8,
+      titleWidthSize: this.titleWidthSize !== undefined ? this.titleWidthSize : 100,
+      trademarkLayoutMode: this.trademarkLayoutMode || 'borderless',
+      trademarkCornerRadius: this.trademarkCornerRadius !== undefined ? this.trademarkCornerRadius : 14,
+      trademarkGapDistance: this.trademarkGapDistance !== undefined ? this.trademarkGapDistance : 8,
+      trademarkWidthSize: this.trademarkWidthSize !== undefined ? this.trademarkWidthSize : 100
     };
   }
 
@@ -8343,7 +10491,8 @@ class SchedullyApp {
       timetableContainer.style.width = `${this.gridWidthVal || 100}%`;
       timetableContainer.style.transform = 'none';
       timetableContainer.style.marginTop = `${this.gridYPosVal || 0}px`;
-      timetableContainer.style.transition = 'margin-top 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease';
+      timetableContainer.style.marginLeft = `${this.gridXPosVal || 0}px`;
+      timetableContainer.style.transition = 'margin-top 0.15s ease, margin-left 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease';
       timetableContainer.style.borderRadius = this.tableCornerStyle === 'sharp' ? '0px' : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8) + 'px';
       timetableContainer.style.overflow = 'hidden';
       timetableContainer.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
@@ -8452,17 +10601,33 @@ class SchedullyApp {
       }
     }
 
+    const masterFontScale = (this.fontScaleAll !== undefined && this.fontScaleAll !== null) ? this.fontScaleAll : (this.gridFontScale || 1.0);
+    const cardFontScale = (this.fontScaleCards !== undefined && this.fontScaleCards !== null) ? this.fontScaleCards : 1.0;
+    const headerFontScale = (this.fontScaleHeader !== undefined && this.fontScaleHeader !== null) ? this.fontScaleHeader : 1.0;
+    const titleFontScale = (this.fontScaleTitle !== undefined && this.fontScaleTitle !== null) ? this.fontScaleTitle : 1.0;
+    const tmFontScale = (this.fontScaleTrademark !== undefined && this.fontScaleTrademark !== null) ? this.fontScaleTrademark : 1.0;
+
+    const effectiveCardScale = masterFontScale * cardFontScale;
+    const effectiveHeaderScale = masterFontScale * headerFontScale;
+    const effectiveTitleScale = masterFontScale * titleFontScale;
+    const effectiveTmScale = masterFontScale * tmFontScale;
+
+    const headerFontSize = Math.max(5, Math.round(11 * effectiveHeaderScale * 10) / 10);
+    const timeFontSize = Math.max(4.5, Math.round(9.5 * effectiveHeaderScale * 10) / 10);
+
     const gridFragment = document.createDocumentFragment();
 
     const corner = document.createElement('div');
     corner.className = 'exact-grid-cell-header';
     corner.innerText = '';
+    corner.style.fontSize = `${headerFontSize}px`;
     gridFragment.appendChild(corner);
 
     days.forEach(d => {
       const headerCell = document.createElement('div');
       headerCell.className = 'exact-grid-cell-header';
       headerCell.innerText = window.SchedullyI18n ? window.SchedullyI18n.getDayName(d) : d;
+      headerCell.style.fontSize = `${headerFontSize}px`;
       gridFragment.appendChild(headerCell);
     });
 
@@ -8471,6 +10636,7 @@ class SchedullyApp {
       timeCell.className = 'exact-grid-cell-time';
       timeCell.style.height = `${rowH}px`;
       timeCell.style.boxSizing = 'border-box';
+      timeCell.style.fontSize = `${timeFontSize}px`;
       timeCell.innerHTML = `<span>${tObj.topText}</span>${tObj.bottomText ? `<span>${tObj.bottomText}</span>` : ''}`;
       gridFragment.appendChild(timeCell);
 
@@ -8577,23 +10743,23 @@ class SchedullyApp {
             if (shouldShowTime) lineCount += (courseTimeMode === 'both' ? 2 : 1);
           }
 
-          // Dynamically compute adaptive max font size based on cell height
+          // Dynamically compute adaptive max font size based on cell height & font scale
           const numDays = days.length;
           const isWatch = (this.activeDevice === 'watch');
           const isPhone = (this.activeDevice === 'phone');
           const widthScale = (this.gridWidthVal || 100) / 100;
+          const fontScale = (this.gridFontScale !== undefined && this.gridFontScale !== null) ? this.gridFontScale : 1.0;
           
           const fontFactor = isWatch ? 28 : (isPhone ? (widthScale < 0.8 ? 38 : 46) : 60);
-          const maxAdaptiveFont = Math.min(16, Math.max(4.5, Math.round(fontFactor / numDays)));
-          const heightAdaptiveFont = Math.min(16, Math.max(4.5, Math.floor(cardHeightPx / (lineCount * 1.2))));
+          const maxAdaptiveFont = Math.min(22, Math.max(3.5, Math.round(fontFactor / numDays)));
+          const heightAdaptiveFont = Math.min(22, Math.max(3.5, Math.floor(cardHeightPx / (lineCount * 1.15))));
           const effectiveMaxFont = Math.min(maxAdaptiveFont, heightAdaptiveFont);
 
-          const codeFontSize = isWatch
-            ? Math.min(7.5, Math.max(5.5, effectiveMaxFont))
-            : Math.max(8.0, Math.min(this.gridFontSizeVal || 9, effectiveMaxFont));
-          const detailFontSize = isWatch
-            ? Math.min(6.5, Math.max(4.8, codeFontSize - 0.8))
-            : Math.max(7.0, codeFontSize - 1.0);
+          const baseCodeFont = isWatch ? 6.5 : (isPhone ? 9.2 : 10.5);
+          const baseDetailFont = isWatch ? 5.5 : (isPhone ? 7.8 : 9.0);
+
+          const codeFontSize = Math.max(3.0, Math.round(Math.min(baseCodeFont * effectiveCardScale, effectiveMaxFont * effectiveCardScale) * 10) / 10);
+          const detailFontSize = Math.max(2.5, Math.round(Math.min(baseDetailFont * effectiveCardScale, Math.max(3.0, codeFontSize - 0.8)) * 10) / 10);
 
           let timeDisplayText = formatStart;
           if (courseTimeMode === 'both') {
@@ -8743,6 +10909,20 @@ class SchedullyApp {
 
     this.universalTimetableGrid.innerHTML = '';
     this.universalTimetableGrid.appendChild(gridFragment);
+
+    if (this.lockTitleText) {
+      this.lockTitleText.style.fontSize = `${Math.max(7, Math.round(13 * effectiveTitleScale * 10) / 10)}px`;
+    }
+    if (this.lockTrademarkText) {
+      this.lockTrademarkText.style.fontSize = `${Math.max(5.5, Math.round(9.5 * effectiveTmScale * 10) / 10)}px`;
+    }
+
+    if (typeof this.applyTitleLayout === 'function') {
+      this.applyTitleLayout();
+    }
+    if (typeof this.applyTrademarkLayout === 'function') {
+      this.applyTrademarkLayout();
+    }
 
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
@@ -10759,6 +12939,9 @@ function initThemeStyleEngine() {
   const btnDefault = document.getElementById('btn-theme-style-default');
   const btnGlass = document.getElementById('btn-theme-style-glass');
   const styleLabel = document.getElementById('active-theme-style-label');
+  const btnFloatingDefault = document.getElementById('btn-floating-style-default');
+  const btnFloatingGlass = document.getElementById('btn-floating-style-glass');
+  const floatingStyleLabel = document.getElementById('floating-active-theme-style-label');
   const glassPresetsSection = document.getElementById('liquid-glass-presets-section');
 
   const applyThemeStyle = (style) => {
@@ -10770,14 +12953,20 @@ function initThemeStyleEngine() {
       document.body.classList.remove('theme-style-glass');
       if (btnDefault) btnDefault.classList.add('active');
       if (btnGlass) btnGlass.classList.remove('active');
+      if (btnFloatingDefault) btnFloatingDefault.classList.add('active');
+      if (btnFloatingGlass) btnFloatingGlass.classList.remove('active');
       if (styleLabel) styleLabel.textContent = 'Default';
+      if (floatingStyleLabel) floatingStyleLabel.textContent = 'DEFAULT';
       if (glassPresetsSection) glassPresetsSection.classList.add('disabled-preset-section');
     } else {
       document.body.classList.remove('theme-style-default');
       document.body.classList.add('theme-style-glass');
       if (btnDefault) btnDefault.classList.remove('active');
       if (btnGlass) btnGlass.classList.add('active');
+      if (btnFloatingDefault) btnFloatingDefault.classList.remove('active');
+      if (btnFloatingGlass) btnFloatingGlass.classList.add('active');
       if (styleLabel) styleLabel.textContent = 'Glass';
+      if (floatingStyleLabel) floatingStyleLabel.textContent = '✦ GLASS';
       if (glassPresetsSection) glassPresetsSection.classList.remove('disabled-preset-section');
     }
 

@@ -131,13 +131,27 @@ class SchedullyFirebaseService {
     }
   }
 
-  // MANUAL SAVE — only called when user clicks the Save button or staged pending triggers.
-  // Sets _isSaving so the listener ignores the echo of this write.
+  // Helper to deep sanitize objects (replaces undefined with null since Firebase RTDB rejects undefined)
+  _sanitizeData(obj) {
+    if (obj === undefined) return null;
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+      return obj.map(item => this._sanitizeData(item));
+    }
+    const clean = {};
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      clean[key] = val === undefined ? null : this._sanitizeData(val);
+    }
+    return clean;
+  }
+
+  // MANUAL SAVE — called when user triggers save or debounced auto-save
   async saveUserData(userData) {
     if (!this.db || !this.currentUser) return false;
     try {
       this._isSaving = true;
-      await this.db.ref('users/' + this.currentUser.uid).set({
+      const cleanPayload = this._sanitizeData({
         classes: userData.classes || [],
         presets: userData.presets || {},
         activePreset: userData.activePreset || 'default',
@@ -152,10 +166,11 @@ class SchedullyFirebaseService {
         activeDevice: userData.activeDevice || userData.settings?.activeDevice || 'phone',
         zoomScale: userData.zoomScale || userData.settings?.zoomScale || 0.85,
         updatedAt: new Date().toISOString(),
-        userEmail: this.currentUser.email,
-        displayName: this.currentUser.displayName
+        userEmail: this.currentUser.email || '',
+        displayName: this.currentUser.displayName || ''
       });
-      // Give Firebase time to deliver the echo before we stop ignoring it
+
+      await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
       setTimeout(() => { this._isSaving = false; }, 1500);
       return true;
     } catch (error) {
@@ -170,7 +185,7 @@ class SchedullyFirebaseService {
     if (!this.db || !this.currentUser) return false;
     try {
       this._isSaving = true;
-      const defaultState = {
+      const defaultState = this._sanitizeData({
         classes: [],
         presets: {
           default: {
@@ -197,9 +212,9 @@ class SchedullyFirebaseService {
         activeDevice: 'phone',
         zoomScale: 0.85,
         updatedAt: new Date().toISOString(),
-        userEmail: this.currentUser.email,
-        displayName: this.currentUser.displayName
-      };
+        userEmail: this.currentUser.email || '',
+        displayName: this.currentUser.displayName || ''
+      });
       await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
       setTimeout(() => { this._isSaving = false; }, 1500);
       return true;
