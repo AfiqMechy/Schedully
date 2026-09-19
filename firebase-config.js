@@ -53,9 +53,22 @@ class SchedullyFirebaseService {
   }
 
   init() {
+    if (this._initialized && this.auth && this.db) return;
     const config = this.getSavedConfig();
-    if (!config || !config.apiKey || typeof firebase === 'undefined') {
-      console.log("Schedully: Waiting for Firebase Compat SDK / Config.");
+    if (!config || !config.apiKey || typeof firebase === 'undefined' || typeof firebase.database === 'undefined' || typeof firebase.auth === 'undefined') {
+      console.log("Schedully: Waiting for Firebase Compat SDKs / Config...");
+      if (typeof window !== 'undefined' && !this._retryScheduled) {
+        this._retryScheduled = true;
+        const retry = () => {
+          if (!this._initialized || !this.db) this.init();
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', retry, { once: true });
+        }
+        window.addEventListener('load', retry, { once: true });
+        setTimeout(retry, 400);
+        setTimeout(retry, 1200);
+      }
       return;
     }
 
@@ -77,6 +90,8 @@ class SchedullyFirebaseService {
         this.db = firebase.database();
       }
 
+      this._initialized = true;
+
       this.auth.onAuthStateChanged(async (user) => {
         this.currentUser = user;
         if (this.onUserChangedCallback) {
@@ -92,6 +107,7 @@ class SchedullyFirebaseService {
         }
       });
     } catch (err) {
+      this._initialized = false;
       console.error("Firebase Initialization Error:", err);
     }
   }

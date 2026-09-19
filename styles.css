@@ -5969,21 +5969,22 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
    AUTHENTIC DYNAMIC ISLAND HARDWARE MODULE (1:1 Reference Match)
    ═══════════════════════════════════════════════════════════════ */
 .phone-camera-dot {
-  width: 92px;
-  height: 22px;
+  width: 96px;
+  height: 24px;
   background: #000000;
   border-radius: 9999px;
-  margin: 0 auto 14px auto;
+  margin: 0 auto 16px auto;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 9px;
+  padding: 0 10px;
   box-sizing: border-box;
   box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.5);
   user-select: none;
   pointer-events: none;
   z-index: 10;
+  flex-shrink: 0;
   transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
               height 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
               border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), 
@@ -6062,18 +6063,32 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
 /* LOCK SCREEN CLOCK HEADER WITH SMOOTH CONTRAST TRANSITION */
 .phone-lock-header {
   text-align: center;
-  margin-bottom: 18px;
+  margin-top: 0;
+  margin-bottom: 14px;
   color: var(--m3-sys-text-primary, #111827);
   transition: color 0.25s ease, opacity 0.35s ease, transform 0.35s ease;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.lock-date { font-size: 13px; font-weight: 600; opacity: 0.85; }
+.lock-date { 
+  font-size: 13.5px; 
+  font-weight: 600; 
+  opacity: 0.9;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
 
 .lock-time {
   font-family: var(--font-sans);
   font-size: 58px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
 }
 
 /* LOCKSCREEN TIMETABLE CONTAINER (Liquid Glass Optical Styling) */
@@ -17243,13 +17258,13 @@ body.dark-mode .floating-reset-days-btn,
 .floating-palette-card {
   left: max(14px, env(safe-area-inset-left, 14px)) !important;
   right: auto !important;
-  bottom: max(64px, calc(env(safe-area-inset-bottom, 0px) + 64px)) !important;
+  bottom: max(114px, calc(env(safe-area-inset-bottom, 0px) + 114px)) !important;
   top: max(14px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
   transform: none !important;
   z-index: 100 !important;
   width: 248px !important;
   max-width: min(268px, calc(100vw - 28px)) !important;
-  max-height: calc(100dvh - 78px) !important;
+  max-height: calc(100dvh - 128px) !important;
   height: fit-content !important;
   margin-top: auto !important;
   margin-bottom: 0 !important;
@@ -18872,6 +18887,22 @@ body.theme-style-glass .dark .floating-days-hero-icon {
     padding-bottom: max(64px, env(safe-area-inset-bottom, 64px)) !important;
     padding-left: max(44px, env(safe-area-inset-left, 44px)) !important;
     padding-right: max(44px, env(safe-area-inset-right, 44px)) !important;
+  }
+
+  /* ⚡ Mobile Glass Smoothness Optimization: Reduce GPU fillrate overhead & jank */
+  .top-action-pill,
+  #bottom-floating-pill-bar,
+  #floating-right-actions-column button,
+  #floating-undo-redo-row button,
+  #floating-palette-circle-island,
+  .m3-lock-timetable-container,
+  .m3-parsing-toast-banner,
+  .m3-floating-preset-island {
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    transform: translateZ(0);
+    will-change: transform;
+    contain: layout paint;
   }
 }
 
