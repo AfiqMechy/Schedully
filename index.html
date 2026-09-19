@@ -235,11 +235,11 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260919_v595">
+<link rel="stylesheet" href="styles.css?v=20260919_v596">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260919_v595" defer></script>
+<script src="firebase-config.js?v=20260919_v596" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -1631,19 +1631,13 @@
        FLOATING ADD COURSE CARD (Multi-Step: Step 1 Course Info -> Step 2 Schedule)
        ═══════════════════════════════════════════════════════════════ -->
   <div id="floating-add-course-card" class="floating-font-card floating-add-course-card hidden pointer-events-auto" aria-label="Add A Course Wizard">
-    <!-- Header: Exit (X) & Section Title with Quick Import Button -->
+    <!-- Header: Exit (X) & Section Title -->
     <div class="flex items-center justify-between mb-2 gap-2">
       <button type="button" id="btn-close-floating-add-course" class="floating-card-close-btn" title="Exit" aria-label="Exit">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
-      <div class="flex items-center gap-1.5">
-        <button type="button" id="btn-add-course-header-import" class="add-course-header-import-btn flex items-center gap-1 py-1 px-2.5 rounded-full font-extrabold text-[10.5px] transition-all cursor-pointer" title="Import Timetable">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <span data-i18n="import">Import</span>
-        </button>
-        <div class="floating-card-title-pill">
-          <span id="floating-add-course-title-text" class="text-xs font-bold text-gray-800 dark:text-gray-100" data-i18n="addCourse">Add A Course</span>
-        </div>
+      <div class="floating-card-title-pill">
+        <span id="floating-add-course-title-text" class="text-xs font-bold text-gray-800 dark:text-gray-100" data-i18n="addCourse">Add A Course</span>
       </div>
     </div>
 
@@ -2762,13 +2756,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260919_v595"></script>
+  <script src="app_v3.js?v=20260919_v596"></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=595').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=596').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });

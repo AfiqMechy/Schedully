@@ -6815,7 +6815,6 @@ class SchedullyApp {
         }
       };
       document.getElementById('btn-add-course-quick-import')?.addEventListener('click', handleAddCourseImportClick);
-      document.getElementById('btn-add-course-header-import')?.addEventListener('click', handleAddCourseImportClick);
 
       btnFloatingCourseStep1Tab?.addEventListener('click', (e) => {
         e.stopPropagation();

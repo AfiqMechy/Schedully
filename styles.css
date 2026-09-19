@@ -18116,30 +18116,6 @@ body.dark-mode #floating-add-course-circle-island,
   animation: floatingCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
 }
 
-/* Header Import Action Button */
-.add-course-header-import-btn {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 15%, transparent) !important;
-  color: var(--m3-sys-color-primary, #2563EB) !important;
-  border: 1px solid color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 30%, transparent) !important;
-}
-
-.add-course-header-import-btn:hover {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 25%, transparent) !important;
-  transform: scale(1.03);
-}
-
-.add-course-header-import-btn:active {
-  transform: scale(0.96);
-}
-
-body.dark-mode .add-course-header-import-btn,
-.theme-dark .add-course-header-import-btn,
-.dark .add-course-header-import-btn {
-  background: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 20%, transparent) !important;
-  color: var(--m3-sys-color-primary, #60A5FA) !important;
-  border-color: color-mix(in srgb, var(--m3-sys-color-primary, #3B82F6) 35%, transparent) !important;
-}
-
 /* Step Indicator Tabs Bar */
 .floating-course-step-tabs {
   background: rgba(0, 0, 0, 0.05) !important;
