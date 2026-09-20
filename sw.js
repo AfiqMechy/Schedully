@@ -1,8 +1,8 @@
-const CACHE_NAME = 'schedully-cache-v649';
+const CACHE_NAME = 'schedully-cache-v650';
 const STATIC_ASSETS = [
-  '/styles.css?v=20260920_v649',
-  '/app_v3.js?v=20260920_v649',
-  '/firebase-config.js?v=20260920_v649',
+  '/styles.css?v=20260920_v650',
+  '/app_v3.js?v=20260920_v650',
+  '/firebase-config.js?v=20260920_v650',
   '/ocr_parser.js?v=20260919_v602',
   '/ics_csv_parser_v3.js',
   '/timetable_engine.js?v=20260907_v471',
@@ -43,7 +43,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request).then((response) => {
         if (response && response.ok) {
-          // Clone BEFORE body is consumed, then cache the clone
           const toCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
         }
@@ -51,20 +50,19 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => caches.match(event.request))
     );
   } else {
-    // Cache-first for assets: serve from cache instantly, update cache in background
+    // Cache-first for assets: serve from cache instantly, update cache in background.
+    // [Fix 7] Use ignoreSearch:true so versioned URLs (e.g. styles.css?v=123) still
+    // hit the cache even if the cached entry was stored without a query string.
     event.respondWith(
-      caches.match(event.request).then((cached) => {
-        // Always attempt a background network update
+      caches.match(event.request, { ignoreSearch: true }).then((cached) => {
         const networkUpdate = fetch(event.request).then((response) => {
           if (response && response.ok) {
-            // Clone BEFORE returning to browser so we can cache AND serve
             const toCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
           }
           return response;
         }).catch(() => null);
 
-        // Serve cached immediately if available; otherwise wait for network
         return cached || networkUpdate;
       })
     );

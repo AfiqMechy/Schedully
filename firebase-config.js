@@ -112,14 +112,28 @@ class SchedullyFirebaseService {
 
       this.auth = firebase.auth();
       this.provider = new firebase.auth.GoogleAuthProvider();
-      // Prompt account selector every time so switching accounts is seamless
-      this.provider.setCustomParameters({
-        prompt: 'select_account'
+
+      // [Fix 4] Explicit LOCAL persistence — user stays signed in across browser sessions
+      this.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => {
+        console.warn("Schedully Firebase: Could not set auth persistence:", e);
       });
+
+      // Prompt account selector every time so switching accounts is seamless
+      this.provider.setCustomParameters({ prompt: 'select_account' });
 
       if (typeof firebase.database === 'function') {
         try {
           this.db = firebase.database();
+
+          // [Fix 3] Monitor connection state via Firebase special .info/connected ref.
+          // This lets the app detect offline/online transitions and log sync status.
+          // Firebase RTDB automatically queues writes when offline and syncs on reconnect.
+          this.db.ref('.info/connected').on('value', (snap) => {
+            this._isOnline = snap.val() === true;
+            console.log(this._isOnline
+              ? "Schedully Firebase: Connected ✓"
+              : "Schedully Firebase: Offline — will auto-sync when reconnected");
+          });
         } catch (e) {
           console.warn("RTDB init notice:", e);
         }
@@ -270,6 +284,7 @@ class SchedullyFirebaseService {
     if (!this.currentUser) return false;
     try {
       this._isSaving = true;
+      const newTimestamp = new Date().toISOString(); // [Fix 5] used for smart merge check
       const cleanPayload = this._sanitizeData({
         classes: userData.classes || [],
         presets: userData.presets || {},
@@ -284,22 +299,35 @@ class SchedullyFirebaseService {
         language: userData.language || userData.settings?.language || 'en',
         activeDevice: userData.activeDevice || userData.settings?.activeDevice || 'phone',
         zoomScale: userData.zoomScale || userData.settings?.zoomScale || 0.85,
-        updatedAt: new Date().toISOString(),
+        updatedAt: newTimestamp,
         userEmail: this.currentUser.email || '',
         displayName: this.currentUser.displayName || ''
       });
 
       let saved = false;
 
-      // 1. Save to Realtime Database (Primary)
+      // [Fix 5] Smart save to Realtime Database: check cloud timestamp before overwriting
       if (this.db) {
         try {
+          // Only check timestamp if we have a cloud record already
+          const tsSnapshot = await this.db.ref('users/' + this.currentUser.uid + '/updatedAt').once('value');
+          const cloudTimestamp = tsSnapshot.val();
+
+          if (cloudTimestamp && cloudTimestamp > newTimestamp) {
+            // Cloud is newer (e.g. saved on another device milliseconds ago) — skip to avoid overwrite
+            console.warn("Schedully Firebase: Cloud data is newer than local. Skipping save to protect data.");
+            setTimeout(() => { this._isSaving = false; }, 300);
+            return false;
+          }
+
+          // Our data is latest — safe to write
           await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
           saved = true;
         } catch (dbErr) {
-          console.warn("RTDB save warning:", dbErr);
+          console.warn("Schedully Firebase: RTDB save warning:", dbErr);
           if (dbErr && (dbErr.message || '').includes('permission_denied')) {
-            console.warn("Firebase Security Rules notice: Realtime Database rules need '.write': 'auth != null' in Firebase Console.");
+            console.warn("Schedully Firebase: Set Security Rules in Firebase Console → Realtime Database → Rules:\n" +
+              '{"rules":{"users":{"$uid":{".read":"auth != null && auth.uid === $uid",".write":"auth != null && auth.uid === $uid"}}}}');
           }
         }
       }
@@ -308,7 +336,7 @@ class SchedullyFirebaseService {
       return saved;
     } catch (error) {
       this._isSaving = false;
-      console.error("Error saving data to Firebase:", error);
+      console.error("Schedully Firebase: Error saving data:", error);
       return false;
     }
   }
@@ -372,5 +400,27 @@ class SchedullyFirebaseService {
   }
 }
 
-// Global Singleton Instance
-window.schedullyFirebase = new SchedullyFirebaseService();
+// ─── Global Singleton ──────────────────────────────────────────────────────
+// [Fix 2] Use DOMContentLoaded guard to ensure Firebase SDK scripts have executed
+// before SchedullyFirebaseService is instantiated. This prevents the race condition
+// that breaks the app when served over HTTP (GitHub Pages, Vercel, Netlify).
+(function () {
+  function createInstance() {
+    if (typeof firebase === 'undefined' || typeof firebase.auth === 'undefined') {
+      // SDK not ready yet — defer to after load event
+      console.warn("Schedully Firebase: SDK not ready at DOMContentLoaded. Deferring to load event...");
+      window.addEventListener('load', function () {
+        window.schedullyFirebase = new SchedullyFirebaseService();
+      }, { once: true });
+      return;
+    }
+    window.schedullyFirebase = new SchedullyFirebaseService();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', createInstance, { once: true });
+  } else {
+    // DOM already loaded (script placed at bottom of body — this is the normal path)
+    createInstance();
+  }
+})();

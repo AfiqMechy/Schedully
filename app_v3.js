@@ -237,12 +237,12 @@ class SchedullyApp {
     this.loadFromLocal();
     if (!this.classes || this.classes.length === 0) {
       const defaultStarterClasses = [
-        { id: 'c_default_1', name: 'Instrumentation & Measurement', code: 'KIG 3001', day: 'Mon', start: '09:00', end: '10:30', room: 'Bilik Kuliah 101', instructor: 'Dr. Smith', color: '#E07A5F' },
-        { id: 'c_default_2', name: 'Fluid Mechanics', code: 'KIG 3009', day: 'Tue', start: '09:00', end: '10:30', room: 'Bilik Kuliah 102', instructor: 'Prof. Davis', color: '#3D405B' },
-        { id: 'c_default_3', name: 'Control Systems', code: 'KIG 3010', day: 'Wed', start: '09:00', end: '10:30', room: 'Bilik Kuliah 103', instructor: 'Dr. Alan', color: '#81B29A' },
-        { id: 'c_default_4', name: 'Thermodynamics', code: 'KIG 3003', day: 'Thu', start: '11:00', end: '12:30', room: 'Bilik Kuliah 104', instructor: 'Ms. Emily', color: '#F2CC8F' },
-        { id: 'c_default_5', name: 'Engineering Design', code: 'GQH 0013', day: 'Fri', start: '08:00', end: '09:30', room: 'Online Lecture', instructor: 'Mr. Leo', color: '#B5838D' },
-        { id: 'c_default_6', name: 'Engineering Lab', code: 'KIG 3003', day: 'Sat', start: '08:00', end: '09:30', room: 'Mechanical Lab', instructor: 'Speaker', color: '#2A9D8F' }
+        { id: 'c_default_1', title: 'Instrumentation & Measurement', name: 'Instrumentation & Measurement', code: 'KIG 3001', day: 'Mon', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 101', lecturer: 'Dr. Smith', instructor: 'Dr. Smith', color: '#E07A5F', customColor: '#E07A5F' },
+        { id: 'c_default_2', title: 'Fluid Mechanics', name: 'Fluid Mechanics', code: 'KIG 3009', day: 'Tue', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 102', lecturer: 'Prof. Davis', instructor: 'Prof. Davis', color: '#3D405B', customColor: '#3D405B' },
+        { id: 'c_default_3', title: 'Control Systems', name: 'Control Systems', code: 'KIG 3010', day: 'Wed', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 103', lecturer: 'Dr. Alan', instructor: 'Dr. Alan', color: '#81B29A', customColor: '#81B29A' },
+        { id: 'c_default_4', title: 'Thermodynamics', name: 'Thermodynamics', code: 'KIG 3003', day: 'Thu', startTime: '11:00', endTime: '12:30', room: 'Bilik Kuliah 104', lecturer: 'Ms. Emily', instructor: 'Ms. Emily', color: '#F2CC8F', customColor: '#F2CC8F' },
+        { id: 'c_default_5', title: 'Engineering Design', name: 'Engineering Design', code: 'GQH 0013', day: 'Fri', startTime: '08:00', endTime: '09:30', room: 'Online Lecture', lecturer: 'Mr. Leo', instructor: 'Mr. Leo', color: '#B5838D', customColor: '#B5838D' },
+        { id: 'c_default_6', title: 'Engineering Lab', name: 'Engineering Lab', code: 'KIG 3003', day: 'Sat', startTime: '08:00', endTime: '09:30', room: 'Mechanical Lab', lecturer: 'Speaker', instructor: 'Speaker', color: '#2A9D8F', customColor: '#2A9D8F' }
       ];
       this.classes = [...defaultStarterClasses];
       if (this.presets && this.presets.default) {
@@ -7171,9 +7171,17 @@ class SchedullyApp {
       const showSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
       if (leftContainer) {
         leftContainer.classList.toggle('hidden', leftTools.length === 0 || !showSliders);
+        leftContainer.classList.toggle('sliders-toggled-hidden', !showSliders);
+        if (showSliders && leftTools.length > 0) {
+          leftContainer.classList.remove('hidden', 'sliders-toggled-hidden');
+        }
       }
       if (rightContainer) {
         rightContainer.classList.toggle('hidden', rightTools.length === 0 || !showSliders);
+        rightContainer.classList.toggle('sliders-toggled-hidden', !showSliders);
+        if (showSliders && rightTools.length > 0) {
+          rightContainer.classList.remove('hidden', 'sliders-toggled-hidden');
+        }
       }
 
       if (leftTools.length > 0) updateSideSliderUI('left', false);
@@ -10037,15 +10045,9 @@ class SchedullyApp {
         }
       }
       if (settings.showSideSliders !== undefined) {
-        try { localStorage.setItem('schedully_show_side_sliders', settings.showSideSliders ? 'yes' : 'no'); } catch (e) {}
-        const toggleSide = document.getElementById('toggle-side-sliders');
-        if (toggleSide) {
-          toggleSide.querySelectorAll('.pill-btn').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-val') === (settings.showSideSliders ? 'yes' : 'no'));
-          });
+        if (typeof this.setSideSliders === 'function') {
+          this.setSideSliders(settings.showSideSliders, true);
         }
-        const sliders = document.querySelectorAll('.canvas-side-slider-container');
-        sliders.forEach(s => s.classList.toggle('hidden', !settings.showSideSliders));
       }
       if (settings.soundEnabled !== undefined) {
         try { localStorage.setItem('schedully_sound_enabled', settings.soundEnabled ? 'yes' : 'no'); } catch (e) {}
@@ -10491,7 +10493,19 @@ class SchedullyApp {
     try {
       const saved = localStorage.getItem('schedully_classes') || localStorage.getItem('timefactory_classes');
       if (saved) {
-        this.classes = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          this.classes = parsed.filter(Boolean).map(c => ({
+            ...c,
+            startTime: c.startTime || c.start || '09:00',
+            endTime: c.endTime || c.end || '10:30',
+            code: c.code || c.title || c.name || 'Course',
+            title: c.title || c.name || c.code || 'Course',
+            day: c.day || 'Mon',
+            color: c.color || c.customColor || '#3B82F6',
+            customColor: c.customColor || c.color || '#3B82F6'
+          }));
+        }
         if (Array.isArray(this.classes) && this.classes.length > 0) {
           const normalizeDay = (d) => {
             if (!d) return 'Mon';
@@ -11976,14 +11990,17 @@ class SchedullyApp {
         slotCell.style.boxSizing = 'border-box';
         slotCell.style.position = 'relative';
 
-        const matchesInCell = this.classes.filter(c => {
-          const dayMatch = c.day.toLowerCase().startsWith(day.toLowerCase());
+        const matchesInCell = (this.classes || []).filter(c => {
+          if (!c) return false;
+          const cDay = String(c.day || 'Mon');
+          const dayMatch = cDay.toLowerCase().startsWith(day.toLowerCase());
           if (tObj.isPeriod) {
             if (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) {
               return dayMatch && (c.periodNumber === tObj.period);
             }
           }
-          const [sh] = c.startTime.split(':').map(Number);
+          const sTime = String(c.startTime || c.start || '08:00');
+          const [sh] = sTime.split(':').map(Number);
           return dayMatch && (sh === tObj.hour);
         });
 
@@ -11992,8 +12009,10 @@ class SchedullyApp {
           const leftPercent = (idx / totalInCell) * 100;
           const widthPercent = 100 / totalInCell;
 
-          const [sh, sm] = matched.startTime.split(':').map(Number);
-          let [eh, em] = matched.endTime.split(':').map(Number);
+          const sTime = String(matched.startTime || matched.start || '08:00');
+          const eTime = String(matched.endTime || matched.end || '10:00');
+          const [sh, sm] = sTime.split(':').map(Number);
+          let [eh, em] = eTime.split(':').map(Number);
           if ((eh === 0 || eh === 24) && sh >= 12) {
             eh = 24;
           }

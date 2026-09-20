@@ -4,7 +4,7 @@
 <!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
 <script>
 (function() {
-  var CURRENT_VERSION = 'schedully-cache-v649';
+  var CURRENT_VERSION = 'schedully-cache-v650';
   var CACHE_KEY = 'sw_version_confirmed';
   if ('serviceWorker' in navigator && window.caches) {
     // Check if we're running with an old cache version
@@ -277,11 +277,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260920_v649">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
-<script src="firebase-config.js?v=20260920_v649" defer></script>
+<link rel="stylesheet" href="styles.css?v=20260920_v650">
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -2476,9 +2472,9 @@
     </div>
   </div>
 
-<script src="timetable_engine.js" defer></script>
-<script src="ocr_parser.js?v=20260919_v602" defer></script>
-<script src="ics_csv_parser_v3.js" defer></script>
+<script src="timetable_engine.js"></script>
+<script src="ocr_parser.js?v=20260919_v602"></script>
+<script src="ics_csv_parser_v3.js"></script>
   <!-- Firebase Project Credentials Setup Modal -->
   <div id="firebase-config-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 animate-scaleIn">
@@ -2834,13 +2830,21 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260920_v649" defer></script>
+<!-- ═══ Firebase SDK + Config (must load before app_v3.js) ═══
+     Placed here (bottom of body) so defer order is guaranteed across all
+     hosting environments: GitHub Pages, Vercel, Netlify, local file://
+     Loading order: firebase-app → firebase-auth → firebase-database → firebase-config → app_v3 -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js?v=20260920_v650"></script>
+  <script src="app_v3.js?v=20260920_v650"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=649').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=650').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
 
