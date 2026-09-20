@@ -14514,11 +14514,11 @@ body.theme-style-glass.dark-mode #device-type-toggles .capsule-btn.active svg {
    ═══════════════════════════════════════════════════════════════ */
 #side-right-slider-container,
 .m3-expressive-zoom-container {
-  position: absolute !important;
+  position: fixed !important;
   top: 50% !important;
   right: max(18px, env(safe-area-inset-right, 18px)) !important;
   transform: translateY(-50%) !important;
-  z-index: 35 !important;
+  z-index: 60 !important;
   display: flex;
   flex-direction: column !important;
   align-items: center !important;
@@ -14907,11 +14907,11 @@ body.theme-style-glass.theme-dark .m3-zoom-track {
    ═══════════════════════════════════════════════════════════════ */
 #side-fx-slider-container,
 .m3-expressive-fx-container {
-  position: absolute !important;
+  position: fixed !important;
   top: 50% !important;
   left: max(18px, env(safe-area-inset-left, 18px)) !important;
   transform: translateY(-50%) !important;
-  z-index: 35 !important;
+  z-index: 60 !important;
   display: flex;
   flex-direction: column !important;
   align-items: center !important;
@@ -15294,8 +15294,8 @@ body.theme-style-glass.theme-dark .m3-fx-track {
   }
   .m3-fx-track {
     width: 22px !important;
-    height: clamp(90px, 18vh, 130px) !important;
-    min-height: 85px !important;
+    height: clamp(85px, 16vh, 120px) !important;
+    min-height: 80px !important;
     border-radius: 10px !important;
   }
 }
@@ -18835,17 +18835,21 @@ body.theme-style-glass .dark .floating-days-hero-icon {
    XIAOMI PAD MINI / IPAD MINI & TABLET RESPONSIVE ANTI-OVERLAP RULES
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1280px), (max-height: 850px) {
-  /* Top action bar buttons and positioning */
-  #btn-expand-left-floating {
+  /* Left Action Container (Menu + Import) */
+  #left-action-container {
     top: max(10px, env(safe-area-inset-top, 10px)) !important;
-    left: max(12px, env(safe-area-inset-left, 12px)) !important;
+    left: max(10px, env(safe-area-inset-left, 10px)) !important;
+    gap: 8px !important;
+    z-index: 55 !important;
   }
-  
+
+  /* Right Action Container (Auth, Lang, Coffee, Export, Schedule) */
   #right-action-container,
   .top-action-bar-right {
     top: max(10px, env(safe-area-inset-top, 10px)) !important;
-    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+    right: max(10px, env(safe-area-inset-right, 10px)) !important;
     gap: 6px !important;
+    z-index: 55 !important;
   }
 
   .top-action-pill {
@@ -18864,6 +18868,74 @@ body.theme-style-glass .dark .floating-days-hero-icon {
     display: none !important;
   }
 
+  /* Left Side Vertical Slider (Layout, Opacity, Blur) */
+  #side-fx-slider-container,
+  .m3-expressive-fx-container {
+    position: fixed !important;
+    top: 50% !important;
+    left: max(8px, env(safe-area-inset-left, 8px)) !important;
+    transform: translateY(-50%) !important;
+    gap: 3px !important;
+    z-index: 50 !important;
+  }
+
+  /* Right Side Vertical Slider (Zoom, Radius, Font) */
+  #side-right-slider-container,
+  .m3-expressive-zoom-container {
+    position: fixed !important;
+    top: 50% !important;
+    right: max(8px, env(safe-area-inset-right, 8px)) !important;
+    transform: translateY(-50%) !important;
+    gap: 3px !important;
+    z-index: 50 !important;
+  }
+
+  .m3-expressive-pill {
+    width: 28px !important;
+    padding: 3px 2px !important;
+    gap: 2px !important;
+  }
+
+  .m3-zoom-action-btn,
+  .m3-fx-mode-btn {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .m3-zoom-track,
+  .m3-fx-track {
+    width: 22px !important;
+    height: clamp(85px, 16vh, 120px) !important;
+    min-height: 80px !important;
+    border-radius: 10px !important;
+  }
+
+  .m3-scope-pill {
+    width: 28px !important;
+    padding: 3px 2px !important;
+    gap: 2px !important;
+  }
+
+  .m3-scope-btn {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .m3-top-scope-pill {
+    width: 28px !important;
+    padding: 2.5px 2px !important;
+    margin-bottom: 0px !important;
+  }
+
+  .m3-fx-outside-badge,
+  .m3-zoom-outside-badge {
+    padding: 3px 2px !important;
+    min-width: 16px !important;
+    width: 16px !important;
+    min-height: 30px !important;
+    font-size: 8px !important;
+  }
+
   /* Bottom floating controls container */
   #floating-controls-container {
     bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
@@ -18871,6 +18943,7 @@ body.theme-style-glass .dark .floating-days-hero-icon {
     right: max(12px, env(safe-area-inset-right, 12px)) !important;
     width: calc(100% - 24px) !important;
     max-width: calc(100% - 24px) !important;
+    z-index: 52 !important;
   }
 
   #bottom-floating-pill-bar {
@@ -18918,12 +18991,25 @@ body.theme-style-glass .dark .floating-days-hero-icon {
     height: 14px !important;
   }
 
-  /* Canvas safe margins on compact viewports */
+  /* Popovers opened from sliders or bottom bar must never stretch off-screen */
+  .floating-font-card,
+  #canvas-controls-popover,
+  #canvas-ratio-popover,
+  #schedule-quick-settings,
+  #floating-palette-mode-card,
+  #floating-title-card,
+  #floating-days-time-card,
+  #floating-font-style-card {
+    max-width: min(340px, calc(100vw - 80px)) !important;
+    max-height: min(65vh, 480px) !important;
+  }
+
+  /* Canvas safe margins on compact viewports to prevent timetable being obstructed */
   #canvas-scroll-area {
-    padding-top: max(56px, env(safe-area-inset-top, 56px)) !important;
-    padding-bottom: max(64px, env(safe-area-inset-bottom, 64px)) !important;
-    padding-left: max(44px, env(safe-area-inset-left, 44px)) !important;
-    padding-right: max(44px, env(safe-area-inset-right, 44px)) !important;
+    padding-top: max(54px, env(safe-area-inset-top, 54px)) !important;
+    padding-bottom: max(60px, env(safe-area-inset-bottom, 60px)) !important;
+    padding-left: max(48px, env(safe-area-inset-left, 48px)) !important;
+    padding-right: max(48px, env(safe-area-inset-right, 48px)) !important;
   }
 
   /* ⚡ Mobile Glass Smoothness Optimization: Reduce GPU fillrate overhead & jank */
@@ -19073,6 +19159,7 @@ body.slider-customizer-open #schedule-quick-settings {
   border: 1px solid var(--m3-sys-color-outline, rgba(226, 232, 240, 0.8)) !important;
   color: var(--m3-sys-text-primary, #0f172a) !important;
   transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease !important;
+  touch-action: pan-y !important;
 }
 
 .slider-drag-card:hover {
@@ -19082,6 +19169,16 @@ body.slider-customizer-open #schedule-quick-settings {
 .slider-drag-card.is-hidden-card {
   opacity: 0.52 !important;
   background: var(--m3-sys-color-surface-variant, #F1F5F9) !important;
+}
+
+.touch-drag-ghost {
+  position: fixed !important;
+  pointer-events: none !important;
+  z-index: 100000 !important;
+  transform: translate(-50%, -50%) scale(1.04);
+  box-shadow: 0 16px 32px -4px rgba(0, 0, 0, 0.28), 0 0 0 2px var(--m3-sys-color-primary, #3B82F6) !important;
+  opacity: 0.95 !important;
+  transition: none !important;
 }
 
 .slider-customizer-save-btn {

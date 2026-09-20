@@ -6647,6 +6647,12 @@ class SchedullyApp {
       let draggedId = null;
       let draggedFromSide = null;
 
+      // Touch Drag Variables for Tablets/Phones
+      let touchDraggedId = null;
+      let touchFromSide = null;
+      let touchGhost = null;
+      let touchOriginCard = null;
+
       const renderZones = () => {
         [zoneLeft, zoneRight].forEach(z => { if (z) z.innerHTML = ''; });
 
@@ -6666,16 +6672,16 @@ class SchedullyApp {
           const eyeIconClosed = `<svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>`;
 
           el.innerHTML = `
-            <div class="flex items-center gap-2.5 overflow-hidden pointer-events-none">
-              <span class="text-slate-400 font-bold text-xs">
-                <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="currentColor"><circle cx="8.5" cy="6.5" r="1.5"/><circle cx="15.5" cy="6.5" r="1.5"/><circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/><circle cx="8.5" cy="17.5" r="1.5"/><circle cx="15.5" cy="17.5" r="1.5"/></svg>
+            <div class="flex items-center gap-2 overflow-hidden pointer-events-none flex-1 min-w-0">
+              <span class="text-slate-400 font-bold text-xs shrink-0">
+                <svg class="w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="currentColor"><circle cx="8.5" cy="6.5" r="1.5"/><circle cx="15.5" cy="6.5" r="1.5"/><circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/><circle cx="8.5" cy="17.5" r="1.5"/><circle cx="15.5" cy="17.5" r="1.5"/></svg>
               </span>
               <div class="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style="background: ${isHidden ? 'var(--m3-sys-color-surface-variant, #e2e8f0)' : 'var(--m3-sys-color-primary-container, #dbeafe)'}; color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};">
                 ${tool.icon}
               </div>
-              <div class="flex flex-col text-left overflow-hidden">
+              <div class="flex flex-col text-left overflow-hidden min-w-0">
                 <span class="text-xs font-bold truncate ${isHidden ? 'line-through opacity-60' : ''}" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-text-primary, #0f172a)'};">${tool.name}</span>
-                <span class="text-[9.5px] font-medium truncate" style="color: var(--m3-sys-text-secondary, #64748b);">${isHidden ? 'Hidden from sidebar' : tool.desc}</span>
+                <span class="text-[9px] font-medium truncate" style="color: var(--m3-sys-text-secondary, #64748b);">${isHidden ? 'Hidden from sidebar' : tool.desc}</span>
               </div>
             </div>
             <button type="button" class="btn-toggle-eye p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ml-1" draggable="false" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};" title="${isHidden ? 'Show tool in sidebar' : 'Hide tool from sidebar'}">
@@ -6707,7 +6713,7 @@ class SchedullyApp {
             btnToggle.addEventListener('click', toggleTool);
           }
 
-          // Drag start & end
+          // HTML5 Mouse Drag start & end
           el.addEventListener('dragstart', (e) => {
             if (e.target && e.target.closest && e.target.closest('.btn-toggle-eye')) {
               e.preventDefault();
@@ -6782,6 +6788,110 @@ class SchedullyApp {
               window.soundFX?.play?.('tap');
             } catch (err) {}
           });
+
+          // ── Tablet / Mobile Touch Drag Handlers ──
+          el.addEventListener('touchstart', (e) => {
+            if (e.target && e.target.closest && e.target.closest('.btn-toggle-eye')) {
+              return;
+            }
+            const touch = e.touches[0];
+            touchDraggedId = id;
+            touchFromSide = currentSide;
+            touchOriginCard = el;
+
+            // Create floating ghost
+            touchGhost = el.cloneNode(true);
+            touchGhost.classList.add('touch-drag-ghost');
+            touchGhost.style.width = `${el.offsetWidth}px`;
+            touchGhost.style.left = `${touch.clientX}px`;
+            touchGhost.style.top = `${touch.clientY}px`;
+            document.body.appendChild(touchGhost);
+
+            el.classList.add('opacity-40');
+          }, { passive: true });
+
+          el.addEventListener('touchmove', (e) => {
+            if (!touchGhost || !touchDraggedId) return;
+            const touch = e.touches[0];
+            touchGhost.style.left = `${touch.clientX}px`;
+            touchGhost.style.top = `${touch.clientY}px`;
+
+            // Highlight drop targets under finger
+            const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            document.querySelectorAll('.slider-drop-zone').forEach(z => z.classList.remove('drag-active'));
+            document.querySelectorAll('.slider-drag-card').forEach(c => c.classList.remove('border-t-2', 'border-b-2', 'border-blue-500'));
+
+            if (elemBelow) {
+              const zoneBelow = elemBelow.closest('.slider-drop-zone');
+              if (zoneBelow) zoneBelow.classList.add('drag-active');
+
+              const cardBelow = elemBelow.closest('.slider-drag-card');
+              if (cardBelow && cardBelow !== touchOriginCard) {
+                const rect = cardBelow.getBoundingClientRect();
+                const relY = touch.clientY - rect.top;
+                if (relY < rect.height / 2) {
+                  cardBelow.classList.add('border-t-2', 'border-blue-500');
+                } else {
+                  cardBelow.classList.add('border-b-2', 'border-blue-500');
+                }
+              }
+            }
+          }, { passive: true });
+
+          el.addEventListener('touchend', (e) => {
+            if (!touchGhost && !touchDraggedId) return;
+            const touch = e.changedTouches[0];
+            const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+            if (touchGhost && touchGhost.parentNode) {
+              touchGhost.parentNode.removeChild(touchGhost);
+            }
+            touchGhost = null;
+
+            if (touchOriginCard) {
+              touchOriginCard.classList.remove('opacity-40');
+              touchOriginCard = null;
+            }
+
+            document.querySelectorAll('.slider-drop-zone').forEach(z => z.classList.remove('drag-active'));
+            document.querySelectorAll('.slider-drag-card').forEach(c => c.classList.remove('border-t-2', 'border-b-2', 'border-blue-500'));
+
+            if (elemBelow && touchDraggedId) {
+              const cardBelow = elemBelow.closest('.slider-drag-card');
+              const zoneBelow = elemBelow.closest('.slider-drop-zone');
+
+              if (cardBelow) {
+                const targetCardId = cardBelow.getAttribute('data-id');
+                const targetSide = cardBelow.getAttribute('data-side');
+                if (targetSide && targetCardId) {
+                  tempLayout[touchFromSide] = tempLayout[touchFromSide].filter(x => x !== touchDraggedId);
+                  let targetIdx = tempLayout[targetSide].indexOf(targetCardId);
+                  if (targetIdx === -1) {
+                    targetIdx = tempLayout[targetSide].length;
+                  } else {
+                    const rect = cardBelow.getBoundingClientRect();
+                    if (touch.clientY - rect.top >= rect.height / 2) {
+                      targetIdx += 1;
+                    }
+                  }
+                  tempLayout[targetSide].splice(targetIdx, 0, touchDraggedId);
+                  renderZones();
+                  window.soundFX?.play?.('tap');
+                }
+              } else if (zoneBelow) {
+                const targetSide = zoneBelow.getAttribute('data-side');
+                if (targetSide) {
+                  tempLayout[touchFromSide] = tempLayout[touchFromSide].filter(x => x !== touchDraggedId);
+                  tempLayout[targetSide].push(touchDraggedId);
+                  renderZones();
+                  window.soundFX?.play?.('tap');
+                }
+              }
+            }
+
+            touchDraggedId = null;
+            touchFromSide = null;
+          }, { passive: true });
 
           return el;
         };
@@ -10943,7 +11053,7 @@ class SchedullyApp {
       // Additional UI & Audio/Haptic preferences
       fontShadow: localStorage.getItem('schedully_font_shadow') === 'yes',
       showGridBorders: localStorage.getItem('schedully_show_grid_borders') !== 'no',
-      showSideSliders: localStorage.getItem('schedully_show_side_sliders') === 'yes',
+      showSideSliders: localStorage.getItem('schedully_show_side_sliders') !== 'no',
       soundEnabled: localStorage.getItem('schedully_sound_enabled') !== 'no',
       hapticsEnabled: localStorage.getItem('schedully_haptics_enabled') !== 'no',
       sliderLayout: this.sliderLayout || { left: ['layout', 'opacity', 'blur'], right: ['zoom', 'radius', 'font'] },
