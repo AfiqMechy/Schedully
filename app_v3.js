@@ -6126,16 +6126,14 @@ class SchedullyApp {
             this.cardCornerRadiusVal = newR;
             this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
             this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            const container = document.getElementById('lock-timetable-container');
-            if (container) container.style.borderRadius = `${newR}px`;
+            this._applyTableRadius(newR);
             changed = true;
           }
         } else if (activeRadiusScope === 'table') {
           if (newR !== this.tableCornerRadiusVal) {
             this.tableCornerRadiusVal = newR;
             this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            const container = document.getElementById('lock-timetable-container');
-            if (container) container.style.borderRadius = `${newR}px`;
+            this._applyTableRadius(newR);
             changed = true;
           }
         } else if (activeRadiusScope === 'cards') {
@@ -6217,8 +6215,7 @@ class SchedullyApp {
         if (activeRadiusScope === 'both' || activeRadiusScope === 'table') {
           this.tableCornerRadiusVal = 18;
           this.tableCornerStyle = 'rounded';
-          const container = document.getElementById('lock-timetable-container');
-          if (container) container.style.borderRadius = '18px';
+          this._applyTableRadius(18);
         }
         if (activeRadiusScope === 'both' || activeRadiusScope === 'cards') {
           this.cardCornerRadiusVal = (activeRadiusScope === 'both') ? 18 : 6;
@@ -6279,8 +6276,7 @@ class SchedullyApp {
         if (activeRadiusScope === 'both' || activeRadiusScope === 'table') {
           this.tableCornerRadiusVal = next;
           this.tableCornerStyle = next === 0 ? 'sharp' : 'rounded';
-          const container = document.getElementById('lock-timetable-container');
-          if (container) container.style.borderRadius = `${next}px`;
+          this._applyTableRadius(next);
         }
         if (activeRadiusScope === 'both' || activeRadiusScope === 'cards') {
           this.cardCornerRadiusVal = next;
@@ -8042,6 +8038,8 @@ class SchedullyApp {
         }
       } else {
         container.classList.remove('title-separated');
+        // Restore overflow:hidden on container now that it's the visual entity again
+        container.style.overflow = 'hidden';
         const titleBar = document.getElementById('lock-grid-title');
         if (titleBar) {
           titleBar.style.borderRadius = '';
@@ -8052,6 +8050,9 @@ class SchedullyApp {
         if (gridExact) {
           gridExact.style.borderRadius = '';
         }
+        // Restore container border-radius (was cleared when we entered separated mode)
+        const r = (this.tableCornerStyle === 'sharp') ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18);
+        container.style.borderRadius = `${r}px`;
       }
 
       try {
@@ -10831,6 +10832,19 @@ class SchedullyApp {
               return;
             }
 
+            // Case 2: Timestamp guard — if local data is NEWER than cloud, push local → cloud.
+            // This handles: user clears courses on Device A, then refreshes — cloud still has old
+            // courses. Without this, cloud would overwrite the cleared state on refresh.
+            const localTimestamp = localStorage.getItem('schedully_updated_at');
+            const cloudTimestamp = data.updatedAt;
+            if (localTimestamp && cloudTimestamp && localTimestamp > cloudTimestamp) {
+              console.log("Schedully Sync: Local data is newer than cloud — pushing local to cloud instead of restoring old cloud data.");
+              if (typeof this.saveToCloud === 'function') {
+                this.saveToCloud();
+              }
+              return; // do NOT apply stale cloud data to local state
+            }
+
             // Case 3: Cloud is Authoritative (Google Apps sync model) -> Restore latest cloud state across all devices
             if (data.presets && typeof data.presets === 'object') {
               this.presets = data.presets;
@@ -11159,6 +11173,30 @@ class SchedullyApp {
           this.saveToCloud();
         }
       }, 400);
+    }
+  }
+
+  // Apply timetable corner radius correctly depending on whether Title is separated.
+  // When separated: Title and Timetable are TWO independent visual entities.
+  //   → radius must target only the timetable grid (.m3-lock-grid-exact) via CSS variable
+  //   → the container is transparent so setting borderRadius on it wrongly clips the Title too
+  // When NOT separated: container IS the visual block, so borderRadius goes on it directly.
+  _applyTableRadius(px) {
+    const container = document.getElementById('lock-timetable-container');
+    if (!container) return;
+    const isSeparated = this.titlePlacement === 'separated';
+    if (isSeparated) {
+      // Don't set borderRadius on the transparent container — it would clip the Title bar
+      container.style.borderRadius = '';
+      // Set the CSS variable that styles.css uses for .title-separated .m3-lock-grid-exact
+      document.documentElement.style.setProperty('--timetable-corner-radius', `${px}px`);
+      // Also apply directly to the grid element for immediate visual feedback
+      const gridExact = container.querySelector('.m3-lock-grid-exact');
+      if (gridExact) gridExact.style.borderRadius = `${px}px`;
+    } else {
+      // Normal mode: container is the visual entity
+      container.style.borderRadius = `${px}px`;
+      document.documentElement.style.setProperty('--timetable-corner-radius', `${px}px`);
     }
   }
 
@@ -11834,7 +11872,13 @@ class SchedullyApp {
       timetableContainer.style.marginLeft = `${this.gridXPosVal || 0}px`;
       timetableContainer.style.transition = 'margin-top 0.15s ease, margin-left 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease';
       timetableContainer.style.borderRadius = this.tableCornerStyle === 'sharp' ? '0px' : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8) + 'px';
-      timetableContainer.style.overflow = 'hidden';
+      // In separated mode, container is transparent — overflow:hidden would clip children incorrectly
+      if (this.titlePlacement === 'separated') {
+        timetableContainer.style.overflow = 'visible';
+      } else {
+        timetableContainer.style.overflow = 'hidden';
+      }
+      this._applyTableRadius(this.tableCornerStyle === 'sharp' ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8));
       timetableContainer.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
     }
     if (this.universalTimetableGrid) {

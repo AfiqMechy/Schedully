@@ -284,7 +284,7 @@ class SchedullyFirebaseService {
     if (!this.currentUser) return false;
     try {
       this._isSaving = true;
-      const newTimestamp = new Date().toISOString(); // [Fix 5] used for smart merge check
+      const newTimestamp = new Date().toISOString(); // stamped in payload for cross-device sync ordering
       const cleanPayload = this._sanitizeData({
         classes: userData.classes || [],
         presets: userData.presets || {},
@@ -306,21 +306,9 @@ class SchedullyFirebaseService {
 
       let saved = false;
 
-      // [Fix 5] Smart save to Realtime Database: check cloud timestamp before overwriting
+      // Save to Realtime Database
       if (this.db) {
         try {
-          // Only check timestamp if we have a cloud record already
-          const tsSnapshot = await this.db.ref('users/' + this.currentUser.uid + '/updatedAt').once('value');
-          const cloudTimestamp = tsSnapshot.val();
-
-          if (cloudTimestamp && cloudTimestamp > newTimestamp) {
-            // Cloud is newer (e.g. saved on another device milliseconds ago) — skip to avoid overwrite
-            console.warn("Schedully Firebase: Cloud data is newer than local. Skipping save to protect data.");
-            setTimeout(() => { this._isSaving = false; }, 300);
-            return false;
-          }
-
-          // Our data is latest — safe to write
           await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
           saved = true;
         } catch (dbErr) {
