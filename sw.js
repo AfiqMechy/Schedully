@@ -1,7 +1,7 @@
-const CACHE_NAME = 'schedully-cache-v637';
+const CACHE_NAME = 'schedully-cache-v639';
 const STATIC_ASSETS = [
-  '/styles.css?v=20260920_v637',
-  '/app_v3.js?v=20260920_v637',
+  '/styles.css?v=20260920_v639',
+  '/app_v3.js?v=20260920_v639',
   '/firebase-config.js?v=20260920_v614',
   '/ocr_parser.js?v=20260919_v602',
   '/ics_csv_parser_v3.js',
@@ -15,7 +15,6 @@ const STATIC_ASSETS = [
   '/tng_qr.png'
 ];
 
-// Install: cache static assets immediately, skip waiting so new SW activates right away
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -23,64 +22,53 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: delete ALL old caches, claim all clients, then force-reload every open tab
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(keys.map((key) => key !== CACHE_NAME ? caches.delete(key) : null)))
       .then(() => self.clients.claim())
-      .then(() => {
-        // Tell every open tab/window to reload so they get the fresh version immediately
-        return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      })
-      .then((clients) => {
-        clients.forEach((client) => {
-          client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
-        });
-      })
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then((clients) => clients.forEach((c) => c.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME })))
   );
 });
 
-// Fetch strategy:
-//   - HTML (navigate): NETWORK FIRST — always serve fresh index.html, offline fallback to cache
-//   - JS/CSS/assets:   CACHE FIRST + background revalidate — instant load
-//   - External URLs:   pass through, no caching
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-
-  // Pass through all external origins (Firebase, CDN, Google Fonts, etc.)
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    // NETWORK FIRST for page navigations: always fetch fresh HTML
+    // Network-first for HTML: always fresh, fall back to cache offline
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request))
+      fetch(event.request).then((response) => {
+        if (response && response.ok) {
+          // Clone BEFORE body is consumed, then cache the clone
+          const toCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
     );
   } else {
-    // CACHE FIRST for assets: instant, revalidate in background
+    // Cache-first for assets: serve from cache instantly, update cache in background
     event.respondWith(
       caches.match(event.request).then((cached) => {
-        const networkFetch = fetch(event.request).then((response) => {
-          if (response && response.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+        // Always attempt a background network update
+        const networkUpdate = fetch(event.request).then((response) => {
+          if (response && response.ok) {
+            // Clone BEFORE returning to browser so we can cache AND serve
+            const toCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
           }
           return response;
         }).catch(() => null);
-        return cached || networkFetch;
+
+        // Serve cached immediately if available; otherwise wait for network
+        return cached || networkUpdate;
       })
     );
   }
 });
-
-
 
 

@@ -19384,3 +19384,196 @@ body.theme-style-glass .dark .slider-customizer-reset-btn:hover {
   border-color: rgba(255, 255, 255, 0.28) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.25) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE CONTRAST FIXES: WALLPAPER CARD & TITLE/TRADEMARK TOGGLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Floating Wallpaper Controls Bar (Fix unreadable white-on-white card) */
+#floating-wallpaper-controls-bar {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+#floating-wallpaper-title-label {
+  color: #1E293B !important;
+}
+
+#floating-wallpaper-extracted-status {
+  color: #059669 !important;
+}
+
+#floating-wallpaper-controls-bar label {
+  color: #64748B !important;
+}
+
+#floating-btn-remove-wallpaper {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode #floating-wallpaper-controls-bar,
+.theme-dark #floating-wallpaper-controls-bar,
+.dark #floating-wallpaper-controls-bar,
+html.dark #floating-wallpaper-controls-bar {
+  background: #1E293B !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-mode #floating-wallpaper-title-label,
+.theme-dark #floating-wallpaper-title-label,
+.dark #floating-wallpaper-title-label,
+html.dark #floating-wallpaper-title-label {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode #floating-wallpaper-extracted-status,
+.theme-dark #floating-wallpaper-extracted-status,
+.dark #floating-wallpaper-extracted-status,
+html.dark #floating-wallpaper-extracted-status {
+  color: #34D399 !important;
+}
+
+body.dark-mode #floating-wallpaper-controls-bar label,
+.theme-dark #floating-wallpaper-controls-bar label,
+.dark #floating-wallpaper-controls-bar label,
+html.dark #floating-wallpaper-controls-bar label {
+  color: #CBD5E1 !important;
+}
+
+body.dark-mode #floating-wallpaper-controls-bar label:hover,
+.theme-dark #floating-wallpaper-controls-bar label:hover,
+.dark #floating-wallpaper-controls-bar label:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #floating-btn-remove-wallpaper,
+.theme-dark #floating-btn-remove-wallpaper,
+.dark #floating-btn-remove-wallpaper,
+html.dark #floating-btn-remove-wallpaper {
+  color: #EF4444 !important;
+}
+
+body.dark-mode #floating-btn-remove-wallpaper:hover,
+.theme-dark #floating-btn-remove-wallpaper:hover,
+.dark #floating-btn-remove-wallpaper:hover {
+  background: rgba(239, 68, 68, 0.20) !important;
+  color: #F87171 !important;
+}
+
+/* Wallpaper Upload Dropzone in Dark Mode */
+body.dark-mode #floating-wallpaper-upload-container label,
+.theme-dark #floating-wallpaper-upload-container label,
+.dark #floating-wallpaper-upload-container label,
+html.dark #floating-wallpaper-upload-container label {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #E2E8F0 !important;
+}
+
+/* Wallpaper Colors Resync Button */
+body.dark-mode #floating-btn-resync-wallpaper-colors,
+.theme-dark #floating-btn-resync-wallpaper-colors,
+.dark #floating-btn-resync-wallpaper-colors,
+html.dark #floating-btn-resync-wallpaper-colors {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: #FFFFFF !important;
+}
+
+/* 2. Title & Trademark Switcher Dark Mode Contrast & Icon Clarity */
+body.dark-mode #title-trademark-mode-toggles,
+.theme-dark #title-trademark-mode-toggles,
+.dark #title-trademark-mode-toggles,
+html.dark #title-trademark-mode-toggles {
+  background: color-mix(in srgb, var(--m3-sys-color-primary, #60A5FA) 12%, rgba(15, 23, 42, 0.88)) !important;
+  border: 1px solid color-mix(in srgb, var(--m3-sys-color-primary, #60A5FA) 22%, rgba(255, 255, 255, 0.14)) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Active Segment (Title or Trademark) */
+#title-trademark-mode-toggles .capsule-btn.active,
+body.dark-mode #title-trademark-mode-toggles .capsule-btn.active,
+.theme-dark #title-trademark-mode-toggles .capsule-btn.active,
+.dark #title-trademark-mode-toggles .capsule-btn.active {
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+#title-trademark-mode-toggles .capsule-btn.active span,
+body.dark-mode #title-trademark-mode-toggles .capsule-btn.active span,
+.theme-dark #title-trademark-mode-toggles .capsule-btn.active span,
+.dark #title-trademark-mode-toggles .capsule-btn.active span {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+#title-trademark-mode-toggles .capsule-btn.active svg,
+body.dark-mode #title-trademark-mode-toggles .capsule-btn.active svg,
+.theme-dark #title-trademark-mode-toggles .capsule-btn.active svg,
+.dark #title-trademark-mode-toggles .capsule-btn.active svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.2 !important;
+  opacity: 1 !important;
+}
+
+/* Inactive Segment (Crisp Icon & Legible Label in Dark Mode) */
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active),
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active),
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active),
+html.dark #title-trademark-mode-toggles .capsule-btn:not(.active) {
+  background: transparent !important;
+  color: #CBD5E1 !important;
+}
+
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active) span,
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active) span,
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active) span,
+html.dark #title-trademark-mode-toggles .capsule-btn:not(.active) span {
+  color: #CBD5E1 !important;
+  font-weight: 700 !important;
+}
+
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active) svg,
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active) svg,
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active) svg,
+html.dark #title-trademark-mode-toggles .capsule-btn:not(.active) svg {
+  color: #CBD5E1 !important;
+  stroke: #CBD5E1 !important;
+  stroke-width: 2.2 !important;
+  opacity: 0.95 !important;
+}
+
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover,
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover,
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover,
+html.dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover span,
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover span,
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover span {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg,
+.theme-dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg,
+.dark #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* Disable distracting double-borders from thumb on this specific switcher */
+body.dark-mode #title-trademark-mode-toggles .glass-slider-thumb,
+.theme-dark #title-trademark-mode-toggles .glass-slider-thumb,
+.dark #title-trademark-mode-toggles .glass-slider-thumb {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

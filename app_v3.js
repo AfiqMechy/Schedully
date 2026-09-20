@@ -5329,6 +5329,10 @@ class SchedullyApp {
     let rightSliderMode = 'zoom'; // 'zoom' | 'radius' | 'font'
     let radiusScope = 'both'; // 'both' | 'table' | 'cards'
     let fontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
+    // Hoisted here to fix TDZ: renderZoomFrame (below) references these before their original declaration at ~5901
+    let leftActiveTool = 'layout';
+    let rightActiveTool = 'zoom';
+
         const getBaseModelDimensions = () => {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return { width: 380, height: 770 };
@@ -5896,9 +5900,9 @@ class SchedullyApp {
     const btnBlurScopeBlur = document.getElementById('btn-blur-scope-blur');
     const btnBlurScopeDim  = document.getElementById('btn-blur-scope-dim');
 
-    // Active tool state per side
-    let leftActiveTool = 'layout';
-    let rightActiveTool = 'zoom';
+    // Active tool state per side (declared earlier to fix TDZ in renderZoomFrame)
+    leftActiveTool = 'layout';
+    rightActiveTool = 'zoom';
 
     // Sub-mode states
     let activeRadiusScope = 'both'; // 'both' | 'table' | 'cards'
