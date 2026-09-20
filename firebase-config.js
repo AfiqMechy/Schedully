@@ -84,14 +84,14 @@ class SchedullyFirebaseService {
   }
 
   init() {
-    if (this._initialized && this.auth && (this.db || this.firestore)) return;
+    if (this._initialized && this.auth && this.db) return;
     const config = this.getSavedConfig();
     if (!config || !config.apiKey || typeof firebase === 'undefined' || typeof firebase.auth === 'undefined') {
       console.log("Schedully: Waiting for Firebase Compat SDKs / Config...");
       if (typeof window !== 'undefined' && !this._retryScheduled) {
         this._retryScheduled = true;
         const retry = () => {
-          if (!this._initialized || (!this.db && !this.firestore)) this.init();
+          if (!this._initialized || !this.db) this.init();
         };
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', retry, { once: true });

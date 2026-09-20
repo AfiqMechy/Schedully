@@ -234,7 +234,25 @@ class SchedullyApp {
     this.updateClock();
     setInterval(() => this.updateClock(), 60000);
 
-    // this.loadFromLocal();
+    this.loadFromLocal();
+    if (!this.classes || this.classes.length === 0) {
+      const defaultStarterClasses = [
+        { id: 'c_default_1', name: 'Instrumentation & Measurement', code: 'KIG 3001', day: 'Mon', start: '09:00', end: '10:30', room: 'Bilik Kuliah 101', instructor: 'Dr. Smith', color: '#E07A5F' },
+        { id: 'c_default_2', name: 'Fluid Mechanics', code: 'KIG 3009', day: 'Tue', start: '09:00', end: '10:30', room: 'Bilik Kuliah 102', instructor: 'Prof. Davis', color: '#3D405B' },
+        { id: 'c_default_3', name: 'Control Systems', code: 'KIG 3010', day: 'Wed', start: '09:00', end: '10:30', room: 'Bilik Kuliah 103', instructor: 'Dr. Alan', color: '#81B29A' },
+        { id: 'c_default_4', name: 'Thermodynamics', code: 'KIG 3003', day: 'Thu', start: '11:00', end: '12:30', room: 'Bilik Kuliah 104', instructor: 'Ms. Emily', color: '#F2CC8F' },
+        { id: 'c_default_5', name: 'Engineering Design', code: 'GQH 0013', day: 'Fri', start: '08:00', end: '09:30', room: 'Online Lecture', instructor: 'Mr. Leo', color: '#B5838D' },
+        { id: 'c_default_6', name: 'Engineering Lab', code: 'KIG 3003', day: 'Sat', start: '08:00', end: '09:30', room: 'Mechanical Lab', instructor: 'Speaker', color: '#2A9D8F' }
+      ];
+      this.classes = [...defaultStarterClasses];
+      if (this.presets && this.presets.default) {
+        this.presets.default.classes = [...defaultStarterClasses];
+      }
+      try {
+        localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
+      } catch (e) {}
+    }
+
     this.renderAll();
     if (typeof this.applyCanvasZoom === 'function') {
       this.applyCanvasZoom(false);
@@ -4675,8 +4693,14 @@ class SchedullyApp {
       }
       const leftSlider = document.getElementById('side-fx-slider-container');
       const rightSlider = document.getElementById('side-right-slider-container') || document.getElementById('side-zoom-slider-container');
-      if (leftSlider) leftSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
-      if (rightSlider) rightSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
+      if (leftSlider) {
+        leftSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
+        if (this.showSideSliders) leftSlider.classList.remove('hidden');
+      }
+      if (rightSlider) {
+        rightSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
+        if (this.showSideSliders) rightSlider.classList.remove('hidden');
+      }
 
       document.querySelectorAll('#toggle-quick-side-sliders .pill-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-val') === (this.showSideSliders ? 'yes' : 'no'));
@@ -6517,6 +6541,7 @@ class SchedullyApp {
       if (!track || !container) return;
 
       let isDragging = false;
+      let activePointerId = null;
 
       const updateFromPointer = (e, animate = false) => {
         const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
@@ -6538,6 +6563,10 @@ class SchedullyApp {
       const onDragStart = (e) => {
         if (e.button != null && e.button !== 0) return;
         isDragging = true;
+        activePointerId = e.pointerId ?? null;
+        if (e.pointerId != null && track.setPointerCapture) {
+          try { track.setPointerCapture(e.pointerId); } catch (_) {}
+        }
         container.classList.add('active-drag');
         window.soundFX?.play?.('tap');
         updateFromPointer(e, false);
@@ -6550,16 +6579,20 @@ class SchedullyApp {
         if (e.cancelable) e.preventDefault();
       };
 
-      const onDragEnd = () => {
+      const onDragEnd = (e) => {
         if (isDragging) {
           isDragging = false;
+          if (activePointerId != null && track.releasePointerCapture) {
+            try { track.releasePointerCapture(activePointerId); } catch (_) {}
+          }
+          activePointerId = null;
           container.classList.remove('active-drag');
           updateSideSliderUI(side, true);
           showSideBadgeTemporarily(side, 1200);
         }
       };
 
-      track.addEventListener('pointerdown', onDragStart);
+      track.addEventListener('pointerdown', onDragStart, { passive: false });
       track.addEventListener('mousedown', onDragStart);
       track.addEventListener('touchstart', onDragStart, { passive: false });
 
@@ -10771,31 +10804,16 @@ class SchedullyApp {
             const isCloudEmpty = (!data.presets && !data.classes && !data.settings) ||
               ((!data.classes || data.classes.length === 0) && !data.wallpaper && (!data.presets || (Object.keys(data.presets).length <= 1 && (!data.presets.default?.classes || data.presets.default.classes.length === 0) && !data.presets.default?.wallpaper)));
 
-            // Case 1: Fresh brand new cloud account & local device has preexisting offline work -> publish to cloud once
-            if (isCloudEmpty && hasLocalWork) {
-              console.log("Brand new cloud account detected. Publishing local offline work to cloud...");
-              this._stagePending(true);
-              return;
-            }
-
-            // Case 2: Cloud is completely empty and no local work -> initialize default clean preset
+            // Case 1: If cloud is empty, preserve local work and save to cloud
             if (isCloudEmpty) {
-              localStorage.removeItem('schedully_presets');
-              localStorage.removeItem('schedully_active_preset');
-              localStorage.removeItem('schedully_classes');
-              localStorage.removeItem('schedully_wallpaper_data');
-
-              this.classes = [];
-              const freshSettings = this.getPresetSettings();
-              this.presets = {
-                default: { name: 'Default', classes: [], settings: freshSettings, wallpaper: null, wallpaperSwatches: null }
-              };
-              this.activePresetKey = 'default';
-              this.removeWallpaper();
-              this.applyPresetSettings(freshSettings);
-              this.updatePresetSelectDropdown();
-              this.renderAll();
-              this.markSaved();
+              if (hasLocalWork) {
+                console.log("Publishing local offline work to cloud...");
+                if (typeof this.saveToCloud === 'function') {
+                  this.saveToCloud();
+                } else {
+                  this._stagePending(true);
+                }
+              }
               return;
             }
 
