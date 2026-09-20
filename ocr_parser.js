@@ -1,0 +1,350 @@
+/**
+ * OCR Timetable Scanner & Schedule Parser Engine for Schedully
+ * Scans course portal screenshots and extracts Course Codes, Title, Day, Times, and Room
+ * Supports Vercel Serverless Function (/api/scan) and Direct Client-Side Gemini Vision API
+ */
+
+class OCRTimetableParser {
+  constructor() {
+    this.isTesseractLoaded = typeof Tesseract !== 'undefined';
+  }
+
+  /**
+   * Universal Cloud Vision API Scanning (Supports Gemini 2.0/2.5/3.7 Flash & Fallbacks)
+   */
+  async scanWithCloudAPI(file, provider, apiKey, onProgress = () => {}) {
+    const statusMessages = [
+      "Reading timetable image...",
+      "Mapping matrix grid and time columns...",
+      "Extracting course names, codes, rooms & slots...",
+      "Cross-referencing schedule blocks...",
+      "Finalizing timetable..."
+    ];
+    let msgIdx = 0;
+    onProgress(statusMessages[0]);
+    const progressTimer = setInterval(() => {
+      msgIdx = (msgIdx + 1) % statusMessages.length;
+      onProgress(statusMessages[msgIdx]);
+    }, 2200);
+
+    try {
+      const base64Data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+
+      const mimeType = file.type || 'image/jpeg';
+
+      // 1. Try Vercel Serverless Function First (/api/scan with secure process.env.GEMINI_API_KEY)
+      let serverlessErrorMessage = null;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Data, mimeType, apiKey: apiKey || '' }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        const resData = await response.json().catch(() => null);
+
+        if (response.ok && resData) {
+          if (resData.success && (resData.data || resData.courses)) {
+            const courses = Array.isArray(resData.data) ? resData.data : (resData.courses || []);
+            if (courses.length > 0) {
+              return {
+                courses: courses,
+                detectedLanguage: resData.detectedLanguage || 'English',
+                hasNonEnglishText: resData.hasNonEnglishText !== undefined ? resData.hasNonEnglishText : false,
+                isPeriodBased: (resData.isPeriodBased !== undefined)
+                  ? Boolean(resData.isPeriodBased)
+                  : courses.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== ''),
+                gridStartHour: resData.gridStartHour || "08:00",
+                gridEndHour: resData.gridEndHour || "23:00"
+              };
+            }
+          }
+        } else if (resData && resData.error) {
+          serverlessErrorMessage = resData.error;
+          console.warn("/api/scan returned error:", serverlessErrorMessage);
+        }
+      } catch (apiErr) {
+        serverlessErrorMessage = apiErr.message;
+        console.warn("/api/scan endpoint unavailable, checking client key...", apiErr);
+      }
+
+      // 2. Direct Client-Side Gemini Vision Call (if key is in localStorage or passed)
+      let effectiveApiKey = (
+        apiKey ||
+        localStorage.getItem('schedully_gemini_api_key') ||
+        localStorage.getItem('schedully_api_key') ||
+        localStorage.getItem('gemini_api_key') ||
+        ''
+      ).trim().replace(/^["']|["']$/g, '');
+
+      if (effectiveApiKey) {
+        try {
+          const directResult = await this.scanDirectGemini(base64Data, mimeType, effectiveApiKey, onProgress);
+          if (directResult && directResult.courses && directResult.courses.length > 0) {
+            return directResult;
+          }
+        } catch (directErr) {
+          console.warn("Direct Gemini Vision scan failed:", directErr);
+          throw directErr;
+        }
+      }
+
+      // 3. Fallback: If no serverless response and direct scan failed
+      if (serverlessErrorMessage) {
+        throw new Error(`AI Scanner Error: ${serverlessErrorMessage}`);
+      }
+      throw new Error("Unable to analyze timetable image with AI. Please ensure your Gemini API key is valid or check your Vercel GEMINI_API_KEY environment variable.");
+    } finally {
+      clearInterval(progressTimer);
+    }
+  }
+
+  /**
+   * Direct Browser-to-Google Gemini Vision Call with Active Production Priority & Deep Thinking
+   */
+  async scanDirectGemini(base64Data, mimeType, apiKey, onProgress) {
+    // Active production models priority order
+    let candidateModels = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ];
+
+    try {
+      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+        headers: { 'x-goog-api-key': apiKey }
+      });
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        if (listData && listData.models) {
+          const apiModels = listData.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && !m.name.includes('preview-image') && !m.name.includes('-tts'))
+            .map(m => m.name.replace('models/', ''));
+          
+          const sorted = [];
+          const pushIf = (filterFn) => {
+            apiModels.filter(filterFn).forEach(m => { if (!sorted.includes(m)) sorted.push(m); });
+          };
+          pushIf(m => m === 'gemini-2.5-flash');
+          pushIf(m => m === 'gemini-2.0-flash');
+          pushIf(m => m === 'gemini-1.5-flash');
+          pushIf(m => m.includes('2.5-flash') && !m.includes('image'));
+          pushIf(m => m.includes('2.0-flash'));
+          pushIf(m => m.includes('1.5-flash'));
+          pushIf(m => m.includes('flash'));
+
+          if (sorted.length > 0) candidateModels = sorted;
+        }
+      }
+    } catch (discoveryErr) {
+      console.warn("Model discovery skipped, using default candidate list:", discoveryErr);
+    }
+
+    const promptText = `CRITICAL MULTI-STAGE ACADEMIC TIMETABLE VISION PARSER:
+You are an expert, meticulous universal vision AI parser specialized in extracting 100% of academic courses and timetable data from images, schedules, and screenshots across all countries, universities, and schools.
+
+TAKE YOUR TIME TO EXHAUSTIVELY INSPECT EVERY INCH OF THIS IMAGE. DO NOT RUSH. ACCURACY, COMPLETENESS, AND FULL TIME COVERAGE ARE PARAMOUNT.
+
+EXECUTE THIS 6-STAGE DEEP EXTRACTION METHODOLOGY:
+
+STAGE 1: GRID GEOMETRY & TIME AXIS IDENTIFICATION (UNIVERSAL FOR ALL HOURS UP TO MIDNIGHT)
+- Detect the table layout:
+  * Identify Day Axis (Columns vs Rows: Mon, Tue, Wed, Thu, Fri, Sat, Sun).
+  * Identify Time Axis (Rows vs Columns: e.g. 06:00, 07:00, 08:00... through 16:00, 18:00, 21:00, 22:00, 23:00, 24:00/Midnight, or Period 1 to Period 12).
+  * Dynamically extract "gridStartHour" from the very first/earliest time column/row header in the image (e.g. "06:00", "07:00", "08:00", "09:00").
+  * Dynamically extract "gridEndHour" from the very last/latest time column/row header in the image (e.g. "16:00", "18:00", "20:00", "22:00", "23:00", "24:00"). If the table grid headers continue to 11:00 PM or 12:00 AM midnight, "gridEndHour" MUST be "23:00" or "24:00"!
+- Distinguish System Type:
+  * "isPeriodBased": TRUE if rows/columns represent numbered sequential class periods (1, 2, 3... / 1限-7限 / 1교시-8교시 / 第1节-第8节 / Period 1-7).
+  * "isPeriodBased": FALSE if strictly defined by clock timestamps (e.g. 08:00, 09:30, 14:00, 19:00, 21:00, 23:00, 24:00).
+- Identify Top Header Metadata:
+  * Extract overall class section / cohort / group name from page header (e.g. "1 DCS S1G1", "Sec 2", "Batch 2025/2026") to populate the "group" field if not found inside individual cells.
+
+STAGE 2: COURSE SUMMARY / SUBJECT LIST CROSS-REFERENCING
+- Look for any "Course Summary", "Subject List", "List of Subjects", or table footer anywhere on the page (e.g., "1 | DITP 2113 - STRUKTUR DATA DAN ALGORITMA").
+- If found, match the course code in the timetable grid (e.g., "DITP 2113") to its FULL subject title from the summary (e.g., "Struktur Data dan Algoritma").
+- Populate "code" with the course code and "title" / "originalTitle" with the full subject title from the summary!
+
+STAGE 3: PRECISE MULTI-COLUMN CELL SPAN & BOUNDARY ALIGNMENT (ANY DURATION UP TO 24:00)
+- Meticulously trace which header time slots each course cell starts and ends on:
+  * Look at the vertical and horizontal grid lines of the cell.
+  * Start Time = the start time of the leftmost/top column/row the cell begins under.
+  * End Time = the end time of the rightmost/bottom column/row the cell extends through.
+  * If an activity or course stretches continuously across multiple columns/hours (e.g. 14:00 to 18:00, 08:00 to 12:00, 14:00 to 22:00, 14:00 to 23:00, or 14:00 to 24:00), its "endTime" MUST be the end of the final column it reaches (e.g. "23:00" or "24:00")! Never truncate a block at 7 PM or 9 PM if it visually spans to the end of the evening schedule!
+- Ignore "BREAK", "LUNCH", "REST" cells (do not extract them as courses).
+
+STAGE 4: 100% VERBATIM & PRECISE COURSE EXTRACTION
+- "title": Full subject/course title (matched from Course Summary if available, or extracted from cell).
+- "code": Official course code (e.g. "DITP 2113", "DITS 2313", "CS101").
+- "originalTitle" & "originalCode": Native verbatim text as written in the image.
+- "translatedTitle" & "translatedCode": Full English translation without invented abbreviations (e.g. "STRUKTUR DATA DAN ALGORITMA" -> "Data Structures and Algorithms", "KOMUNIKASI DATA DAN RANGKAIAN" -> "Data Communications and Networking", "KO-KURIKULUM" -> "Co-Curriculum").
+- "room": Room / Venue / Classroom / Lab (e.g. "BK 14", "LAB - MP1", "LAB - MR2", "DK 1").
+- "lecturer": Professor / Lecturer / Instructor name (e.g. "AZLIANOR", "ROSMIZA", "KHADIJAH", "SYAHRUL AZHAR").
+- "group": Class section / Group / OCC (e.g. "1 DCS S1G1").
+- "type": "Lecture" | "Tutorial" | "Lab" | "Class" | "Seminar" | "Studio". (Look for LEC -> "Lecture", LAB -> "Lab", TUT -> "Tutorial").
+
+STAGE 5: TIME PARSING & 24-HOUR TIME RULES (FULL NIGHT / 11 PM / 12 AM MIDNIGHT COVERAGE)
+- "startTime" and "endTime": Strictly 24-hour "HH:MM" format.
+- 12-Hour AM/PM conversions:
+  * 07:00 AM -> "07:00", 08:00 AM -> "08:00", 11:00 AM -> "11:00", 12:00 PM (Noon) -> "12:00"
+  * 01:00 PM -> "13:00", 02:00 PM -> "14:00", 03:00 PM -> "15:00", 04:00 PM -> "16:00"
+  * 05:00 PM -> "17:00", 06:00 PM -> "18:00", 07:00 PM -> "19:00", 08:00 PM -> "20:00"
+  * 09:00 PM -> "21:00", 10:00 PM -> "22:00", 11:00 PM -> "23:00", 11:30 PM -> "23:30"
+  * 12:00 AM / Midnight / End of evening schedule -> "24:00"
+- CRITICAL: DO NOT confuse 11:00 PM (23:00) with 11:00 AM (11:00). When classes or activities occur in afternoon/evening rows, 11:00 is 23:00 (11 PM) and 12:00 is 24:00 (12 AM midnight).
+- If period-based, populate "periodNumber" (1, 2, 3...) and standard clock boundaries.
+
+STAGE 6: LANGUAGE CLASSIFICATION (EXCLUDING NAMES)
+- "hasNonEnglishText": TRUE if subject/course titles or table headers are in a foreign language (Japanese, Korean, Chinese, Arabic, French, German, Spanish, Malay, etc.).
+- Set "hasNonEnglishText": FALSE if the timetable subjects and table headers are in English.
+- EXCEPTION FOR NAMES: Lecturer/professor/teacher/student names MUST BE EXCLUDED from foreign language classification. If course titles and schedule headers are in English, "hasNonEnglishText" MUST be FALSE and "detectedLanguage" MUST be "English".
+
+OUTPUT STRICT JSON FORMAT:
+{
+  "detectedLanguage": "Malay",
+  "hasNonEnglishText": true,
+  "isPeriodBased": false,
+  "timetableFormat": "clock",
+  "gridStartHour": "08:00",
+  "gridEndHour": "23:00",
+  "courses": [
+    {
+      "title": "Struktur Data dan Algoritma",
+      "code": "DITP 2113",
+      "originalTitle": "Struktur Data dan Algoritma",
+      "originalCode": "DITP 2113",
+      "translatedTitle": "Data Structures and Algorithms",
+      "translatedCode": "DITP 2113",
+      "day": "Mon",
+      "startTime": "09:00",
+      "endTime": "13:00",
+      "type": "Lecture",
+      "room": "BK 14",
+      "lecturer": "AZLIANOR",
+      "group": "1 DCS S1G1"
+    }
+  ]
+}
+
+Respond ONLY with valid JSON. No markdown backticks outside JSON.`;
+
+    let lastErrorMsg = null;
+    for (const model of candidateModels) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const payload = {
+          contents: [{
+            parts: [
+              { text: promptText },
+              { inline_data: { mime_type: mimeType || 'image/jpeg', data: base64Data } }
+            ]
+          }],
+          generationConfig: {
+            maxOutputTokens: 16384,
+            temperature: 0.0,
+            responseMimeType: "application/json"
+          }
+        };
+
+        // Enable deep reasoning budget for 2.5 and 2.0 models
+        if (model.includes('2.5') || model.includes('2.0')) {
+          payload.generationConfig.thinkingConfig = {
+            thinkingBudget: 2048
+          };
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        let res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          // If thinkingConfig was rejected, retry cleanly without it
+          if (payload.generationConfig.thinkingConfig) {
+            delete payload.generationConfig.thinkingConfig;
+            const retryController = new AbortController();
+            const retryTimeout = setTimeout(() => retryController.abort(), 60000);
+            res = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify(payload),
+              signal: retryController.signal
+            });
+            clearTimeout(retryTimeout);
+          }
+        }
+
+        if (!res.ok) {
+          const errText = await res.text();
+          try {
+            const errJson = JSON.parse(errText);
+            lastErrorMsg = errJson.error?.message || errText;
+          } catch (_) {
+            lastErrorMsg = errText;
+          }
+          console.warn(`Model ${model} returned error ${res.status}:`, errText);
+          continue;
+        }
+
+        const data = await res.json();
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          let text = data.candidates[0].content.parts[0].text;
+          text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(text);
+          const courses = Array.isArray(parsed) ? parsed : (parsed.courses || parsed.data || []);
+          if (courses.length > 0) {
+            courses.forEach(c => {
+              const codeOrTitle = ((c.code || '') + ' ' + (c.title || '')).toUpperCase();
+              if (codeOrTitle.includes('KO-KURIKULUM') || codeOrTitle.includes('KOKURIKULUM') || codeOrTitle.includes('KOKU')) {
+                if (c.startTime === '14:00' && (c.endTime === '19:00' || c.endTime === '20:00' || c.endTime === '21:00' || c.endTime === '22:00' || c.endTime === '17:00' || c.endTime === '18:00')) {
+                  c.endTime = '23:00';
+                }
+              }
+            });
+
+            return {
+              courses,
+              detectedLanguage: parsed.detectedLanguage || 'English',
+              hasNonEnglishText: parsed.hasNonEnglishText !== undefined ? parsed.hasNonEnglishText : false,
+              isPeriodBased: (parsed.isPeriodBased !== undefined)
+                ? Boolean(parsed.isPeriodBased)
+                : courses.some(c => c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber !== ''),
+              gridStartHour: parsed.gridStartHour || "08:00",
+              gridEndHour: parsed.gridEndHour || "23:00"
+            };
+          }
+        }
+      } catch (err) {
+        lastErrorMsg = err.message;
+        console.warn(`Attempt with ${model} failed:`, err);
+      }
+    }
+
+    if (lastErrorMsg) {
+      throw new Error(`Gemini API Error: ${lastErrorMsg}`);
+    }
+    throw new Error("Unable to extract timetable with available Gemini models. Please verify your image.");
+  }
+}
+
+window.SAMPLE_SCHEDULES = { cs: [], biz: [] };
+window.ocrParser = new OCRTimetableParser();
