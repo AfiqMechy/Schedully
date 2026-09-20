@@ -588,7 +588,7 @@ class SchedullyApp {
         if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '920px';
         if (wrapper) {
           wrapper.classList.add('tablet-mode');
-          wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode');
+          wrapper.classList.remove('paper-mode', 'watch-mode', 'story-mode', 'watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
         }
         if (lockUIToggle) lockUIToggle.style.display = 'flex';
         const watchPanel = document.getElementById('watch-layout-panel');
@@ -610,7 +610,7 @@ class SchedullyApp {
         if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '720px';
         if (wrapper) {
           wrapper.classList.add('paper-mode');
-          wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode');
+          wrapper.classList.remove('tablet-mode', 'watch-mode', 'story-mode', 'watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
         }
         if (lockUIToggle) lockUIToggle.style.display = 'none';
         const watchPanel = document.getElementById('watch-layout-panel');
@@ -620,7 +620,7 @@ class SchedullyApp {
         if (this.stageDeviceLabel) this.stageDeviceLabel.innerText = 'LIVE PHONE LOCKSCREEN PREVIEW';
         if (this.stageTitleBar) this.stageTitleBar.style.maxWidth = '380px';
         if (wrapper) {
-          wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode');
+          wrapper.classList.remove('tablet-mode', 'paper-mode', 'watch-mode', 'story-mode', 'watch-shape-band', 'watch-shape-capsule', 'watch-shape-round');
         }
         if (lockUIToggle) lockUIToggle.style.display = 'flex';
         const watchPanel = document.getElementById('watch-layout-panel');

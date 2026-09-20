@@ -117,14 +117,6 @@ class SchedullyFirebaseService {
         prompt: 'select_account'
       });
 
-      if (typeof firebase.firestore === 'function') {
-        try {
-          this.firestore = firebase.firestore();
-        } catch (e) {
-          console.warn("Firestore init notice:", e);
-        }
-      }
-
       if (typeof firebase.database === 'function') {
         try {
           this.db = firebase.database();
@@ -188,26 +180,6 @@ class SchedullyFirebaseService {
         });
       } catch (e) {}
     }
-
-    // 2. Firestore onSnapshot Listener
-    if (this.firestore) {
-      try {
-        this._firestoreUnsub = this.firestore.collection('users').doc(this.currentUser.uid).onSnapshot((doc) => {
-          if (this._isSaving) return;
-          if (doc.exists) {
-            const data = doc.data();
-            if (data) {
-              this.lastSyncedData = data;
-              if (this.onDataSyncedCallback) {
-                this.onDataSyncedCallback(data);
-              }
-            }
-          }
-        }, (err) => {
-          console.warn("Firestore snapshot notice:", err);
-        });
-      } catch (e) {}
-    }
   }
 
   _stopRealtimeListener() {
@@ -217,12 +189,6 @@ class SchedullyFirebaseService {
       } catch (e) {}
       this._activeListener = null;
     }
-    if (this._firestoreUnsub) {
-      try {
-        this._firestoreUnsub();
-      } catch (e) {}
-      this._firestoreUnsub = null;
-    }
   }
 
   // Fetch data on demand
@@ -230,7 +196,7 @@ class SchedullyFirebaseService {
     if (!this.currentUser) return null;
     let data = null;
 
-    // 1. Try Realtime Database (Primary)
+    // 1. Fetch Realtime Database (Primary)
     if (this.db) {
       try {
         const snapshot = await this.db.ref('users/' + this.currentUser.uid).once('value');
@@ -240,21 +206,6 @@ class SchedullyFirebaseService {
         if (e && (e.message || '').includes('permission_denied')) {
           console.warn("Firebase Security Rules notice: Realtime Database rules need '.read': 'auth != null' in Firebase Console.");
         }
-      }
-    }
-
-    // 2. Fallback to Firestore only if RTDB has no data and firestore is available
-    if (!data && this.firestore) {
-      try {
-        const doc = await this.firestore.collection('users').doc(this.currentUser.uid).get();
-        if (doc.exists) {
-          data = doc.data();
-        }
-      } catch (e) {
-        if (e && e.code === 'permission-denied' && (e.message || '').includes('not been used')) {
-          this.firestore = null; // Disable Firestore if API is not enabled in Firebase Console
-        }
-        console.warn("Firestore fetch notice:", e);
       }
     }
 
@@ -353,18 +304,6 @@ class SchedullyFirebaseService {
         }
       }
 
-      // 2. Save to Firestore (Secondary)
-      if (this.firestore) {
-        try {
-          await this.firestore.collection('users').doc(this.currentUser.uid).set(cleanPayload, { merge: true });
-          saved = true;
-        } catch (fErr) {
-          if (fErr && fErr.code === 'permission-denied' && (fErr.message || '').includes('not been used')) {
-            this.firestore = null;
-          }
-        }
-      }
-
       setTimeout(() => { this._isSaving = false; }, 300);
       return saved;
     } catch (error) {
@@ -420,18 +359,6 @@ class SchedullyFirebaseService {
           saved = true;
         } catch (e) {
           console.warn("RTDB reset warning:", e);
-        }
-      }
-
-      // 2. Write to Firestore if available
-      if (this.firestore) {
-        try {
-          await this.firestore.collection('users').doc(this.currentUser.uid).set(defaultState);
-          saved = true;
-        } catch (e) {
-          if (e && e.code === 'permission-denied' && (e.message || '').includes('not been used')) {
-            this.firestore = null;
-          }
         }
       }
 

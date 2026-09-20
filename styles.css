@@ -3556,8 +3556,22 @@ body.dark-mode .font-option-item.active,
   box-shadow: 0 0 0 2px var(--m3-sys-color-primary);
 }
 
-.mode-white { background: #F8FAFC; }
-.mode-dark { background: #0B0E14; }
+.mode-white {
+  background: #FFFFFF !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.16) !important;
+  color: #D97706 !important;
+}
+.mode-white svg {
+  stroke: #D97706 !important;
+  color: #F59E0B !important;
+}
+.mode-white svg circle {
+  fill: #F59E0B !important;
+}
+.mode-white svg path {
+  stroke: #D97706 !important;
+}
+.mode-dark { background: #0B0E14; border: 1.5px solid rgba(255, 255, 255, 0.15) !important; }
 
 /* DYNAMIC ADAPTIVE SWATCH CIRCLES (FITS 7 DOTS EASILY) */
 .palette-dot {
@@ -4471,9 +4485,11 @@ body.dark-mode .period-preset-chip.active,
 }
 
 /* Paper Mode: Hardware buttons hidden */
+.m3-phone-wrapper.paper-mode .side-btn,
 .m3-phone-canvas.canvas-paper .side-btn {
   opacity: 0 !important;
   visibility: hidden !important;
+  display: none !important;
   pointer-events: none !important;
 }
 
@@ -4896,16 +4912,40 @@ body.dark-mode .period-preset-chip.active,
   display: none !important;
 }
 
-/* Smartwatch Controls: Hidden by default, visible on Watch */
+/* Smartwatch Controls: Hidden by default, strictly hidden on Phone, Tablet, and Paper */
 .watch-crown,
 .watch-side-button,
 .watch-speaker {
   display: none;
 }
 
+.m3-phone-wrapper:not(.watch-mode) .watch-crown,
+.m3-phone-wrapper:not(.watch-mode) .watch-side-button,
+.m3-phone-wrapper:not(.watch-mode) .watch-speaker,
+.m3-phone-wrapper:not(.watch-mode) .watch-strap,
+.m3-phone-wrapper:not(.watch-mode) .watch-crown::after,
+.m3-phone-wrapper.paper-mode .watch-crown,
+.m3-phone-wrapper.paper-mode .watch-side-button,
+.m3-phone-wrapper.paper-mode .watch-speaker,
+.m3-phone-wrapper.paper-mode .watch-strap,
+.m3-phone-wrapper.paper-mode .side-btn,
+.m3-phone-wrapper.tablet-mode .watch-crown,
+.m3-phone-wrapper.tablet-mode .watch-side-button,
+.m3-phone-wrapper.tablet-mode .watch-speaker,
+.m3-phone-wrapper.tablet-mode .watch-strap {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ── Watch Mode Hardware Controls (Visible on Smartwatch) ── */
 .m3-phone-wrapper.watch-mode .watch-crown,
 .m3-phone-canvas.canvas-watch .watch-crown {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   position: absolute !important;
   right: -10px !important;
   top: 65px !important;
@@ -4923,6 +4963,9 @@ body.dark-mode .period-preset-chip.active,
 .m3-phone-wrapper.watch-mode .watch-crown::after,
 .m3-phone-canvas.canvas-watch .watch-crown::after {
   content: '' !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   position: absolute !important;
   left: 2px !important;
   top: 0 !important;
@@ -4937,6 +4980,9 @@ body.dark-mode .period-preset-chip.active,
 .m3-phone-wrapper.watch-mode .watch-side-button,
 .m3-phone-canvas.canvas-watch .watch-side-button {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   position: absolute !important;
   right: -7px !important;
   top: 140px !important;
@@ -4954,6 +5000,9 @@ body.dark-mode .period-preset-chip.active,
 .m3-phone-wrapper.watch-mode .watch-speaker,
 .m3-phone-canvas.canvas-watch .watch-speaker {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   position: absolute !important;
   left: -6px !important;
   top: 95px !important;
@@ -4968,8 +5017,8 @@ body.dark-mode .period-preset-chip.active,
 }
 
 /* ── Smart Band Hardware Specifics (No Crown/Speaker, Single Sleek Button, 120px Straps) ── */
-.m3-phone-wrapper.watch-shape-band .watch-crown,
-.m3-phone-wrapper.watch-shape-band .watch-speaker,
+.m3-phone-wrapper.watch-mode.watch-shape-band .watch-crown,
+.m3-phone-wrapper.watch-mode.watch-shape-band .watch-speaker,
 .watch-mode:has(.watch-shape-band) .watch-crown,
 .watch-mode:has(.watch-shape-band) .watch-speaker,
 .m3-phone-canvas.canvas-watch.watch-shape-band .watch-crown,
@@ -4977,10 +5026,13 @@ body.dark-mode .period-preset-chip.active,
   display: none !important;
 }
 
-.m3-phone-wrapper.watch-shape-band .watch-side-button,
+.m3-phone-wrapper.watch-mode.watch-shape-band .watch-side-button,
 .watch-mode:has(.watch-shape-band) .watch-side-button,
 .m3-phone-canvas.canvas-watch.watch-shape-band .watch-side-button {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   position: absolute !important;
   right: -5px !important;
   top: 50% !important;
@@ -4997,14 +5049,14 @@ body.dark-mode .period-preset-chip.active,
 
 .watch-mode .watch-strap.strap-band,
 .watch-mode:has(.watch-shape-band) .watch-strap,
-.m3-phone-wrapper.watch-shape-band .watch-strap {
+.m3-phone-wrapper.watch-mode.watch-shape-band .watch-strap {
   width: 120px !important;
 }
 
 /* ── Pill Capsule Hardware Specifics (Full Touch, No Mechanical Buttons, 105px Straps) ── */
-.m3-phone-wrapper.watch-shape-capsule .watch-crown,
-.m3-phone-wrapper.watch-shape-capsule .watch-side-button,
-.m3-phone-wrapper.watch-shape-capsule .watch-speaker,
+.m3-phone-wrapper.watch-mode.watch-shape-capsule .watch-crown,
+.m3-phone-wrapper.watch-mode.watch-shape-capsule .watch-side-button,
+.m3-phone-wrapper.watch-mode.watch-shape-capsule .watch-speaker,
 .watch-mode:has(.watch-shape-capsule) .watch-crown,
 .watch-mode:has(.watch-shape-capsule) .watch-side-button,
 .watch-mode:has(.watch-shape-capsule) .watch-speaker,
@@ -5016,13 +5068,13 @@ body.dark-mode .period-preset-chip.active,
 
 .watch-mode .watch-strap.strap-capsule,
 .watch-mode:has(.watch-shape-capsule) .watch-strap,
-.m3-phone-wrapper.watch-shape-capsule .watch-strap {
+.m3-phone-wrapper.watch-mode.watch-shape-capsule .watch-strap {
   width: 105px !important;
 }
 
 /* ── Round Watch Hardware Specifics (Sleek Flush Crown, No Protruding Speaker) ── */
-.m3-phone-wrapper.watch-shape-round .watch-speaker,
-.m3-phone-wrapper.watch-shape-round .watch-side-button,
+.m3-phone-wrapper.watch-mode.watch-shape-round .watch-speaker,
+.m3-phone-wrapper.watch-mode.watch-shape-round .watch-side-button,
 .watch-mode:has(.watch-shape-round) .watch-speaker,
 .watch-mode:has(.watch-shape-round) .watch-side-button,
 .m3-phone-canvas.canvas-watch.watch-shape-round .watch-speaker,
@@ -5030,10 +5082,13 @@ body.dark-mode .period-preset-chip.active,
   display: none !important;
 }
 
-.m3-phone-wrapper.watch-shape-round .watch-crown,
+.m3-phone-wrapper.watch-mode.watch-shape-round .watch-crown,
 .watch-mode:has(.watch-shape-round) .watch-crown,
 .m3-phone-canvas.canvas-watch.watch-shape-round .watch-crown {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   position: absolute !important;
   right: -6px !important;
   top: 50% !important;
@@ -5048,11 +5103,13 @@ body.dark-mode .period-preset-chip.active,
   z-index: 50 !important;
 }
 
-.m3-phone-wrapper.watch-shape-round .watch-crown::after,
+.m3-phone-wrapper.watch-mode.watch-shape-round .watch-crown::after,
 .watch-mode:has(.watch-shape-round) .watch-crown::after,
 .m3-phone-canvas.canvas-watch.watch-shape-round .watch-crown::after {
   content: '' !important;
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   position: absolute !important;
   left: 1.5px !important;
   top: 0 !important;
@@ -5065,8 +5122,41 @@ body.dark-mode .period-preset-chip.active,
 
 .watch-mode .watch-strap.strap-round,
 .watch-mode:has(.watch-shape-round) .watch-strap,
-.m3-phone-wrapper.watch-shape-round .watch-strap {
+.m3-phone-wrapper.watch-mode.watch-shape-round .watch-strap {
   width: 180px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FINAL ABSOLUTE HARDWARE ISOLATION GUARD
+   ═══════════════════════════════════════════════════════════════ */
+:not(.watch-mode) > .watch-crown,
+:not(.watch-mode) > .watch-side-button,
+:not(.watch-mode) > .watch-speaker,
+:not(.watch-mode) > .watch-strap,
+.m3-phone-wrapper:not(.watch-mode) .watch-crown,
+.m3-phone-wrapper:not(.watch-mode) .watch-side-button,
+.m3-phone-wrapper:not(.watch-mode) .watch-speaker,
+.m3-phone-wrapper:not(.watch-mode) .watch-strap,
+.m3-phone-wrapper:not(.watch-mode) .watch-crown::after,
+.m3-phone-canvas:not(.canvas-watch) .watch-crown,
+.m3-phone-canvas:not(.canvas-watch) .watch-side-button,
+.m3-phone-canvas:not(.canvas-watch) .watch-speaker,
+.m3-phone-canvas:not(.canvas-watch) .watch-strap,
+.m3-phone-wrapper.paper-mode .watch-crown,
+.m3-phone-wrapper.paper-mode .watch-side-button,
+.m3-phone-wrapper.paper-mode .watch-speaker,
+.m3-phone-wrapper.paper-mode .watch-strap,
+.m3-phone-wrapper.paper-mode .side-btn,
+.m3-phone-wrapper.paper-mode .phone-camera-dot,
+.m3-phone-wrapper.paper-mode .phone-nav-bar,
+.m3-phone-wrapper.tablet-mode .watch-crown,
+.m3-phone-wrapper.tablet-mode .watch-side-button,
+.m3-phone-wrapper.tablet-mode .watch-speaker,
+.m3-phone-wrapper.tablet-mode .watch-strap {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Watch Screen Clock Header Typography */
@@ -6121,7 +6211,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   font-weight: 700;
   color: var(--m3-header-text-color, var(--m3-font-custom-color, var(--m3-sys-text-primary))) !important;
   border-bottom: 2px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
-  background: var(--m3-header-custom-bg, var(--m3-sys-color-surface-variant)) !important;
+  background: var(--m3-header-custom-bg, var(--m3-sys-color-primary-container, #DBEAFE)) !important;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -6134,7 +6224,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   padding: 6px 2px;
   border-right: 1.5px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
   border-bottom: 2px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
-  background: var(--m3-header-custom-bg, var(--m3-sys-color-surface-variant)) !important;
+  background: var(--m3-header-custom-bg, var(--m3-sys-color-primary-container, #DBEAFE)) !important;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -6153,7 +6243,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   padding: 4px 2px;
   border-right: 2px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
   border-bottom: 1.5px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
-  background: var(--m3-header-custom-bg, var(--m3-sys-color-surface-variant)) !important;
+  background: var(--m3-header-custom-bg, var(--m3-sys-color-primary-container, #DBEAFE)) !important;
   transition: background-color 0.2s ease, color 0.2s ease;
   line-height: 1.2;
 }
