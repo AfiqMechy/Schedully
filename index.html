@@ -1,6 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
+<script>
+(function() {
+  var CURRENT_VERSION = 'schedully-cache-v637';
+  var CACHE_KEY = 'sw_version_confirmed';
+  if ('serviceWorker' in navigator && window.caches) {
+    // Check if we're running with an old cache version
+    caches.keys().then(function(keys) {
+      var hasOldCache = keys.some(function(k) { return k !== CURRENT_VERSION && k.startsWith('schedully-cache'); });
+      if (hasOldCache) {
+        // Unregister all service workers, delete all caches, then reload
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          var tasks = regs.map(function(r) { return r.unregister(); });
+          return Promise.all(tasks);
+        }).then(function() {
+          return caches.keys();
+        }).then(function(cacheKeys) {
+          return Promise.all(cacheKeys.map(function(k) { return caches.delete(k); }));
+        }).then(function() {
+          // Only reload once to prevent infinite loop
+          if (!sessionStorage.getItem('sw_reload_done')) {
+            sessionStorage.setItem('sw_reload_done', '1');
+            window.location.reload(true);
+          }
+        });
+      }
+    }).catch(function(){});
+  }
+})();
+</script>
 <script>
   (function() {
     const saved = localStorage.getItem('schedully_theme_mode') || 'auto';
