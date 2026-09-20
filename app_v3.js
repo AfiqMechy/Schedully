@@ -183,7 +183,7 @@ class SchedullyApp {
     this.gridStartHour = 8;
     this.gridEndHour = 18;
     this.classes = [];
-    this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     this.gridWidthVal = 100;
     this.gridHeightVal = 49;
     this.gridFontSizeVal = 9;
@@ -2903,7 +2903,7 @@ class SchedullyApp {
 
     // 6. Reset to Default Button in Floating Card
     btnFloatingResetDays?.addEventListener('click', () => {
-      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       this.gridStartHour = 8;
       this.gridEndHour = 20;
       this.axisMode = 'time';
@@ -5166,7 +5166,7 @@ class SchedullyApp {
       this.clockFormat = '12';
       this.gridStartHour = 9;
       this.gridEndHour = 17;
-      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       this.gridWidthVal = 100;
       this.gridHeightVal = 49;
       this.gridFontSizeVal = 9;
@@ -10199,7 +10199,7 @@ class SchedullyApp {
             timetableOpacity: 100,
             showTitle: true,
             titleText: 'Untitled',
-            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
             gridStartHour: 8,
             gridEndHour: 20
           };
@@ -10272,7 +10272,7 @@ class SchedullyApp {
             timetableOpacity: 100,
             showTitle: true,
             titleText: 'Untitled',
-            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
             gridStartHour: 8,
             gridEndHour: 20
           };
@@ -10468,7 +10468,7 @@ class SchedullyApp {
           timetableOpacity: 100,
           showTitle: true,
           titleText: 'Untitled',
-          activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+          activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
           gridStartHour: 8,
           gridEndHour: 20
         };
@@ -10515,10 +10515,20 @@ class SchedullyApp {
         this.currentMode = 'light';
         this.applyThemeEngine();
 
+        const freshStarterClasses = [
+          { id: 'c_' + Date.now() + '_1', name: 'Mathematics', code: 'MATH 101', day: 'Mon', start: '09:00', end: '10:30', room: 'Hall A', instructor: 'Dr. Smith', color: '#3B82F6' },
+          { id: 'c_' + Date.now() + '_2', name: 'Physics', code: 'PHYS 102', day: 'Tue', start: '10:00', end: '11:30', room: 'Lab 2', instructor: 'Prof. Davis', color: '#10B981' },
+          { id: 'c_' + Date.now() + '_3', name: 'Computer Science', code: 'CS 103', day: 'Wed', start: '13:00', end: '14:30', room: 'Room 204', instructor: 'Dr. Alan', color: '#F59E0B' },
+          { id: 'c_' + Date.now() + '_4', name: 'Academic English', code: 'ENG 104', day: 'Thu', start: '11:00', end: '12:30', room: 'Library', instructor: 'Ms. Emily', color: '#EC4899' },
+          { id: 'c_' + Date.now() + '_5', name: 'Design Workshop', code: 'ART 105', day: 'Fri', start: '14:00', end: '15:30', room: 'Studio 1', instructor: 'Mr. Leo', color: '#8B5CF6' },
+          { id: 'c_' + Date.now() + '_6', name: 'Weekend Seminar', code: 'SEM 106', day: 'Sat', start: '10:00', end: '11:30', room: 'Auditorium', instructor: 'Speaker', color: '#F97316' }
+        ];
+
+        this.classes = [...freshStarterClasses];
         this.presets = {
           default: {
             name: 'Default',
-            classes: [],
+            classes: [...freshStarterClasses],
             settings: freshSettings,
             wallpaper: null,
             wallpaperSwatches: null,
@@ -10535,16 +10545,16 @@ class SchedullyApp {
 
         // 3. Reset Firebase Cloud Data
         if (window.schedullyFirebase?.currentUser) {
-          await window.schedullyFirebase.resetUserData(freshSettings);
+          await window.schedullyFirebase.resetUserData(freshSettings, freshStarterClasses);
         }
 
         // Cache the clean state in local storage so refreshes don't pull ghost data
         localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
         localStorage.setItem('schedully_active_preset', 'default');
-        localStorage.setItem('schedully_classes', JSON.stringify([]));
+        localStorage.setItem('schedully_classes', JSON.stringify(freshStarterClasses));
 
         this.markSaved();
-        alert("Account reset successfully! Fresh default workspace is ready.");
+        alert("Account reset successfully! Fresh starter schedule (Mon–Sat) is ready.");
       });
     }
 
@@ -10908,7 +10918,7 @@ class SchedullyApp {
       showTrademark: this.showTrademark || false,
       trademarkText: this.trademarkText || 'Schedully • Student Edition',
       trademarkStyle: this.trademarkStyle || 'default',
-      activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
       gridStartHour: (this.gridStartHour !== undefined && this.gridStartHour !== null) ? Number(this.gridStartHour) : 8,
       gridEndHour: (this.gridEndHour !== undefined && this.gridEndHour !== null) ? Number(this.gridEndHour) : 20,
       axisMode: this.axisMode || 'time',
@@ -11221,8 +11231,8 @@ class SchedullyApp {
 
     // Set canonical active days without duplicates
     const hasWeekend = importedDays.some(d => d === 'Sat' || d === 'Sun');
-    const defaultDays = hasWeekend ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    this.activeDays = defaultDays.filter(d => importedDays.includes(d) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(d));
+    const defaultDays = hasWeekend ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    this.activeDays = defaultDays.filter(d => importedDays.includes(d) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].includes(d));
 
     if (this.gridStartTimeSelect) {
       this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;

@@ -230,25 +230,31 @@ class SchedullyFirebaseService {
     if (!this.currentUser) return null;
     let data = null;
 
-    // 1. Try Firestore first
-    if (this.firestore) {
+    // 1. Try Realtime Database (Primary)
+    if (this.db) {
+      try {
+        const snapshot = await this.db.ref('users/' + this.currentUser.uid).once('value');
+        data = snapshot.val();
+      } catch (e) {
+        console.warn("RTDB fetch notice:", e);
+        if (e && (e.message || '').includes('permission_denied')) {
+          console.warn("Firebase Security Rules notice: Realtime Database rules need '.read': 'auth != null' in Firebase Console.");
+        }
+      }
+    }
+
+    // 2. Fallback to Firestore only if RTDB has no data and firestore is available
+    if (!data && this.firestore) {
       try {
         const doc = await this.firestore.collection('users').doc(this.currentUser.uid).get();
         if (doc.exists) {
           data = doc.data();
         }
       } catch (e) {
+        if (e && e.code === 'permission-denied' && (e.message || '').includes('not been used')) {
+          this.firestore = null; // Disable Firestore if API is not enabled in Firebase Console
+        }
         console.warn("Firestore fetch notice:", e);
-      }
-    }
-
-    // 2. Fallback to RTDB if needed
-    if (!data && this.db) {
-      try {
-        const snapshot = await this.db.ref('users/' + this.currentUser.uid).once('value');
-        data = snapshot.val();
-      } catch (e) {
-        console.warn("RTDB fetch notice:", e);
       }
     }
 
@@ -334,23 +340,28 @@ class SchedullyFirebaseService {
 
       let saved = false;
 
-      // 1. Save to Firestore
-      if (this.firestore) {
-        try {
-          await this.firestore.collection('users').doc(this.currentUser.uid).set(cleanPayload, { merge: true });
-          saved = true;
-        } catch (fErr) {
-          console.warn("Firestore save warning:", fErr);
-        }
-      }
-
-      // 2. Save to Realtime Database
+      // 1. Save to Realtime Database (Primary)
       if (this.db) {
         try {
           await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
           saved = true;
         } catch (dbErr) {
           console.warn("RTDB save warning:", dbErr);
+          if (dbErr && (dbErr.message || '').includes('permission_denied')) {
+            console.warn("Firebase Security Rules notice: Realtime Database rules need '.write': 'auth != null' in Firebase Console.");
+          }
+        }
+      }
+
+      // 2. Save to Firestore (Secondary)
+      if (this.firestore) {
+        try {
+          await this.firestore.collection('users').doc(this.currentUser.uid).set(cleanPayload, { merge: true });
+          saved = true;
+        } catch (fErr) {
+          if (fErr && fErr.code === 'permission-denied' && (fErr.message || '').includes('not been used')) {
+            this.firestore = null;
+          }
         }
       }
 
@@ -363,17 +374,18 @@ class SchedullyFirebaseService {
     }
   }
 
-  // RESET USER CLOUD DATA — completely wipes damaged/broken data and writes fresh default state
-  async resetUserData(freshPresetSettings) {
+  // RESET USER CLOUD DATA — completely wipes damaged/broken data and writes fresh starter state
+  async resetUserData(freshPresetSettings, starterClasses) {
     if (!this.currentUser) return false;
     try {
       this._isSaving = true;
+      const classes = (starterClasses && Array.isArray(starterClasses)) ? starterClasses : [];
       const defaultState = this._sanitizeData({
-        classes: [],
+        classes: classes,
         presets: {
           default: {
             name: 'Default',
-            classes: [],
+            classes: classes,
             wallpaper: null,
             wallpaperSwatches: null,
             wallpaperPrimary: null,
@@ -399,19 +411,32 @@ class SchedullyFirebaseService {
         displayName: this.currentUser.displayName || ''
       });
 
-      if (this.firestore) {
-        try {
-          await this.firestore.collection('users').doc(this.currentUser.uid).set(defaultState);
-        } catch (e) {}
-      }
+      let saved = false;
+
+      // 1. Write fresh restart data to Realtime Database
       if (this.db) {
         try {
           await this.db.ref('users/' + this.currentUser.uid).set(defaultState);
-        } catch (e) {}
+          saved = true;
+        } catch (e) {
+          console.warn("RTDB reset warning:", e);
+        }
+      }
+
+      // 2. Write to Firestore if available
+      if (this.firestore) {
+        try {
+          await this.firestore.collection('users').doc(this.currentUser.uid).set(defaultState);
+          saved = true;
+        } catch (e) {
+          if (e && e.code === 'permission-denied' && (e.message || '').includes('not been used')) {
+            this.firestore = null;
+          }
+        }
       }
 
       setTimeout(() => { this._isSaving = false; }, 300);
-      return true;
+      return saved;
     } catch (error) {
       this._isSaving = false;
       console.error("Error resetting user data in Firebase:", error);
