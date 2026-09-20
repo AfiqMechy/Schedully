@@ -242,12 +242,12 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260919_v609">
+<link rel="stylesheet" href="styles.css?v=20260920_v634">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260919_v609" defer></script>
+<script src="firebase-config.js?v=20260920_v610" defer></script>
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -677,26 +677,6 @@
         </div>
       </div>
 
-      <!-- Quick Time Nudge & Swap Action Bar (Appears when a course card is selected, floats above canvas freely) -->
-      <div id="grid-course-action-pill" class="hidden absolute z-30 flex items-center gap-1 p-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-2xl border border-gray-200/80 dark:border-white/15 transition-all">
-        <button id="btn-nudge-time-minus" type="button" class="action-pill-btn" title="Shift Earlier">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-          <span id="nudge-label-minus">-30m</span>
-        </button>
-        <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
-        <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Shift Later">
-          <span id="nudge-label-plus">+30m</span>
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-        </button>
-        <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
-        <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
-          <span data-i18n="edit">Edit</span>
-        </button>
-        <button id="btn-nudge-cancel" type="button" class="action-pill-icon-btn text-gray-400 hover:text-gray-700 dark:hover:text-white" title="Deselect">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
 
       <!-- Smartwatch Today's Schedule Glance View (Active in Watch Mode) -->
       <div id="watch-glance-container" class="watch-glance-container" style="display: none;">
@@ -725,10 +705,32 @@
         <span id="lock-trademark-text">Schedully • Student Edition</span>
       </div>
 
+
       <!-- Phone Navigation Bar Indicator -->
       <div class="phone-nav-bar"></div>
     </div>
   </div>
+  </div>
+
+  <!-- Quick Time Nudge & Swap Action Bar - rendered OUTSIDE phone wrapper so bezel never clips it -->
+  <div id="grid-course-action-pill" class="hidden fixed z-[100000] flex items-center gap-1 p-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-2xl border border-gray-200/80 dark:border-white/15 transition-all">
+    <button id="btn-nudge-time-minus" type="button" class="action-pill-btn" title="Shift Earlier">
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      <span id="nudge-label-minus">-30m</span>
+    </button>
+    <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+    <button id="btn-nudge-time-plus" type="button" class="action-pill-btn" title="Shift Later">
+      <span id="nudge-label-plus">+30m</span>
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <div class="action-pill-divider h-3 w-[1px] bg-gray-200 dark:bg-white/20"></div>
+    <button id="btn-nudge-edit-card" type="button" class="action-pill-btn action-pill-primary" title="Open in Course Editor">
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"/></svg>
+      <span data-i18n="edit">Edit</span>
+    </button>
+    <button id="btn-nudge-cancel" type="button" class="action-pill-icon-btn text-gray-400 hover:text-gray-700 dark:hover:text-white" title="Deselect">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
   </div>
 
 </div>
@@ -1011,21 +1013,14 @@
         <div class="flex items-center rounded-full shadow-xs p-0.5">
           <button id="btn-theme-toggle" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors overflow-hidden" title="Toggle Light/Dark Theme">
             <div class="morph-icon-wrapper">
-              <!-- Sun Icon (Light Mode) -->
+              <!-- Sun Icon (Light Mode) - Exactly Centered at (12, 12) with 8 symmetric 45° rays -->
               <svg class="morph-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="5" stroke-width="2"></circle>
-                <line x1="12" y1="1" x2="12" y2="3" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="12" y1="21" x2="12" y2="23" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="1" y1="12" x2="3" y2="12" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="21" y1="12" x2="23" y2="12" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke-width="2" stroke-linecap="round"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke-width="2" stroke-linecap="round"></line>
+                <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+                <path d="M12 2.5v2.5M12 19v2.5M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2.5 12H5M19 12h2.5M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77" stroke-width="2.2" stroke-linecap="round"></path>
               </svg>
-              <!-- Moon Icon (Dark Mode) -->
+              <!-- Moon Icon (Dark Mode) - Perfectly Centered at (12, 12) -->
               <svg class="morph-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
             </div>
           </button>
@@ -1138,13 +1133,25 @@
         <!-- Side Sliders (Zoom & FX Controls) Toggle -->
         <div class="opt-row">
           <div>
-            <span class="opt-label text-xs font-bold text-gray-800" data-i18n="sideSliders">Side Sliders</span>
-            <p class="text-[10px] text-gray-500 font-medium mt-0.5" data-i18n="sideSlidersDesc">Show floating left &amp; right sliders</p>
+            <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-100" data-i18n="sideSliders">Side Sliders</span>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5" data-i18n="sideSlidersDesc">Show floating left &amp; right sliders</p>
           </div>
           <div class="pill-toggle-group" id="toggle-quick-side-sliders">
             <button type="button" class="pill-btn active" data-val="yes" data-i18n="yes">YES</button>
             <button type="button" class="pill-btn" data-val="no" data-i18n="no">NO</button>
           </div>
+        </div>
+
+        <!-- Customize Side Sliders Placement (Left vs Right) -->
+        <div class="pt-2 border-t border-gray-200/50 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-100">Slider Placement</span>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Drag &amp; arrange Left vs Right tools</p>
+          </div>
+          <button type="button" id="btn-open-slider-customizer" class="m3-customize-launcher-btn px-3 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            <span>Customize</span>
+          </button>
         </div>
       </div>
 
@@ -1498,6 +1505,24 @@
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2v20M8 5l4-3 4 3M8 19l4 3 4-3"/>
           <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Separate Vertical Pill: Wallpaper Effects Sub-Settings (Blur Intensity / Dimming) -->
+    <div id="blur-scope-group" class="m3-expressive-pill m3-scope-pill hidden" title="Wallpaper Effects Sub-settings">
+      <!-- Sub-setting 1: Blur Intensity (Active Default) -->
+      <button id="btn-blur-scope-blur" type="button" class="m3-fx-mode-btn m3-scope-btn active" title="Wallpaper Blur (px)" aria-label="Wallpaper Blur">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+      </button>
+
+      <!-- Sub-setting 2: Wallpaper Dimming -->
+      <button id="btn-blur-scope-dim" type="button" class="m3-fx-mode-btn m3-scope-btn" title="Wallpaper Dimming (%)" aria-label="Wallpaper Dimming">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
         </svg>
       </button>
     </div>
@@ -1920,8 +1945,17 @@
             <span class="material-symbols-outlined icon-sm">sync</span>
           </button>
           <div class="v-divider"></div>
-          <button class="theme-mode-dot mode-white" data-mode="light" title="Light Mode"></button>
-          <button class="theme-mode-dot mode-dark" data-mode="dark" title="Midnight Dark Mode"></button>
+          <button class="theme-mode-dot mode-white" data-mode="light" title="Light Mode">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
+              <path d="M12 2v2.5M12 19.5v2.5M4.22 4.22l1.77 1.77M18.01 18.01l1.77 1.77M2 12h2.5M19.5 12h2.5M4.22 19.78l1.77-1.77M18.01 5.99l1.77-1.77" stroke-width="2.2" stroke-linecap="round"></path>
+            </svg>
+          </button>
+          <button class="theme-mode-dot mode-dark" data-mode="dark" title="Midnight Dark Mode">
+            <svg class="w-4 h-4 text-indigo-300" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -2766,13 +2800,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260919_v609" defer></script>
+  <script src="app_v3.js?v=20260920_v634" defer></script>
 
 <!-- Register PWA Service Worker for Native App & Standalone Mode -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=609').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=634').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
     });
@@ -2786,10 +2820,68 @@
   <div class="m3-parsing-pulse-dot"></div>
 </div>
 
-<!-- ═══ Swap / Move Toast — Fixed Center-Bottom Overlay ═══ -->
-<div id="grid-swap-toast" class="grid-swap-toast-pill hidden">
-  <span id="grid-swap-toast-msg">Course moved</span>
-  <button id="btn-grid-swap-undo" type="button" class="btn-grid-swap-undo">Undo</button>
+<!-- ═══ Side Sliders Drag & Drop Customization Modal (Material 3 Adaptive Engine) ═══ -->
+<div id="modal-slider-customizer" class="fixed inset-0 z-[99999] flex items-center justify-center p-3 bg-black/60 backdrop-blur-md hidden transition-all" role="dialog" aria-modal="true" aria-labelledby="modal-slider-customizer-title">
+  <div class="slider-customizer-dialog relative w-full max-w-lg rounded-3xl shadow-2xl p-5 flex flex-col gap-4 overflow-hidden max-h-[90vh]">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-gray-200/60 dark:border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="slider-customizer-header-icon w-9 h-9 rounded-2xl flex items-center justify-center shrink-0">
+          <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        </div>
+        <div>
+          <h3 id="modal-slider-customizer-title" class="text-sm font-black tracking-wide" style="color: var(--m3-sys-text-primary, #0f172a);">Customize Side Sliders</h3>
+          <p class="text-[11px] font-medium" style="color: var(--m3-sys-text-secondary, #64748b);">Drag to reorder/move, tap eye icon to toggle visibility</p>
+        </div>
+      </div>
+      <button type="button" id="btn-close-slider-customizer" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all cursor-pointer" title="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- 2 Columns: Left vs Right Drop Zones -->
+    <div class="grid grid-cols-2 gap-3 overflow-y-auto max-h-[55vh] p-1">
+      <!-- Left Bar Column -->
+      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 rounded-2xl">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-extrabold flex items-center gap-1.5" style="color: var(--m3-sys-text-primary, #1e293b);">
+            <svg class="slider-customizer-side-arrow w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+            Left Bar
+          </span>
+          <span id="slider-count-left" class="slider-customizer-badge text-[10px] font-bold px-2 py-0.5 rounded-full">3 visible</span>
+        </div>
+        <div id="slider-zone-left" class="slider-drop-zone flex flex-col gap-2 min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="left">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Right Bar Column -->
+      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 rounded-2xl">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-extrabold flex items-center gap-1.5" style="color: var(--m3-sys-text-primary, #1e293b);">
+            Right Bar
+            <svg class="slider-customizer-side-arrow w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+          </span>
+          <span id="slider-count-right" class="slider-customizer-badge text-[10px] font-bold px-2 py-0.5 rounded-full">3 visible</span>
+        </div>
+        <div id="slider-zone-right" class="slider-drop-zone flex flex-col gap-2 min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="right">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="flex items-center justify-between pt-3 border-t border-gray-200/60 dark:border-white/10">
+      <button type="button" id="btn-reset-slider-customizer" class="slider-customizer-reset-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer">
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Reset Defaults</span>
+      </button>
+      <button type="button" id="btn-save-slider-customizer" class="slider-customizer-save-btn px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 active:scale-95 transition-all cursor-pointer">
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <span>Save &amp; Apply</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 </body></html>

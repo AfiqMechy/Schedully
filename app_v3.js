@@ -180,8 +180,8 @@ class SchedullyApp {
     this.showTable = true;
     this.showLockUI = true;
     this.clockFormat = '12';
-    this.gridStartHour = 9;
-    this.gridEndHour = 17;
+    this.gridStartHour = 8;
+    this.gridEndHour = 18;
     this.classes = [];
     this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     this.gridWidthVal = 100;
@@ -201,6 +201,20 @@ class SchedullyApp {
     this.zoomScale = (!isNaN(storedZoom) && storedZoom >= 0.4 && storedZoom <= 1.5) 
       ? storedZoom 
       : getOptimalFitScale();
+
+    // Side Sliders Customization Layout State (Left vs Right assignment + Hidden list)
+    try {
+      const storedLayout = localStorage.getItem('schedully_slider_layout');
+      this.sliderLayout = storedLayout ? JSON.parse(storedLayout) : null;
+      if (!this.sliderLayout || !Array.isArray(this.sliderLayout.left) || !Array.isArray(this.sliderLayout.right)) {
+        this.sliderLayout = { left: ['layout', 'opacity', 'blur'], right: ['zoom', 'radius', 'font'], hidden: [] };
+      }
+      if (!Array.isArray(this.sliderLayout.hidden)) {
+        this.sliderLayout.hidden = [];
+      }
+    } catch (e) {
+      this.sliderLayout = { left: ['layout', 'opacity', 'blur'], right: ['zoom', 'radius', 'font'], hidden: [] };
+    }
 
     this.initDOMElements();
     this.bindEvents();
@@ -788,6 +802,8 @@ class SchedullyApp {
     // Apply default high-contrast font color for headers/title
     if (!this.userHasPickedFontColor) {
       root.style.setProperty('--m3-font-custom-color', selectedTheme.text);
+    } else if (this.customFontColor) {
+      this.applyFontColor(this.customFontColor);
     }
 
     document.querySelectorAll('.palette-dot.dual-tone').forEach(dot => {
@@ -804,17 +820,28 @@ class SchedullyApp {
     // Apply 3 distinct tone colors for Wallpaper Background, Header, and Grid Surface
     if (!this.userHasPickedBgColor && !hasPhotoWallpaper) {
       this.phoneCanvas.style.backgroundColor = selectedTheme.defaultBg || selectedTheme.bg;
+    } else if (this.customBgColor && !hasPhotoWallpaper) {
+      this.phoneCanvas.style.backgroundColor = this.customBgColor;
+      this.updateClockContrast(this.customBgColor);
     }
     if (!this.userHasPickedHeaderColor) {
       this.applyHeaderColor(selectedTheme.defaultHeader || selectedTheme.bottom);
+    } else if (this.customHeaderColor) {
+      this.applyHeaderColor(this.customHeaderColor);
     }
     if (!this.userHasPickedSurfaceColor) {
       document.documentElement.style.setProperty('--m3-grid-surface-bg', selectedTheme.defaultSurface || selectedTheme.surface);
+    } else if (this.customSurfaceColor) {
+      document.documentElement.style.setProperty('--m3-grid-surface-bg', this.customSurfaceColor);
+    }
+    if (this.userHasPickedTrademarkColor && this.customTrademarkColor) {
+      this.applyTrademarkColor(this.customTrademarkColor);
     }
 
-    const surfaceSwatches = document.querySelectorAll('#grid-surface-picker .color-swatch-btn');
-    const bgSwatches = document.querySelectorAll('#bg-color-picker .color-swatch-btn');
-    const headerSwatches = document.querySelectorAll('#header-color-picker .color-swatch-btn');
+    const surfaceSwatches = document.querySelectorAll('#grid-surface-picker .color-swatch-btn, #floating-grid-surface-picker .floating-color-swatch-btn');
+    const bgSwatches = document.querySelectorAll('#bg-color-picker .color-swatch-btn, #floating-bg-color-picker .floating-color-swatch-btn');
+    const headerSwatches = document.querySelectorAll('#header-color-picker .color-swatch-btn, #floating-header-color-picker .floating-color-swatch-btn');
+    const trademarkSwatches = document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn');
 
     selectedTheme.swatches.forEach((hex, idx) => {
       if (surfaceSwatches[idx]) {
@@ -829,7 +856,15 @@ class SchedullyApp {
         headerSwatches[idx].setAttribute('data-header', hex);
         headerSwatches[idx].style.backgroundColor = hex;
       }
+      if (trademarkSwatches[idx]) {
+        trademarkSwatches[idx].setAttribute('data-trademark', hex);
+        trademarkSwatches[idx].style.backgroundColor = hex;
+      }
     });
+
+    if (typeof this.syncCustomColorPickersUI === 'function') {
+      this.syncCustomColorPickersUI();
+    }
 
     const courseDots = document.querySelectorAll('.swatch-grid .swatch-dot');
     selectedTheme.courseSwatches.forEach((hex, idx) => {
@@ -1323,13 +1358,21 @@ class SchedullyApp {
   }
 
 
-  applyHeaderColor(colorVal) {
+  applyHeaderColor(colorVal, isUserExplicit = false) {
     const root = document.documentElement;
     if (!colorVal) {
+      if (isUserExplicit) {
+        this.userHasPickedHeaderColor = false;
+        this.customHeaderColor = null;
+      }
       root.style.removeProperty('--m3-header-custom-bg');
       root.style.removeProperty('--m3-header-text-color');
       root.style.removeProperty('--m3-header-outline-color');
       return;
+    }
+    if (isUserExplicit) {
+      this.userHasPickedHeaderColor = true;
+      this.customHeaderColor = colorVal;
     }
     root.style.setProperty('--m3-header-custom-bg', colorVal);
 
@@ -1342,17 +1385,23 @@ class SchedullyApp {
     root.style.setProperty('--m3-header-outline-color', headerOutline);
   }
 
-  applyTrademarkColor(colorVal) {
+  applyTrademarkColor(colorVal, isUserExplicit = false) {
     const root = document.documentElement;
     if (!colorVal) {
-      this.userHasPickedTrademarkColor = false;
+      if (isUserExplicit) {
+        this.userHasPickedTrademarkColor = false;
+        this.customTrademarkColor = null;
+      }
       this.trademarkCustomBg = null;
       root.style.removeProperty('--trademark-pill-custom-bg');
       root.style.removeProperty('--trademark-pill-outline-color');
       root.style.removeProperty('--trademark-custom-text-color');
       return;
     }
-    this.userHasPickedTrademarkColor = true;
+    if (isUserExplicit) {
+      this.userHasPickedTrademarkColor = true;
+      this.customTrademarkColor = colorVal;
+    }
     this.trademarkCustomBg = colorVal;
     root.style.setProperty('--trademark-pill-custom-bg', colorVal);
 
@@ -1385,19 +1434,23 @@ class SchedullyApp {
     root.style.setProperty('--m3-card-text-color', colorVal);
   }
 
-  applyFontColor(colorVal) {
+  applyFontColor(colorVal, isUserExplicit = false) {
     const root = document.documentElement;
     if (colorVal) {
-      this.userHasPickedFontColor = true;
-      this.customFontColor = colorVal;
+      if (isUserExplicit) {
+        this.userHasPickedFontColor = true;
+        this.customFontColor = colorVal;
+      }
       root.style.setProperty('--m3-font-custom-color', colorVal);
       const phoneCanvas = document.getElementById('phone-canvas');
       if (phoneCanvas) {
         phoneCanvas.style.setProperty('--m3-font-custom-color', colorVal);
       }
     } else {
-      this.userHasPickedFontColor = false;
-      this.customFontColor = null;
+      if (isUserExplicit) {
+        this.userHasPickedFontColor = false;
+        this.customFontColor = null;
+      }
       root.style.removeProperty('--m3-font-custom-color');
       const phoneCanvas = document.getElementById('phone-canvas');
       if (phoneCanvas) {
@@ -1407,6 +1460,58 @@ class SchedullyApp {
     if (typeof this.renderTimetableGrid === 'function') {
       this.renderTimetableGrid();
     }
+  }
+
+  syncCustomColorPickersUI() {
+    // 1. Grid Surface
+    const surfaceVal = (this.userHasPickedSurfaceColor && this.customSurfaceColor) ? this.customSurfaceColor : '';
+    document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn, #grid-surface-picker .color-swatch-btn').forEach(btn => {
+      const btnSurface = btn.getAttribute('data-surface') || '';
+      const isMatch = surfaceVal && (btnSurface.toLowerCase() === surfaceVal.toLowerCase());
+      btn.classList.toggle('active', !!isMatch);
+    });
+    const customSurfaceInput = document.getElementById('floating-custom-surface-color');
+    if (customSurfaceInput && surfaceVal) customSurfaceInput.value = surfaceVal;
+
+    // 2. Background
+    const bgVal = (this.userHasPickedBgColor && this.customBgColor) ? this.customBgColor : '';
+    document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn, #bg-color-picker .color-swatch-btn').forEach(btn => {
+      const btnBg = btn.getAttribute('data-bg') || '';
+      const isMatch = bgVal && (btnBg.toLowerCase() === bgVal.toLowerCase());
+      btn.classList.toggle('active', !!isMatch);
+    });
+    const customBgInput = document.getElementById('floating-custom-bg-color');
+    if (customBgInput && bgVal) customBgInput.value = bgVal;
+
+    // 3. Header
+    const headerVal = (this.userHasPickedHeaderColor && this.customHeaderColor) ? this.customHeaderColor : '';
+    document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn, #header-color-picker .color-swatch-btn').forEach(btn => {
+      const btnHeader = btn.getAttribute('data-header') || '';
+      const isMatch = headerVal && (btnHeader.toLowerCase() === headerVal.toLowerCase());
+      btn.classList.toggle('active', !!isMatch);
+    });
+    const customHeaderInput = document.getElementById('floating-custom-header-color');
+    if (customHeaderInput && headerVal) customHeaderInput.value = headerVal;
+
+    // 4. Trademark
+    const trademarkVal = (this.userHasPickedTrademarkColor && this.customTrademarkColor) ? this.customTrademarkColor : '';
+    document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(btn => {
+      const btnTrademark = btn.getAttribute('data-trademark') || '';
+      const isMatch = trademarkVal && (btnTrademark.toLowerCase() === trademarkVal.toLowerCase());
+      btn.classList.toggle('active', !!isMatch);
+    });
+    const customTrademarkInput = document.getElementById('floating-custom-trademark-color');
+    if (customTrademarkInput && trademarkVal) customTrademarkInput.value = trademarkVal;
+
+    // 5. Font
+    const fontVal = (this.userHasPickedFontColor && this.customFontColor) ? this.customFontColor : '';
+    document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn, #font-color-picker .color-swatch-btn').forEach(btn => {
+      const btnFont = btn.getAttribute('data-font') || '';
+      const isMatch = fontVal && (btnFont.toLowerCase() === fontVal.toLowerCase());
+      btn.classList.toggle('active', !!isMatch);
+    });
+    const customFontInput = document.getElementById('floating-custom-font-color');
+    if (customFontInput && fontVal) customFontInput.value = fontVal;
   }
 
   syncTitleBarModeUI() {
@@ -1586,6 +1691,27 @@ class SchedullyApp {
     this.bgBlurEnabled = false;
     this.bgBlurIntensity = 10;
 
+    this.wallpaperDimIntensity = 0;
+    try {
+      const savedDim = localStorage.getItem('schedully_wallpaper_dim');
+      if (savedDim !== null) {
+        this.wallpaperDimIntensity = Math.max(0, Math.min(100, parseInt(savedDim, 10) || 0));
+      }
+    } catch (e) {}
+    document.documentElement.style.setProperty('--wallpaper-dim-val', `${(this.wallpaperDimIntensity || 0) / 100}`);
+
+    this.setWallpaperDimming = (val, syncSlider = true) => {
+      this.wallpaperDimIntensity = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
+      document.documentElement.style.setProperty('--wallpaper-dim-val', `${this.wallpaperDimIntensity / 100}`);
+      try { localStorage.setItem('schedully_wallpaper_dim', String(this.wallpaperDimIntensity)); } catch (e) {}
+      if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider();
+      }
+      if (syncSlider && typeof this.syncRightSlider === 'function') {
+        this.syncRightSlider();
+      }
+    };
+
     this.setWallpaperBlur = (val, isEnabled = true, syncSlider = true) => {
       this.bgBlurIntensity = Math.max(0, Math.min(40, parseInt(val, 10) || 0));
       this.bgBlurEnabled = !!isEnabled;
@@ -1601,6 +1727,9 @@ class SchedullyApp {
       document.documentElement.style.setProperty('--wallpaper-blur-val', isEnabled ? `${this.bgBlurIntensity}px` : '0px');
       if (syncSlider && typeof this.syncLeftFxSlider === 'function') {
         this.syncLeftFxSlider();
+      }
+      if (syncSlider && typeof this.syncRightSlider === 'function') {
+        this.syncRightSlider();
       }
     };
 
@@ -2046,6 +2175,12 @@ class SchedullyApp {
     this.userHasPickedHeaderColor = false;
     this.userHasPickedSurfaceColor = false;
     this.userHasPickedFontColor = false;
+    this.userHasPickedTrademarkColor = false;
+    this.customBgColor = null;
+    this.customHeaderColor = null;
+    this.customSurfaceColor = null;
+    this.customFontColor = null;
+    this.customTrademarkColor = null;
     this.globalAdaptiveColor = true;
 
     // Update Quick Setting Pill if exists
@@ -2740,7 +2875,7 @@ class SchedullyApp {
       this.gridStartHour = parseInt(e.target.value.split(':')[0], 10);
       syncTimeSelects();
       this.renderTimetableGrid();
-      this._stagePending();
+      this._stagePending(true);
       window.soundFX?.play?.('tap');
     });
 
@@ -2749,7 +2884,7 @@ class SchedullyApp {
       this.gridEndHour = parseInt(e.target.value.split(':')[0], 10);
       syncTimeSelects();
       this.renderTimetableGrid();
-      this._stagePending();
+      this._stagePending(true);
       window.soundFX?.play?.('tap');
     });
 
@@ -3392,6 +3527,7 @@ class SchedullyApp {
         // Scale down blur radius for mini thumbnail to prevent GPU rasterization flicker/glitches
         const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
         clone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
+        clone.style.setProperty('--wallpaper-dim-val', `${(this.wallpaperDimIntensity || 0) / 100}`, 'important');
 
         clone.style.position = 'absolute';
         clone.style.top = '0';
@@ -3469,6 +3605,7 @@ class SchedullyApp {
         pipClone.style.transform = `scale(${scale})`;
         const scaledBlur = this.bgBlurEnabled ? `${Math.max(1, Math.round((this.bgBlurIntensity || 12) * scale))}px` : '0px';
         pipClone.style.setProperty('--wallpaper-blur-val', scaledBlur, 'important');
+        pipClone.style.setProperty('--wallpaper-dim-val', `${(this.wallpaperDimIntensity || 0) / 100}`, 'important');
       }
     };
 
@@ -4672,14 +4809,14 @@ class SchedullyApp {
       this.gridStartHour = parseInt(e.target.value.split(':')[0]);
       if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
       this.renderTimetableGrid();
-      this._stagePending();
+      this._stagePending(true);
     });
 
     this.gridEndTimeSelect?.addEventListener('change', (e) => {
       this.gridEndHour = parseInt(e.target.value.split(':')[0]);
       if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
       this.renderTimetableGrid();
-      this._stagePending();
+      this._stagePending(true);
     });
 
     // Day Display Checkboxes
@@ -4689,7 +4826,7 @@ class SchedullyApp {
         this.activeDays = checked.length > 0 ? checked : ['Mon'];
         if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
         this.renderTimetableGrid();
-        this._stagePending();
+        this._stagePending(true);
       });
     });
 
@@ -4882,8 +5019,10 @@ class SchedullyApp {
         btn.classList.add('active');
         const colorVal = btn.getAttribute('data-surface');
         this.userHasPickedSurfaceColor = true;
+        this.customSurfaceColor = colorVal;
         document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
     document.querySelector('#grid-surface-picker .color-custom-btn')?.addEventListener('click', (e) => {
@@ -4892,10 +5031,12 @@ class SchedullyApp {
       this.openCustomColorPicker(currentVal, 'Grid Surface Colour', (pickedColor) => {
         document.querySelectorAll('#grid-surface-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedSurfaceColor = true;
+        this.customSurfaceColor = pickedColor;
         document.documentElement.style.setProperty('--m3-grid-surface-bg', pickedColor);
         const btn = document.querySelector('#grid-surface-picker .color-custom-btn');
         if (btn) btn.style.background = pickedColor;
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4906,9 +5047,11 @@ class SchedullyApp {
         btn.classList.add('active');
         const colorVal = btn.getAttribute('data-bg');
         this.userHasPickedBgColor = true;
+        this.customBgColor = colorVal;
         this.phoneCanvas.style.backgroundColor = colorVal;
         this.updateClockContrast(colorVal);
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4918,11 +5061,13 @@ class SchedullyApp {
       this.openCustomColorPicker(currentVal, 'Canvas Background Colour', (pickedColor) => {
         document.querySelectorAll('#bg-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedBgColor = true;
+        this.customBgColor = pickedColor;
         this.phoneCanvas.style.backgroundColor = pickedColor;
         this.updateClockContrast(pickedColor);
         const btn = document.querySelector('#bg-color-picker .color-custom-btn');
         if (btn) btn.style.background = pickedColor;
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4960,8 +5105,10 @@ class SchedullyApp {
         btn.classList.add('active');
         const colorVal = btn.getAttribute('data-header');
         this.userHasPickedHeaderColor = true;
-        this.applyHeaderColor(colorVal);
-        this._stagePending();
+        this.customHeaderColor = colorVal;
+        this.applyHeaderColor(colorVal, true);
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4971,10 +5118,12 @@ class SchedullyApp {
       this.openCustomColorPicker(currentVal, 'Timetable Header Colour', (pickedColor) => {
         document.querySelectorAll('#header-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedHeaderColor = true;
-        this.applyHeaderColor(pickedColor);
+        this.customHeaderColor = pickedColor;
+        this.applyHeaderColor(pickedColor, true);
         const btn = document.querySelector('#header-color-picker .color-custom-btn');
         if (btn) btn.style.background = pickedColor;
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4984,8 +5133,11 @@ class SchedullyApp {
         document.querySelectorAll('#font-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const colorVal = btn.getAttribute('data-font');
-        this.applyFontColor(colorVal);
-        this._stagePending();
+        this.userHasPickedFontColor = true;
+        this.customFontColor = colorVal;
+        this.applyFontColor(colorVal, true);
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -4994,10 +5146,13 @@ class SchedullyApp {
       const currentVal = getComputedStyle(document.documentElement).getPropertyValue('--m3-font-custom-color').trim() || '#0F172A';
       this.openCustomColorPicker(currentVal, 'Timetable Text Font Colour', (pickedColor) => {
         document.querySelectorAll('#font-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
-        this.applyFontColor(pickedColor);
+        this.userHasPickedFontColor = true;
+        this.customFontColor = pickedColor;
+        this.applyFontColor(pickedColor, true);
         const btn = document.querySelector('#font-color-picker .color-custom-btn');
         if (btn) btn.style.background = pickedColor;
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
     });
 
@@ -5216,16 +5371,25 @@ class SchedullyApp {
 
     // ═══════════════════════════════════════════════════════════════
     // IPHONE CAMERA-GRADE FLUID CONTINUOUS OPTICAL ZOOM ENGINE
-    // Exponential Spring Damping + 120FPS Subpixel Hardware Render
+    // Exponential Spring Damping + Proportional Viewport Anchoring
     // ═══════════════════════════════════════════════════════════════
     let renderedZoom = this.zoomScale || 0.85;
     let targetZoom = renderedZoom;
     let zoomRaf = null;
+    let currentZoomFocal = null;
 
-    const renderZoomFrame = (scale) => {
+    const renderZoomFrame = (scale, focalPoint = null) => {
+      const scrollArea = document.getElementById('canvas-scroll-area');
       const scalerContainer = document.getElementById('canvas-scaler-container');
       const wrapper = document.getElementById('main-phone-wrapper');
-      if (!scalerContainer || !wrapper) return;
+      if (!scalerContainer || !wrapper || !scrollArea) return;
+
+      const prevScrollW = scrollArea.scrollWidth;
+      const prevScrollH = scrollArea.scrollHeight;
+      const prevScrollL = scrollArea.scrollLeft;
+      const prevScrollT = scrollArea.scrollTop;
+      const clientW = scrollArea.clientWidth;
+      const clientH = scrollArea.clientHeight;
 
       const dims = getBaseModelDimensions();
       const visualW = dims.width * scale;
@@ -5255,48 +5419,81 @@ class SchedullyApp {
         phoneCanvas.style.transform = 'none';
       }
 
+      // Maintain Viewport Focal Point (or relative position) instead of snapping to center
+      const newScrollW = scrollArea.scrollWidth;
+      const newScrollH = scrollArea.scrollHeight;
+
+      if (newScrollH > clientH && prevScrollH > clientH) {
+        if (focalPoint && focalPoint.y !== undefined) {
+          const ratioY = (prevScrollT + focalPoint.y) / prevScrollH;
+          scrollArea.scrollTop = Math.round(ratioY * newScrollH - focalPoint.y);
+        } else {
+          const maxPrevT = Math.max(1, prevScrollH - clientH);
+          const scrollProgressY = Math.max(0, Math.min(1, prevScrollT / maxPrevT));
+          const maxNewT = Math.max(0, newScrollH - clientH);
+          scrollArea.scrollTop = Math.round(scrollProgressY * maxNewT);
+        }
+      }
+
+      if (newScrollW > clientW && prevScrollW > clientW) {
+        if (focalPoint && focalPoint.x !== undefined) {
+          const ratioX = (prevScrollL + focalPoint.x) / prevScrollW;
+          scrollArea.scrollLeft = Math.round(ratioX * newScrollW - focalPoint.x);
+        } else {
+          const maxPrevL = Math.max(1, prevScrollW - clientW);
+          const scrollProgressX = Math.max(0, Math.min(1, prevScrollL / maxPrevL));
+          const maxNewL = Math.max(0, newScrollW - clientW);
+          scrollArea.scrollLeft = Math.round(scrollProgressX * maxNewL);
+        }
+      }
+
       const displayPercent = Math.round(scale * 100);
       const minZ = 0.4;
       const maxZ = 1.5;
       const ratio = Math.max(0, Math.min(1, (scale - minZ) / (maxZ - minZ)));
       const pct = Math.round(ratio * 100);
 
-      // 1. Sync Left Floating Slider Visuals
-      if (zoomLabel) {
-        zoomLabel.innerText = `${displayPercent}%`;
-      }
-      const sideZoomFill = document.getElementById('side-zoom-fill');
-      if (sideZoomFill) {
-        sideZoomFill.style.transition = 'none';
-        sideZoomFill.style.setProperty('height', `${pct}%`, 'important');
-      }
-      const sideZoomTrack = document.getElementById('side-zoom-track');
-      if (sideZoomTrack) {
-        sideZoomTrack.setAttribute('aria-valuenow', pct);
-      }
-
-      // 2. Sync Right Multi-Mode Slider Visuals (when in zoom mode)
-      const sideRightFill = document.getElementById('side-right-fill');
-      const rightSliderLabel = document.getElementById('right-slider-label-text');
-      const sideRightTrack = document.getElementById('side-right-track');
-      if (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom') {
-        if (sideRightFill) {
-          sideRightFill.style.transition = 'none';
-          sideRightFill.style.setProperty('height', `${pct}%`, 'important');
+      // Sync slider visuals ONLY if zoom is visible and actively selected on its respective slider
+      const hiddenTools = this.sliderLayout?.hidden || [];
+      if (!hiddenTools.includes('zoom')) {
+        const leftTools = (this.sliderLayout?.left || []).filter(id => !hiddenTools.includes(id));
+        const rightTools = (this.sliderLayout?.right || []).filter(id => !hiddenTools.includes(id));
+        
+        if (leftTools.includes('zoom') && leftActiveTool === 'zoom') {
+          const leftSliderFill = document.getElementById('side-fx-fill');
+          const leftSliderLabel = document.getElementById('fx-label-text');
+          const leftTrack = document.getElementById('side-fx-track');
+          if (leftSliderFill) {
+            leftSliderFill.style.transition = 'none';
+            leftSliderFill.style.setProperty('height', `${pct}%`, 'important');
+          }
+          if (leftSliderLabel) {
+            leftSliderLabel.innerText = `${displayPercent}%`;
+          }
+          if (leftTrack) {
+            leftTrack.setAttribute('aria-valuenow', pct);
+          }
+        } else if (rightTools.includes('zoom') && rightActiveTool === 'zoom') {
+          const rightSliderFill = document.getElementById('side-right-fill');
+          const rightSliderLabel = document.getElementById('right-slider-label-text');
+          const rightTrack = document.getElementById('side-right-track');
+          if (rightSliderFill) {
+            rightSliderFill.style.transition = 'none';
+            rightSliderFill.style.setProperty('height', `${pct}%`, 'important');
+          }
+          if (rightSliderLabel) {
+            rightSliderLabel.innerText = `${displayPercent}%`;
+          }
+          if (rightTrack) {
+            rightTrack.setAttribute('aria-valuenow', pct);
+          }
         }
-        if (rightSliderLabel) {
-          rightSliderLabel.innerText = `${displayPercent}%`;
-        }
-        if (sideRightTrack) {
-          sideRightTrack.setAttribute('aria-valuenow', pct);
-        }
       }
-
-      // 3. Keep Canvas Centered — Middle In and Middle Out on Mobile and Desktop
-      centerCanvasModel(false);
     };
 
-    const startZoomPhysics = (immediate = false) => {
+    const startZoomPhysics = (immediate = false, focalPoint = null) => {
+      if (focalPoint) currentZoomFocal = focalPoint;
+
       if (immediate) {
         if (zoomRaf) {
           cancelAnimationFrame(zoomRaf);
@@ -5304,8 +5501,9 @@ class SchedullyApp {
         }
         renderedZoom = targetZoom;
         this.zoomScale = targetZoom;
-        renderZoomFrame(renderedZoom);
+        renderZoomFrame(renderedZoom, currentZoomFocal);
         try { localStorage.setItem('schedully_zoom_scale', String(targetZoom)); } catch (e) {}
+        currentZoomFocal = null;
         return;
       }
 
@@ -5323,8 +5521,9 @@ class SchedullyApp {
         if (Math.abs(diff) < 0.0008) {
           renderedZoom = targetZoom;
           this.zoomScale = targetZoom;
-          renderZoomFrame(renderedZoom);
+          renderZoomFrame(renderedZoom, currentZoomFocal);
           zoomRaf = null;
+          currentZoomFocal = null;
           try { localStorage.setItem('schedully_zoom_scale', String(targetZoom)); } catch (e) {}
           return;
         }
@@ -5332,7 +5531,7 @@ class SchedullyApp {
         // Apple Camera-grade exponential spring curve (buttery smooth camera glide)
         const lambda = 11.5; // camera zoom response speed
         renderedZoom += diff * (1 - Math.exp(-lambda * dt));
-        renderZoomFrame(renderedZoom);
+        renderZoomFrame(renderedZoom, currentZoomFocal);
 
         zoomRaf = requestAnimationFrame(physicsTick);
       };
@@ -5340,13 +5539,13 @@ class SchedullyApp {
       zoomRaf = requestAnimationFrame(physicsTick);
     };
 
-    const applyZoom = (smooth = true) => {
+    const applyZoom = (smooth = true, focalPoint = null) => {
       let optimalScale = this.zoomScale;
       if (optimalScale === undefined || optimalScale === null || isNaN(optimalScale)) {
         optimalScale = 0.85;
       }
       targetZoom = Math.max(0.4, Math.min(1.5, optimalScale));
-      startZoomPhysics(!smooth);
+      startZoomPhysics(!smooth, focalPoint);
     };
 
     this.applyCanvasZoom = applyZoom;
@@ -5362,20 +5561,26 @@ class SchedullyApp {
       let badgeHideTimeout = null;
       let rightBadgeTimeout = null;
       const showZoomBadgeTemporarily = (duration = 1400) => {
-        if (sideZoomContainer) {
-          sideZoomContainer.classList.add('is-interacting');
-          if (badgeHideTimeout) clearTimeout(badgeHideTimeout);
-          badgeHideTimeout = setTimeout(() => {
-            sideZoomContainer.classList.remove('is-interacting');
-          }, duration);
-        }
-        const rightSlider = document.getElementById('side-right-slider-container');
-        if (rightSlider && (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom')) {
-          rightSlider.classList.add('is-interacting');
-          if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
-          rightBadgeTimeout = setTimeout(() => {
-            rightSlider.classList.remove('is-interacting');
-          }, duration);
+        const hiddenTools = this.sliderLayout?.hidden || [];
+        if (hiddenTools.includes('zoom')) return;
+
+        const leftTools = (this.sliderLayout?.left || []).filter(id => !hiddenTools.includes(id));
+        const rightTools = (this.sliderLayout?.right || []).filter(id => !hiddenTools.includes(id));
+        
+        if (leftTools.includes('zoom') && leftActiveTool === 'zoom') {
+          const leftSlider = document.getElementById('side-fx-slider-container');
+          if (leftSlider) {
+            leftSlider.classList.add('is-interacting');
+            if (badgeHideTimeout) clearTimeout(badgeHideTimeout);
+            badgeHideTimeout = setTimeout(() => leftSlider.classList.remove('is-interacting'), duration);
+          }
+        } else if (rightTools.includes('zoom') && rightActiveTool === 'zoom') {
+          const rightSlider = document.getElementById('side-right-slider-container');
+          if (rightSlider) {
+            rightSlider.classList.add('is-interacting');
+            if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
+            rightBadgeTimeout = setTimeout(() => rightSlider.classList.remove('is-interacting'), duration);
+          }
         }
       };
 
@@ -5526,11 +5731,17 @@ class SchedullyApp {
           initialPinchDist = calcTouchDist(e.touches[0], e.touches[1]);
           initialPinchZoom = targetZoom || this.zoomScale || 0.85;
 
-          const sideZoom = document.getElementById('side-zoom-slider-container');
-          if (sideZoom) sideZoom.classList.add('active-drag');
-          const rightSlider = document.getElementById('side-right-slider-container');
-          if (rightSlider && (typeof rightSliderMode === 'undefined' || rightSliderMode === 'zoom')) {
-            rightSlider.classList.add('active-drag');
+          const hiddenTools = this.sliderLayout?.hidden || [];
+          if (!hiddenTools.includes('zoom')) {
+            const leftTools = (this.sliderLayout?.left || []).filter(id => !hiddenTools.includes(id));
+            const rightTools = (this.sliderLayout?.right || []).filter(id => !hiddenTools.includes(id));
+            if (leftTools.includes('zoom') && leftActiveTool === 'zoom') {
+              const leftSlider = document.getElementById('side-fx-slider-container');
+              if (leftSlider) leftSlider.classList.add('active-drag');
+            } else if (rightTools.includes('zoom') && rightActiveTool === 'zoom') {
+              const rightSlider = document.getElementById('side-right-slider-container');
+              if (rightSlider) rightSlider.classList.add('active-drag');
+            }
           }
 
           showZoomBadgeTemporarily(1200);
@@ -5549,7 +5760,12 @@ class SchedullyApp {
             if (Math.abs(newScale - targetZoom) >= 0.005) {
               targetZoom = newScale;
               this.zoomScale = newScale;
-              startZoomPhysics(true); // Instant 120FPS subpixel response during gesture
+              const rect = canvasScrollArea ? canvasScrollArea.getBoundingClientRect() : null;
+              const focal = rect ? {
+                x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left,
+                y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top
+              } : null;
+              startZoomPhysics(true, focal); // Instant 120FPS subpixel response during gesture
               showZoomBadgeTemporarily(1000);
               if (window.haptics && (newScale === 0.4 || newScale === 1.5)) {
                 window.haptics.trigger('boundary');
@@ -5564,8 +5780,8 @@ class SchedullyApp {
         if (isPinching) {
           if (!e.touches || e.touches.length < 2) {
             isPinching = false;
-            const sideZoom = document.getElementById('side-zoom-slider-container');
-            if (sideZoom) sideZoom.classList.remove('active-drag');
+            const leftSlider = document.getElementById('side-fx-slider-container');
+            if (leftSlider) leftSlider.classList.remove('active-drag');
             const rightSlider = document.getElementById('side-right-slider-container');
             if (rightSlider) rightSlider.classList.remove('active-drag');
 
@@ -5586,10 +5802,12 @@ class SchedullyApp {
         canvasScrollArea.addEventListener('wheel', (e) => {
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
+            const rect = canvasScrollArea.getBoundingClientRect();
+            const focal = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             const delta = -e.deltaY * 0.004;
             targetZoom = Math.min(1.5, Math.max(0.4, Math.round((targetZoom + delta) * 100) / 100));
             this.zoomScale = targetZoom;
-            applyZoom(true);
+            startZoomPhysics(false, focal);
             showZoomBadgeTemporarily(1000);
             this._stagePending(true);
           }
@@ -5617,75 +5835,608 @@ class SchedullyApp {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE RIGHT SLIDER
-    // 3 Modes: 'zoom' (40%-150%), 'radius' (0px-28px), 'font' (70%-140%)
+    // UNIFIED SLIM MATERIAL 3 EXPRESSIVE DYNAMIC SIDE SLIDER CONTROLLER
+    // Supports 6 Tools dynamically placed on either Left or Right Side:
+    // 'zoom', 'radius', 'font', 'layout', 'opacity', 'blur'
     // ═══════════════════════════════════════════════════════════════
+    const leftSliderContainer  = document.getElementById('side-fx-slider-container');
+    const leftSliderTrack      = document.getElementById('side-fx-track');
+    const leftSliderFill       = document.getElementById('side-fx-fill');
+    const leftSliderBadge      = document.getElementById('side-fx-badge');
+    const leftSliderLabelText  = document.getElementById('fx-label-text');
+    const leftPill             = document.getElementById('m3-expressive-fx-pill');
+
     const rightSliderContainer = document.getElementById('side-right-slider-container');
     const rightSliderTrack     = document.getElementById('side-right-track');
     const rightSliderFill      = document.getElementById('side-right-fill');
     const rightSliderBadge     = document.getElementById('side-right-badge');
     const rightSliderLabelText = document.getElementById('right-slider-label-text');
+    const rightPill            = document.getElementById('m3-expressive-right-pill');
 
-    const btnRightZoom   = document.getElementById('btn-right-mode-zoom');
-    const btnRightRadius = document.getElementById('btn-right-mode-radius');
-    const btnRightFont   = document.getElementById('btn-right-mode-font');
+    // Tool Switcher Buttons
+    const sliderToolBtns = {
+      zoom: document.getElementById('btn-right-mode-zoom'),
+      radius: document.getElementById('btn-right-mode-radius'),
+      font: document.getElementById('btn-right-mode-font'),
+      layout: document.getElementById('btn-fx-mode-layout'),
+      opacity: document.getElementById('btn-fx-mode-opacity'),
+      blur: document.getElementById('btn-fx-mode-blur')
+    };
 
-    const rightRadiusScopeGroup = document.getElementById('right-radius-scope-group');
-    const btnRadiusScopeBoth    = document.getElementById('btn-radius-scope-both');
-    const btnRadiusScopeTable   = document.getElementById('btn-radius-scope-table');
-    const btnRadiusScopeCards   = document.getElementById('btn-radius-scope-cards');
+    // Sub-Scope Groups
+    const radiusScopeGroup = document.getElementById('right-radius-scope-group');
+    const btnRadiusScopeBoth  = document.getElementById('btn-radius-scope-both');
+    const btnRadiusScopeTable = document.getElementById('btn-radius-scope-table');
+    const btnRadiusScopeCards = document.getElementById('btn-radius-scope-cards');
 
-    const rightFontTopGroup     = document.getElementById('right-font-top-group');
-    const btnRightFontPanelToggle = document.getElementById('btn-right-font-panel-toggle');
+    const fontTopGroup = document.getElementById('right-font-top-group');
+    const btnFontPanelToggle = document.getElementById('btn-right-font-panel-toggle');
     const floatingFontStyleCard = document.getElementById('floating-font-style-card');
     const btnCloseFloatingFont  = document.getElementById('btn-close-floating-font');
 
-    const rightFontScopeGroup   = document.getElementById('right-font-scope-group');
+    const fontScopeGroup = document.getElementById('right-font-scope-group');
     const btnFontScopeAll       = document.getElementById('btn-font-scope-all');
     const btnFontScopeCards     = document.getElementById('btn-font-scope-cards');
     const btnFontScopeHeader    = document.getElementById('btn-font-scope-header');
     const btnFontScopeTitle     = document.getElementById('btn-font-scope-title');
     const btnFontScopeTrademark = document.getElementById('btn-font-scope-trademark');
 
-    const updateRightScopeUI = () => {
-      if (rightRadiusScopeGroup) {
-        if (rightSliderMode === 'radius') {
-          rightRadiusScopeGroup.classList.remove('hidden');
-        } else {
-          rightRadiusScopeGroup.classList.add('hidden');
-        }
-      }
-      if (rightFontScopeGroup) {
-        if (rightSliderMode === 'font') {
-          rightFontScopeGroup.classList.remove('hidden');
-          rightFontTopGroup?.classList.remove('hidden');
-        } else {
-          rightFontScopeGroup.classList.add('hidden');
-          rightFontTopGroup?.classList.add('hidden');
-          floatingFontStyleCard?.classList.add('hidden');
-          btnRightFontPanelToggle?.classList.remove('active');
-        }
-      }
+    const layoutTopGroup = document.getElementById('left-layout-top-group');
+    const btnDaysPanelToggle = document.getElementById('btn-left-days-panel-toggle');
+    const floatingDaysTimeCard   = document.getElementById('floating-days-time-card');
+    const btnCloseFloatingDays   = document.getElementById('btn-close-floating-days');
 
-      [btnRadiusScopeBoth, btnRadiusScopeTable, btnRadiusScopeCards].forEach(b => b?.classList.remove('active'));
-      if (radiusScope === 'both') btnRadiusScopeBoth?.classList.add('active');
-      else if (radiusScope === 'table') btnRadiusScopeTable?.classList.add('active');
-      else if (radiusScope === 'cards') btnRadiusScopeCards?.classList.add('active');
+    const layoutScopeGroup = document.getElementById('left-layout-scope-group');
+    const btnFxWidth  = document.getElementById('btn-fx-mode-width');
+    const btnFxHeight = document.getElementById('btn-fx-mode-height');
+    const btnFxPosx   = document.getElementById('btn-fx-mode-posx');
+    const btnFxPosy   = document.getElementById('btn-fx-mode-posy');
 
-      [btnFontScopeAll, btnFontScopeCards, btnFontScopeHeader, btnFontScopeTitle, btnFontScopeTrademark].forEach(b => b?.classList.remove('active'));
-      if (fontScope === 'all') btnFontScopeAll?.classList.add('active');
-      else if (fontScope === 'cards') btnFontScopeCards?.classList.add('active');
-      else if (fontScope === 'header') btnFontScopeHeader?.classList.add('active');
-      else if (fontScope === 'title') btnFontScopeTitle?.classList.add('active');
-      else if (fontScope === 'trademark') btnFontScopeTrademark?.classList.add('active');
+    const blurScopeGroup = document.getElementById('blur-scope-group');
+    const btnBlurScopeBlur = document.getElementById('btn-blur-scope-blur');
+    const btnBlurScopeDim  = document.getElementById('btn-blur-scope-dim');
+
+    // Active tool state per side
+    let leftActiveTool = 'layout';
+    let rightActiveTool = 'zoom';
+
+    // Sub-mode states
+    let activeRadiusScope = 'both'; // 'both' | 'table' | 'cards'
+    let activeFontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
+    let activeLayoutSubMode = 'width'; // 'width' | 'height' | 'posx' | 'posy'
+    let activeBlurSubMode = 'blur'; // 'blur' | 'dim'
+
+    let leftBadgeTimeout = null;
+    let rightBadgeTimeout = null;
+
+    const showSideBadgeTemporarily = (side, duration = 1400) => {
+      const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
+      if (!container) return;
+      container.classList.add('is-interacting');
+      if (side === 'left') {
+        if (leftBadgeTimeout) clearTimeout(leftBadgeTimeout);
+        leftBadgeTimeout = setTimeout(() => container.classList.remove('is-interacting'), duration);
+      } else {
+        if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
+        rightBadgeTimeout = setTimeout(() => container.classList.remove('is-interacting'), duration);
+      }
     };
 
-    btnRightFontPanelToggle?.addEventListener('click', (e) => {
+    const getToolCurrentSide = (toolId) => {
+      const hiddenTools = this.sliderLayout?.hidden || [];
+      if (hiddenTools.includes(toolId)) return null;
+      const leftTools = (this.sliderLayout?.left || ['layout', 'opacity', 'blur']).filter(id => !hiddenTools.includes(id));
+      const rightTools = (this.sliderLayout?.right || ['zoom', 'radius', 'font']).filter(id => !hiddenTools.includes(id));
+      if (leftTools.includes(toolId)) return 'left';
+      if (rightTools.includes(toolId)) return 'right';
+      return 'left';
+    };
+
+    const getToolConfig = (toolId) => {
+      if (toolId === 'zoom') {
+        const val = targetZoom || 0.85;
+        return { min: 0.4, max: 1.5, val: val, label: `${Math.round(val * 100)}%`, step: 0.05, ariaLabel: 'Canvas Zoom' };
+      } else if (toolId === 'radius') {
+        let val = 18;
+        if (activeRadiusScope === 'cards') {
+          val = this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6;
+        } else {
+          val = this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18;
+        }
+        return { min: 0, max: 28, val: val, label: val === 0 ? 'Sharp' : `${val}px`, step: 1, ariaLabel: 'Corner Radius' };
+      } else if (toolId === 'font') {
+        let val = 1.0;
+        let min = 0.4, max = 1.6;
+        if (activeFontScope === 'all') {
+          val = this.fontScaleAll !== undefined ? this.fontScaleAll : (this.gridFontScale || 1.0);
+          min = 0.4; max = 1.6;
+        } else if (activeFontScope === 'cards') {
+          val = this.fontScaleCards !== undefined ? this.fontScaleCards : 1.0;
+          min = 0.4; max = 1.6;
+        } else if (activeFontScope === 'header') {
+          val = this.fontScaleHeader !== undefined ? this.fontScaleHeader : 1.0;
+          min = 0.5; max = 1.8;
+        } else if (activeFontScope === 'title') {
+          val = this.fontScaleTitle !== undefined ? this.fontScaleTitle : 1.0;
+          min = 0.5; max = 2.0;
+        } else if (activeFontScope === 'trademark') {
+          val = this.fontScaleTrademark !== undefined ? this.fontScaleTrademark : 1.0;
+          min = 0.5; max = 2.0;
+        }
+        return { min, max, val, label: `${Math.round(val * 100)}%`, step: 0.05, ariaLabel: 'Font Scale' };
+      } else if (toolId === 'layout') {
+        if (activeLayoutSubMode === 'width') {
+          const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
+          return { min: 50, max: 130, val: val, label: `W: ${val}%`, step: 2, ariaLabel: 'Timetable Width' };
+        } else if (activeLayoutSubMode === 'height') {
+          const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
+          return { min: 25, max: 90, val: val, label: `H: ${val}px`, step: 2, ariaLabel: 'Timetable Height' };
+        } else if (activeLayoutSubMode === 'posx') {
+          const val = this.gridXPosVal != null ? this.gridXPosVal : 0;
+          const sign = val > 0 ? '+' : '';
+          return { min: -150, max: 150, val: val, label: `X: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable X-Position' };
+        } else if (activeLayoutSubMode === 'posy') {
+          const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
+          const sign = val > 0 ? '+' : '';
+          return { min: -120, max: 150, val: val, label: `Y: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable Y-Position' };
+        }
+      } else if (toolId === 'opacity') {
+        const val = this.timetableOpacity != null ? this.timetableOpacity : 100;
+        return { min: 20, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Card Opacity' };
+      } else if (toolId === 'blur') {
+        if (activeBlurSubMode === 'dim') {
+          const val = this.wallpaperDimIntensity != null ? this.wallpaperDimIntensity : 0;
+          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Wallpaper Dimming' };
+        } else {
+          const val = this.bgBlurEnabled ? (this.bgBlurIntensity != null ? this.bgBlurIntensity : 10) : 0;
+          return { min: 0, max: 40, val: val, label: `${val}px`, step: 2, ariaLabel: 'Wallpaper Blur' };
+        }
+      }
+      return { min: 0, max: 100, val: 100, label: '100%', step: 1, ariaLabel: 'Slider' };
+    };
+
+    const updateSideSliderUI = (side, animate = true) => {
+      const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+      const track = side === 'left' ? leftSliderTrack : rightSliderTrack;
+      const fill  = side === 'left' ? leftSliderFill : rightSliderFill;
+      const label = side === 'left' ? leftSliderLabelText : rightSliderLabelText;
+      const badge = side === 'left' ? leftSliderBadge : rightSliderBadge;
+      const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
+
+      if (!track || !fill) return;
+
+      const hiddenTools = this.sliderLayout?.hidden || [];
+      const leftTools = (this.sliderLayout?.left || ['layout', 'opacity', 'blur']).filter(id => !hiddenTools.includes(id));
+      const rightTools = (this.sliderLayout?.right || ['zoom', 'radius', 'font']).filter(id => !hiddenTools.includes(id));
+      const toolsOnThisSide = side === 'left' ? leftTools : rightTools;
+
+      // Update button active highlighting for tools on this side
+      toolsOnThisSide.forEach(toolId => {
+        const btn = sliderToolBtns[toolId];
+        if (btn) btn.classList.toggle('active', toolId === activeTool);
+      });
+
+      // Update Sub-Scope Pills Visibility & Active states
+      if (radiusScopeGroup) {
+        radiusScopeGroup.classList.toggle('hidden', activeTool !== 'radius');
+        [btnRadiusScopeBoth, btnRadiusScopeTable, btnRadiusScopeCards].forEach(b => b?.classList.remove('active'));
+        if (activeRadiusScope === 'both') btnRadiusScopeBoth?.classList.add('active');
+        else if (activeRadiusScope === 'table') btnRadiusScopeTable?.classList.add('active');
+        else if (activeRadiusScope === 'cards') btnRadiusScopeCards?.classList.add('active');
+      }
+
+      if (fontScopeGroup) {
+        fontScopeGroup.classList.toggle('hidden', activeTool !== 'font');
+        if (fontTopGroup) fontTopGroup.classList.toggle('hidden', activeTool !== 'font');
+        if (activeTool !== 'font') {
+          floatingFontStyleCard?.classList.add('hidden');
+          btnFontPanelToggle?.classList.remove('active');
+        }
+        [btnFontScopeAll, btnFontScopeCards, btnFontScopeHeader, btnFontScopeTitle, btnFontScopeTrademark].forEach(b => b?.classList.remove('active'));
+        if (activeFontScope === 'all') btnFontScopeAll?.classList.add('active');
+        else if (activeFontScope === 'cards') btnFontScopeCards?.classList.add('active');
+        else if (activeFontScope === 'header') btnFontScopeHeader?.classList.add('active');
+        else if (activeFontScope === 'title') btnFontScopeTitle?.classList.add('active');
+        else if (activeFontScope === 'trademark') btnFontScopeTrademark?.classList.add('active');
+      }
+
+      if (layoutScopeGroup) {
+        layoutScopeGroup.classList.toggle('hidden', activeTool !== 'layout');
+        if (layoutTopGroup) layoutTopGroup.classList.toggle('hidden', activeTool !== 'layout');
+        if (activeTool !== 'layout') {
+          floatingDaysTimeCard?.classList.add('hidden');
+          btnDaysPanelToggle?.classList.remove('active');
+        }
+        [btnFxWidth, btnFxHeight, btnFxPosx, btnFxPosy].forEach(b => b?.classList.remove('active'));
+        if (activeLayoutSubMode === 'width') btnFxWidth?.classList.add('active');
+        else if (activeLayoutSubMode === 'height') btnFxHeight?.classList.add('active');
+        else if (activeLayoutSubMode === 'posx') btnFxPosx?.classList.add('active');
+        else if (activeLayoutSubMode === 'posy') btnFxPosy?.classList.add('active');
+      }
+
+      if (blurScopeGroup) {
+        blurScopeGroup.classList.toggle('hidden', activeTool !== 'blur');
+        [btnBlurScopeBlur, btnBlurScopeDim].forEach(b => b?.classList.remove('active'));
+        if (activeBlurSubMode === 'blur') btnBlurScopeBlur?.classList.add('active');
+        else if (activeBlurSubMode === 'dim') btnBlurScopeDim?.classList.add('active');
+      }
+
+      // Calculate track fill percentage and label text
+      const config = getToolConfig(activeTool);
+      const ratio = Math.max(0, Math.min(1, (config.val - config.min) / (config.max - config.min)));
+      const pct = Math.round(ratio * 100);
+
+      fill.style.transition = animate ? 'height 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
+      fill.style.setProperty('height', `${pct}%`, 'important');
+
+      if (label) label.innerText = config.label;
+      if (badge) badge.setAttribute('title', `${config.ariaLabel}: ${config.label}`);
+      track.setAttribute('aria-valuenow', Math.round(config.val));
+      track.setAttribute('aria-label', config.ariaLabel);
+    };
+
+    const applyToolValueByRatio = (toolId, ratio, smooth = true) => {
+      const r = Math.max(0, Math.min(1, ratio));
+
+      if (toolId === 'zoom') {
+        const minZ = 0.4, maxZ = 1.5;
+        const newZ = Math.round((minZ + r * (maxZ - minZ)) * 100) / 100;
+        if (Math.abs(newZ - targetZoom) >= 0.005) {
+          targetZoom = newZ;
+          this.zoomScale = targetZoom;
+          applyZoom(smooth);
+          this._stagePending(true);
+        }
+      } else if (toolId === 'radius') {
+        const minR = 0, maxR = 28;
+        const newR = Math.round(minR + r * (maxR - minR));
+        let changed = false;
+
+        if (activeRadiusScope === 'both') {
+          if (newR !== this.tableCornerRadiusVal || newR !== this.cardCornerRadiusVal) {
+            this.tableCornerRadiusVal = newR;
+            this.cardCornerRadiusVal = newR;
+            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            const container = document.getElementById('lock-timetable-container');
+            if (container) container.style.borderRadius = `${newR}px`;
+            changed = true;
+          }
+        } else if (activeRadiusScope === 'table') {
+          if (newR !== this.tableCornerRadiusVal) {
+            this.tableCornerRadiusVal = newR;
+            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            const container = document.getElementById('lock-timetable-container');
+            if (container) container.style.borderRadius = `${newR}px`;
+            changed = true;
+          }
+        } else if (activeRadiusScope === 'cards') {
+          if (newR !== this.cardCornerRadiusVal) {
+            this.cardCornerRadiusVal = newR;
+            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
+            changed = true;
+          }
+        }
+
+        if (changed) {
+          this.renderTimetableGrid();
+          this._stagePending(true);
+        }
+      } else if (toolId === 'font') {
+        let minF = 0.4, maxF = 1.6;
+        if (activeFontScope === 'header') { minF = 0.5; maxF = 1.8; }
+        else if (activeFontScope === 'title' || activeFontScope === 'trademark') { minF = 0.5; maxF = 2.0; }
+
+        const newF = Math.round((minF + r * (maxF - minF)) * 100) / 100;
+
+        if (activeFontScope === 'all') {
+          this.fontScaleAll = newF;
+          this.gridFontScale = newF;
+          this.gridFontSizeVal = Math.round(9 * newF * 10) / 10;
+          try { localStorage.setItem('schedully_font_scale', String(newF)); } catch (e) {}
+        } else if (activeFontScope === 'cards') {
+          this.fontScaleCards = newF;
+        } else if (activeFontScope === 'header') {
+          this.fontScaleHeader = newF;
+        } else if (activeFontScope === 'title') {
+          this.fontScaleTitle = newF;
+        } else if (activeFontScope === 'trademark') {
+          this.fontScaleTrademark = newF;
+        }
+
+        this.renderTimetableGrid();
+        if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
+          this.renderWatchGlance();
+        }
+        this._stagePending(true);
+      } else if (toolId === 'layout') {
+        if (activeLayoutSubMode === 'width') {
+          const val = Math.round(50 + r * 80);
+          this.setTimetableWidthScale(val, false);
+        } else if (activeLayoutSubMode === 'height') {
+          const val = Math.round(25 + r * 65);
+          this.setTimetableHeightScale(val, false);
+        } else if (activeLayoutSubMode === 'posx') {
+          const val = Math.round(-150 + r * 300);
+          this.setTimetableOffsetX(val, false);
+        } else if (activeLayoutSubMode === 'posy') {
+          const val = Math.round(-120 + r * 270);
+          this.setTimetableOffsetY(val, false);
+        }
+        this._stagePending(true);
+      } else if (toolId === 'opacity') {
+        const val = Math.round(20 + r * 80);
+        this.setTimetableOpacity(val, false);
+        this._stagePending(true);
+      } else if (toolId === 'blur') {
+        if (activeBlurSubMode === 'dim') {
+          const val = Math.round(r * 100);
+          this.setWallpaperDimming(val, false);
+        } else {
+          const val = Math.round(r * 40);
+          this.setWallpaperBlur(val, val > 0, false);
+        }
+        this._stagePending(true);
+      }
+    };
+
+    const resetToolToDefault = (toolId) => {
+      if (toolId === 'zoom') {
+        targetZoom = 0.85;
+        this.zoomScale = 0.85;
+        applyZoom(true);
+      } else if (toolId === 'radius') {
+        if (activeRadiusScope === 'both' || activeRadiusScope === 'table') {
+          this.tableCornerRadiusVal = 18;
+          this.tableCornerStyle = 'rounded';
+          const container = document.getElementById('lock-timetable-container');
+          if (container) container.style.borderRadius = '18px';
+        }
+        if (activeRadiusScope === 'both' || activeRadiusScope === 'cards') {
+          this.cardCornerRadiusVal = (activeRadiusScope === 'both') ? 18 : 6;
+          this.cardCornerStyle = 'rounded';
+        }
+        this.renderTimetableGrid();
+      } else if (toolId === 'font') {
+        if (activeFontScope === 'all') {
+          this.fontScaleAll = 1.0;
+          this.fontScaleCards = 1.0;
+          this.fontScaleHeader = 1.0;
+          this.fontScaleTitle = 1.0;
+          this.fontScaleTrademark = 1.0;
+          this.gridFontScale = 1.0;
+          this.gridFontSizeVal = 9;
+          try { localStorage.setItem('schedully_font_scale', '1.0'); } catch (err) {}
+        } else if (activeFontScope === 'cards') {
+          this.fontScaleCards = 1.0;
+        } else if (activeFontScope === 'header') {
+          this.fontScaleHeader = 1.0;
+        } else if (activeFontScope === 'title') {
+          this.fontScaleTitle = 1.0;
+        } else if (activeFontScope === 'trademark') {
+          this.fontScaleTrademark = 1.0;
+        }
+        this.renderTimetableGrid();
+      } else if (toolId === 'layout') {
+        if (activeLayoutSubMode === 'width') {
+          this.setTimetableWidthScale(100, false);
+        } else if (activeLayoutSubMode === 'height') {
+          this.setTimetableHeightScale(49, false);
+        } else if (activeLayoutSubMode === 'posx') {
+          this.setTimetableOffsetX(0, false);
+        } else if (activeLayoutSubMode === 'posy') {
+          this.setTimetableOffsetY(0, false);
+        }
+      } else if (toolId === 'opacity') {
+        this.setTimetableOpacity(100, false);
+      } else if (toolId === 'blur') {
+        if (activeBlurSubMode === 'dim') {
+          this.setWallpaperDimming(0, false);
+        } else {
+          this.setWallpaperBlur(0, false, false);
+        }
+      }
+      this._stagePending(true);
+    };
+
+    const stepToolDelta = (toolId, delta) => {
+      if (toolId === 'zoom') {
+        targetZoom = Math.min(1.5, Math.max(0.4, Math.round((targetZoom + delta * 0.05) * 100) / 100));
+        this.zoomScale = targetZoom;
+        applyZoom(true);
+      } else if (toolId === 'radius') {
+        const step = delta * 1;
+        const current = (activeRadiusScope === 'cards') ? (this.cardCornerRadiusVal || 6) : (this.tableCornerRadiusVal || 18);
+        const next = Math.max(0, Math.min(28, current + step));
+        if (activeRadiusScope === 'both' || activeRadiusScope === 'table') {
+          this.tableCornerRadiusVal = next;
+          this.tableCornerStyle = next === 0 ? 'sharp' : 'rounded';
+          const container = document.getElementById('lock-timetable-container');
+          if (container) container.style.borderRadius = `${next}px`;
+        }
+        if (activeRadiusScope === 'both' || activeRadiusScope === 'cards') {
+          this.cardCornerRadiusVal = next;
+          this.cardCornerStyle = next === 0 ? 'sharp' : 'rounded';
+        }
+        this.renderTimetableGrid();
+      } else if (toolId === 'font') {
+        const step = delta * 0.05;
+        let val = 1.0, minF = 0.4, maxF = 1.6;
+        if (activeFontScope === 'all') val = this.fontScaleAll || 1.0;
+        else if (activeFontScope === 'cards') val = this.fontScaleCards || 1.0;
+        else if (activeFontScope === 'header') { val = this.fontScaleHeader || 1.0; minF = 0.5; maxF = 1.8; }
+        else if (activeFontScope === 'title') { val = this.fontScaleTitle || 1.0; minF = 0.5; maxF = 2.0; }
+        else if (activeFontScope === 'trademark') { val = this.fontScaleTrademark || 1.0; minF = 0.5; maxF = 2.0; }
+
+        const next = Math.round(Math.max(minF, Math.min(maxF, val + step)) * 100) / 100;
+        if (activeFontScope === 'all') {
+          this.fontScaleAll = next;
+          this.gridFontScale = next;
+          this.gridFontSizeVal = Math.round(9 * next * 10) / 10;
+          try { localStorage.setItem('schedully_font_scale', String(next)); } catch (e) {}
+        } else if (activeFontScope === 'cards') this.fontScaleCards = next;
+        else if (activeFontScope === 'header') this.fontScaleHeader = next;
+        else if (activeFontScope === 'title') this.fontScaleTitle = next;
+        else if (activeFontScope === 'trademark') this.fontScaleTrademark = next;
+
+        this.renderTimetableGrid();
+      } else if (toolId === 'layout') {
+        if (activeLayoutSubMode === 'width') {
+          const next = Math.max(50, Math.min(130, (this.gridWidthVal != null ? this.gridWidthVal : 100) + delta * 2));
+          this.setTimetableWidthScale(next, false);
+        } else if (activeLayoutSubMode === 'height') {
+          const next = Math.max(25, Math.min(90, (this.gridHeightVal != null ? this.gridHeightVal : 49) + delta * 2));
+          this.setTimetableHeightScale(next, false);
+        } else if (activeLayoutSubMode === 'posx') {
+          const next = Math.max(-150, Math.min(150, (this.gridXPosVal != null ? this.gridXPosVal : 0) + delta * 4));
+          this.setTimetableOffsetX(next, false);
+        } else if (activeLayoutSubMode === 'posy') {
+          const next = Math.max(-120, Math.min(150, (this.gridYPosVal != null ? this.gridYPosVal : 0) + delta * 4));
+          this.setTimetableOffsetY(next, false);
+        }
+      } else if (toolId === 'opacity') {
+        const next = Math.max(20, Math.min(100, (this.timetableOpacity != null ? this.timetableOpacity : 100) + delta * 5));
+        this.setTimetableOpacity(next, false);
+      } else if (toolId === 'blur') {
+        if (activeBlurSubMode === 'dim') {
+          const next = Math.max(0, Math.min(100, (this.wallpaperDimIntensity || 0) + delta * 5));
+          this.setWallpaperDimming(next, false);
+        } else {
+          const next = Math.max(0, Math.min(40, (this.bgBlurIntensity || 0) + delta * 2));
+          this.setWallpaperBlur(next, next > 0, false);
+        }
+      }
+      this._stagePending(true);
+    };
+
+    // Activate a tool (detecting whether it's on left or right)
+    const selectSliderTool = (toolId) => {
+      const side = getToolCurrentSide(toolId);
+      if (side === 'left') {
+        leftActiveTool = toolId;
+      } else {
+        rightActiveTool = toolId;
+      }
+      updateSideSliderUI(side, true);
+      showSideBadgeTemporarily(side);
+      window.soundFX?.play?.('tap');
+      window.haptics?.trigger?.('selection');
+    };
+
+    // Attach click listeners to tool buttons
+    Object.keys(sliderToolBtns).forEach(toolId => {
+      const btn = sliderToolBtns[toolId];
+      btn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        selectSliderTool(toolId);
+      });
+    });
+
+    // Attach sub-scope button listeners
+    btnRadiusScopeBoth?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeRadiusScope = 'both';
+      updateSideSliderUI(getToolCurrentSide('radius'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('radius'));
+      window.soundFX?.play?.('tap');
+    });
+    btnRadiusScopeTable?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeRadiusScope = 'table';
+      updateSideSliderUI(getToolCurrentSide('radius'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('radius'));
+      window.soundFX?.play?.('tap');
+    });
+    btnRadiusScopeCards?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeRadiusScope = 'cards';
+      updateSideSliderUI(getToolCurrentSide('radius'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('radius'));
+      window.soundFX?.play?.('tap');
+    });
+
+    btnFontScopeAll?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFontScope = 'all';
+      updateSideSliderUI(getToolCurrentSide('font'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('font'));
+      window.soundFX?.play?.('tap');
+    });
+    btnFontScopeCards?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFontScope = 'cards';
+      updateSideSliderUI(getToolCurrentSide('font'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('font'));
+      window.soundFX?.play?.('tap');
+    });
+    btnFontScopeHeader?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFontScope = 'header';
+      updateSideSliderUI(getToolCurrentSide('font'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('font'));
+      window.soundFX?.play?.('tap');
+    });
+    btnFontScopeTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFontScope = 'title';
+      updateSideSliderUI(getToolCurrentSide('font'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('font'));
+      window.soundFX?.play?.('tap');
+    });
+    btnFontScopeTrademark?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFontScope = 'trademark';
+      updateSideSliderUI(getToolCurrentSide('font'), true);
+      showSideBadgeTemporarily(getToolCurrentSide('font'));
+      window.soundFX?.play?.('tap');
+    });
+
+    btnFxWidth?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeLayoutSubMode = 'width';
+      selectSliderTool('layout');
+    });
+    btnFxHeight?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeLayoutSubMode = 'height';
+      selectSliderTool('layout');
+    });
+    btnFxPosx?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeLayoutSubMode = 'posx';
+      selectSliderTool('layout');
+    });
+    btnFxPosy?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeLayoutSubMode = 'posy';
+      selectSliderTool('layout');
+    });
+
+    btnBlurScopeBlur?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeBlurSubMode = 'blur';
+      selectSliderTool('blur');
+    });
+    btnBlurScopeDim?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activeBlurSubMode = 'dim';
+      selectSliderTool('blur');
+    });
+
+    // Font Panel Popover Toggle
+    btnFontPanelToggle?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!floatingFontStyleCard) return;
       const willOpen = floatingFontStyleCard.classList.contains('hidden');
       floatingFontStyleCard.classList.toggle('hidden', !willOpen);
-      btnRightFontPanelToggle.classList.toggle('active', willOpen);
+      btnFontPanelToggle.classList.toggle('active', willOpen);
       if (willOpen) {
         document.getElementById('floating-days-time-card')?.classList.add('hidden');
         document.getElementById('btn-left-days-panel-toggle')?.classList.remove('active');
@@ -5702,392 +6453,28 @@ class SchedullyApp {
     btnCloseFloatingFont?.addEventListener('click', (e) => {
       e.stopPropagation();
       floatingFontStyleCard?.classList.add('hidden');
-      btnRightFontPanelToggle?.classList.remove('active');
+      btnFontPanelToggle?.classList.remove('active');
       window.soundFX?.play?.('tap');
     });
 
     document.addEventListener('click', (e) => {
       if (floatingFontStyleCard && !floatingFontStyleCard.classList.contains('hidden')) {
         const insideCard = floatingFontStyleCard.contains(e.target);
-        const insideToggle = rightFontTopGroup?.contains(e.target);
+        const insideToggle = fontTopGroup?.contains(e.target);
         if (!insideCard && !insideToggle) {
           floatingFontStyleCard.classList.add('hidden');
-          btnRightFontPanelToggle?.classList.remove('active');
+          btnFontPanelToggle?.classList.remove('active');
         }
       }
     });
 
-    const setRadiusScope = (scope) => {
-      radiusScope = scope;
-      updateRightScopeUI();
-      updateRightSliderFill();
-      showRightBadgeTemporarily();
-      window.soundFX?.play?.('zoom');
-      window.haptics?.trigger?.('selection');
-    };
-
-    const setFontScope = (scope) => {
-      fontScope = scope;
-      updateRightScopeUI();
-      updateRightSliderFill();
-      showRightBadgeTemporarily();
-      window.soundFX?.play?.('zoom');
-      window.haptics?.trigger?.('selection');
-    };
-
-    btnRadiusScopeBoth?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setRadiusScope('both');
-    });
-    btnRadiusScopeTable?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setRadiusScope('table');
-    });
-    btnRadiusScopeCards?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setRadiusScope('cards');
-    });
-
-    btnFontScopeAll?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setFontScope('all');
-    });
-    btnFontScopeCards?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setFontScope('cards');
-    });
-    btnFontScopeHeader?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setFontScope('header');
-    });
-    btnFontScopeTitle?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setFontScope('title');
-    });
-    btnFontScopeTrademark?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setFontScope('trademark');
-    });
-
-    const getRightModeConfig = () => {
-      if (rightSliderMode === 'radius') {
-        let val = 18;
-        if (radiusScope === 'cards') {
-          val = this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6;
-        } else {
-          val = this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18;
-        }
-        return { min: 0, max: 28, val: val, label: val === 0 ? 'Sharp' : `${val}px`, step: 1 };
-      } else if (rightSliderMode === 'font') {
-        let val = 1.0;
-        let min = 0.4, max = 1.6;
-        if (fontScope === 'all') {
-          val = this.fontScaleAll !== undefined ? this.fontScaleAll : (this.gridFontScale || 1.0);
-          min = 0.4; max = 1.6;
-        } else if (fontScope === 'cards') {
-          val = this.fontScaleCards !== undefined ? this.fontScaleCards : 1.0;
-          min = 0.4; max = 1.6;
-        } else if (fontScope === 'header') {
-          val = this.fontScaleHeader !== undefined ? this.fontScaleHeader : 1.0;
-          min = 0.5; max = 1.8;
-        } else if (fontScope === 'title') {
-          val = this.fontScaleTitle !== undefined ? this.fontScaleTitle : 1.0;
-          min = 0.5; max = 2.0;
-        } else if (fontScope === 'trademark') {
-          val = this.fontScaleTrademark !== undefined ? this.fontScaleTrademark : 1.0;
-          min = 0.5; max = 2.0;
-        }
-        return { min, max, val, label: `${Math.round(val * 100)}%`, step: 0.05 };
-      } else {
-        const val = targetZoom || 0.85;
-        return { min: 0.4, max: 1.5, val: val, label: `${Math.round(val * 100)}%`, step: 0.05 };
-      }
-    };
-
-    const updateRightSliderFill = () => {
-      const config = getRightModeConfig();
-      const pct = Math.max(0, Math.min(100, ((config.val - config.min) / (config.max - config.min)) * 100));
-      if (rightSliderFill) rightSliderFill.style.height = `${pct}%`;
-      if (rightSliderLabelText) rightSliderLabelText.innerText = config.label;
-      if (rightSliderTrack) rightSliderTrack.setAttribute('aria-valuenow', Math.round(pct));
-    };
-
-    let rightBadgeTimeout = null;
-    const showRightBadgeTemporarily = (duration = 1400) => {
-      if (!rightSliderContainer) return;
-      rightSliderContainer.classList.add('is-interacting');
-      if (rightBadgeTimeout) clearTimeout(rightBadgeTimeout);
-      rightBadgeTimeout = setTimeout(() => {
-        rightSliderContainer.classList.remove('is-interacting');
-      }, duration);
-    };
-
-    const setRightSliderMode = (mode) => {
-      rightSliderMode = mode;
-      [btnRightZoom, btnRightRadius, btnRightFont].forEach(b => b?.classList.remove('active'));
-      if (mode === 'zoom') btnRightZoom?.classList.add('active');
-      else if (mode === 'radius') btnRightRadius?.classList.add('active');
-      else if (mode === 'font') btnRightFont?.classList.add('active');
-
-      updateRightScopeUI();
-      updateRightSliderFill();
-      showRightBadgeTemporarily();
-      window.soundFX?.play?.('zoom');
-      window.haptics?.trigger?.('selection');
-    };
-
-    btnRightZoom?.addEventListener('click', () => setRightSliderMode('zoom'));
-    btnRightRadius?.addEventListener('click', () => setRightSliderMode('radius'));
-    btnRightFont?.addEventListener('click', () => setRightSliderMode('font'));
-
-    // Apply value from slider track interaction
-    const applyRightSliderValue = (ratio, smooth = true) => {
-      const r = Math.max(0, Math.min(1, ratio));
-      if (rightSliderMode === 'zoom') {
-        const minZ = 0.4, maxZ = 1.5;
-        const newZ = Math.round((minZ + r * (maxZ - minZ)) * 100) / 100;
-        if (Math.abs(newZ - targetZoom) >= 0.005) {
-          targetZoom = newZ;
-          this.zoomScale = targetZoom;
-          applyZoom(smooth);
-          updateRightSliderFill();
-          this._stagePending(true);
-        }
-      } else if (rightSliderMode === 'radius') {
-        const minR = 0, maxR = 28;
-        const newR = Math.round(minR + r * (maxR - minR));
-        let changed = false;
-
-        if (radiusScope === 'both') {
-          if (newR !== this.tableCornerRadiusVal || newR !== this.cardCornerRadiusVal) {
-            this.tableCornerRadiusVal = newR;
-            this.cardCornerRadiusVal = newR;
-            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            const container = document.getElementById('lock-timetable-container');
-            if (container) container.style.borderRadius = `${newR}px`;
-            changed = true;
-          }
-        } else if (radiusScope === 'table') {
-          if (newR !== this.tableCornerRadiusVal) {
-            this.tableCornerRadiusVal = newR;
-            this.tableCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            const container = document.getElementById('lock-timetable-container');
-            if (container) container.style.borderRadius = `${newR}px`;
-            changed = true;
-          }
-        } else if (radiusScope === 'cards') {
-          if (newR !== this.cardCornerRadiusVal) {
-            this.cardCornerRadiusVal = newR;
-            this.cardCornerStyle = newR === 0 ? 'sharp' : 'rounded';
-            changed = true;
-          }
-        }
-
-        if (changed) {
-          this.renderTimetableGrid();
-          updateRightSliderFill();
-          this._stagePending(true);
-        }
-      } else if (rightSliderMode === 'font') {
-        let minF = 0.4, maxF = 1.6;
-        if (fontScope === 'header') { minF = 0.5; maxF = 1.8; }
-        else if (fontScope === 'title' || fontScope === 'trademark') { minF = 0.5; maxF = 2.0; }
-
-        const newF = Math.round((minF + r * (maxF - minF)) * 100) / 100;
-
-        if (fontScope === 'all') {
-          this.fontScaleAll = newF;
-          this.gridFontScale = newF;
-          this.gridFontSizeVal = Math.round(9 * newF * 10) / 10;
-          try { localStorage.setItem('schedully_font_scale', String(newF)); } catch (e) {}
-        } else if (fontScope === 'cards') {
-          this.fontScaleCards = newF;
-        } else if (fontScope === 'header') {
-          this.fontScaleHeader = newF;
-        } else if (fontScope === 'title') {
-          this.fontScaleTitle = newF;
-        } else if (fontScope === 'trademark') {
-          this.fontScaleTrademark = newF;
-        }
-
-        this.renderTimetableGrid();
-        if (this.activeDevice === 'watch' && typeof this.renderWatchGlance === 'function') {
-          this.renderWatchGlance();
-        }
-        updateRightSliderFill();
-        this._stagePending(true);
-      }
-    };
-
-    if (rightSliderTrack) {
-      let isDraggingRight = false;
-
-      const updateRightFromPointer = (e) => {
-        const rect = rightSliderTrack.getBoundingClientRect();
-        let clientY = e.clientY;
-        if (clientY == null && e.touches && e.touches.length > 0) clientY = e.touches[0].clientY;
-        else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) clientY = e.changedTouches[0].clientY;
-        if (clientY == null) clientY = rect.top + rect.height / 2;
-
-        const offsetY = rect.bottom - clientY;
-        const ratio = offsetY / rect.height;
-        applyRightSliderValue(ratio, true);
-        window.haptics?.trigger?.('slider');
-      };
-
-      const onRightDragStart = (e) => {
-        if (e.button != null && e.button !== 0) return;
-        isDraggingRight = true;
-        rightSliderContainer?.classList.add('active-drag');
-        window.soundFX?.play?.('zoom');
-        updateRightFromPointer(e);
-        if (e.cancelable) e.preventDefault();
-      };
-
-      const onRightDragMove = (e) => {
-        if (!isDraggingRight) return;
-        updateRightFromPointer(e);
-        if (e.cancelable) e.preventDefault();
-      };
-
-      const onRightDragEnd = () => {
-        if (isDraggingRight) {
-          isDraggingRight = false;
-          rightSliderContainer?.classList.remove('active-drag');
-          showRightBadgeTemporarily(1200);
-        }
-      };
-
-      rightSliderTrack.addEventListener('pointerdown', onRightDragStart);
-      rightSliderTrack.addEventListener('mousedown', onRightDragStart);
-      rightSliderTrack.addEventListener('touchstart', onRightDragStart, { passive: false });
-
-      window.addEventListener('pointermove', onRightDragMove, { passive: false });
-      window.addEventListener('mousemove', onRightDragMove);
-      window.addEventListener('touchmove', onRightDragMove, { passive: false });
-
-      window.addEventListener('pointerup', onRightDragEnd);
-      window.addEventListener('mouseup', onRightDragEnd);
-      window.addEventListener('touchend', onRightDragEnd);
-
-      // Double-tap track to reset current mode to default
-      rightSliderTrack.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        if (rightSliderMode === 'zoom') {
-          targetZoom = 0.85;
-          this.zoomScale = 0.85;
-          applyZoom(true);
-        } else if (rightSliderMode === 'radius') {
-          if (radiusScope === 'both' || radiusScope === 'table') {
-            this.tableCornerRadiusVal = 18;
-            this.tableCornerStyle = 'rounded';
-            const container = document.getElementById('lock-timetable-container');
-            if (container) container.style.borderRadius = '18px';
-          }
-          if (radiusScope === 'both' || radiusScope === 'cards') {
-            this.cardCornerRadiusVal = (radiusScope === 'both') ? 18 : 6;
-            this.cardCornerStyle = 'rounded';
-          }
-          this.renderTimetableGrid();
-        } else if (rightSliderMode === 'font') {
-          if (fontScope === 'all') {
-            this.fontScaleAll = 1.0;
-            this.fontScaleCards = 1.0;
-            this.fontScaleHeader = 1.0;
-            this.fontScaleTitle = 1.0;
-            this.fontScaleTrademark = 1.0;
-            this.gridFontScale = 1.0;
-            this.gridFontSizeVal = 9;
-            try { localStorage.setItem('schedully_font_scale', '1.0'); } catch (err) {}
-          } else if (fontScope === 'cards') {
-            this.fontScaleCards = 1.0;
-          } else if (fontScope === 'header') {
-            this.fontScaleHeader = 1.0;
-          } else if (fontScope === 'title') {
-            this.fontScaleTitle = 1.0;
-          } else if (fontScope === 'trademark') {
-            this.fontScaleTrademark = 1.0;
-          }
-          this.renderTimetableGrid();
-        }
-        updateRightSliderFill();
-        showRightBadgeTemporarily();
-        window.soundFX?.play?.('zoom');
-        this._stagePending(true);
-      });
-    }
-
-    // Sync initial right slider fill
-    updateRightScopeUI();
-    updateRightSliderFill();
-
-    // ═══════════════════════════════════════════════════════════════
-    // SLIM MATERIAL 3 EXPRESSIVE MULTI-MODE FX SLIDER (Left Side: Layout Adjustment, Opacity, Blur)
-    // ═══════════════════════════════════════════════════════════════
-    const sideFxContainer     = document.getElementById('side-fx-slider-container');
-    const sideFxTrack         = document.getElementById('side-fx-track');
-    const sideFxFill          = document.getElementById('side-fx-fill');
-    const sideFxBadge         = document.getElementById('side-fx-badge');
-    const fxLabelText         = document.getElementById('fx-label-text');
-    const btnFxLayout         = document.getElementById('btn-fx-mode-layout');
-    const btnFxOpacity        = document.getElementById('btn-fx-mode-opacity');
-    const btnFxBlur           = document.getElementById('btn-fx-mode-blur');
-
-    const leftLayoutTopGroup    = document.getElementById('left-layout-top-group');
-    const btnLeftDaysPanelToggle = document.getElementById('btn-left-days-panel-toggle');
-    const floatingDaysTimeCard   = document.getElementById('floating-days-time-card');
-    const btnCloseFloatingDays   = document.getElementById('btn-close-floating-days');
-
-    const leftLayoutScopeGroup = document.getElementById('left-layout-scope-group');
-    const btnFxWidth           = document.getElementById('btn-fx-mode-width');
-    const btnFxHeight          = document.getElementById('btn-fx-mode-height');
-    const btnFxPosx            = document.getElementById('btn-fx-mode-posx');
-    const btnFxPosy            = document.getElementById('btn-fx-mode-posy');
-
-    let fxMasterMode = 'layout'; // 'layout' | 'opacity' | 'blur'
-    let activeLayoutSubMode = 'width'; // 'width' | 'height' | 'posx' | 'posy'
-    let fxBadgeHideTimeout = null;
-
-    const showFxBadgeTemporarily = (duration = 1400) => {
-      if (!sideFxContainer) return;
-      sideFxContainer.classList.add('is-interacting');
-      if (fxBadgeHideTimeout) clearTimeout(fxBadgeHideTimeout);
-      fxBadgeHideTimeout = setTimeout(() => {
-        sideFxContainer.classList.remove('is-interacting');
-      }, duration);
-    };
-
-    const updateLeftLayoutScopeUI = () => {
-      if (leftLayoutTopGroup) {
-        if (fxMasterMode === 'layout') {
-          leftLayoutTopGroup.classList.remove('hidden');
-        } else {
-          leftLayoutTopGroup.classList.add('hidden');
-          floatingDaysTimeCard?.classList.add('hidden');
-          btnLeftDaysPanelToggle?.classList.remove('active');
-        }
-      }
-      if (leftLayoutScopeGroup) {
-        if (fxMasterMode === 'layout') {
-          leftLayoutScopeGroup.classList.remove('hidden');
-        } else {
-          leftLayoutScopeGroup.classList.add('hidden');
-        }
-      }
-      [btnFxWidth, btnFxHeight, btnFxPosx, btnFxPosy].forEach(b => b?.classList.remove('active'));
-      if (activeLayoutSubMode === 'width') btnFxWidth?.classList.add('active');
-      else if (activeLayoutSubMode === 'height') btnFxHeight?.classList.add('active');
-      else if (activeLayoutSubMode === 'posx') btnFxPosx?.classList.add('active');
-      else if (activeLayoutSubMode === 'posy') btnFxPosy?.classList.add('active');
-    };
-
-    btnLeftDaysPanelToggle?.addEventListener('click', (e) => {
+    // Days & Time Panel Popover Toggle
+    btnDaysPanelToggle?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!floatingDaysTimeCard) return;
       const willOpen = floatingDaysTimeCard.classList.contains('hidden');
       floatingDaysTimeCard.classList.toggle('hidden', !willOpen);
-      btnLeftDaysPanelToggle.classList.toggle('active', willOpen);
+      btnDaysPanelToggle.classList.toggle('active', willOpen);
       if (willOpen) {
         document.getElementById('floating-font-style-card')?.classList.add('hidden');
         document.getElementById('btn-right-font-panel-toggle')?.classList.remove('active');
@@ -6104,307 +6491,111 @@ class SchedullyApp {
     btnCloseFloatingDays?.addEventListener('click', (e) => {
       e.stopPropagation();
       floatingDaysTimeCard?.classList.add('hidden');
-      btnLeftDaysPanelToggle?.classList.remove('active');
+      btnDaysPanelToggle?.classList.remove('active');
       window.soundFX?.play?.('tap');
     });
 
     document.addEventListener('click', (e) => {
       if (floatingDaysTimeCard && !floatingDaysTimeCard.classList.contains('hidden')) {
         const insideCard = floatingDaysTimeCard.contains(e.target);
-        const insideToggle = leftLayoutTopGroup?.contains(e.target);
+        const insideToggle = layoutTopGroup?.contains(e.target);
         if (!insideCard && !insideToggle) {
           floatingDaysTimeCard.classList.add('hidden');
-          btnLeftDaysPanelToggle?.classList.remove('active');
+          btnDaysPanelToggle?.classList.remove('active');
         }
       }
     });
 
-    const updateFxSliderUI = (animate = true) => {
-      if (!sideFxTrack || !sideFxFill) return;
+    // Track Dragging & Scrubbing Engine for both Left and Right side tracks
+    const setupTrackInteractions = (side) => {
+      const track = side === 'left' ? leftSliderTrack : rightSliderTrack;
+      const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
+      if (!track || !container) return;
 
-      if (btnFxLayout)  btnFxLayout.classList.toggle('active', fxMasterMode === 'layout');
-      if (btnFxOpacity) btnFxOpacity.classList.toggle('active', fxMasterMode === 'opacity');
-      if (btnFxBlur)    btnFxBlur.classList.toggle('active', fxMasterMode === 'blur');
+      let isDragging = false;
 
-      updateLeftLayoutScopeUI();
-
-      let pct = 100;
-      if (fxMasterMode === 'layout') {
-        if (activeLayoutSubMode === 'width') {
-          const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
-          const ratio = Math.max(0, Math.min(1, (val - 50) / 80));
-          pct = Math.round(ratio * 100);
-          if (fxLabelText) fxLabelText.innerText = `W: ${val}%`;
-          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Width: ${val}%`);
-          sideFxTrack.setAttribute('aria-valuenow', val);
-          sideFxTrack.setAttribute('aria-label', 'Timetable Width');
-        } else if (activeLayoutSubMode === 'height') {
-          const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
-          const ratio = Math.max(0, Math.min(1, (val - 25) / 65));
-          pct = Math.round(ratio * 100);
-          if (fxLabelText) fxLabelText.innerText = `H: ${val}px`;
-          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Height: ${val}px`);
-          sideFxTrack.setAttribute('aria-valuenow', val);
-          sideFxTrack.setAttribute('aria-label', 'Timetable Height');
-        } else if (activeLayoutSubMode === 'posx') {
-          const val = this.gridXPosVal != null ? this.gridXPosVal : 0;
-          const ratio = Math.max(0, Math.min(1, (val + 150) / 300));
-          pct = Math.round(ratio * 100);
-          const sign = val > 0 ? '+' : '';
-          if (fxLabelText) fxLabelText.innerText = `X: ${sign}${val}px`;
-          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable X-Position: ${sign}${val}px`);
-          sideFxTrack.setAttribute('aria-valuenow', val);
-          sideFxTrack.setAttribute('aria-label', 'Timetable X-Position');
-        } else if (activeLayoutSubMode === 'posy') {
-          const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
-          const ratio = Math.max(0, Math.min(1, (val + 120) / 270));
-          pct = Math.round(ratio * 100);
-          const sign = val > 0 ? '+' : '';
-          if (fxLabelText) fxLabelText.innerText = `Y: ${sign}${val}px`;
-          if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Y-Position: ${sign}${val}px`);
-          sideFxTrack.setAttribute('aria-valuenow', val);
-          sideFxTrack.setAttribute('aria-label', 'Timetable Y-Position');
-        }
-      } else if (fxMasterMode === 'opacity') {
-        const val = this.timetableOpacity != null ? this.timetableOpacity : 100;
-        const ratio = Math.max(0, Math.min(1, (val - 20) / 80));
-        pct = Math.round(ratio * 100);
-        if (fxLabelText) fxLabelText.innerText = `${val}%`;
-        if (sideFxBadge) sideFxBadge.setAttribute('title', `Timetable Opacity: ${val}%`);
-        sideFxTrack.setAttribute('aria-valuenow', val);
-        sideFxTrack.setAttribute('aria-label', 'Timetable Opacity');
-      } else if (fxMasterMode === 'blur') {
-        const val = this.bgBlurEnabled ? (this.bgBlurIntensity != null ? this.bgBlurIntensity : 10) : 0;
-        const ratio = Math.max(0, Math.min(1, val / 40));
-        pct = Math.round(ratio * 100);
-        if (fxLabelText) fxLabelText.innerText = `${val}px`;
-        if (sideFxBadge) sideFxBadge.setAttribute('title', `Wallpaper Blur: ${val}px`);
-        sideFxTrack.setAttribute('aria-valuenow', val);
-        sideFxTrack.setAttribute('aria-label', 'Wallpaper Blur');
-      }
-
-      sideFxFill.style.transition = animate ? 'height 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
-      sideFxFill.style.setProperty('height', `${pct}%`, 'important');
-    };
-
-    this.syncLeftFxSlider = (animate = true) => updateFxSliderUI(animate);
-
-    if (sideFxContainer && sideFxTrack) {
-      updateLeftLayoutScopeUI();
-      updateFxSliderUI(false);
-
-      btnFxLayout?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'layout';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxOpacity?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'opacity';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxBlur?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'blur';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxWidth?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'layout';
-        activeLayoutSubMode = 'width';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxHeight?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'layout';
-        activeLayoutSubMode = 'height';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxPosx?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'layout';
-        activeLayoutSubMode = 'posx';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      btnFxPosy?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fxMasterMode = 'layout';
-        activeLayoutSubMode = 'posy';
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-      });
-
-      let isFxDragging = false;
-
-      const updateFxFromPointer = (e, animate = false) => {
-        const rect = sideFxTrack.getBoundingClientRect();
+      const updateFromPointer = (e, animate = false) => {
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        const rect = track.getBoundingClientRect();
         let clientY = e.clientY;
-        if (clientY == null && e.touches && e.touches.length > 0) {
-          clientY = e.touches[0].clientY;
-        } else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) {
-          clientY = e.changedTouches[0].clientY;
-        }
+        if (clientY == null && e.touches && e.touches.length > 0) clientY = e.touches[0].clientY;
+        else if (clientY == null && e.changedTouches && e.changedTouches.length > 0) clientY = e.changedTouches[0].clientY;
         if (clientY == null) clientY = rect.top + rect.height / 2;
 
         const offsetY = rect.bottom - clientY;
-        const ratio = Math.max(0, Math.min(1, offsetY / rect.height));
+        const ratio = offsetY / rect.height;
 
-        if (fxMasterMode === 'layout') {
-          if (activeLayoutSubMode === 'width') {
-            const val = Math.round(50 + ratio * 80);
-            this.setTimetableWidthScale(val, false);
-          } else if (activeLayoutSubMode === 'height') {
-            const val = Math.round(25 + ratio * 65);
-            this.setTimetableHeightScale(val, false);
-          } else if (activeLayoutSubMode === 'posx') {
-            const val = Math.round(-150 + ratio * 300);
-            this.setTimetableOffsetX(val, false);
-          } else if (activeLayoutSubMode === 'posy') {
-            const val = Math.round(-120 + ratio * 270);
-            this.setTimetableOffsetY(val, false);
-          }
-        } else if (fxMasterMode === 'opacity') {
-          const val = Math.round(20 + ratio * 80);
-          this.setTimetableOpacity(val, false);
-        } else if (fxMasterMode === 'blur') {
-          const val = Math.round(ratio * 40);
-          this.setWallpaperBlur(val, val > 0, false);
-        }
-
-        updateFxSliderUI(animate);
-        showFxBadgeTemporarily();
-        if (window.haptics) window.haptics.trigger('slider');
-        this._stagePending(true);
+        applyToolValueByRatio(activeTool, ratio, false);
+        updateSideSliderUI(side, animate);
+        showSideBadgeTemporarily(side);
+        window.haptics?.trigger?.('slider');
       };
 
-      const onFxDragStart = (e) => {
+      const onDragStart = (e) => {
         if (e.button != null && e.button !== 0) return;
-        isFxDragging = true;
-        sideFxContainer.classList.add('active-drag');
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxFromPointer(e, false);
+        isDragging = true;
+        container.classList.add('active-drag');
+        window.soundFX?.play?.('tap');
+        updateFromPointer(e, false);
         if (e.cancelable) e.preventDefault();
       };
 
-      const onFxDragMove = (e) => {
-        if (!isFxDragging) return;
-        updateFxFromPointer(e, false);
+      const onDragMove = (e) => {
+        if (!isDragging) return;
+        updateFromPointer(e, false);
         if (e.cancelable) e.preventDefault();
       };
 
-      const onFxDragEnd = () => {
-        if (isFxDragging) {
-          isFxDragging = false;
-          sideFxContainer.classList.remove('active-drag');
-          updateFxSliderUI(true);
-          showFxBadgeTemporarily(1200);
+      const onDragEnd = () => {
+        if (isDragging) {
+          isDragging = false;
+          container.classList.remove('active-drag');
+          updateSideSliderUI(side, true);
+          showSideBadgeTemporarily(side, 1200);
         }
       };
 
-      sideFxTrack.addEventListener('pointerdown', onFxDragStart);
-      sideFxTrack.addEventListener('mousedown', onFxDragStart);
-      sideFxTrack.addEventListener('touchstart', onFxDragStart, { passive: false });
+      track.addEventListener('pointerdown', onDragStart);
+      track.addEventListener('mousedown', onDragStart);
+      track.addEventListener('touchstart', onDragStart, { passive: false });
 
-      window.addEventListener('pointermove', onFxDragMove, { passive: false });
-      window.addEventListener('mousemove', onFxDragMove);
-      window.addEventListener('touchmove', onFxDragMove, { passive: false });
+      window.addEventListener('pointermove', onDragMove, { passive: false });
+      window.addEventListener('mousemove', onDragMove);
+      window.addEventListener('touchmove', onDragMove, { passive: false });
 
-      window.addEventListener('pointerup', onFxDragEnd);
-      window.addEventListener('mouseup', onFxDragEnd);
-      window.addEventListener('touchend', onFxDragEnd);
-      window.addEventListener('pointercancel', onFxDragEnd);
-      window.addEventListener('touchcancel', onFxDragEnd);
+      window.addEventListener('pointerup', onDragEnd);
+      window.addEventListener('mouseup', onDragEnd);
+      window.addEventListener('touchend', onDragEnd);
+      window.addEventListener('pointercancel', onDragEnd);
+      window.addEventListener('touchcancel', onDragEnd);
 
-      // Double click track to reset active property
-      sideFxTrack.addEventListener('dblclick', (e) => {
+      // Double-click track to reset current active tool
+      track.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        if (fxMasterMode === 'layout') {
-          if (activeLayoutSubMode === 'width') {
-            this.setTimetableWidthScale(100, false);
-          } else if (activeLayoutSubMode === 'height') {
-            this.setTimetableHeightScale(49, false);
-          } else if (activeLayoutSubMode === 'posx') {
-            this.setTimetableOffsetX(0, false);
-          } else if (activeLayoutSubMode === 'posy') {
-            this.setTimetableOffsetY(0, false);
-          }
-        } else if (fxMasterMode === 'opacity') {
-          this.setTimetableOpacity(100, false);
-        } else if (fxMasterMode === 'blur') {
-          this.setWallpaperBlur(0, false, false);
-        }
-        if (window.soundFX) window.soundFX.play('tap');
-        updateFxSliderUI(true);
-        showFxBadgeTemporarily();
-        this._stagePending(true);
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        resetToolToDefault(activeTool);
+        window.soundFX?.play?.('tap');
+        updateSideSliderUI(side, true);
+        showSideBadgeTemporarily(side);
       });
 
-      // Mouse wheel scrub over container
-      sideFxContainer.addEventListener('wheel', (e) => {
+      // Mouse wheel scrub over slider container
+      container.addEventListener('wheel', (e) => {
         e.preventDefault();
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
         const delta = e.deltaY < 0 ? 1 : -1;
-        if (fxMasterMode === 'layout') {
-          if (activeLayoutSubMode === 'width') {
-            const step = delta * 2;
-            const current = this.gridWidthVal != null ? this.gridWidthVal : 100;
-            const next = Math.max(50, Math.min(130, current + step));
-            this.setTimetableWidthScale(next, false);
-          } else if (activeLayoutSubMode === 'height') {
-            const step = delta * 2;
-            const current = this.gridHeightVal != null ? this.gridHeightVal : 49;
-            const next = Math.max(25, Math.min(90, current + step));
-            this.setTimetableHeightScale(next, false);
-          } else if (activeLayoutSubMode === 'posx') {
-            const step = delta * 4;
-            const current = this.gridXPosVal != null ? this.gridXPosVal : 0;
-            const next = Math.max(-150, Math.min(150, current + step));
-            this.setTimetableOffsetX(next, false);
-          } else if (activeLayoutSubMode === 'posy') {
-            const step = delta * 4;
-            const current = this.gridYPosVal != null ? this.gridYPosVal : 0;
-            const next = Math.max(-120, Math.min(150, current + step));
-            this.setTimetableOffsetY(next, false);
-          }
-        } else if (fxMasterMode === 'opacity') {
-          const step = delta * 5;
-          const next = Math.max(20, Math.min(100, (this.timetableOpacity || 100) + step));
-          this.setTimetableOpacity(next, false);
-        } else if (fxMasterMode === 'blur') {
-          const step = delta * 2;
-          const next = Math.max(0, Math.min(40, (this.bgBlurIntensity || 0) + step));
-          this.setWallpaperBlur(next, next > 0, false);
-        }
-        updateFxSliderUI(false);
-        showFxBadgeTemporarily();
-        this._stagePending(true);
+        stepToolDelta(activeTool, delta);
+        updateSideSliderUI(side, false);
+        showSideBadgeTemporarily(side);
       }, { passive: false });
-    }
+    };
+
+    setupTrackInteractions('left');
+    setupTrackInteractions('right');
+
+    this.syncLeftFxSlider = (animate = true) => updateSideSliderUI('left', animate);
+    this.syncRightSlider = (animate = true) => updateSideSliderUI('right', animate);
+
 
     // Flush pending changes before page unloads or tab becomes hidden
     window.addEventListener('beforeunload', () => {
@@ -6417,6 +6608,435 @@ class SchedullyApp {
         this.saveToCloud();
       }
     });
+
+    // ═══════════════════════════════════════════════════════════════
+    // SLIDER CUSTOMIZER SETUP (Left vs Right Drag & Drop / Tap Swap)
+    // ═══════════════════════════════════════════════════════════════
+    this.setupSliderCustomizerUI = () => {
+      const modal = document.getElementById('modal-slider-customizer');
+      const btnOpen = document.getElementById('btn-open-slider-customizer');
+      const btnClose = document.getElementById('btn-close-slider-customizer');
+      const btnReset = document.getElementById('btn-reset-slider-customizer');
+      const btnSave = document.getElementById('btn-save-slider-customizer');
+      const zoneLeft = document.getElementById('slider-zone-left');
+      const zoneRight = document.getElementById('slider-zone-right');
+      const countLeft = document.getElementById('slider-count-left');
+      const countRight = document.getElementById('slider-count-right');
+
+      if (!modal || !btnOpen) return;
+
+      const SLIDER_TOOLS_DEF = {
+        zoom: { id: 'zoom', name: 'Canvas Zoom', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`, desc: 'Scale & fit (40% - 150%)' },
+        radius: { id: 'radius', name: 'Corner Radius', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="6" /></svg>`, desc: 'Roundness (frame & cards)' },
+        font: { id: 'font', name: 'Font Size', icon: `<span class="text-xs font-black leading-none">A<span class="text-[9px]">a</span></span>`, desc: 'Typography scaling & drawer' },
+        layout: { id: 'layout', name: 'Grid Layout', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12H3M7 8l-4 4 4 4M17 8l4 4-4 4"/><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>`, desc: 'Width, Height, X, Y & Days' },
+        opacity: { id: 'opacity', name: 'Card Opacity', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-dasharray="2 2"/></svg>`, desc: 'Glass & card transparency' },
+        blur: { id: 'blur', name: 'Wallpaper Effects', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`, desc: 'Photo wallpaper blur & dimming' }
+      };
+
+      let tempLayout = {
+        left: [...(this.sliderLayout?.left || ['layout', 'opacity', 'blur'])],
+        right: [...(this.sliderLayout?.right || ['zoom', 'radius', 'font'])],
+        hidden: [...(this.sliderLayout?.hidden || [])]
+      };
+
+      let draggedId = null;
+      let draggedFromSide = null;
+
+      const renderZones = () => {
+        [zoneLeft, zoneRight].forEach(z => { if (z) z.innerHTML = ''; });
+
+        const createCard = (id, currentSide, index) => {
+          const tool = SLIDER_TOOLS_DEF[id];
+          if (!tool) return null;
+          const isHidden = (tempLayout.hidden || []).includes(id);
+
+          const el = document.createElement('div');
+          el.className = `slider-drag-card flex items-center justify-between p-2 rounded-xl border shadow-sm cursor-grab active:cursor-grabbing select-none ${isHidden ? 'is-hidden-card' : ''}`;
+          el.draggable = true;
+          el.setAttribute('data-id', id);
+          el.setAttribute('data-side', currentSide);
+          el.setAttribute('data-index', index);
+
+          const eyeIconOpen = `<svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+          const eyeIconClosed = `<svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>`;
+
+          el.innerHTML = `
+            <div class="flex items-center gap-2.5 overflow-hidden pointer-events-none">
+              <span class="text-slate-400 font-bold text-xs">
+                <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="currentColor"><circle cx="8.5" cy="6.5" r="1.5"/><circle cx="15.5" cy="6.5" r="1.5"/><circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/><circle cx="8.5" cy="17.5" r="1.5"/><circle cx="15.5" cy="17.5" r="1.5"/></svg>
+              </span>
+              <div class="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style="background: ${isHidden ? 'var(--m3-sys-color-surface-variant, #e2e8f0)' : 'var(--m3-sys-color-primary-container, #dbeafe)'}; color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};">
+                ${tool.icon}
+              </div>
+              <div class="flex flex-col text-left overflow-hidden">
+                <span class="text-xs font-bold truncate ${isHidden ? 'line-through opacity-60' : ''}" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-text-primary, #0f172a)'};">${tool.name}</span>
+                <span class="text-[9.5px] font-medium truncate" style="color: var(--m3-sys-text-secondary, #64748b);">${isHidden ? 'Hidden from sidebar' : tool.desc}</span>
+              </div>
+            </div>
+            <button type="button" class="btn-toggle-eye p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ml-1" draggable="false" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};" title="${isHidden ? 'Show tool in sidebar' : 'Hide tool from sidebar'}">
+              ${isHidden ? eyeIconClosed : eyeIconOpen}
+            </button>
+          `;
+
+          // Tap eye icon to toggle visibility
+          const btnToggle = el.querySelector('.btn-toggle-eye');
+          if (btnToggle) {
+            btnToggle.setAttribute('draggable', 'false');
+            const toggleTool = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!tempLayout.hidden) tempLayout.hidden = [];
+              if (tempLayout.hidden.includes(id)) {
+                tempLayout.hidden = tempLayout.hidden.filter(x => x !== id);
+                window.soundFX?.play?.('open');
+              } else {
+                tempLayout.hidden.push(id);
+                window.soundFX?.play?.('tap');
+              }
+              renderZones();
+            };
+
+            btnToggle.addEventListener('pointerdown', (e) => e.stopPropagation());
+            btnToggle.addEventListener('mousedown', (e) => e.stopPropagation());
+            btnToggle.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
+            btnToggle.addEventListener('click', toggleTool);
+          }
+
+          // Drag start & end
+          el.addEventListener('dragstart', (e) => {
+            if (e.target && e.target.closest && e.target.closest('.btn-toggle-eye')) {
+              e.preventDefault();
+              return;
+            }
+            draggedId = id;
+            draggedFromSide = currentSide;
+            e.dataTransfer.setData('text/plain', JSON.stringify({ id, fromSide: currentSide }));
+            e.dataTransfer.effectAllowed = 'move';
+            el.classList.add('opacity-40');
+          });
+
+          el.addEventListener('dragend', () => {
+            draggedId = null;
+            draggedFromSide = null;
+            el.classList.remove('opacity-40');
+            document.querySelectorAll('.slider-drop-zone').forEach(z => z.classList.remove('drag-active'));
+            document.querySelectorAll('.slider-drag-card').forEach(c => c.classList.remove('border-t-2', 'border-b-2', 'border-blue-500'));
+          });
+
+          // Individual card dragover for position indicators
+          el.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            if (draggedId === id) return;
+
+            const rect = el.getBoundingClientRect();
+            const relY = e.clientY - rect.top;
+            if (relY < rect.height / 2) {
+              el.classList.add('border-t-2', 'border-blue-500');
+              el.classList.remove('border-b-2');
+            } else {
+              el.classList.add('border-b-2', 'border-blue-500');
+              el.classList.remove('border-t-2');
+            }
+          });
+
+          el.addEventListener('dragleave', () => {
+            el.classList.remove('border-t-2', 'border-b-2', 'border-blue-500');
+          });
+
+          el.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove('border-t-2', 'border-b-2', 'border-blue-500');
+
+            try {
+              const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+              const srcId = payload.id || draggedId;
+              const fromSide = payload.fromSide || draggedFromSide;
+              if (!srcId) return;
+
+              // Remove from original list
+              tempLayout[fromSide] = tempLayout[fromSide].filter(x => x !== srcId);
+
+              // Calculate target insertion index
+              let targetIdx = tempLayout[currentSide].indexOf(id);
+              if (targetIdx === -1) {
+                targetIdx = tempLayout[currentSide].length;
+              } else {
+                const rect = el.getBoundingClientRect();
+                const relY = e.clientY - rect.top;
+                if (relY >= rect.height / 2) {
+                  targetIdx += 1;
+                }
+              }
+
+              // Insert at target position
+              tempLayout[currentSide].splice(targetIdx, 0, srcId);
+              renderZones();
+              window.soundFX?.play?.('tap');
+            } catch (err) {}
+          });
+
+          return el;
+        };
+
+        tempLayout.left.forEach((id, idx) => {
+          const card = createCard(id, 'left', idx);
+          if (card) zoneLeft?.appendChild(card);
+        });
+        tempLayout.right.forEach((id, idx) => {
+          const card = createCard(id, 'right', idx);
+          if (card) zoneRight?.appendChild(card);
+        });
+
+        const activeLeftCount = tempLayout.left.filter(id => !(tempLayout.hidden || []).includes(id)).length;
+        const activeRightCount = tempLayout.right.filter(id => !(tempLayout.hidden || []).includes(id)).length;
+        if (countLeft) countLeft.innerText = `${activeLeftCount} visible`;
+        if (countRight) countRight.innerText = `${activeRightCount} visible`;
+      };
+
+      // Setup DnD on drop zones (handles dropping on empty zone or bottom empty space)
+      [zoneLeft, zoneRight].forEach(zone => {
+        if (!zone) return;
+        const targetSide = zone.getAttribute('data-side');
+
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          zone.classList.add('drag-active');
+        });
+
+        zone.addEventListener('dragleave', (e) => {
+          if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-active');
+          }
+        });
+
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('drag-active');
+          try {
+            const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+            const srcId = payload.id || draggedId;
+            const fromSide = payload.fromSide || draggedFromSide;
+            if (srcId) {
+              tempLayout[fromSide] = tempLayout[fromSide].filter(x => x !== srcId);
+              tempLayout[targetSide].push(srcId);
+              renderZones();
+              window.soundFX?.play?.('tap');
+            }
+          } catch (err) {}
+        });
+      });
+
+      btnOpen.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tempLayout = {
+          left: [...(this.sliderLayout?.left || ['layout', 'opacity', 'blur'])],
+          right: [...(this.sliderLayout?.right || ['zoom', 'radius', 'font'])],
+          hidden: [...(this.sliderLayout?.hidden || [])]
+        };
+        renderZones();
+        modal.classList.remove('hidden');
+        document.body.classList.add('slider-customizer-open');
+        window.soundFX?.play?.('open');
+      });
+
+      const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('slider-customizer-open');
+      };
+
+      btnClose?.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      btnReset?.addEventListener('click', () => {
+        tempLayout = { 
+          left: ['layout', 'opacity', 'blur'], 
+          right: ['zoom', 'radius', 'font'],
+          hidden: []
+        };
+        renderZones();
+        window.soundFX?.play?.('tap');
+      });
+
+      btnSave?.addEventListener('click', () => {
+        this.sliderLayout = {
+          left: [...tempLayout.left],
+          right: [...tempLayout.right],
+          hidden: [...(tempLayout.hidden || [])]
+        };
+        try {
+          localStorage.setItem('schedully_slider_layout', JSON.stringify(this.sliderLayout));
+        } catch (e) {}
+
+        if (typeof this.renderCustomizedSideSliders === 'function') {
+          this.renderCustomizedSideSliders();
+        }
+        this._stagePending(true);
+        closeModal();
+        window.soundFX?.play?.('save');
+        if (typeof showToast === 'function') {
+          showToast('Side sliders layout saved!', 'success');
+        }
+      });
+    };
+
+    this.renderCustomizedSideSliders = () => {
+      const leftContainer = document.getElementById('side-fx-slider-container');
+      const rightContainer = document.getElementById('side-right-slider-container');
+      const hiddenTools = this.sliderLayout?.hidden || [];
+      const leftTools = (this.sliderLayout?.left || ['layout', 'opacity', 'blur']).filter(id => !hiddenTools.includes(id));
+      const rightTools = (this.sliderLayout?.right || ['zoom', 'radius', 'font']).filter(id => !hiddenTools.includes(id));
+
+      const allBtns = {
+        zoom: document.getElementById('btn-right-mode-zoom'),
+        radius: document.getElementById('btn-right-mode-radius'),
+        font: document.getElementById('btn-right-mode-font'),
+        layout: document.getElementById('btn-fx-mode-layout'),
+        opacity: document.getElementById('btn-fx-mode-opacity'),
+        blur: document.getElementById('btn-fx-mode-blur')
+      };
+
+      const leftPill = document.getElementById('m3-expressive-fx-pill');
+      const rightPill = document.getElementById('m3-expressive-right-pill');
+      const leftTrack = document.getElementById('side-fx-track');
+      const rightTrack = document.getElementById('side-right-track');
+
+      if (!leftPill || !rightPill) return;
+
+      // Move buttons to the correct parent pill
+      leftTools.forEach(toolId => {
+        const btn = allBtns[toolId];
+        if (btn && leftTrack) {
+          leftPill.insertBefore(btn, leftTrack);
+        }
+      });
+      rightTools.forEach(toolId => {
+        const btn = allBtns[toolId];
+        if (btn && rightTrack) {
+          rightPill.insertBefore(btn, rightTrack);
+        }
+      });
+
+      // Move top scope groups (Days top pill and Font top pill)
+      if (layoutTopGroup) {
+        if (leftTools.includes('layout') && leftContainer) {
+          leftContainer.insertBefore(layoutTopGroup, leftContainer.firstChild);
+        } else if (rightTools.includes('layout') && rightContainer) {
+          rightContainer.insertBefore(layoutTopGroup, rightContainer.firstChild);
+        }
+      }
+      if (fontTopGroup) {
+        if (leftTools.includes('font') && leftContainer) {
+          leftContainer.insertBefore(fontTopGroup, leftContainer.firstChild);
+        } else if (rightTools.includes('font') && rightContainer) {
+          rightContainer.insertBefore(fontTopGroup, rightContainer.firstChild);
+        }
+      }
+
+      // Move bottom sub-scope groups (Radius, Font, Layout scopes)
+      if (radiusScopeGroup) {
+        if (leftTools.includes('radius') && leftContainer) {
+          leftContainer.appendChild(radiusScopeGroup);
+        } else if (rightTools.includes('radius') && rightContainer) {
+          rightContainer.appendChild(radiusScopeGroup);
+        }
+      }
+      if (layoutScopeGroup) {
+        if (leftTools.includes('layout') && leftContainer) {
+          leftContainer.appendChild(layoutScopeGroup);
+        } else if (rightTools.includes('layout') && rightContainer) {
+          rightContainer.appendChild(layoutScopeGroup);
+        }
+      }
+      if (fontScopeGroup) {
+        if (leftTools.includes('font') && leftContainer) {
+          leftContainer.appendChild(fontScopeGroup);
+        } else if (rightTools.includes('font') && rightContainer) {
+          rightContainer.appendChild(fontScopeGroup);
+        }
+      }
+      if (blurScopeGroup) {
+        if (leftTools.includes('blur') && leftContainer) {
+          leftContainer.appendChild(blurScopeGroup);
+        } else if (rightTools.includes('blur') && rightContainer) {
+          rightContainer.appendChild(blurScopeGroup);
+        }
+      }
+      // Adjust floating popover positions based on which side their launcher is placed
+      if (floatingDaysTimeCard) {
+        if (rightTools.includes('layout')) {
+          floatingDaysTimeCard.classList.remove('floating-days-card');
+        } else {
+          floatingDaysTimeCard.classList.add('floating-days-card');
+        }
+      }
+      if (floatingFontStyleCard) {
+        if (leftTools.includes('font')) {
+          floatingFontStyleCard.classList.add('floating-days-card');
+        } else {
+          floatingFontStyleCard.classList.remove('floating-days-card');
+        }
+      }
+
+      // Show/hide based on assignment and hidden state
+      Object.keys(allBtns).forEach(id => {
+        const btn = allBtns[id];
+        if (btn) {
+          const isLeft = leftTools.includes(id);
+          const isRight = rightTools.includes(id);
+          const isVisible = (isLeft || isRight) && !hiddenTools.includes(id);
+          btn.classList.toggle('hidden', !isVisible);
+          if (!isVisible) {
+            btn.style.setProperty('display', 'none', 'important');
+          } else {
+            btn.style.removeProperty('display');
+          }
+        }
+      });
+
+      // Ensure scope groups are hidden if parent tool is hidden
+      if (hiddenTools.includes('layout')) {
+        if (layoutTopGroup) layoutTopGroup.classList.add('hidden');
+        if (layoutScopeGroup) layoutScopeGroup.classList.add('hidden');
+      }
+      if (hiddenTools.includes('font')) {
+        if (fontTopGroup) fontTopGroup.classList.add('hidden');
+        if (fontScopeGroup) fontScopeGroup.classList.add('hidden');
+      }
+      if (hiddenTools.includes('radius')) {
+        if (radiusScopeGroup) radiusScopeGroup.classList.add('hidden');
+      }
+
+      // Ensure active tool on each side is valid
+      if (leftTools.length > 0 && !leftTools.includes(leftActiveTool)) {
+        leftActiveTool = leftTools[0];
+      }
+      if (rightTools.length > 0 && !rightTools.includes(rightActiveTool)) {
+        rightActiveTool = rightTools[0];
+      }
+
+      const showSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
+      if (leftContainer) {
+        leftContainer.classList.toggle('hidden', leftTools.length === 0 || !showSliders);
+      }
+      if (rightContainer) {
+        rightContainer.classList.toggle('hidden', rightTools.length === 0 || !showSliders);
+      }
+
+      if (leftTools.length > 0) updateSideSliderUI('left', false);
+      if (rightTools.length > 0) updateSideSliderUI('right', false);
+    };
+
+    this.setupSliderCustomizerUI();
+    if (typeof this.renderCustomizedSideSliders === 'function') {
+      this.renderCustomizedSideSliders();
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // FLOATING PALETTE & MODE CARD ENGINE (Bottom-Left Circle Island Trigger)
@@ -6632,10 +7252,12 @@ class SchedullyApp {
           btn.classList.add('active');
           const colorVal = btn.getAttribute('data-surface');
           this.userHasPickedSurfaceColor = true;
+          this.customSurfaceColor = colorVal;
           document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
-          this._stagePending();
+          this.syncCustomColorPickersUI();
+          this._stagePending(true);
         });
       });
 
@@ -6643,8 +7265,10 @@ class SchedullyApp {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedSurfaceColor = true;
+        this.customSurfaceColor = colorVal;
         document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
 
       // 2. Background Colour
@@ -6655,11 +7279,13 @@ class SchedullyApp {
           btn.classList.add('active');
           const colorVal = btn.getAttribute('data-bg');
           this.userHasPickedBgColor = true;
+          this.customBgColor = colorVal;
           this.phoneCanvas.style.backgroundColor = colorVal;
           this.updateClockContrast(colorVal);
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
-          this._stagePending();
+          this.syncCustomColorPickersUI();
+          this._stagePending(true);
         });
       });
 
@@ -6667,9 +7293,11 @@ class SchedullyApp {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedBgColor = true;
+        this.customBgColor = colorVal;
         this.phoneCanvas.style.backgroundColor = colorVal;
         this.updateClockContrast(colorVal);
-        this._stagePending();
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
 
       // 3. Header Colour
@@ -6680,10 +7308,12 @@ class SchedullyApp {
           btn.classList.add('active');
           const colorVal = btn.getAttribute('data-header');
           this.userHasPickedHeaderColor = true;
-          this.applyHeaderColor(colorVal);
+          this.customHeaderColor = colorVal;
+          this.applyHeaderColor(colorVal, true);
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
-          this._stagePending();
+          this.syncCustomColorPickersUI();
+          this._stagePending(true);
         });
       });
 
@@ -6691,8 +7321,10 @@ class SchedullyApp {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
         this.userHasPickedHeaderColor = true;
-        this.applyHeaderColor(colorVal);
-        this._stagePending();
+        this.customHeaderColor = colorVal;
+        this.applyHeaderColor(colorVal, true);
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
 
       // 4. Trademark Colour
@@ -6702,18 +7334,24 @@ class SchedullyApp {
           document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           const colorVal = btn.getAttribute('data-trademark');
-          this.applyTrademarkColor(colorVal);
+          this.userHasPickedTrademarkColor = true;
+          this.customTrademarkColor = colorVal;
+          this.applyTrademarkColor(colorVal, true);
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
-          this._stagePending();
+          this.syncCustomColorPickersUI();
+          this._stagePending(true);
         });
       });
 
       document.getElementById('floating-custom-trademark-color')?.addEventListener('input', (e) => {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
-        this.applyTrademarkColor(colorVal);
-        this._stagePending();
+        this.userHasPickedTrademarkColor = true;
+        this.customTrademarkColor = colorVal;
+        this.applyTrademarkColor(colorVal, true);
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
 
       // 5. Font Colour
@@ -6723,18 +7361,24 @@ class SchedullyApp {
           document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           const colorVal = btn.getAttribute('data-font');
-          this.applyFontColor(colorVal);
+          this.userHasPickedFontColor = true;
+          this.customFontColor = colorVal;
+          this.applyFontColor(colorVal, true);
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
-          this._stagePending();
+          this.syncCustomColorPickersUI();
+          this._stagePending(true);
         });
       });
 
       document.getElementById('floating-custom-font-color')?.addEventListener('input', (e) => {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
-        this.applyFontColor(colorVal);
-        this._stagePending();
+        this.userHasPickedFontColor = true;
+        this.customFontColor = colorVal;
+        this.applyFontColor(colorVal, true);
+        this.syncCustomColorPickersUI();
+        this._stagePending(true);
       });
 
       // Page 3: Wallpaper & Background Actions
@@ -6797,10 +7441,16 @@ class SchedullyApp {
           this.userHasPickedBgColor = false;
           this.userHasPickedHeaderColor = false;
           this.userHasPickedTrademarkColor = false;
+          this.userHasPickedFontColor = false;
+          this.customSurfaceColor = null;
+          this.customBgColor = null;
+          this.customHeaderColor = null;
+          this.customTrademarkColor = null;
+          this.customFontColor = null;
           this.phoneCanvas.style.backgroundColor = '';
-          this.applyHeaderColor('');
-          this.applyTrademarkColor('');
-          this.applyFontColor('');
+          this.applyHeaderColor('', true);
+          this.applyTrademarkColor('', true);
+          this.applyFontColor('', true);
           document.documentElement.style.removeProperty('--m3-grid-surface-bg');
           document.documentElement.style.removeProperty('--m3-header-custom-bg');
           document.documentElement.style.removeProperty('--trademark-pill-custom-bg');
@@ -6809,14 +7459,8 @@ class SchedullyApp {
           document.documentElement.style.removeProperty('--m3-font-custom-color');
           this.applyThemeEngine();
           this.renderAll();
+          this.syncCustomColorPickersUI();
           this._stagePending(true);
-
-          // Update active states on swatches
-          document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-          document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-          document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-          document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-          document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
 
           if (typeof showToast === 'function') {
             showToast('Colors reset to theme defaults!', 'info');
@@ -8645,13 +9289,16 @@ class SchedullyApp {
 
       // Set exact blur CSS variable on clone so ::before edge-bleed blur renders identically
       const blurVal = this.bgBlurEnabled ? `${this.bgBlurIntensity || 12}px` : '0px';
+      const dimVal = `${(this.wallpaperDimIntensity || 0) / 100}`;
       clone.style.setProperty('--wallpaper-blur-val', blurVal, 'important');
+      clone.style.setProperty('--wallpaper-dim-val', dimVal, 'important');
 
-      // Explicitly enforce Background Blur variable & Zero Border Radius on clone wallpaper layer
+      // Explicitly enforce Background Blur & Dimming variable & Zero Border Radius on clone wallpaper layer
       const wallpaperLayer = clone.querySelector('.phone-wallpaper-layer');
       if (wallpaperLayer) {
         wallpaperLayer.style.setProperty('border-radius', '0px', 'important');
         wallpaperLayer.style.setProperty('--wallpaper-blur-val', blurVal, 'important');
+        wallpaperLayer.style.setProperty('--wallpaper-dim-val', dimVal, 'important');
         wallpaperLayer.style.setProperty('filter', 'none', 'important');
       }
 
@@ -8841,7 +9488,7 @@ class SchedullyApp {
     if (!settings || typeof settings !== 'object') return;
 
     try {
-                  // 1. Table & Card Corners & Radius
+      // 1. Table & Card Corners & Radius
       if (settings.tableCornerStyle || settings.cardCornerStyle) {
         this.tableCornerStyle = settings.tableCornerStyle || settings.cardCornerStyle || 'rounded';
         document.querySelectorAll('#toggle-table-corners .pill-btn').forEach(b => {
@@ -8862,16 +9509,16 @@ class SchedullyApp {
         }
       }
       if (settings.tableCornerRadiusVal !== undefined) {
-        this.tableCornerRadiusVal = settings.tableCornerRadiusVal;
+        this.tableCornerRadiusVal = Number(settings.tableCornerRadiusVal);
         const tableRadiusValEl = document.getElementById('table-radius-val');
         if (tableRadiusValEl) tableRadiusValEl.value = this.tableCornerRadiusVal;
       } else if (settings.cardCornerRadiusVal !== undefined) {
-        this.tableCornerRadiusVal = settings.cardCornerRadiusVal;
+        this.tableCornerRadiusVal = Number(settings.cardCornerRadiusVal);
         const tableRadiusValEl = document.getElementById('table-radius-val');
         if (tableRadiusValEl) tableRadiusValEl.value = this.tableCornerRadiusVal;
       }
       if (settings.cardCornerRadiusVal !== undefined) {
-        this.cardCornerRadiusVal = settings.cardCornerRadiusVal;
+        this.cardCornerRadiusVal = Number(settings.cardCornerRadiusVal);
         const cardRadiusValEl = document.getElementById('card-radius-val');
         if (cardRadiusValEl) cardRadiusValEl.value = this.cardCornerRadiusVal;
       }
@@ -8879,37 +9526,96 @@ class SchedullyApp {
       // 2. Mode & Palette
       if (settings.currentPalette) {
         this.currentPalette = settings.currentPalette;
+        try { localStorage.setItem('schedully_theme_palette', this.currentPalette); } catch (e) {}
         document.querySelectorAll('.palette-dot').forEach(d => {
           d.classList.toggle('active', d.getAttribute('data-palette') === this.currentPalette);
         });
       }
       if (settings.currentMode) {
         this.currentMode = settings.currentMode;
+        try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
         document.querySelectorAll('.theme-mode-dot').forEach(d => {
           d.classList.toggle('active', d.getAttribute('data-mode') === this.currentMode);
         });
       }
       this.applyThemeEngine();
 
+      // 2b. Custom Colors (Surface, Background, Header, Trademark, Font)
+      if (settings.userHasPickedSurfaceColor && settings.customSurfaceColor) {
+        this.userHasPickedSurfaceColor = true;
+        this.customSurfaceColor = settings.customSurfaceColor;
+        document.documentElement.style.setProperty('--m3-grid-surface-bg', this.customSurfaceColor);
+      } else if (settings.userHasPickedSurfaceColor === false) {
+        this.userHasPickedSurfaceColor = false;
+        this.customSurfaceColor = null;
+        document.documentElement.style.removeProperty('--m3-grid-surface-bg');
+      }
+
+      if (settings.userHasPickedBgColor && settings.customBgColor) {
+        this.userHasPickedBgColor = true;
+        this.customBgColor = settings.customBgColor;
+        if (this.phoneCanvas) this.phoneCanvas.style.backgroundColor = this.customBgColor;
+        this.updateClockContrast(this.customBgColor);
+      } else if (settings.userHasPickedBgColor === false) {
+        this.userHasPickedBgColor = false;
+        this.customBgColor = null;
+        if (this.phoneCanvas) this.phoneCanvas.style.backgroundColor = '';
+        this.updateClockContrast();
+      }
+
+      if (settings.userHasPickedHeaderColor && settings.customHeaderColor) {
+        this.userHasPickedHeaderColor = true;
+        this.customHeaderColor = settings.customHeaderColor;
+        this.applyHeaderColor(this.customHeaderColor, true);
+      } else if (settings.userHasPickedHeaderColor === false) {
+        this.userHasPickedHeaderColor = false;
+        this.customHeaderColor = null;
+        this.applyHeaderColor('', true);
+      }
+
+      if (settings.userHasPickedTrademarkColor && settings.customTrademarkColor) {
+        this.userHasPickedTrademarkColor = true;
+        this.customTrademarkColor = settings.customTrademarkColor;
+        this.applyTrademarkColor(this.customTrademarkColor, true);
+      } else if (settings.userHasPickedTrademarkColor === false) {
+        this.userHasPickedTrademarkColor = false;
+        this.customTrademarkColor = null;
+        this.applyTrademarkColor('', true);
+      }
+
+      if (settings.userHasPickedFontColor && settings.customFontColor) {
+        this.userHasPickedFontColor = true;
+        this.customFontColor = settings.customFontColor;
+        this.applyFontColor(this.customFontColor, true);
+      } else if (settings.userHasPickedFontColor === false) {
+        this.userHasPickedFontColor = false;
+        this.customFontColor = null;
+        this.applyFontColor('', true);
+      }
+
+      if (typeof this.syncCustomColorPickersUI === 'function') {
+        this.syncCustomColorPickersUI();
+      }
+
       // 3. Grid Dimensions & Position
-      if (settings.gridWidthVal) {
-        this.gridWidthVal = settings.gridWidthVal;
+      if (settings.gridWidthVal !== undefined) {
+        this.gridWidthVal = Number(settings.gridWidthVal);
         const gwEl = document.getElementById('grid-width-val');
         if (gwEl) gwEl.value = this.gridWidthVal;
       }
-      if (settings.gridHeightVal) {
-        this.gridHeightVal = settings.gridHeightVal;
+      if (settings.gridHeightVal !== undefined) {
+        this.gridHeightVal = Number(settings.gridHeightVal);
         const ghEl = document.getElementById('grid-height-val');
         if (ghEl) ghEl.value = this.gridHeightVal;
       }
       if (settings.gridYPosVal !== undefined) {
-        this.gridYPosVal = settings.gridYPosVal;
+        this.gridYPosVal = Number(settings.gridYPosVal);
         const gyEl = document.getElementById('grid-ypos-val');
         if (gyEl) gyEl.value = this.gridYPosVal;
       }
-      if (settings.fontSizeVal) {
-        this.fontSizeVal = settings.fontSizeVal;
-        this.gridFontSizeVal = settings.fontSizeVal;
+      if (settings.fontSizeVal !== undefined) {
+        this.fontSizeVal = Number(settings.fontSizeVal);
+        this.gridFontSizeVal = Number(settings.fontSizeVal);
         const fsEl = document.getElementById('grid-fontsize-val');
         if (fsEl) fsEl.value = this.fontSizeVal;
       }
@@ -8917,7 +9623,7 @@ class SchedullyApp {
       // 4. Clock Format
       if (settings.clockFormat) {
         this.clockFormat = settings.clockFormat;
-        document.querySelectorAll('#toggle-clock-type .pill-btn').forEach(b => {
+        document.querySelectorAll('#toggle-clock-type .pill-btn, #toggle-floating-clock-type .pill-btn').forEach(b => {
           b.classList.toggle('active', b.getAttribute('data-val') === this.clockFormat);
         });
       }
@@ -8943,21 +9649,26 @@ class SchedullyApp {
         document.documentElement.style.setProperty('--wallpaper-blur-val', this.bgBlurEnabled ? `${this.bgBlurIntensity}px` : '0px');
       }
 
+      // 5b. Wallpaper Dimming
+      if (settings.wallpaperDimIntensity !== undefined && this.setWallpaperDimming) {
+        this.setWallpaperDimming(Number(settings.wallpaperDimIntensity), false);
+      }
+
       // 6. Font Family
       if (settings.fontFamily && this.applyFontFamily) {
         this.applyFontFamily(settings.fontFamily, null, true);
       }
 
       // 7. Timetable Opacity
-      if (settings.timetableOpacity && this.setTimetableOpacity) {
-        this.setTimetableOpacity(settings.timetableOpacity);
+      if (settings.timetableOpacity !== undefined && this.setTimetableOpacity) {
+        this.setTimetableOpacity(Number(settings.timetableOpacity));
       }
 
       // 8. Title
       if (settings.showTitle !== undefined) {
         this.setTitleVisibility(settings.showTitle, false);
       }
-      if (settings.titleText) {
+      if (settings.titleText !== undefined) {
         this.updateTitleText(settings.titleText);
       }
 
@@ -8975,19 +9686,53 @@ class SchedullyApp {
       // 9. Active Days
       if (Array.isArray(settings.activeDays)) {
         this.activeDays = [...settings.activeDays];
-        document.querySelectorAll('.day-toggle').forEach(chk => {
+      }
+      if (Array.isArray(this.classes) && this.classes.length > 0) {
+        this.classes.forEach(c => {
+          const d = (c.day || '').substring(0, 3);
+          const norm = (d.charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+          if (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].includes(norm) && !this.activeDays.includes(norm)) {
+            this.activeDays.push(norm);
+          }
+        });
+        const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        this.activeDays.sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+      }
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') {
+        this.syncDaysAndTimeControlsUI();
+      } else {
+        document.querySelectorAll('.day-toggle, .floating-day-check').forEach(chk => {
           chk.checked = this.activeDays.includes(chk.value);
         });
       }
 
       // 10. Hours
-      if (settings.gridStartHour && this.gridStartTimeSelect) {
-        this.gridStartHour = settings.gridStartHour;
-        this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;
+      if (settings.gridStartHour !== undefined) {
+        this.gridStartHour = Number(settings.gridStartHour);
+        if (this.gridStartTimeSelect) this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;
       }
-      if (settings.gridEndHour && this.gridEndTimeSelect) {
-        this.gridEndHour = settings.gridEndHour;
-        this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+      if (settings.gridEndHour !== undefined) {
+        this.gridEndHour = Number(settings.gridEndHour);
+        if (this.gridEndTimeSelect) this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+      }
+      if (Array.isArray(this.classes) && this.classes.length > 0) {
+        this.classes.forEach(c => {
+          if (c.startTime) {
+            const [sh] = String(c.startTime).split(':').map(Number);
+            if (!isNaN(sh) && sh >= 0 && sh < this.gridStartHour) this.gridStartHour = sh;
+          }
+          if (c.endTime) {
+            let [eh, em] = String(c.endTime).split(':').map(Number);
+            if ((eh === 0 || eh === 24) && c.startTime) {
+              const [sh] = String(c.startTime).split(':').map(Number);
+              if (sh >= 12) eh = 24;
+            }
+            const endCeil = (em && em > 0) ? eh + 1 : eh;
+            if (!isNaN(endCeil) && endCeil > this.gridEndHour) this.gridEndHour = Math.min(24, endCeil);
+          }
+        });
+        if (this.gridStartTimeSelect) this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;
+        if (this.gridEndTimeSelect) this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
       }
 
       // 11. Axis Mode (Time / Period) & Period Preset
@@ -9000,7 +9745,7 @@ class SchedullyApp {
         if (typeof this.updateCourseFormMode === 'function') this.updateCourseFormMode();
       }
       if (settings.gridPeriodCount) {
-        this.gridPeriodCount = settings.gridPeriodCount;
+        this.gridPeriodCount = Number(settings.gridPeriodCount);
         const totalPeriodsSelect = document.getElementById('grid-total-periods-select');
         if (totalPeriodsSelect) totalPeriodsSelect.value = String(this.gridPeriodCount);
       }
@@ -9049,7 +9794,7 @@ class SchedullyApp {
 
       // 13. Card Format & Visibility Toggles
       if (settings.globalCardTimes !== undefined) {
-        this.globalCardTimes = settings.globalCardTimes;
+        this.globalCardTimes = !!settings.globalCardTimes;
         const toggleCardTimes = document.getElementById('toggle-quick-time') || document.getElementById('toggle-card-times');
         if (toggleCardTimes) {
           toggleCardTimes.querySelectorAll('.pill-btn').forEach(b => {
@@ -9074,7 +9819,7 @@ class SchedullyApp {
         }
       }
       if (settings.globalCourseType !== undefined) {
-        this.globalCourseType = settings.globalCourseType;
+        this.globalCourseType = !!settings.globalCourseType;
         const toggleType = document.getElementById('toggle-quick-type');
         if (toggleType) {
           toggleType.querySelectorAll('.pill-btn').forEach(b => {
@@ -9083,7 +9828,7 @@ class SchedullyApp {
         }
       }
       if (settings.globalCourseRoom !== undefined) {
-        this.globalCourseRoom = settings.globalCourseRoom;
+        this.globalCourseRoom = !!settings.globalCourseRoom;
         const toggleRoom = document.getElementById('toggle-quick-room');
         if (toggleRoom) {
           toggleRoom.querySelectorAll('.pill-btn').forEach(b => {
@@ -9092,7 +9837,7 @@ class SchedullyApp {
         }
       }
       if (settings.globalCourseLecturer !== undefined) {
-        this.globalCourseLecturer = settings.globalCourseLecturer;
+        this.globalCourseLecturer = !!settings.globalCourseLecturer;
         const toggleLecturer = document.getElementById('toggle-quick-lecturer');
         if (toggleLecturer) {
           toggleLecturer.querySelectorAll('.pill-btn').forEach(b => {
@@ -9101,7 +9846,7 @@ class SchedullyApp {
         }
       }
       if (settings.globalCourseGroup !== undefined) {
-        this.globalCourseGroup = settings.globalCourseGroup;
+        this.globalCourseGroup = !!settings.globalCourseGroup;
         const toggleGroup = document.getElementById('toggle-quick-group');
         if (toggleGroup) {
           toggleGroup.querySelectorAll('.pill-btn').forEach(b => {
@@ -9110,7 +9855,7 @@ class SchedullyApp {
         }
       }
       if (settings.globalAdaptiveColor !== undefined) {
-        this.globalAdaptiveColor = settings.globalAdaptiveColor;
+        this.globalAdaptiveColor = !!settings.globalAdaptiveColor;
         const toggleAdaptive = document.getElementById('toggle-quick-adaptive');
         if (toggleAdaptive) {
           toggleAdaptive.querySelectorAll('.pill-btn').forEach(b => {
@@ -9119,20 +9864,86 @@ class SchedullyApp {
         }
       }
 
+      // 13b. Font Shadows, Grid Borders, Side Sliders, Sounds & Haptics
+      if (settings.fontShadow !== undefined) {
+        try { localStorage.setItem('schedully_font_shadow', settings.fontShadow ? 'yes' : 'no'); } catch (e) {}
+        const fontShadowToggle = document.getElementById('toggle-font-shadow');
+        if (fontShadowToggle) {
+          fontShadowToggle.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (settings.fontShadow ? 'yes' : 'no'));
+          });
+        }
+        if (this.phoneCanvas) {
+          this.phoneCanvas.classList.toggle('enable-text-shadow', !!settings.fontShadow);
+        }
+      }
+      if (settings.showGridBorders !== undefined) {
+        try { localStorage.setItem('schedully_show_grid_borders', settings.showGridBorders ? 'yes' : 'no'); } catch (e) {}
+        const toggleBorders = document.getElementById('toggle-grid-borders');
+        if (toggleBorders) {
+          toggleBorders.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (settings.showGridBorders ? 'yes' : 'no'));
+          });
+        }
+        if (this.phoneCanvas) {
+          this.phoneCanvas.classList.toggle('hide-grid-borders', !settings.showGridBorders);
+        }
+      }
+      if (settings.showSideSliders !== undefined) {
+        try { localStorage.setItem('schedully_show_side_sliders', settings.showSideSliders ? 'yes' : 'no'); } catch (e) {}
+        const toggleSide = document.getElementById('toggle-side-sliders');
+        if (toggleSide) {
+          toggleSide.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (settings.showSideSliders ? 'yes' : 'no'));
+          });
+        }
+        const sliders = document.querySelectorAll('.canvas-side-slider-container');
+        sliders.forEach(s => s.classList.toggle('hidden', !settings.showSideSliders));
+      }
+      if (settings.soundEnabled !== undefined) {
+        try { localStorage.setItem('schedully_sound_enabled', settings.soundEnabled ? 'yes' : 'no'); } catch (e) {}
+        const toggleSound = document.getElementById('toggle-sound-effects');
+        if (toggleSound) {
+          toggleSound.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (settings.soundEnabled ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.hapticsEnabled !== undefined) {
+        try { localStorage.setItem('schedully_haptics_enabled', settings.hapticsEnabled ? 'yes' : 'no'); } catch (e) {}
+        const toggleHaptics = document.getElementById('toggle-haptics');
+        if (toggleHaptics) {
+          toggleHaptics.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === (settings.hapticsEnabled ? 'yes' : 'no'));
+          });
+        }
+      }
+      if (settings.sliderLayout && Array.isArray(settings.sliderLayout.left) && Array.isArray(settings.sliderLayout.right)) {
+        this.sliderLayout = {
+          left: [...settings.sliderLayout.left],
+          right: [...settings.sliderLayout.right],
+          hidden: [...(settings.sliderLayout.hidden || [])]
+        };
+        try { localStorage.setItem('schedully_slider_layout', JSON.stringify(this.sliderLayout)); } catch (e) {}
+        if (typeof this.renderCustomizedSideSliders === 'function') {
+          this.renderCustomizedSideSliders();
+        }
+      }
+
       // 14. Title Placement & Geometry
       if (settings.titlePlacement) this.titlePlacement = settings.titlePlacement;
-      if (settings.titleCornerRadius !== undefined) this.titleCornerRadius = settings.titleCornerRadius;
-      if (settings.titleGapDistance !== undefined) this.titleGapDistance = settings.titleGapDistance;
-      if (settings.titleWidthSize !== undefined) this.titleWidthSize = settings.titleWidthSize;
+      if (settings.titleCornerRadius !== undefined) this.titleCornerRadius = Number(settings.titleCornerRadius);
+      if (settings.titleGapDistance !== undefined) this.titleGapDistance = Number(settings.titleGapDistance);
+      if (settings.titleWidthSize !== undefined) this.titleWidthSize = Number(settings.titleWidthSize);
       if (typeof this.applyTitleLayout === 'function') {
         this.applyTitleLayout();
       }
 
       // 15. Trademark Layout & Geometry
       if (settings.trademarkLayoutMode) this.trademarkLayoutMode = settings.trademarkLayoutMode;
-      if (settings.trademarkCornerRadius !== undefined) this.trademarkCornerRadius = settings.trademarkCornerRadius;
-      if (settings.trademarkGapDistance !== undefined) this.trademarkGapDistance = settings.trademarkGapDistance;
-      if (settings.trademarkWidthSize !== undefined) this.trademarkWidthSize = settings.trademarkWidthSize;
+      if (settings.trademarkCornerRadius !== undefined) this.trademarkCornerRadius = Number(settings.trademarkCornerRadius);
+      if (settings.trademarkGapDistance !== undefined) this.trademarkGapDistance = Number(settings.trademarkGapDistance);
+      if (settings.trademarkWidthSize !== undefined) this.trademarkWidthSize = Number(settings.trademarkWidthSize);
       if (typeof this.applyTrademarkLayout === 'function') {
         this.applyTrademarkLayout();
       }
@@ -9173,6 +9984,27 @@ class SchedullyApp {
         this.classes = this.presets[active].classes || [];
         if (this.presets[active].settings) {
           this.applyPresetSettings(this.presets[active].settings);
+        } else {
+          // If no preset settings, ensure classes days are preserved in activeDays
+          const normalizeDay = (d) => {
+            if (!d) return 'Mon';
+            const clean = String(d).trim().toLowerCase();
+            const map = {
+              'monday': 'Mon', 'mon': 'Mon', 'isnin': 'Mon', 'senin': 'Mon',
+              'tuesday': 'Tue', 'tue': 'Tue', 'selasa': 'Tue',
+              'wednesday': 'Wed', 'wed': 'Wed', 'rabu': 'Wed',
+              'thursday': 'Thu', 'thu': 'Thu', 'khamis': 'Thu', 'kamis': 'Thu',
+              'friday': 'Fri', 'fri': 'Fri', 'jumaat': 'Fri', 'jumat': 'Fri',
+              'saturday': 'Sat', 'sat': 'Sat', 'sabtu': 'Sat',
+              'sunday': 'Sun', 'sun': 'Sun', 'ahad': 'Sun', 'minggu': 'Sun'
+            };
+            return map[clean] || (d.substring(0, 3).charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+          };
+          const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          const classDays = (this.classes || []).map(c => normalizeDay(c.day)).filter(Boolean);
+          const currentDays = (this.activeDays || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']).map(normalizeDay);
+          this.activeDays = [...new Set([...currentDays, ...classDays])].sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+          this.syncDaysAndTimeControlsUI();
         }
         if (this.presets[active].wallpaperSwatches && Array.isArray(this.presets[active].wallpaperSwatches)) {
           this.wallpaperSwatches = this.presets[active].wallpaperSwatches;
@@ -9513,6 +10345,29 @@ class SchedullyApp {
       const saved = localStorage.getItem('schedully_classes') || localStorage.getItem('timefactory_classes');
       if (saved) {
         this.classes = JSON.parse(saved);
+        if (Array.isArray(this.classes) && this.classes.length > 0) {
+          const normalizeDay = (d) => {
+            if (!d) return 'Mon';
+            const clean = String(d).trim().toLowerCase();
+            const map = {
+              'monday': 'Mon', 'mon': 'Mon', 'isnin': 'Mon', 'senin': 'Mon',
+              'tuesday': 'Tue', 'tue': 'Tue', 'selasa': 'Tue',
+              'wednesday': 'Wed', 'wed': 'Wed', 'rabu': 'Wed',
+              'thursday': 'Thu', 'thu': 'Thu', 'khamis': 'Thu', 'kamis': 'Thu',
+              'friday': 'Fri', 'fri': 'Fri', 'jumaat': 'Fri', 'jumat': 'Fri',
+              'saturday': 'Sat', 'sat': 'Sat', 'sabtu': 'Sat',
+              'sunday': 'Sun', 'sun': 'Sun', 'ahad': 'Sun', 'minggu': 'Sun'
+            };
+            return map[clean] || (d.substring(0, 3).charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+          };
+          const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          const classDays = this.classes.map(c => normalizeDay(c.day)).filter(Boolean);
+          const currentDays = (this.activeDays || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']).map(normalizeDay);
+          this.activeDays = [...new Set([...currentDays, ...classDays])].sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+          if (typeof this.syncDaysAndTimeControlsUI === 'function') {
+            this.syncDaysAndTimeControlsUI();
+          }
+        }
       }
       const savedAxis = localStorage.getItem('schedully_axis_mode');
       if (savedAxis) {
@@ -9782,28 +10637,25 @@ class SchedullyApp {
         // Fires on login (initial load) and whenever cloud data updates
         window.schedullyFirebase.onDataSyncedCallback = (data) => {
           try {
+            if (!data) return;
+
             const hasLocalClasses = this.classes && this.classes.length > 0;
             const hasLocalCustomPresets = this.presets && Object.keys(this.presets).length > 1;
             const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
             const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
 
-            const cloudTime = data && data.updatedAt ? new Date(data.updatedAt).getTime() : 0;
-            const localSavedTimeStr = localStorage.getItem('schedully_updated_at');
-            const localTime = localSavedTimeStr ? new Date(localSavedTimeStr).getTime() : 0;
-
-            const isCloudEmpty = !data || (!data.presets && !data.classes && !data.settings) ||
+            const isCloudEmpty = (!data.presets && !data.classes && !data.settings) ||
               ((!data.classes || data.classes.length === 0) && !data.wallpaper && (!data.presets || (Object.keys(data.presets).length <= 1 && (!data.presets.default?.classes || data.presets.default.classes.length === 0) && !data.presets.default?.wallpaper)));
 
-            // Case 1: If local device has newer unsynced edits or cloud is empty, upload local work to cloud!
-            if ((localTime > cloudTime && hasLocalWork) || (isCloudEmpty && hasLocalWork)) {
-              console.log("Local device has newer/active work. Publishing to cloud...", { localTime, cloudTime });
+            // Case 1: Fresh brand new cloud account & local device has preexisting offline work -> publish to cloud once
+            if (isCloudEmpty && hasLocalWork) {
+              console.log("Brand new cloud account detected. Publishing local offline work to cloud...");
               this._stagePending(true);
               return;
             }
 
-            // Case 2: If cloud is completely empty and local has no work, reset to fresh defaults
+            // Case 2: Cloud is completely empty and no local work -> initialize default clean preset
             if (isCloudEmpty) {
-              // Otherwise initialize clean fresh workspace
               localStorage.removeItem('schedully_presets');
               localStorage.removeItem('schedully_active_preset');
               localStorage.removeItem('schedully_classes');
@@ -9823,76 +10675,81 @@ class SchedullyApp {
               return;
             }
 
-            // Case 2: Existing user WITH cloud data -> Restore progress accurately without losing anything!
+            // Case 3: Cloud is Authoritative (Google Apps sync model) -> Restore latest cloud state across all devices
             if (data.presets && typeof data.presets === 'object') {
               this.presets = data.presets;
-              this.updatePresetSelectDropdown();
             }
 
-            if (data.activePreset && this.presets[data.activePreset]) {
-              this.activePresetKey = data.activePreset;
-              const presetData = this.presets[data.activePreset];
-              if (presetData.settings) {
-                this.applyPresetSettings(presetData.settings);
-              } else if (data.settings) {
-                this.applyPresetSettings(data.settings);
-              }
-              if (presetData.wallpaperSwatches && Array.isArray(presetData.wallpaperSwatches)) {
-                this.wallpaperSwatches = presetData.wallpaperSwatches;
-              } else if (data.wallpaperSwatches && Array.isArray(data.wallpaperSwatches)) {
-                this.wallpaperSwatches = data.wallpaperSwatches;
-              }
-              if (presetData.wallpaperPrimary || data.wallpaperPrimary) {
-                this.wallpaperPrimary = presetData.wallpaperPrimary || data.wallpaperPrimary;
-              }
-              if (presetData.wallpaperSecondary || data.wallpaperSecondary) {
-                this.wallpaperSecondary = presetData.wallpaperSecondary || data.wallpaperSecondary;
-              }
-              if (presetData.wallpaperTertiary || data.wallpaperTertiary) {
-                this.wallpaperTertiary = presetData.wallpaperTertiary || data.wallpaperTertiary;
-              }
-              if (presetData.wallpaperHeader || data.wallpaperHeader) {
-                this.wallpaperHeader = presetData.wallpaperHeader || data.wallpaperHeader;
-              }
+            const activeKey = data.activePreset || this.activePresetKey || 'default';
+            if (this.presets && this.presets[activeKey]) {
+              this.activePresetKey = activeKey;
+            } else if (this.presets && Object.keys(this.presets).length > 0) {
+              this.activePresetKey = Object.keys(this.presets)[0];
+            }
 
-              if (presetData.wallpaper) {
-                const hasSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
-                this.applyWallpaper(presetData.wallpaper, !hasSwatches, true);
-                localStorage.setItem('schedully_wallpaper_data', presetData.wallpaper);
-              } else {
-                this.removeWallpaper();
-              }
-            } else if (data.settings) {
-              this.applyPresetSettings(data.settings);
-              if (data.wallpaperSwatches && Array.isArray(data.wallpaperSwatches)) {
-                this.wallpaperSwatches = data.wallpaperSwatches;
-              }
-              if (data.wallpaperPrimary) this.wallpaperPrimary = data.wallpaperPrimary;
-              if (data.wallpaperSecondary) this.wallpaperSecondary = data.wallpaperSecondary;
-              if (data.wallpaperTertiary) this.wallpaperTertiary = data.wallpaperTertiary;
-              if (data.wallpaperHeader) this.wallpaperHeader = data.wallpaperHeader;
+            const activePresetData = (this.presets && this.presets[this.activePresetKey]) || {};
+            const mergedSettings = Object.assign({}, data.settings || {}, activePresetData.settings || {});
 
-              if (data.wallpaper) {
-                const hasSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
-                this.applyWallpaper(data.wallpaper, !hasSwatches, true);
-              } else {
-                this.removeWallpaper();
+            // 1. Apply UI / Layout / Palette / Typography settings
+            this.applyPresetSettings(mergedSettings);
+
+            // 2. Wallpaper & Swatches Restoration
+            const cloudSwatches = activePresetData.wallpaperSwatches || data.wallpaperSwatches;
+            if (cloudSwatches && Array.isArray(cloudSwatches)) {
+              this.wallpaperSwatches = cloudSwatches;
+            }
+            if (activePresetData.wallpaperPrimary || data.wallpaperPrimary) {
+              this.wallpaperPrimary = activePresetData.wallpaperPrimary || data.wallpaperPrimary;
+            }
+            if (activePresetData.wallpaperSecondary || data.wallpaperSecondary) {
+              this.wallpaperSecondary = activePresetData.wallpaperSecondary || data.wallpaperSecondary;
+            }
+            if (activePresetData.wallpaperTertiary || data.wallpaperTertiary) {
+              this.wallpaperTertiary = activePresetData.wallpaperTertiary || data.wallpaperTertiary;
+            }
+            if (activePresetData.wallpaperHeader || data.wallpaperHeader) {
+              this.wallpaperHeader = activePresetData.wallpaperHeader || data.wallpaperHeader;
+            }
+
+            const cloudWallpaper = activePresetData.wallpaper || data.wallpaper || null;
+            if (cloudWallpaper) {
+              const hasSwatches = !!(this.wallpaperSwatches && this.wallpaperSwatches.length > 0);
+              this.applyWallpaper(cloudWallpaper, !hasSwatches, true);
+              try { localStorage.setItem('schedully_wallpaper_data', cloudWallpaper); } catch (e) {}
+            } else {
+              this.removeWallpaper();
+            }
+
+            // 3. Language
+            const targetLang = data.language || mergedSettings.language;
+            if (targetLang && window.SchedullyI18n && typeof window.SchedullyI18n.setLanguage === 'function') {
+              if (window.SchedullyI18n.currentLang !== targetLang) {
+                window.SchedullyI18n.setLanguage(targetLang);
               }
             }
 
-            if (data.language && window.SchedullyI18n && typeof window.SchedullyI18n.setLanguage === 'function') {
-              window.SchedullyI18n.setLanguage(data.language);
-            }
+            // 4. Device Framing Mode (Optional sync)
             if (data.activeDevice) {
               this.switchDevice(data.activeDevice, false);
             }
-            if (data.currentMode || data.settings?.currentMode) {
-              this.currentMode = data.currentMode || data.settings?.currentMode;
+
+            // 5. Theme Mode & Palette Sync
+            const targetMode = data.currentMode || mergedSettings.currentMode;
+            if (targetMode) {
+              this.currentMode = targetMode;
               try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
-              this.applyThemeEngine();
             }
-            if (data.zoomScale) {
-              const parsedZoom = parseFloat(data.zoomScale);
+            const targetPalette = data.currentPalette || mergedSettings.currentPalette;
+            if (targetPalette) {
+              this.currentPalette = targetPalette;
+              try { localStorage.setItem('schedully_theme_palette', this.currentPalette); } catch (e) {}
+            }
+            this.applyThemeEngine();
+
+            // 6. Canvas Zoom Scale
+            const targetZoom = data.zoomScale || mergedSettings.zoomScale;
+            if (targetZoom) {
+              const parsedZoom = parseFloat(targetZoom);
               if (!isNaN(parsedZoom) && parsedZoom >= 0.3 && parsedZoom <= 2.0) {
                 this.zoomScale = parsedZoom;
                 try { localStorage.setItem('schedully_zoom_scale', String(this.zoomScale)); } catch (e) {}
@@ -9902,14 +10759,58 @@ class SchedullyApp {
               }
             }
 
-            // Restore schedule classes
-            if (Array.isArray(data.classes)) {
+            // 7. Schedule Classes Restoration
+            if (Array.isArray(activePresetData.classes)) {
+              this.classes = activePresetData.classes;
+            } else if (Array.isArray(data.classes)) {
               this.classes = data.classes;
-            } else if (data.activePreset && this.presets[data.activePreset] && Array.isArray(this.presets[data.activePreset].classes)) {
-              this.classes = this.presets[data.activePreset].classes;
+            } else {
+              this.classes = [];
             }
 
-            // If wallpaper is active, only assign wallpaper swatch if course has no existing color
+            if (this.classes.length > 0) {
+              const normalizeDay = (d) => {
+                if (!d) return 'Mon';
+                const clean = String(d).trim().toLowerCase();
+                const map = {
+                  'monday': 'Mon', 'mon': 'Mon', 'isnin': 'Mon', 'senin': 'Mon',
+                  'tuesday': 'Tue', 'tue': 'Tue', 'selasa': 'Tue',
+                  'wednesday': 'Wed', 'wed': 'Wed', 'rabu': 'Wed',
+                  'thursday': 'Thu', 'thu': 'Thu', 'khamis': 'Thu', 'kamis': 'Thu',
+                  'friday': 'Fri', 'fri': 'Fri', 'jumaat': 'Fri', 'jumat': 'Fri',
+                  'saturday': 'Sat', 'sat': 'Sat', 'sabtu': 'Sat',
+                  'sunday': 'Sun', 'sun': 'Sun', 'ahad': 'Sun', 'minggu': 'Sun'
+                };
+                return map[clean] || (d.substring(0, 3).charAt(0).toUpperCase() + d.substring(1, 3).toLowerCase());
+              };
+              const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              const classDays = this.classes.map(c => normalizeDay(c.day)).filter(Boolean);
+              const currentDays = (this.activeDays || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']).map(normalizeDay);
+              this.activeDays = [...new Set([...currentDays, ...classDays])].sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+
+              // Auto-expand start and end hours to fit all restored classes
+              this.classes.forEach(c => {
+                if (c.startTime) {
+                  const [sh] = String(c.startTime).split(':').map(Number);
+                  if (!isNaN(sh) && sh >= 0 && sh < this.gridStartHour) this.gridStartHour = sh;
+                }
+                if (c.endTime) {
+                  let [eh, em] = String(c.endTime).split(':').map(Number);
+                  if ((eh === 0 || eh === 24) && c.startTime) {
+                    const [sh] = String(c.startTime).split(':').map(Number);
+                    if (sh >= 12) eh = 24;
+                  }
+                  const endCeil = (em && em > 0) ? eh + 1 : eh;
+                  if (!isNaN(endCeil) && endCeil > this.gridEndHour) this.gridEndHour = Math.min(24, endCeil);
+                }
+              });
+
+              if (typeof this.syncDaysAndTimeControlsUI === 'function') {
+                this.syncDaysAndTimeControlsUI();
+              }
+            }
+
+            // If photo wallpaper is active, preserve or assign adaptive colors
             if (this.phoneCanvas?.classList.contains('has-photo-wallpaper') && this.wallpaperSwatches && this.wallpaperSwatches.length > 0) {
               this.classes.forEach((cls, idx) => {
                 if (!cls.customColor && !cls.color) {
@@ -9919,21 +10820,25 @@ class SchedullyApp {
               });
             }
 
+            this.updatePresetSelectDropdown();
             this.renderAll();
 
-            // Cache cloud data into localStorage so offline refresh preserves progress
-            localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
-            localStorage.setItem('schedully_active_preset', this.activePresetKey);
-            localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
-            if (this.wallpaperSwatches) {
-              localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
-            }
-            if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
-            if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
-            if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
-            if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
+            // Cache synced cloud data into localStorage for offline availability
+            try {
+              if (data.updatedAt) localStorage.setItem('schedully_updated_at', data.updatedAt);
+              localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
+              localStorage.setItem('schedully_active_preset', this.activePresetKey);
+              localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
+              if (this.wallpaperSwatches) {
+                localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
+              }
+              if (this.wallpaperPrimary) localStorage.setItem('schedully_wallpaper_primary', this.wallpaperPrimary);
+              if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
+              if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
+              if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
+            } catch (e) {}
 
-            // Silently clear unsaved indicator on load
+            // Mark saved state
             this._hasUnsavedCloudChanges = false;
           } catch (syncErr) {
             console.warn("Cloud sync non-fatal error:", syncErr);
@@ -9967,30 +10872,41 @@ class SchedullyApp {
   getPresetSettings() {
     return {
       tableCornerStyle: this.tableCornerStyle || 'rounded',
-      tableCornerRadiusVal: this.tableCornerRadiusVal || 8,
+      tableCornerRadiusVal: this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8,
       cardCornerStyle: this.cardCornerStyle || 'rounded',
-      cardCornerRadiusVal: this.cardCornerRadiusVal || 8,
+      cardCornerRadiusVal: this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6,
       borderStyle: this.borderStyle || 'default',
-      currentMode: this.currentMode || 'light',
-      currentPalette: this.currentPalette || 'nord',
+      currentMode: this.currentMode || localStorage.getItem('schedully_theme_mode') || 'light',
+      currentPalette: this.currentPalette || localStorage.getItem('schedully_theme_palette') || 'indigo',
       customHexColors: this.customHexColors || null,
-      gridWidthVal: this.gridWidthVal || 100,
-      gridHeightVal: this.gridHeightVal || 49,
-      gridYPosVal: this.gridYPosVal || 0,
+      customSurfaceColor: this.customSurfaceColor || null,
+      userHasPickedSurfaceColor: !!this.userHasPickedSurfaceColor,
+      customBgColor: this.customBgColor || null,
+      userHasPickedBgColor: !!this.userHasPickedBgColor,
+      customHeaderColor: this.customHeaderColor || null,
+      userHasPickedHeaderColor: !!this.userHasPickedHeaderColor,
+      customTrademarkColor: this.customTrademarkColor || null,
+      userHasPickedTrademarkColor: !!this.userHasPickedTrademarkColor,
+      customFontColor: this.customFontColor || null,
+      userHasPickedFontColor: !!this.userHasPickedFontColor,
+      gridWidthVal: this.gridWidthVal !== undefined ? this.gridWidthVal : 100,
+      gridHeightVal: this.gridHeightVal !== undefined ? this.gridHeightVal : 49,
+      gridYPosVal: this.gridYPosVal !== undefined ? this.gridYPosVal : 0,
       fontSizeVal: this.gridFontSizeVal || this.fontSizeVal || 9,
       clockFormat: this.clockFormat || '12-hour',
       bgBlurEnabled: this.bgBlurEnabled || false,
       bgBlurIntensity: this.bgBlurIntensity || 10,
+      wallpaperDimIntensity: this.wallpaperDimIntensity || 0,
       fontFamily: this.currentFontKey || 'default',
-      timetableOpacity: this.timetableOpacity || 100,
+      timetableOpacity: this.timetableOpacity !== undefined ? this.timetableOpacity : 100,
       showTitle: this.showTitle !== undefined ? this.showTitle : true,
       titleText: this.timetableTitleText || 'Untitled',
       showTrademark: this.showTrademark || false,
       trademarkText: this.trademarkText || 'Schedully • Student Edition',
       trademarkStyle: this.trademarkStyle || 'default',
       activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      gridStartHour: this.gridStartHour || 8,
-      gridEndHour: this.gridEndHour || 20,
+      gridStartHour: (this.gridStartHour !== undefined && this.gridStartHour !== null) ? Number(this.gridStartHour) : 8,
+      gridEndHour: (this.gridEndHour !== undefined && this.gridEndHour !== null) ? Number(this.gridEndHour) : 20,
       axisMode: this.axisMode || 'time',
       gridPeriodCount: this.gridPeriodCount || 6,
       selectedOcrPeriodPreset: this.selectedOcrPeriodPreset || '90m-900',
@@ -10009,6 +10925,14 @@ class SchedullyApp {
       globalCourseLecturer: this.globalCourseLecturer !== undefined ? this.globalCourseLecturer : true,
       globalCourseGroup: this.globalCourseGroup !== undefined ? this.globalCourseGroup : true,
       globalAdaptiveColor: this.globalAdaptiveColor !== undefined ? this.globalAdaptiveColor : true,
+
+      // Additional UI & Audio/Haptic preferences
+      fontShadow: localStorage.getItem('schedully_font_shadow') === 'yes',
+      showGridBorders: localStorage.getItem('schedully_show_grid_borders') !== 'no',
+      showSideSliders: localStorage.getItem('schedully_show_side_sliders') === 'yes',
+      soundEnabled: localStorage.getItem('schedully_sound_enabled') !== 'no',
+      hapticsEnabled: localStorage.getItem('schedully_haptics_enabled') !== 'no',
+      sliderLayout: this.sliderLayout || { left: ['layout', 'opacity', 'blur'], right: ['zoom', 'radius', 'font'] },
 
       // Title & Trademark Layout & Geometry
       titlePlacement: this.titlePlacement || 'merged',
@@ -10302,10 +11226,7 @@ class SchedullyApp {
     if (this.gridEndTimeSelect) {
       this.gridEndTimeSelect.value = `${String(this.gridEndHour).padStart(2, '0')}:00`;
     }
-    document.querySelectorAll('.day-toggle').forEach(chk => {
-      chk.checked = this.activeDays.includes(chk.value);
-    });
-
+    this.syncDaysAndTimeControlsUI();
     this.updateHistoryButtonUI();
     this._stagePending();
     this.renderAll();
@@ -10689,7 +11610,9 @@ class SchedullyApp {
     };
     const rawDays = this.activeDays && this.activeDays.length > 0 ? this.activeDays : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     const canonicalOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const days = [...new Set(rawDays.map(normalizeDay))].sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
+    const classDays = (this.classes || []).map(c => normalizeDay(c.day)).filter(Boolean);
+    const combinedDays = [...new Set([...rawDays.map(normalizeDay), ...classDays])];
+    const days = combinedDays.sort((a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b));
     this.activeDays = days;
     const isWatch = (this.activeDevice === 'watch');
     const isPhone = (this.activeDevice === 'phone');
@@ -10711,6 +11634,37 @@ class SchedullyApp {
 
     let effectiveEndHour = parseInt(this.gridEndHour, 10);
     if (isNaN(effectiveEndHour) || effectiveEndHour < 0 || effectiveEndHour > 24) effectiveEndHour = 20;
+
+    // Auto-expand start/end hour bounds to fit any classes with early start or late end times
+    if (Array.isArray(this.classes) && this.classes.length > 0) {
+      this.classes.forEach(c => {
+        if (c.startTime) {
+          const [sh] = String(c.startTime).split(':').map(Number);
+          if (!isNaN(sh) && sh >= 0 && sh < effectiveStartHour) {
+            effectiveStartHour = sh;
+          }
+        }
+        if (c.endTime) {
+          let [eh, em] = String(c.endTime).split(':').map(Number);
+          if ((eh === 0 || eh === 24) && c.startTime) {
+            const [sh] = String(c.startTime).split(':').map(Number);
+            if (sh >= 12) eh = 24;
+          }
+          const endCeil = (em && em > 0) ? eh + 1 : eh;
+          if (!isNaN(endCeil) && endCeil > effectiveEndHour) {
+            effectiveEndHour = Math.min(24, endCeil);
+          }
+        }
+      });
+      this.gridStartHour = effectiveStartHour;
+      this.gridEndHour = effectiveEndHour;
+      if (this.gridStartTimeSelect && this.gridStartTimeSelect.value !== `${String(effectiveStartHour).padStart(2, '0')}:00`) {
+        this.gridStartTimeSelect.value = `${String(effectiveStartHour).padStart(2, '0')}:00`;
+      }
+      if (this.gridEndTimeSelect && this.gridEndTimeSelect.value !== `${String(effectiveEndHour).padStart(2, '0')}:00`) {
+        this.gridEndTimeSelect.value = `${String(effectiveEndHour).padStart(2, '0')}:00`;
+      }
+    }
 
     if (effectiveEndHour <= effectiveStartHour) {
       effectiveEndHour = Math.min(24, effectiveStartHour + 4);
@@ -10853,9 +11807,10 @@ class SchedullyApp {
     corner.style.fontSize = `${headerFontSize}px`;
     gridFragment.appendChild(corner);
 
-    days.forEach(d => {
+    days.forEach((d, dIdx) => {
+      const isLast = (dIdx === days.length - 1);
       const headerCell = document.createElement('div');
-      headerCell.className = 'exact-grid-cell-header';
+      headerCell.className = `exact-grid-cell-header ${isLast ? 'last-day-col' : ''}`;
       headerCell.innerText = window.SchedullyI18n ? window.SchedullyI18n.getDayName(d) : d;
       headerCell.style.fontSize = `${headerFontSize}px`;
       gridFragment.appendChild(headerCell);
@@ -10870,13 +11825,13 @@ class SchedullyApp {
       timeCell.innerHTML = `<span>${tObj.topText}</span>${tObj.bottomText ? `<span>${tObj.bottomText}</span>` : ''}`;
       gridFragment.appendChild(timeCell);
 
-      days.forEach(day => {
+      days.forEach((day, dayIndex) => {
+        const isLast = (dayIndex === days.length - 1);
         const slotCell = document.createElement('div');
-        slotCell.className = 'exact-grid-cell-slot';
+        slotCell.className = `exact-grid-cell-slot ${isLast ? 'last-day-col' : ''}`;
         slotCell.style.height = `${rowH}px`;
         slotCell.style.minHeight = '0';
         slotCell.style.boxSizing = 'border-box';
-
         slotCell.style.position = 'relative';
 
         const matchesInCell = this.classes.filter(c => {
@@ -11263,26 +12218,43 @@ class SchedullyApp {
     if (labelMinus) labelMinus.innerText = isPeriodMode ? '-1' : '-30m';
     if (labelPlus) labelPlus.innerText = isPeriodMode ? '+1' : '+30m';
 
+    this.gridCourseActionPill.classList.remove('hidden');
+
+    // Use viewport (fixed) coordinates — pill is now outside phone DOM so no clipping by bezel
     const cardRect = cardEl.getBoundingClientRect();
     const canvasRect = this.phoneCanvas.getBoundingClientRect();
-    const scale = this.zoomScale || 1;
 
-    // Position relative to #phone-canvas coordinates
-    let leftPos = ((cardRect.left - canvasRect.left) / scale) + ((cardRect.width / scale) / 2);
-    let topPos = ((cardRect.top - canvasRect.top) / scale) - 38;
+    // Measure pill actual dimensions
+    const pillWidth = this.gridCourseActionPill.offsetWidth || 250;
+    const pillHeight = this.gridCourseActionPill.offsetHeight || 38;
+    const halfPill = pillWidth / 2;
+    const margin = 8;
 
-    // Clamp leftPos within phone-canvas boundaries (pill width ~ 200px -> half width ~ 105px)
-    const canvasWidth = canvasRect.width / scale;
-    leftPos = Math.max(105, Math.min(canvasWidth - 105, leftPos));
+    // Horizontal: center over card, clamp inside viewport
+    let leftPos = cardRect.left + cardRect.width / 2 - halfPill;
+    leftPos = Math.max(margin, Math.min(window.innerWidth - pillWidth - margin, leftPos));
 
-    // Boundary check so pill doesn't render off the top edge of phone canvas
-    if (topPos < 10) {
-      topPos = ((cardRect.bottom - canvasRect.top) / scale) + 8;
+    // Vertical: prefer above card, flip below if it would overlap the canvas top edge
+    const topAboveCard = cardRect.top - pillHeight - margin;
+    const topBelowCard = cardRect.bottom + margin;
+
+    let topPos;
+    if (topAboveCard >= canvasRect.top + 4) {
+      // Enough space above — place above the card
+      topPos = topAboveCard;
+    } else {
+      // Too close to top — flip below the card
+      topPos = topBelowCard;
     }
 
+    // Clamp vertically inside viewport
+    topPos = Math.max(margin, Math.min(window.innerHeight - pillHeight - margin, topPos));
+
+    // Apply as fixed viewport coords
     this.gridCourseActionPill.style.left = `${leftPos}px`;
     this.gridCourseActionPill.style.top = `${topPos}px`;
-    this.gridCourseActionPill.classList.remove('hidden');
+    // Clear any stale `position` overrides (pill is now fixed via CSS class)
+    this.gridCourseActionPill.style.transform = 'none';
   }
 
   moveCourseToSlot(courseId, targetDay, slotTarget) {

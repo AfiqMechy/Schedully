@@ -149,6 +149,17 @@ class SchedullyFirebaseService {
           this._stopRealtimeListener();
         }
       });
+
+      if (this.auth.getRedirectResult) {
+        this.auth.getRedirectResult().then((res) => {
+          if (res && res.user) {
+            this.currentUser = res.user;
+            if (this.onUserChangedCallback) this.onUserChangedCallback(res.user);
+            this.fetchUserData();
+            this._startRealtimeListener();
+          }
+        }).catch(e => console.warn("Firebase redirect handler notice:", e));
+      }
     } catch (err) {
       this._initialized = false;
       console.error("Firebase Initialization Error:", err);
@@ -166,8 +177,11 @@ class SchedullyFirebaseService {
         this._activeListener = userRef.on('value', (snapshot) => {
           if (this._isSaving) return;
           const data = snapshot.val();
-          if (data && this.onDataSyncedCallback) {
-            this.onDataSyncedCallback(data);
+          if (data) {
+            this.lastSyncedData = data;
+            if (this.onDataSyncedCallback) {
+              this.onDataSyncedCallback(data);
+            }
           }
         }, (err) => {
           console.warn("RTDB listener notice:", err);
@@ -182,8 +196,11 @@ class SchedullyFirebaseService {
           if (this._isSaving) return;
           if (doc.exists) {
             const data = doc.data();
-            if (data && this.onDataSyncedCallback) {
-              this.onDataSyncedCallback(data);
+            if (data) {
+              this.lastSyncedData = data;
+              if (this.onDataSyncedCallback) {
+                this.onDataSyncedCallback(data);
+              }
             }
           }
         }, (err) => {
@@ -235,8 +252,11 @@ class SchedullyFirebaseService {
       }
     }
 
-    if (data && this.onDataSyncedCallback) {
-      this.onDataSyncedCallback(data);
+    if (data) {
+      this.lastSyncedData = data;
+      if (this.onDataSyncedCallback) {
+        this.onDataSyncedCallback(data);
+      }
     }
     return data;
   }
@@ -248,6 +268,15 @@ class SchedullyFirebaseService {
       const result = await this.auth.signInWithPopup(this.provider);
       return result.user;
     } catch (error) {
+      if (error && (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment' || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))) {
+        try {
+          await this.auth.signInWithRedirect(this.provider);
+          return null;
+        } catch (redirectErr) {
+          console.error("Redirect sign-in error:", redirectErr);
+          throw redirectErr;
+        }
+      }
       console.error("Google Sign-In Error:", error);
       throw error;
     }
