@@ -2800,15 +2800,23 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260920_v634" defer></script>
+  <script src="app_v3.js?v=20260920_v637" defer></script>
 
-<!-- Register PWA Service Worker for Native App & Standalone Mode -->
+<!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=634').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=637').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
+
+      // When the new service worker activates and broadcasts SW_UPDATED,
+      // auto-reload the page so users always get the fresh version — works on mobile too
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          window.location.reload();
+        }
+      });
     });
   }
 </script>
