@@ -4,7 +4,7 @@
 <!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
 <script>
 (function() {
-  var CURRENT_VERSION = 'schedully-cache-v639';
+  var CURRENT_VERSION = 'schedully-cache-v640';
   var CACHE_KEY = 'sw_version_confirmed';
   if ('serviceWorker' in navigator && window.caches) {
     // Check if we're running with an old cache version
@@ -277,7 +277,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260920_v639">
+<link rel="stylesheet" href="styles.css?v=20260920_v640">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" defer></script>
@@ -2835,13 +2835,13 @@
     </div>
   </div>
 
-  <script src="app_v3.js?v=20260920_v639" defer></script>
+  <script src="app_v3.js?v=20260920_v640" defer></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=639').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=640').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
 
