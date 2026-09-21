@@ -238,33 +238,15 @@ class SchedullyApp {
     setInterval(() => this.updateClock(), 60000);
 
     this.loadFromLocal();
-    // Only show default sample courses if this is a genuine first-time user.
-    // Guards:
-    //   1. schedully_user_cleared = 'yes'  → user deliberately hit "Clear All"
-    //   2. schedully_classes key exists     → returning user (even with empty list), not first-time
-    // Both cases: leave the timetable blank and respect the user's intent.
-    const userHasCleared = localStorage.getItem('schedully_user_cleared') === 'yes';
-    const hasExistingClassesKey = localStorage.getItem('schedully_classes') !== null;
-    // Auto-stamp the flag for returning users who don't have it yet (backwards compatibility)
-    if (hasExistingClassesKey && !userHasCleared) {
-      try { localStorage.setItem('schedully_user_cleared', 'yes'); } catch (_) {}
+    if (!this.classes || !Array.isArray(this.classes)) {
+      this.classes = [];
     }
-    if (!userHasCleared && !hasExistingClassesKey && (!this.classes || this.classes.length === 0)) {
-      const defaultStarterClasses = [
-        { id: 'c_default_1', title: 'Instrumentation & Measurement', name: 'Instrumentation & Measurement', code: 'KIG 3001', day: 'Mon', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 101', lecturer: 'Dr. Smith', instructor: 'Dr. Smith', color: '#E07A5F', customColor: '#E07A5F' },
-        { id: 'c_default_2', title: 'Fluid Mechanics', name: 'Fluid Mechanics', code: 'KIG 3009', day: 'Tue', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 102', lecturer: 'Prof. Davis', instructor: 'Prof. Davis', color: '#3D405B', customColor: '#3D405B' },
-        { id: 'c_default_3', title: 'Control Systems', name: 'Control Systems', code: 'KIG 3010', day: 'Wed', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 103', lecturer: 'Dr. Alan', instructor: 'Dr. Alan', color: '#81B29A', customColor: '#81B29A' },
-        { id: 'c_default_4', title: 'Thermodynamics', name: 'Thermodynamics', code: 'KIG 3003', day: 'Thu', startTime: '11:00', endTime: '12:30', room: 'Bilik Kuliah 104', lecturer: 'Ms. Emily', instructor: 'Ms. Emily', color: '#F2CC8F', customColor: '#F2CC8F' },
-        { id: 'c_default_5', title: 'Engineering Design', name: 'Engineering Design', code: 'GQH 0013', day: 'Fri', startTime: '08:00', endTime: '09:30', room: 'Online Lecture', lecturer: 'Mr. Leo', instructor: 'Mr. Leo', color: '#B5838D', customColor: '#B5838D' },
-        { id: 'c_default_6', title: 'Engineering Lab', name: 'Engineering Lab', code: 'KIG 3003', day: 'Sat', startTime: '08:00', endTime: '09:30', room: 'Mechanical Lab', lecturer: 'Speaker', instructor: 'Speaker', color: '#2A9D8F', customColor: '#2A9D8F' }
-      ];
-      this.classes = [...defaultStarterClasses];
-      if (this.presets && this.presets.default) {
-        this.presets.default.classes = [...defaultStarterClasses];
-      }
-      try {
-        localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
-      } catch (e) {}
+
+    if (typeof this.setSideSliders === 'function') {
+      this.setSideSliders(this.showSideSliders, true);
+    }
+    if (typeof this.renderCustomizedSideSliders === 'function') {
+      this.renderCustomizedSideSliders();
     }
 
     this.renderAll();
@@ -4736,15 +4718,20 @@ class SchedullyApp {
       if (!skipSave) {
         try { localStorage.setItem('schedully_show_side_sliders', this.showSideSliders ? 'yes' : 'no'); } catch (e) {}
       }
+      document.body.classList.toggle('hide-side-sliders', !this.showSideSliders);
       const leftSlider = document.getElementById('side-fx-slider-container');
       const rightSlider = document.getElementById('side-right-slider-container') || document.getElementById('side-zoom-slider-container');
       if (leftSlider) {
         leftSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
-        if (this.showSideSliders) leftSlider.classList.remove('hidden');
+        if (this.showSideSliders) {
+          leftSlider.classList.remove('hidden', 'sliders-toggled-hidden');
+        }
       }
       if (rightSlider) {
         rightSlider.classList.toggle('sliders-toggled-hidden', !this.showSideSliders);
-        if (this.showSideSliders) rightSlider.classList.remove('hidden');
+        if (this.showSideSliders) {
+          rightSlider.classList.remove('hidden', 'sliders-toggled-hidden');
+        }
       }
 
       document.querySelectorAll('#toggle-quick-side-sliders .pill-btn').forEach(btn => {
@@ -7210,6 +7197,7 @@ class SchedullyApp {
       }
 
       const showSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
+      document.body.classList.toggle('hide-side-sliders', !showSliders);
       if (leftContainer) {
         leftContainer.classList.toggle('hidden', leftTools.length === 0 || !showSliders);
         leftContainer.classList.toggle('sliders-toggled-hidden', !showSliders);
@@ -10358,6 +10346,7 @@ class SchedullyApp {
             timetableOpacity: 100,
             showTitle: true,
             titleText: 'Untitled',
+            showSideSliders: true,
             activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
             gridStartHour: 8,
             gridEndHour: 20
@@ -10431,6 +10420,7 @@ class SchedullyApp {
             timetableOpacity: 100,
             showTitle: true,
             titleText: 'Untitled',
+            showSideSliders: true,
             activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
             gridStartHour: 8,
             gridEndHour: 20
@@ -10639,6 +10629,7 @@ class SchedullyApp {
           timetableOpacity: 100,
           showTitle: true,
           titleText: 'Untitled',
+          showSideSliders: true,
           activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
           gridStartHour: 8,
           gridEndHour: 20
@@ -10686,20 +10677,13 @@ class SchedullyApp {
         this.currentMode = 'light';
         this.applyThemeEngine();
 
-        const freshStarterClasses = [
-          { id: 'c_' + Date.now() + '_1', name: 'Mathematics', code: 'MATH 101', day: 'Mon', start: '09:00', end: '10:30', room: 'Hall A', instructor: 'Dr. Smith', color: '#3B82F6' },
-          { id: 'c_' + Date.now() + '_2', name: 'Physics', code: 'PHYS 102', day: 'Tue', start: '10:00', end: '11:30', room: 'Lab 2', instructor: 'Prof. Davis', color: '#10B981' },
-          { id: 'c_' + Date.now() + '_3', name: 'Computer Science', code: 'CS 103', day: 'Wed', start: '13:00', end: '14:30', room: 'Room 204', instructor: 'Dr. Alan', color: '#F59E0B' },
-          { id: 'c_' + Date.now() + '_4', name: 'Academic English', code: 'ENG 104', day: 'Thu', start: '11:00', end: '12:30', room: 'Library', instructor: 'Ms. Emily', color: '#EC4899' },
-          { id: 'c_' + Date.now() + '_5', name: 'Design Workshop', code: 'ART 105', day: 'Fri', start: '14:00', end: '15:30', room: 'Studio 1', instructor: 'Mr. Leo', color: '#8B5CF6' },
-          { id: 'c_' + Date.now() + '_6', name: 'Weekend Seminar', code: 'SEM 106', day: 'Sat', start: '10:00', end: '11:30', room: 'Auditorium', instructor: 'Speaker', color: '#F97316' }
-        ];
+        const freshStarterClasses = [];
 
-        this.classes = [...freshStarterClasses];
+        this.classes = [];
         this.presets = {
           default: {
             name: 'Default',
-            classes: [...freshStarterClasses],
+            classes: [],
             settings: freshSettings,
             wallpaper: null,
             wallpaperSwatches: null,
@@ -10725,7 +10709,7 @@ class SchedullyApp {
         localStorage.setItem('schedully_classes', JSON.stringify(freshStarterClasses));
 
         this.markSaved();
-        alert("Account reset successfully! Fresh starter schedule (Mon–Sat) is ready.");
+        alert("Account reset successfully! Fresh blank schedule is ready.");
       });
     }
 
