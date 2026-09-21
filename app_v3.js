@@ -216,6 +216,9 @@ class SchedullyApp {
       this.sliderLayout = { left: ['layout', 'opacity', 'blur'], right: ['zoom', 'radius', 'font'], hidden: [] };
     }
 
+    // Side Sliders Visibility State (Defaults to 'yes'/true for first-time users)
+    this.showSideSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
+
     this.initDOMElements();
     this.bindEvents();
     this.switchDevice(this.activeDevice, false);
@@ -271,6 +274,7 @@ class SchedullyApp {
     document.body.classList.add('app-ready');
     this.updateHistoryButtonUI();
     this.setupAutoImmersiveFullscreen();
+    this.setupCanvasIdleFloat();
   }
 
   setupAutoImmersiveFullscreen() {
@@ -290,6 +294,31 @@ class SchedullyApp {
     // Also listen for theme toggles to update theme-color dynamically
     const observer = new MutationObserver(() => updateThemeColor());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  setupCanvasIdleFloat() {
+    let idleTimer = null;
+    const canvas = document.getElementById('phone-canvas');
+    if (!canvas) return;
+
+    const onUserActivity = () => {
+      document.body.classList.remove('canvas-idle');
+      document.body.classList.add('canvas-interacting');
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        document.body.classList.remove('canvas-interacting');
+        document.body.classList.add('canvas-idle');
+      }, 3500);
+    };
+
+    ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'wheel'].forEach(evt => {
+      window.addEventListener(evt, onUserActivity, { passive: true });
+    });
+
+    // Start in idle mode after slight initial delay
+    idleTimer = setTimeout(() => {
+      document.body.classList.add('canvas-idle');
+    }, 2000);
   }
 
   initDOMElements() {
@@ -3426,6 +3455,8 @@ class SchedullyApp {
         tabTngContent?.classList.remove('hidden');
         tabBmcContent?.classList.add('hidden');
       }
+      window.syncGlassSliders?.();
+      window.haptics?.selection?.();
     };
 
     if (tabBmcBtn) {
@@ -3446,6 +3477,9 @@ class SchedullyApp {
       switchTab('bmc');
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
+      setTimeout(() => {
+        window.syncGlassSliders?.();
+      }, 30);
     };
 
     const closeModal = () => {
@@ -8525,24 +8559,23 @@ class SchedullyApp {
       const importMenuPopover = document.getElementById('import-menu-popover');
 
       if (isMobile()) {
-        // MOBILE / TABLET: If EITHER sidebar is open, hide ALL floating top buttons
-        if (!leftCollapsed || !rightCollapsed) {
+        // MOBILE / TABLET: Keep Schedule button visible as top-right action trigger
+        showFloatingBtn(btnExpandRightFloating);
+        if (!leftCollapsed) {
           hideFloatingBtn(btnExpandLeftFloating);
           hideFloatingBtn(floatingImportWrapper);
-          hideFloatingBtn(btnExpandRightFloating);
           if (importMenuPopover) importMenuPopover.classList.add('hidden');
           if (mobileExportBar && !window.isTourActive) mobileExportBar.style.display = 'none';
           if (mobileDropdown && !window.isTourActive) mobileDropdown.classList.add('hidden');
           if (mobileChevron && !window.isTourActive) mobileChevron.classList.remove('mobile-export-chevron-open');
         } else {
-          // Both sidebars closed: show all floating top buttons
           showFloatingBtn(btnExpandLeftFloating);
           showFloatingBtn(floatingImportWrapper);
-          showFloatingBtn(btnExpandRightFloating);
           if (mobileExportBar) mobileExportBar.style.display = 'flex';
         }
       } else {
-        // DESKTOP: Show floating Menu/Import/Schedule buttons whenever respective sidebar is collapsed
+        // DESKTOP: Keep Schedule button and Menu/Import buttons accessible
+        showFloatingBtn(btnExpandRightFloating);
         if (leftCollapsed) {
           showFloatingBtn(btnExpandLeftFloating);
           showFloatingBtn(floatingImportWrapper);
@@ -8550,12 +8583,6 @@ class SchedullyApp {
           hideFloatingBtn(btnExpandLeftFloating);
           hideFloatingBtn(floatingImportWrapper);
           if (importMenuPopover) importMenuPopover.classList.add('hidden');
-        }
-
-        if (rightCollapsed) {
-          showFloatingBtn(btnExpandRightFloating);
-        } else {
-          hideFloatingBtn(btnExpandRightFloating);
         }
 
         if (mobileExportBar) mobileExportBar.style.display = '';
@@ -8597,6 +8624,9 @@ class SchedullyApp {
       } else {
         rightSidebar.classList.remove('sidebar-collapsed-right');
         rightSidebar.classList.add('sidebar-open-right', 'sidebar-expanded');
+        if (typeof this.renderClassList === 'function') {
+          this.renderClassList();
+        }
         if (isMobile()) {
           leftSidebar.classList.add('sidebar-collapsed-left');
           leftSidebar.classList.remove('sidebar-open-left', 'sidebar-expanded');
@@ -8611,8 +8641,8 @@ class SchedullyApp {
     btnExpandLeftFloating?.addEventListener('click', () => toggleLeftSidebar(false));
 
     btnToggleRight?.addEventListener('click', () => toggleRightSidebar(true));
-    btnExpandRightFloating?.addEventListener('click', () => toggleRightSidebar(false));
-    document.getElementById('floating-courses-count-circle')?.addEventListener('click', () => toggleRightSidebar(false));
+    btnExpandRightFloating?.addEventListener('click', () => toggleRightSidebar());
+    document.getElementById('floating-courses-count-circle')?.addEventListener('click', () => toggleRightSidebar());
 
     // Floating Import Button & Popover Setup
     const btnFloatingImport = document.getElementById('btn-floating-import');
@@ -8692,42 +8722,7 @@ class SchedullyApp {
     const btnTabBmc = document.getElementById('btn-tab-bmc');
     const btnTabTng = document.getElementById('btn-tab-tng');
     const tabBmc = document.getElementById('support-tab-bmc');
-    const tabTng = document.getElementById('support-tab-tng');
-
-    if (btnAboutCoffee && coffeeModal) {
-      btnAboutCoffee.addEventListener('click', () => {
-        coffeeModal.classList.remove('hidden');
-        if (window.soundFX) window.soundFX.play('tap');
-      });
-    }
-    if (btnCloseCoffeeModal && coffeeModal) {
-      btnCloseCoffeeModal.addEventListener('click', () => {
-        coffeeModal.classList.add('hidden');
-      });
-    }
-    if (coffeeModal) {
-      coffeeModal.addEventListener('click', (e) => {
-        if (e.target === coffeeModal) {
-          coffeeModal.classList.add('hidden');
-        }
-      });
-    }
-    if (btnTabBmc && btnTabTng && tabBmc && tabTng) {
-      btnTabBmc.addEventListener('click', () => {
-        btnTabBmc.classList.add('active');
-        btnTabTng.classList.remove('active');
-        tabBmc.classList.remove('hidden');
-        tabTng.classList.add('hidden');
-        if (window.soundFX) window.soundFX.play('tap');
-      });
-      btnTabTng.addEventListener('click', () => {
-        btnTabTng.classList.add('active');
-        btnTabBmc.classList.remove('active');
-        tabTng.classList.remove('hidden');
-        tabBmc.classList.add('hidden');
-        if (window.soundFX) window.soundFX.play('tap');
-      });
-    }
+    // Coffee Modal is managed cleanly in this.setupCoffeeModal()
 
     // Initial sidebar state on web app load:
     // Mobile, Tablet, & Desktop: BOTH Menu and Schedule start COLLAPSED by default for a clean workspace
@@ -10062,6 +10057,10 @@ class SchedullyApp {
       if (settings.showSideSliders !== undefined) {
         if (typeof this.setSideSliders === 'function') {
           this.setSideSliders(settings.showSideSliders, true);
+        }
+      } else {
+        if (typeof this.setSideSliders === 'function') {
+          this.setSideSliders(true, true);
         }
       }
       if (settings.soundEnabled !== undefined) {
@@ -12032,6 +12031,7 @@ class SchedullyApp {
       gridFragment.appendChild(headerCell);
     });
 
+    let cardRenderIdx = 0;
     timeSlots.forEach(tObj => {
       const timeCell = document.createElement('div');
       timeCell.className = 'exact-grid-cell-time';
@@ -12053,10 +12053,12 @@ class SchedullyApp {
         const matchesInCell = (this.classes || []).filter(c => {
           if (!c) return false;
           const cDay = String(c.day || 'Mon');
-          const dayMatch = cDay.toLowerCase().startsWith(day.toLowerCase());
+          const dayMatch = (cDay === day) || (cDay.slice(0, 3).toLowerCase() === day.slice(0, 3).toLowerCase());
+          if (!dayMatch) return false;
           if (tObj.isPeriod) {
-            if (c.periodNumber !== undefined && c.periodNumber !== null && c.periodNumber > 0) {
-              return dayMatch && (c.periodNumber === tObj.period);
+            const pIdx = c.periodIndex !== undefined ? c.periodIndex : c.period;
+            if (pIdx !== undefined && pIdx !== null) {
+              return Number(pIdx) === tObj.periodIndex;
             }
           }
           const sTime = String(c.startTime || c.start || '08:00');
@@ -12158,14 +12160,22 @@ class SchedullyApp {
           
           const fontFactor = isWatch ? 28 : (isPhone ? (widthScale < 0.8 ? 38 : 46) : 60);
           const maxAdaptiveFont = Math.min(22, Math.max(3.5, Math.round(fontFactor / numDays)));
-          const heightAdaptiveFont = Math.min(22, Math.max(3.5, Math.floor(cardHeightPx / (lineCount * 1.15))));
-          const effectiveMaxFont = Math.min(maxAdaptiveFont, heightAdaptiveFont);
 
-          const baseCodeFont = isWatch ? 6.5 : (isPhone ? 9.2 : 10.5);
-          const baseDetailFont = isWatch ? 5.5 : (isPhone ? 7.8 : 9.0);
+          const baseDetailFont = Math.max(3.5, Math.min(maxAdaptiveFont, 9.5 * fontScale * effectiveCardScale));
+          const baseCodeFont = Math.max(4.0, Math.min(maxAdaptiveFont + 2, 11 * fontScale * effectiveCardScale));
 
-          const codeFontSize = Math.max(3.0, Math.round(Math.min(baseCodeFont * effectiveCardScale, effectiveMaxFont * effectiveCardScale) * 10) / 10);
-          const detailFontSize = Math.max(2.5, Math.round(Math.min(baseDetailFont * effectiveCardScale, Math.max(3.0, codeFontSize - 0.8)) * 10) / 10);
+          let codeFontSize = baseCodeFont;
+          let detailFontSize = baseDetailFont;
+
+          if (!isShortCard && lineCount > 1) {
+            const availableHeight = cardHeightPx - 4;
+            const estimatedTotalHeight = (codeFontSize * 1.15) + ((lineCount - 1) * detailFontSize * 1.15);
+            if (estimatedTotalHeight > availableHeight) {
+              const reductionRatio = Math.max(0.45, availableHeight / estimatedTotalHeight);
+              codeFontSize = Math.max(3.5, Math.round(codeFontSize * reductionRatio * 10) / 10);
+              detailFontSize = Math.max(3.0, Math.round(detailFontSize * reductionRatio * 10) / 10);
+            }
+          }
 
           let timeDisplayText = formatStart;
           if (courseTimeMode === 'both') {
@@ -12188,6 +12198,7 @@ class SchedullyApp {
           const cardElement = document.createElement('div');
           cardElement.className = 'exact-course-card';
           cardElement.title = `${matched.title} (${matched.type || ''} - ${matched.room || ''})`;
+          cardElement.style.setProperty('--card-index', cardRenderIdx++);
           cardElement.style.cssText = `
             ${cardStyle}
             position: absolute;
@@ -12205,6 +12216,7 @@ class SchedullyApp {
             padding: 2px 3px;
             overflow: hidden;
             border-radius: ${this.cardCornerStyle === 'sharp' ? '0px' : (this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) + 'px'};
+            --card-index: ${cardRenderIdx};
           `;
           cardElement.setAttribute('data-id', matched.id);
           cardElement.setAttribute('draggable', 'true');
@@ -12474,8 +12486,10 @@ class SchedullyApp {
     // Apply as fixed viewport coords
     this.gridCourseActionPill.style.left = `${leftPos}px`;
     this.gridCourseActionPill.style.top = `${topPos}px`;
-    // Clear any stale `position` overrides (pill is now fixed via CSS class)
-    this.gridCourseActionPill.style.transform = 'none';
+    // Force CSS animation restart so pop-up bouncy spring triggers on each course selection
+    this.gridCourseActionPill.style.animation = 'none';
+    void this.gridCourseActionPill.offsetWidth;
+    this.gridCourseActionPill.style.animation = '';
   }
 
   moveCourseToSlot(courseId, targetDay, slotTarget) {
@@ -13695,9 +13709,10 @@ class SchedullyApp {
 
     const fragment = document.createDocumentFragment();
 
-    filteredClasses.forEach(c => {
+    filteredClasses.forEach((c, listIdx) => {
       const card = document.createElement('div');
       card.className = 'class-item-card expandable-class-card';
+      card.style.setProperty('--list-index', listIdx);
       card.setAttribute('data-id', c.id);
       
       const swatchBtnsHTML = swatches.map(hex => `
@@ -15209,4 +15224,44 @@ if (document.readyState === 'loading') {
   initThemeStyleEngine();
   window.schedullyTour = new SchedullyTourController();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// GLOBAL FLOATING TOAST NOTIFICATION ENGINE (Bouncy + Haptic)
+// ═══════════════════════════════════════════════════════════════
+window.showToast = (msg, type = 'info', duration = 2800) => {
+  let toastContainer = document.getElementById('schedully-global-toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'schedully-global-toast-container';
+    toastContainer.className = 'fixed bottom-6 right-6 z-[999999] flex flex-col gap-2 pointer-events-none';
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'schedully-toast pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold border backdrop-blur-xl transition-all';
+  
+  let bgStyle = 'background: rgba(15, 23, 42, 0.88); color: #F8FAFC; border-color: rgba(255, 255, 255, 0.12);';
+  let iconSvg = '<svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><path stroke-linecap="round" stroke-width="2" d="M12 16v-4m0-4h.01"></path></svg>';
+  
+  if (type === 'success') {
+    bgStyle = 'background: rgba(6, 78, 59, 0.90); color: #ECFDF5; border-color: rgba(52, 211, 153, 0.35);';
+    iconSvg = '<svg class="w-4 h-4 text-emerald-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>';
+  } else if (type === 'warning' || type === 'delete') {
+    bgStyle = 'background: rgba(127, 29, 29, 0.90); color: #FEF2F2; border-color: rgba(248, 113, 113, 0.35);';
+    iconSvg = '<svg class="w-4 h-4 text-rose-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+  }
+
+  toast.style.cssText = bgStyle;
+  toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
+  toastContainer.appendChild(toast);
+
+  if (window.haptics) {
+    window.haptics.trigger(type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'light'));
+  }
+
+  setTimeout(() => {
+    toast.classList.add('toast-hiding');
+    setTimeout(() => toast.remove(), 260);
+  }, duration);
+};
 

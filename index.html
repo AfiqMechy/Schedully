@@ -4,7 +4,7 @@
 <!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
 <script>
 (function() {
-  var CURRENT_VERSION = 'schedully-cache-v650';
+  var CURRENT_VERSION = 'schedully-cache-v664';
   var CACHE_KEY = 'sw_version_confirmed';
   if ('serviceWorker' in navigator && window.caches) {
     // Check if we're running with an old cache version
@@ -141,7 +141,7 @@
   };
 </script>
 <!-- i18n Localization Engine -->
-<script src="i18n.js?v=20260919_v540"></script>
+<script src="i18n.js?v=20260921_v663"></script>
 <!-- html2canvas, dom-to-image-more & jsPDF (Deferred for Instant First Paint) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js" defer></script>
@@ -277,7 +277,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260920_v650">
+<link rel="stylesheet" href="styles.css?v=20260921_v663">
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -2686,7 +2686,16 @@
   <div id="coffee-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="coffee-modal-card rounded-3xl shadow-2xl border max-w-xs w-full p-5 animate-scaleIn flex flex-col items-center text-center gap-3.5">
       <div class="w-full flex items-center justify-between">
-        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-100/70 dark:bg-amber-500/15 px-2.5 py-1 rounded-full" data-i18n="supportCreator">☕ Support Creator</span>
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-100/70 dark:bg-amber-500/15 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+          <span data-i18n="supportCreator">Support Creator</span>
+        </span>
         <button id="btn-close-coffee-modal" type="button" class="btn-close-modal p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
@@ -2711,8 +2720,23 @@
 
       <!-- Payment Method Switcher Tabs -->
       <div class="pill-toggle-group w-full flex rounded-xl p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60" id="support-payment-tabs">
-        <button id="btn-tab-bmc" type="button" class="support-tab-btn active flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="bmc" data-i18n="tabBmc">☕ Buy Me a Coffee</button>
-        <button id="btn-tab-tng" type="button" class="support-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all" data-tab="tng" data-i18n="tabTng">📱 Touch 'n Go QR</button>
+        <button id="btn-tab-bmc" type="button" class="support-tab-btn active flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1.5" data-tab="bmc">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+          <span data-i18n="tabBmc">Buy Me a Coffee</span>
+        </button>
+        <button id="btn-tab-tng" type="button" class="support-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1.5" data-tab="tng">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <span data-i18n="tabTng">Touch 'n Go QR</span>
+        </button>
       </div>
 
       <!-- Tab 1: Buy Me a Coffee -->
@@ -2837,8 +2861,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="firebase-config.js?v=20260920_v650"></script>
-  <script src="app_v3.js?v=20260920_v650"></script>
+<script src="firebase-config.js?v=20260921_v651"></script>
+  <script src="app_v3.js?v=20260921_v663"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
