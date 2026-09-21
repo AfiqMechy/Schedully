@@ -235,7 +235,18 @@ class SchedullyApp {
     setInterval(() => this.updateClock(), 60000);
 
     this.loadFromLocal();
-    if (!this.classes || this.classes.length === 0) {
+    // Only show default sample courses if this is a genuine first-time user.
+    // Guards:
+    //   1. schedully_user_cleared = 'yes'  → user deliberately hit "Clear All"
+    //   2. schedully_classes key exists     → returning user (even with empty list), not first-time
+    // Both cases: leave the timetable blank and respect the user's intent.
+    const userHasCleared = localStorage.getItem('schedully_user_cleared') === 'yes';
+    const hasExistingClassesKey = localStorage.getItem('schedully_classes') !== null;
+    // Auto-stamp the flag for returning users who don't have it yet (backwards compatibility)
+    if (hasExistingClassesKey && !userHasCleared) {
+      try { localStorage.setItem('schedully_user_cleared', 'yes'); } catch (_) {}
+    }
+    if (!userHasCleared && !hasExistingClassesKey && (!this.classes || this.classes.length === 0)) {
       const defaultStarterClasses = [
         { id: 'c_default_1', title: 'Instrumentation & Measurement', name: 'Instrumentation & Measurement', code: 'KIG 3001', day: 'Mon', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 101', lecturer: 'Dr. Smith', instructor: 'Dr. Smith', color: '#E07A5F', customColor: '#E07A5F' },
         { id: 'c_default_2', title: 'Fluid Mechanics', name: 'Fluid Mechanics', code: 'KIG 3009', day: 'Tue', startTime: '09:00', endTime: '10:30', room: 'Bilik Kuliah 102', lecturer: 'Prof. Davis', instructor: 'Prof. Davis', color: '#3D405B', customColor: '#3D405B' },
@@ -9285,6 +9296,9 @@ class SchedullyApp {
            if (this.presets && this.activePresetKey && this.presets[this.activePresetKey]) {
              this.presets[this.activePresetKey].classes = [];
            }
+           // Mark that the user deliberately cleared — prevents default sample courses
+           // from being re-injected on next page load/refresh
+           try { localStorage.setItem('schedully_user_cleared', 'yes'); } catch (_) {}
            this.saveToLocal();
 
            // Sync cleared state to Firebase Cloud if logged in
@@ -10816,13 +10830,15 @@ class SchedullyApp {
             const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
             const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
 
-            const isCloudEmpty = (!data.presets && !data.classes && !data.settings) ||
-              ((!data.classes || data.classes.length === 0) && !data.wallpaper && (!data.presets || (Object.keys(data.presets).length <= 1 && (!data.presets.default?.classes || data.presets.default.classes.length === 0) && !data.presets.default?.wallpaper)));
+            // "Cloud is empty" means the cloud has NEVER been written to (no updatedAt).
+            // An intentionally cleared schedule (classes:[]) is NOT empty — it's a valid saved state.
+            // We must not publish local default courses up to a cloud that the user intentionally cleared.
+            const isCloudEmpty = !data.updatedAt && (!data.presets && !data.classes && !data.settings);
 
-            // Case 1: If cloud is empty, preserve local work and save to cloud
+            // Case 1: Cloud has never been written — upload local work if any
             if (isCloudEmpty) {
               if (hasLocalWork) {
-                console.log("Publishing local offline work to cloud...");
+                console.log("Schedully Sync: Cloud has no data yet — publishing local work to cloud...");
                 if (typeof this.saveToCloud === 'function') {
                   this.saveToCloud();
                 } else {
