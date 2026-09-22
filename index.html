@@ -4,7 +4,7 @@
 <!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
 <script>
 (function() {
-  var CURRENT_VERSION = 'schedully-cache-v665';
+  var CURRENT_VERSION = 'schedully-cache-v680';
   var CACHE_KEY = 'sw_version_confirmed';
   if ('serviceWorker' in navigator && window.caches) {
     // Check if we're running with an old cache version
@@ -141,7 +141,7 @@
   };
 </script>
 <!-- i18n Localization Engine -->
-<script src="i18n.js?v=20260921_v663"></script>
+<script src="i18n.js?v=20260922_v678"></script>
 <!-- html2canvas, dom-to-image-more & jsPDF (Deferred for Instant First Paint) -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/dist/dom-to-image-more.min.js" defer></script>
@@ -277,7 +277,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260921_v663">
+<link rel="stylesheet" href="styles.css?v=20260922_v678">
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -357,7 +357,7 @@
 </div>
 
 <!-- UNIFIED TOP RIGHT ACTION BAR (Auth, Language, Coffee, Export, Schedule) -->
-<div id="right-action-container" class="top-action-bar-right fixed top-3.5 right-4 z-50 flex items-center gap-2.5">
+<div id="right-action-container" class="top-action-bar-right fixed top-3.5 right-4 z-50 flex items-start gap-2.5">
   <!-- UNIFIED SINGLE AUTH CIRCLE (Merged Logged Out + Logged In) -->
   <div id="user-auth-action-wrapper" class="top-action-wrapper relative">
     <button id="btn-toggle-auth-menu" type="button" class="top-action-pill p-0 overflow-hidden" title="Account" aria-label="Account">
@@ -455,74 +455,77 @@
     <span class="top-action-outside-label">Support</span>
   </div>
 
-  <!-- Export Trigger with Dropdown -->
-  <div class="top-action-wrapper relative">
-    <button id="btn-mobile-export-toggle" class="top-action-pill" title="Export" aria-label="Export">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
-    </button>
-    <span class="top-action-outside-label">Export</span>
-
-    <!-- Dropdown card: expands downward from the Export button -->
-    <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full right-0 mt-2.5 w-64 rounded-3xl shadow-2xl z-50 overflow-y-auto">
-      <div class="p-2 flex flex-col gap-1.5">
-        <!-- Download Image (Primary) -->
-        <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
-          <span class="mobile-export-icon-primary w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          </span>
-          <div>
-            <p class="mobile-export-primary-title font-extrabold text-sm leading-snug">Download Image</p>
-            <p class="mobile-export-primary-sub text-[11px] font-medium leading-tight">Save as wallpaper PNG</p>
-          </div>
-        </button>
-
-        <!-- Divider -->
-        <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
-
-        <!-- Calendar ICS -->
-        <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-          <span class="mobile-export-icon-cal w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          </span>
-          <div>
-            <p class="mobile-export-title font-extrabold text-sm leading-snug">Calendar (.ics)</p>
-            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Sync to Google / Apple</p>
-          </div>
-        </button>
-
-        <!-- CSV Export -->
-        <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-          <span class="mobile-export-icon-csv w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          </span>
-          <div>
-            <p class="mobile-export-title font-extrabold text-sm leading-snug">Export CSV</p>
-            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Spreadsheet format</p>
-          </div>
-        </button>
-
-        <!-- Save PDF -->
-        <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
-          <span class="mobile-export-icon-pdf w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-          </span>
-          <div>
-            <p class="mobile-export-title font-extrabold text-sm leading-snug">Save as PDF</p>
-            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Print-ready document</p>
-          </div>
-        </button>
+  <!-- Right Vertical Column: Schedule Trigger (Top) & Export Trigger (Below) -->
+  <div class="flex flex-col items-center gap-2">
+    <!-- Schedule Trigger -->
+    <div class="top-action-wrapper relative">
+      <button id="btn-expand-right-floating" class="top-action-pill" title="Schedule" aria-label="Schedule">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+      </button>
+      <div id="floating-courses-count-circle" class="floating-circle-island flex items-center justify-center p-0.5 rounded-full shadow-md transition-all cursor-pointer" title="Total Added Courses">
+        <div class="flex items-center justify-center rounded-full shadow-xs">
+          <span id="settings-courses-badge" class="courses-count-circle-text">0</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Schedule Trigger -->
-  <div class="top-action-wrapper">
-    <button id="btn-expand-right-floating" class="top-action-pill" title="Schedule" aria-label="Schedule">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
-    </button>
-    <div id="floating-courses-count-circle" class="floating-circle-island flex items-center justify-center p-0.5 rounded-full shadow-md transition-all cursor-pointer" title="Total Added Courses">
-      <div class="flex items-center justify-center rounded-full shadow-xs">
-        <span id="settings-courses-badge" class="courses-count-circle-text">0</span>
+    <!-- Export Trigger with Dropdown (Below Schedule) -->
+    <div class="top-action-wrapper relative">
+      <button id="btn-mobile-export-toggle" class="top-action-pill" title="Export" aria-label="Export">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+      </button>
+      <span class="top-action-outside-label">Export</span>
+
+      <!-- Dropdown card: expands downward from the Export button -->
+      <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full right-0 mt-2.5 w-64 rounded-3xl shadow-2xl z-50 overflow-y-auto">
+        <div class="p-2 flex flex-col gap-1.5">
+          <!-- Download Image (Primary) -->
+          <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-left">
+            <span class="mobile-export-icon-primary w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </span>
+            <div>
+              <p class="mobile-export-primary-title font-extrabold text-sm leading-snug">Download Image</p>
+              <p class="mobile-export-primary-sub text-[11px] font-medium leading-tight">Save as wallpaper PNG</p>
+            </div>
+          </button>
+
+          <!-- Divider -->
+          <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
+
+          <!-- Calendar ICS -->
+          <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+            <span class="mobile-export-icon-cal w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </span>
+            <div>
+              <p class="mobile-export-title font-extrabold text-sm leading-snug">Calendar (.ics)</p>
+              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Sync to Google / Apple</p>
+            </div>
+          </button>
+
+          <!-- CSV Export -->
+          <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+            <span class="mobile-export-icon-csv w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </span>
+            <div>
+              <p class="mobile-export-title font-extrabold text-sm leading-snug">Export CSV</p>
+              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Spreadsheet format</p>
+            </div>
+          </button>
+
+          <!-- Save PDF -->
+          <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left">
+            <span class="mobile-export-icon-pdf w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </span>
+            <div>
+              <p class="mobile-export-title font-extrabold text-sm leading-snug">Save as PDF</p>
+              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Print-ready document</p>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1069,6 +1072,17 @@
     </div>
   </div>
 
+  <!-- Center Floating Action Island: Morphing Interactive Circle FAB (+ ⟷ ✕) -->
+  <div id="floating-add-course-circle-island" class="floating-circle-island flex items-center justify-center rounded-full shadow-lg pointer-events-auto" title="Add Course">
+    <button id="btn-floating-add-course-toggle" type="button" class="w-7 h-7 flex items-center justify-center text-white adaptive-icon-btn rounded-full transition-colors" title="Add Course" aria-label="Add Course">
+      <div class="morph-fab-icon-wrapper flex items-center justify-center">
+        <svg class="morph-fab-plus-icon w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6" d="M12 4v16m8-8H4"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
   <!-- Right Side Floating Island: Toast Notification Slot + Undo / Redo Capsule (Rightmost Position) -->
   <div id="floating-right-cluster" class="flex flex-col items-end gap-2 pointer-events-none shrink-0">
 
@@ -1202,19 +1216,8 @@
       </div>
     </div>
 
-    <!-- Floating Right Action Row: Add Course Plus Button (Far Left) + Undo/Redo Pill (Middle) + Vertical Stack on Right (Top: 9, Middle: Settings, Bottom: Eye) -->
+    <!-- Floating Right Action Row: Undo/Redo Pill (Left) + Vertical Stack on Right (Top: Settings, Bottom: Eye) -->
     <div class="flex items-end gap-2 pointer-events-auto">
-      <!-- 0. Add Course Plus Button (Full Primary Color Adaptive Island) -->
-      <div id="floating-add-course-circle-island" class="floating-circle-island flex items-center p-1 rounded-full shadow-lg transition-all" title="Add A Course">
-        <div class="flex items-center rounded-full shadow-xs p-0.5">
-          <button id="btn-floating-add-course-toggle" type="button" class="w-7 h-7 flex items-center justify-center rounded-full transition-colors" title="Add A Course" aria-label="Add A Course">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
       <!-- 1. Undo & Redo Capsule Pill -->
       <div id="floating-undo-redo-row" class="flex items-center p-1 rounded-full shadow-lg transition-all">
         <div class="flex items-center rounded-full shadow-xs p-0.5 gap-0.5" id="history-undo-redo-capsule">
@@ -1394,7 +1397,7 @@
     <div class="theme-picker-section mb-2">
       <div class="flex items-center justify-between mb-1">
         <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-100" data-i18n="fontFamily">Font Family</span>
-        <label for="floating-custom-font-upload" class="cursor-pointer text-[10.5px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+        <label for="floating-custom-font-upload" class="import-font-action-link cursor-pointer text-[10.5px] font-bold hover:underline flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
           <span data-i18n="importFont">Import Font</span>
           <input type="file" id="floating-custom-font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
@@ -1412,7 +1415,7 @@
             </div>
           </div>
           <div class="flex items-center gap-1.5 font-trigger-right">
-            <span class="text-[10px] font-extrabold text-blue-600 font-trigger-action">CHANGE</span>
+            <span class="text-[10px] font-extrabold font-trigger-action">CHANGE</span>
             <svg class="font-chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -1492,16 +1495,16 @@
       <!-- Mode 2 Toggle: Timetable Card Opacity -->
       <button id="btn-fx-mode-opacity" type="button" class="m3-fx-mode-btn" title="Timetable Opacity Mode" aria-label="Timetable Opacity">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2"/>
-          <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-width="1.8" stroke-dasharray="2 2"/>
+          <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/>
+          <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>
         </svg>
       </button>
 
-      <!-- Mode 3 Toggle: Wallpaper Blur -->
-      <button id="btn-fx-mode-blur" type="button" class="m3-fx-mode-btn" title="Wallpaper Blur Mode" aria-label="Wallpaper Blur">
+      <!-- Mode 3 Toggle: Wallpaper Effects (Blur & Dimming) -->
+      <button id="btn-fx-mode-blur" type="button" class="m3-fx-mode-btn" title="Wallpaper Effects Mode" aria-label="Wallpaper Effects">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4" stroke-width="2"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          <circle cx="12" cy="14" r="3" fill="currentColor" fill-opacity="0.35"/>
         </svg>
       </button>
     </div>
@@ -1835,6 +1838,15 @@
             <input type="checkbox" class="floating-course-day-check" value="Sun">
             <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Sun</span>
           </label>
+        </div>
+      </div>
+
+      <!-- Display Type Toggle: Clock | Period -->
+      <div class="theme-picker-section mb-2 flex items-center justify-between">
+        <span class="opt-label text-[11px] font-bold text-gray-800 dark:text-gray-100">Display Type</span>
+        <div class="pill-toggle-group" id="floating-toggle-course-axis-mode">
+          <button type="button" class="pill-btn active" data-val="clock">CLOCK</button>
+          <button type="button" class="pill-btn" data-val="period">PERIOD</button>
         </div>
       </div>
 
@@ -2201,8 +2213,8 @@
 
       <!-- 1. Upload Dropzone Container (when no wallpaper) -->
       <div id="floating-wallpaper-upload-container" class="mb-3">
-        <label for="wallpaper-image-input" class="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 bg-white/70 dark:bg-slate-800/70 transition-all text-xs font-bold text-gray-700 dark:text-gray-200">
-          <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <label for="wallpaper-image-input" class="import-wallpaper-dropzone cursor-pointer flex items-center justify-center gap-2 py-3 px-3 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 bg-white/70 dark:bg-slate-800/70 transition-all text-xs font-bold text-gray-700 dark:text-gray-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
           <span data-i18n="importWallpaper">Import Wallpaper</span>
         </label>
       </div>
@@ -2862,13 +2874,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260921_v651"></script>
-  <script src="app_v3.js?v=20260921_v663"></script>
+  <script src="app_v3.js?v=20260922_v678"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=650').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=678').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
 

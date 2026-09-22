@@ -2454,7 +2454,7 @@ class SchedullyApp {
 
     if (wallpaperLayer) {
       wallpaperLayer.style.backgroundImage = '';
-      wallpaperLayer.style.opacity = '0';
+      wallpaperLayer.style.opacity = '1';
     }
 
     if (phoneCanvas) {
@@ -2586,16 +2586,77 @@ class SchedullyApp {
       'custom': 'Custom Uploaded Font'
     };
 
-    // Populate floating dropdown menu options by cloning from main dropdown
-    if (dropdownMenu && floatingDropdownMenu) {
-      const sourceScroll = dropdownMenu.querySelector('.custom-font-menu-scroll');
-      const targetScroll = floatingDropdownMenu.querySelector('.custom-font-menu-scroll');
-      if (sourceScroll && targetScroll) {
-        targetScroll.innerHTML = sourceScroll.innerHTML;
+    const fontGroups = [
+      {
+        title: 'Modern Sans (Clean)',
+        items: [
+          { key: 'default', name: 'Google Sans', sub: 'Default Clean' },
+          { key: 'plus-jakarta', name: 'Plus Jakarta Sans', sub: 'iOS Aesthetic Sans' },
+          { key: 'outfit', name: 'Outfit', sub: 'Geometric & Crisp' },
+          { key: 'inter', name: 'Inter', sub: 'Neutral Clean' },
+          { key: 'lexend', name: 'Lexend', sub: 'Ultra Readable' }
+        ]
+      },
+      {
+        title: 'Cursive & Calligraphy',
+        items: [
+          { key: 'great-vibes', name: 'Great Vibes', sub: 'Royal Cursive Calligraphy' },
+          { key: 'dancing-script', name: 'Dancing Script', sub: 'Aesthetic Casual Flow' },
+          { key: 'caveat', name: 'Caveat', sub: 'Studygram Handwritten' },
+          { key: 'sacramento', name: 'Sacramento', sub: 'Delicate Signature' }
+        ]
+      },
+      {
+        title: 'Serif & Luxury',
+        items: [
+          { key: 'cinzel', name: 'Cinzel', sub: 'Luxury Roman / Academia' },
+          { key: 'playfair', name: 'Playfair Display', sub: 'Classy Serif' }
+        ]
+      },
+      {
+        title: 'Artistic, Display & Monospace',
+        items: [
+          { key: 'comfortaa', name: 'Comfortaa', sub: 'Cute Soft Aesthetic' },
+          { key: 'syne', name: 'Syne', sub: 'Avant-Garde Art' },
+          { key: 'space-grotesk', name: 'Space Grotesk', sub: 'Modernist Tech Display' },
+          { key: 'jetbrains', name: 'JetBrains Mono', sub: 'Developer Monospace' }
+        ]
       }
-    }
+    ];
 
     this.currentFontKey = 'default';
+
+    const renderFontMenuList = (targetScroll) => {
+      if (!targetScroll) return;
+      let html = '';
+      fontGroups.forEach(group => {
+        html += `<div class="font-group-header"><span>${group.title}</span></div>`;
+        html += `<div class="font-group-items">`;
+        group.items.forEach(item => {
+          const fontStack = fontMap[item.key] || 'inherit';
+          const isActive = (this.currentFontKey || 'default') === item.key ? ' active' : '';
+          html += `
+            <button type="button" class="font-option-item${isActive}" data-font="${item.key}" style="font-family: ${fontStack};">
+              <div class="font-option-info">
+                <span class="font-option-title">${item.name}</span>
+                <span class="font-option-desc">${item.sub}</span>
+              </div>
+              <span class="font-check-icon">✓</span>
+            </button>
+          `;
+        });
+        html += `</div>`;
+      });
+      targetScroll.innerHTML = html;
+    };
+
+    // Populate all font dropdown menus
+    [dropdownMenu, floatingDropdownMenu].forEach(menu => {
+      if (menu) {
+        const scrollEl = menu.querySelector('.custom-font-menu-scroll');
+        if (scrollEl) renderFontMenuList(scrollEl);
+      }
+    });
 
     this.applyFontFamily = async (fontKey, customFamilyName = null, skipSave = false) => {
       this.currentFontKey = fontKey;
@@ -6695,8 +6756,8 @@ class SchedullyApp {
         radius: { id: 'radius', name: 'Corner Radius', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="6" /></svg>`, desc: 'Roundness (frame & cards)' },
         font: { id: 'font', name: 'Font Size', icon: `<span class="text-xs font-black leading-none">A<span class="text-[9px]">a</span></span>`, desc: 'Typography scaling & drawer' },
         layout: { id: 'layout', name: 'Grid Layout', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12H3M7 8l-4 4 4 4M17 8l4 4-4 4"/><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>`, desc: 'Width, Height, X, Y & Days' },
-        opacity: { id: 'opacity', name: 'Card Opacity', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-dasharray="2 2"/></svg>`, desc: 'Glass & card transparency' },
-        blur: { id: 'blur', name: 'Wallpaper Effects', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`, desc: 'Photo wallpaper blur & dimming' }
+        opacity: { id: 'opacity', name: 'Card Opacity', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>`, desc: 'Glass & card transparency' },
+        blur: { id: 'blur', name: 'Wallpaper Effects', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><circle cx="12" cy="14" r="3" fill="currentColor" fill-opacity="0.35"/></svg>`, desc: 'Wallpaper blur & dimming' }
       };
 
       let tempLayout = {
@@ -7717,12 +7778,15 @@ class SchedullyApp {
           document.getElementById('canvas-controls-popover')?.classList.add('hidden');
           document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
 
-          // Sync period mode visibility
+          // Sync period mode visibility & toggle state
           const rowPeriod = document.getElementById('floating-row-period-select');
           const rowStartTime = document.getElementById('floating-row-start-time');
           const rowEndTime = document.getElementById('floating-row-end-time');
+          const isPeriod = (this.axisMode === 'period');
+          document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-val') === (isPeriod ? 'period' : 'clock'));
+          });
           if (rowPeriod && rowStartTime && rowEndTime) {
-            const isPeriod = (this.axisMode === 'period');
             rowPeriod.style.display = isPeriod ? 'flex' : 'none';
             rowStartTime.style.display = isPeriod ? 'none' : 'flex';
             rowEndTime.style.display = isPeriod ? 'none' : 'flex';
@@ -7797,6 +7861,27 @@ class SchedullyApp {
         });
       });
 
+      // Step 2: Display Type Toggle (Clock | Period)
+      document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const modeVal = btn.getAttribute('data-val') || 'clock';
+          const isPeriod = (modeVal === 'period');
+          const rowPeriod = document.getElementById('floating-row-period-select');
+          const rowStartTime = document.getElementById('floating-row-start-time');
+          const rowEndTime = document.getElementById('floating-row-end-time');
+          if (rowPeriod && rowStartTime && rowEndTime) {
+            rowPeriod.style.display = isPeriod ? 'flex' : 'none';
+            rowStartTime.style.display = isPeriod ? 'none' : 'flex';
+            rowEndTime.style.display = isPeriod ? 'none' : 'flex';
+          }
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        });
+      });
+
       // Step 1: Grid Colour Swatches (Single Row Circular Dots)
       document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -7851,7 +7936,10 @@ class SchedullyApp {
         let endTime = document.getElementById('floating-input-end-time')?.value || '11:00';
         let periodNumber = undefined;
 
-        if (this.axisMode === 'period') {
+        const activeModeBtn = document.querySelector('#floating-toggle-course-axis-mode .pill-btn.active');
+        const isPeriodMode = activeModeBtn ? activeModeBtn.getAttribute('data-val') === 'period' : (this.axisMode === 'period');
+
+        if (isPeriodMode) {
           const periodSel = document.getElementById('floating-input-period-select');
           const selOpt = periodSel ? periodSel.selectedOptions[0] : null;
           periodNumber = selOpt ? parseInt(selOpt.value, 10) : 1;

@@ -338,12 +338,21 @@ body.dark-mode .m3-right-sidebar,
   #btn-floating-import,
   #btn-expand-right-floating,
   #btn-mobile-export-toggle {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
-    max-width: 38px !important;
-    max-height: 38px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+  }
+
+  .top-action-pill svg,
+  #btn-expand-left-floating svg,
+  #btn-floating-import svg,
+  #btn-expand-right-floating svg,
+  #btn-mobile-export-toggle svg {
+    width: 18px !important;
+    height: 18px !important;
   }
 
   .top-action-outside-label {
@@ -368,17 +377,21 @@ body.dark-mode .m3-right-sidebar,
     #btn-floating-import,
     #btn-expand-right-floating,
     #btn-mobile-export-toggle {
-      width: 36px !important;
-      height: 36px !important;
-      min-width: 36px !important;
-      min-height: 36px !important;
-      max-width: 36px !important;
-      max-height: 36px !important;
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      min-height: 40px !important;
+      max-width: 40px !important;
+      max-height: 40px !important;
     }
 
-    .top-action-pill svg {
-      width: 15px !important;
-      height: 15px !important;
+    .top-action-pill svg,
+    #btn-expand-left-floating svg,
+    #btn-floating-import svg,
+    #btn-expand-right-floating svg,
+    #btn-mobile-export-toggle svg {
+      width: 17px !important;
+      height: 17px !important;
     }
 
     .top-action-outside-label {
@@ -401,19 +414,24 @@ body.dark-mode .m3-right-sidebar,
 
     .top-action-pill,
     #btn-expand-left-floating,
+    #btn-floating-import,
     #btn-expand-right-floating,
     #btn-mobile-export-toggle {
-      width: 34px !important;
-      height: 34px !important;
-      min-width: 34px !important;
-      min-height: 34px !important;
-      max-width: 34px !important;
-      max-height: 34px !important;
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+      min-height: 38px !important;
+      max-width: 38px !important;
+      max-height: 38px !important;
     }
 
-    .top-action-pill svg {
-      width: 14px !important;
-      height: 14px !important;
+    .top-action-pill svg,
+    #btn-expand-left-floating svg,
+    #btn-floating-import svg,
+    #btn-expand-right-floating svg,
+    #btn-mobile-export-toggle svg {
+      width: 16px !important;
+      height: 16px !important;
     }
   }
 
@@ -423,7 +441,6 @@ body.dark-mode .m3-right-sidebar,
     top: calc(100% + 8px) !important;
     right: 0 !important;
     left: auto !important;
-    transform: none !important;
     z-index: 10000 !important;
     background: linear-gradient(calc(180deg + var(--glass-glare-angle, -45deg)), rgba(255, 255, 255, calc(var(--glass-glare-factor, 0.9) * 0.88 + 0.1)) 0%, rgba(255, 255, 255, 0.72) 45%, rgba(241, 245, 249, calc(var(--glass-glare-opposite, 0.8) * 0.65)) 100%) !important;
     backdrop-filter: blur(14px) saturate(180%) !important;
@@ -443,15 +460,9 @@ body.dark-mode .m3-right-sidebar,
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin;
-    animation: dropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    transform-origin: top center;
+    transform-origin: top right !important;
     contain: layout paint;
   }
-}
-
-@keyframes dropdownIn {
-  from { opacity: 0; transform: translateX(-50%) scaleY(0.88) translateY(-8px); }
-  to   { opacity: 1; transform: translateX(-50%) scaleY(1) translateY(0); }
 }
 
 .mobile-export-option {
@@ -3048,8 +3059,8 @@ body.dark-mode .pill-btn.active {
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: #2563EB;
-  color: #FFFFFF;
+  background: var(--m3-sys-color-primary, #2563EB);
+  color: var(--m3-sys-color-on-primary, #FFFFFF);
   font-size: 10px;
   font-weight: 900;
   flex-shrink: 0;
@@ -3082,9 +3093,35 @@ body.dark-mode .font-trigger-sub {
 .font-chevron-icon {
   width: 15px;
   height: 15px;
-  color: #2563EB;
+  color: var(--m3-sys-color-primary, #2563EB);
   flex-shrink: 0;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.font-trigger-action {
+  color: var(--m3-sys-color-primary, #2563EB) !important;
+}
+
+.import-font-action-link {
+  color: var(--m3-sys-color-primary, #2563EB) !important;
+  transition: opacity 0.2s ease;
+}
+
+.import-font-action-link:hover {
+  opacity: 0.8;
+}
+
+.import-wallpaper-dropzone {
+  transition: all 0.2s ease !important;
+}
+
+.import-wallpaper-dropzone:hover {
+  border-color: var(--m3-sys-color-primary, #2563EB) !important;
+  background: var(--m3-sys-color-primary-container, rgba(37, 99, 235, 0.08)) !important;
+}
+
+.import-wallpaper-dropzone svg {
+  color: var(--m3-sys-color-primary, #2563EB) !important;
 }
 
 /* Expandable Inline Font Catalog (No Stacking Bugs / Never Blocked) */
@@ -3158,13 +3195,13 @@ body.dark-mode .font-trigger-sub {
 }
 
 .font-option-item:hover {
-  background: rgba(37, 99, 235, 0.08) !important;
-  color: #2563EB !important;
+  background: var(--m3-sys-color-primary-container, rgba(37, 99, 235, 0.12)) !important;
+  color: var(--m3-sys-color-primary, #2563EB) !important;
 }
 
 .font-option-item.active {
-  background: #2563EB !important;
-  color: #FFFFFF !important;
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
 }
 
 .font-option-info {
@@ -3196,7 +3233,7 @@ body.dark-mode .font-trigger-sub {
   display: none;
   font-size: 12px;
   font-weight: 900;
-  color: #FFFFFF;
+  color: var(--m3-sys-color-on-primary, #FFFFFF);
   margin-left: 6px;
   flex-shrink: 0;
 }
@@ -3206,7 +3243,8 @@ body.dark-mode .font-trigger-sub {
 }
 
 .font-option-item.active .font-option-desc {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: var(--m3-sys-color-on-primary, rgba(255, 255, 255, 0.9)) !important;
+  opacity: 0.9;
 }
 
 /* Dark Mode Overrides for Custom Font Picker */
@@ -7691,6 +7729,7 @@ body.dark-mode #user-status-text {
   z-index: 0;
   pointer-events: none;
   border-radius: 46px;
+  opacity: 1 !important;
   transition: opacity 0.3s ease, border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
@@ -17374,6 +17413,17 @@ body.hide-side-sliders #side-right-slider-container,
 }
 
 .floating-font-card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 24px;
+  padding: 13px 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22), 0 4px 14px rgba(0, 0, 0, 0.08);
+  z-index: 99999 !important;
+}
+
+.floating-font-card:not(#floating-add-course-card) {
   position: fixed;
   right: 64px;
   top: 50%;
@@ -17382,22 +17432,14 @@ body.hide-side-sliders #side-right-slider-container,
   max-width: calc(100vw - 76px);
   max-height: 82vh;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  border-radius: 24px;
-  padding: 13px 14px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.05);
-  z-index: 100;
   animation: floatingCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 body.dark-mode .floating-font-card,
 .theme-dark .floating-font-card {
-  background: rgba(30, 41, 59, 0.95) !important;
+  background: rgba(30, 41, 59, 0.98) !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.2) !important;
 }
 
 .floating-font-card.hidden {
@@ -17576,7 +17618,9 @@ body.dark-mode .floating-reset-font-btn,
   margin: 6px auto;
 }
 
-.floating-days-checkbox-tray .floating-day-check {
+.floating-days-checkbox-tray .floating-day-check,
+.floating-days-checkbox-tray .floating-course-day-check,
+.floating-course-day-check {
   appearance: none;
   -webkit-appearance: none;
   width: 18px;
@@ -17590,7 +17634,9 @@ body.dark-mode .floating-reset-font-btn,
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.floating-days-checkbox-tray .floating-day-check::before {
+.floating-days-checkbox-tray .floating-day-check::before,
+.floating-days-checkbox-tray .floating-course-day-check::before,
+.floating-course-day-check::before {
   content: "";
   width: 9px;
   height: 5px;
@@ -17600,12 +17646,16 @@ body.dark-mode .floating-reset-font-btn,
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.floating-days-checkbox-tray .floating-day-check:checked {
-  background-color: var(--m3-sys-color-primary, #2563EB);
-  border-color: var(--m3-sys-color-primary, #2563EB);
+.floating-days-checkbox-tray .floating-day-check:checked,
+.floating-days-checkbox-tray .floating-course-day-check:checked,
+.floating-course-day-check:checked {
+  background-color: var(--m3-sys-color-primary, #2563EB) !important;
+  border-color: var(--m3-sys-color-primary, #2563EB) !important;
 }
 
-.floating-days-checkbox-tray .floating-day-check:checked::before {
+.floating-days-checkbox-tray .floating-day-check:checked::before,
+.floating-days-checkbox-tray .floating-course-day-check:checked::before,
+.floating-course-day-check:checked::before {
   transform: rotate(-45deg) translate(1px, -0.5px) scale(1);
 }
 
@@ -17616,15 +17666,21 @@ body.dark-mode .floating-days-checkbox-tray,
 }
 
 body.dark-mode .floating-days-checkbox-tray .floating-day-check,
-.theme-dark .floating-days-checkbox-tray .floating-day-check {
+.theme-dark .floating-days-checkbox-tray .floating-day-check,
+body.dark-mode .floating-course-day-check,
+.theme-dark .floating-course-day-check,
+.dark .floating-course-day-check {
   background-color: #1E293B;
   border-color: #475569;
 }
 
 body.dark-mode .floating-days-checkbox-tray .floating-day-check:checked,
-.theme-dark .floating-days-checkbox-tray .floating-day-check:checked {
-  background-color: var(--m3-sys-color-primary, #3B82F6);
-  border-color: var(--m3-sys-color-primary, #3B82F6);
+.theme-dark .floating-days-checkbox-tray .floating-day-check:checked,
+body.dark-mode .floating-course-day-check:checked,
+.theme-dark .floating-course-day-check:checked,
+.dark .floating-course-day-check:checked {
+  background-color: var(--m3-sys-color-primary, #3B82F6) !important;
+  border-color: var(--m3-sys-color-primary, #3B82F6) !important;
 }
 
 .floating-reset-days-btn {
@@ -17662,8 +17718,7 @@ body.dark-mode .floating-reset-days-btn,
   right: auto !important;
   bottom: max(114px, calc(env(safe-area-inset-bottom, 0px) + 114px)) !important;
   top: max(14px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
-  transform: none !important;
-  z-index: 100 !important;
+  z-index: 99999 !important;
   width: 248px !important;
   max-width: min(268px, calc(100vw - 28px)) !important;
   max-height: calc(100dvh - 128px) !important;
@@ -17677,24 +17732,19 @@ body.dark-mode .floating-reset-days-btn,
   flex-direction: column !important;
   padding: 10px 12px !important;
   border-radius: 20px !important;
-  animation: floatingPaletteCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  transform-origin: bottom left !important;
+}
+
+.floating-palette-card:not(.hidden),
+#floating-palette-mode-card:not(.hidden) {
+  animation: paletteCardSpringUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+  transform-origin: bottom left !important;
 }
 
 .floating-palette-card::-webkit-scrollbar {
   display: none !important;
   width: 0px !important;
   height: 0px !important;
-}
-
-@keyframes floatingPaletteCardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 /* Adaptive Island & Toggle Button: Full Primary Color Circle matching Design Language */
@@ -18470,28 +18520,41 @@ body.ui-hidden-mode #floating-title-card,
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FLOATING ADD COURSE (FULL COLOR PLUS ISLAND & WIZARD CARD)
+   FLOATING ADD COURSE (MORPHING INTERACTIVE CIRCLE FAB + ⟷ ✕)
    ═══════════════════════════════════════════════════════════════ */
 #floating-add-course-circle-island {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  transform: translateX(-50%) !important;
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  max-width: 46px !important;
+  max-height: 46px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border-radius: 9999px !important;
   background: var(--m3-sys-color-primary, #6366F1) !important;
   border: 1.5px solid color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 75%, #FFFFFF) !important;
   box-shadow: 
-    0 10px 25px -4px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 50%, transparent),
-    0 4px 10px -2px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 30%, transparent),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.45) !important;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  padding: 0 !important;
+    0 8px 20px -3px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 50%, transparent),
+    0 3px 8px -2px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 30%, transparent),
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.45) !important;
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 0.25s ease, 
+              background-color 0.2s ease,
+              filter 0.2s ease !important;
+  margin: 0 !important;
   overflow: hidden !important;
-}
-
-#floating-add-course-circle-island > div {
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  width: 100% !important;
-  height: 100% !important;
-  padding: 0 !important;
+  z-index: 60 !important;
+  pointer-events: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
 }
 
 #floating-add-course-circle-island #btn-floating-add-course-toggle {
@@ -18504,20 +18567,48 @@ body.ui-hidden-mode #floating-title-card,
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  cursor: pointer;
+  cursor: pointer !important;
+  border-radius: 9999px !important;
+  padding: 0 !important;
 }
 
-#floating-add-course-circle-island #btn-floating-add-course-toggle svg {
+.morph-fab-icon-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+#floating-add-course-circle-island #btn-floating-add-course-toggle svg.morph-fab-plus-icon {
+  width: 22px !important;
+  height: 22px !important;
+  stroke-width: 2.6 !important;
   color: var(--m3-sys-color-on-primary, #FFFFFF) !important;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  flex-shrink: 0 !important;
+  transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+}
+
+/* Active Open State: Rotate icon 45deg to morph + into ✕ */
+#btn-floating-add-course-toggle.active .morph-fab-icon-wrapper,
+#floating-add-course-circle-island.active .morph-fab-icon-wrapper {
+  transform: rotate(45deg) scale(1.08);
 }
 
 #floating-add-course-circle-island:hover {
-  transform: scale(1.08);
+  transform: translateX(-50%) scale(1.12) translateY(-1.5px) !important;
+  box-shadow: 
+    0 12px 24px -3px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 60%, transparent),
+    0 4px 10px -2px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 35%, transparent),
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.55) !important;
 }
 
 #floating-add-course-circle-island:active {
-  transform: scale(0.96);
+  transform: translateX(-50%) scale(0.9) !important;
 }
 
 body.dark-mode #floating-add-course-circle-island,
@@ -18526,23 +18617,64 @@ body.dark-mode #floating-add-course-circle-island,
   background: var(--m3-sys-color-primary, #818CF8) !important;
   border-color: color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 75%, #FFFFFF) !important;
   box-shadow: 
-    0 14px 30px -4px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 65%, transparent),
-    0 4px 12px -2px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 40%, transparent),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.35) !important;
+    0 12px 26px -3px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 60%, transparent),
+    0 4px 12px -2px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 35%, transparent),
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
-.floating-add-course-card {
+.floating-add-course-card,
+#floating-add-course-card {
   position: fixed !important;
-  right: 64px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
+  left: 50% !important;
+  bottom: max(68px, calc(env(safe-area-inset-bottom, 16px) + 54px)) !important;
+  top: auto !important;
+  right: auto !important;
+  transform: translateX(-50%);
   width: 275px !important;
-  max-width: calc(100vw - 76px) !important;
-  max-height: 85vh !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: min(75vh, 490px) !important;
   overflow-y: auto !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
   border-radius: 24px !important;
-  z-index: 100 !important;
-  animation: floatingCardEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  padding: 12px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  z-index: 99999 !important;
+  transform-origin: bottom center !important;
+}
+
+body.dark-mode #floating-add-course-card,
+.theme-dark #floating-add-course-card,
+.dark #floating-add-course-card {
+  background: rgba(30, 41, 59, 0.98) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+}
+
+#floating-add-course-card:not(.hidden) {
+  display: block !important;
+  animation: addCourseCardCenterSpringUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+  transform-origin: bottom center !important;
+}
+
+@keyframes addCourseCardCenterSpringUp {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(32px) scale(0.82);
+  }
+  55% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px) scale(1.03);
+  }
+  75% {
+    transform: translateX(-50%) translateY(2px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 /* Step Indicator Tabs Bar */
@@ -19159,7 +19291,6 @@ body.theme-style-glass .dark .floating-days-hero-icon {
 #profile-settings-menu {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -19316,56 +19447,102 @@ body.theme-style-glass .dark .floating-days-hero-icon {
   /* Bottom floating controls container */
   #floating-controls-container {
     bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
-    left: max(12px, env(safe-area-inset-left, 12px)) !important;
-    right: max(12px, env(safe-area-inset-right, 12px)) !important;
-    width: calc(100% - 24px) !important;
-    max-width: calc(100% - 24px) !important;
+    left: max(8px, env(safe-area-inset-left, 8px)) !important;
+    right: max(8px, env(safe-area-inset-right, 8px)) !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
     z-index: 52 !important;
   }
 
   #bottom-floating-pill-bar {
-    padding: 3px 5px !important;
-    gap: 3px !important;
+    padding: 2px 4px !important;
+    gap: 2px !important;
   }
 
   #bottom-floating-pill-bar button,
   #floating-palette-circle-island button {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-    min-height: 26px !important;
+    width: 25px !important;
+    height: 25px !important;
+    min-width: 25px !important;
+    min-height: 25px !important;
   }
 
   #bottom-floating-pill-bar svg,
   #floating-palette-circle-island svg {
-    width: 13px !important;
-    height: 13px !important;
+    width: 12.5px !important;
+    height: 12.5px !important;
   }
 
   #floating-right-actions-column button,
   #floating-undo-redo-row button {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-    min-height: 26px !important;
+    width: 25px !important;
+    height: 25px !important;
+    min-width: 25px !important;
+    min-height: 25px !important;
   }
 
   #floating-right-actions-column svg,
   #floating-undo-redo-row svg {
-    width: 13px !important;
-    height: 13px !important;
+    width: 12.5px !important;
+    height: 12.5px !important;
+  }
+
+  #floating-add-course-circle-island {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+    padding: 0 !important;
   }
 
   #btn-floating-add-course-toggle {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    border-radius: 9999px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  #btn-floating-add-course-toggle svg {
-    width: 14px !important;
-    height: 14px !important;
+  #btn-floating-add-course-toggle svg,
+  #floating-add-course-circle-island #btn-floating-add-course-toggle svg.morph-fab-plus-icon {
+    width: 20px !important;
+    height: 20px !important;
+    stroke-width: 2.6 !important;
+  }
+
+  /* Ultra-compact phones (e.g. Galaxy Fold cover screen <= 360px) */
+  @media (max-width: 360px) {
+    #floating-add-course-circle-island {
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+      min-height: 38px !important;
+      max-width: 38px !important;
+      max-height: 38px !important;
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 9999px !important;
+    }
+    #btn-floating-add-course-toggle {
+      padding: 0 !important;
+      justify-content: center !important;
+    }
+    #btn-floating-add-course-toggle svg,
+    #floating-add-course-circle-island #btn-floating-add-course-toggle svg.morph-fab-plus-icon {
+      width: 18px !important;
+      height: 18px !important;
+    }
   }
 
   /* Popovers opened from sliders or bottom bar must never stretch off-screen */
@@ -20188,10 +20365,9 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     100% { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  .floating-circle-island,
+  .floating-circle-island:not(#floating-add-course-circle-island),
   #floating-import-wrapper .top-action-pill,
   #btn-mobile-export-toggle,
-  #floating-add-course-circle-island,
   #floating-palette-circle-island {
     transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
                 box-shadow 0.25s ease,
@@ -20199,18 +20375,16 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
                 filter 0.2s ease !important;
   }
 
-  .floating-circle-island:hover,
+  .floating-circle-island:not(#floating-add-course-circle-island):hover,
   #floating-import-wrapper .top-action-pill:hover,
   #btn-mobile-export-toggle:hover,
-  #floating-add-course-circle-island:hover,
   #floating-palette-circle-island:hover {
     transform: scale(1.14) translateY(-1.5px) !important;
   }
 
-  .floating-circle-island:active,
+  .floating-circle-island:not(#floating-add-course-circle-island):active,
   #floating-import-wrapper .top-action-pill:active,
   #btn-mobile-export-toggle:active,
-  #floating-add-course-circle-island:active,
   #floating-palette-circle-island:active {
     transform: scale(0.88) !important;
   }
@@ -20270,18 +20444,26 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     0%   { opacity: 0; transform: translateX(-16px) scale(0.88); }
     60%  { opacity: 1; transform: translateX(3px) scale(1.02); }
     80%  { transform: translateX(-1px) scale(0.995); }
-    100% { opacity: 1; transform: translateX(0) scale(1); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   /* Export Dropdown Pop-Up Animation */
-  #mobile-export-dropdown:not(.hidden) {
-    animation: menuSpringDown 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+  #mobile-export-dropdown:not(.hidden),
+  .mobile-export-dropdown:not(.hidden) {
+    animation: menuSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
     transform-origin: top right !important;
+  }
+
+  /* Auth Menus Pop-Up Animation */
+  #login-providers-menu:not(.hidden),
+  #profile-settings-menu:not(.hidden) {
+    animation: menuSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+    transform-origin: top left !important;
   }
 
   /* Import Menu Popover Pop-Up Animation */
   #import-menu-popover:not(.hidden) {
-    animation: menuSpringRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+    animation: menuSpringRight 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
     transform-origin: top left !important;
   }
 
@@ -20293,7 +20475,15 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Floating Add Course Card (Pops in from Right Docked Button) */
+  /* Floating Add Course Card (Centered Bottom Spring Up) */
+  @keyframes addCourseCardCenterSpringUp {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.92); }
+    55%  { opacity: 1; transform: translateX(-50%) translateY(-4px) scale(1.02); }
+    75%  { transform: translateX(-50%) translateY(2px) scale(0.99); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+
+  /* Floating Style Cards (Pops in from Right Docked Button) */
   @keyframes addCourseCardSpringIn {
     0%   { opacity: 0; transform: translateY(-50%) translateX(24px) scale(0.86); }
     55%  { opacity: 1; transform: translateY(-50%) translateX(-5px) scale(1.03); }
@@ -20306,7 +20496,11 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     transform-origin: bottom left !important;
   }
 
-  #floating-add-course-card:not(.hidden),
+  #floating-add-course-card:not(.hidden) {
+    animation: addCourseCardCenterSpringUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+    transform-origin: bottom center !important;
+  }
+
   #floating-font-style-card:not(.hidden),
   #floating-days-time-card:not(.hidden) {
     animation: addCourseCardSpringIn 0.40s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
