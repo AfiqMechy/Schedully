@@ -6283,7 +6283,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid rgba(0, 0, 0, 0.08);
-  border-radius: 18px;
+  border-radius: var(--timetable-corner-radius, 18px);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -6295,7 +6295,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   align-self: center;
   width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.3s ease, border-color 0.3s ease, border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: background-color 0.3s ease, border-color 0.3s ease, border-radius 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* HEADER COLOUR & FONT COLOUR SWATCH TARGETS TITLE BAR, DAY HEADERS & TIME COLUMN */
@@ -18467,6 +18467,7 @@ body.dark-mode #phone-canvas.has-photo-wallpaper .m3-lock-timetable-container.ti
   -webkit-backdrop-filter: none !important;
   overflow: visible !important;
   padding: 0 !important;
+  border-radius: 0px !important;
 }
 
 /* Entity 1: Floating Independent Title Card / Pill */

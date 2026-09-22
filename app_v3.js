@@ -8140,13 +8140,14 @@ class SchedullyApp {
 
       if (this.titlePlacement === 'separated') {
         container.classList.add('title-separated');
-        document.documentElement.style.setProperty('--title-separated-radius', `${this.titleCornerRadius}px`);
+        const titleRad = (this.titleCornerRadius !== undefined && this.titleCornerRadius !== null) ? Number(this.titleCornerRadius) : 14;
+        document.documentElement.style.setProperty('--title-separated-radius', `${titleRad}px`);
         document.documentElement.style.setProperty('--title-separated-gap', `${this.titleGapDistance}px`);
         document.documentElement.style.setProperty('--title-separated-width', `${this.titleWidthSize}%`);
         
         const titleBar = document.getElementById('lock-grid-title');
         if (titleBar) {
-          titleBar.style.borderRadius = `${this.titleCornerRadius}px`;
+          titleBar.style.borderRadius = `${titleRad}px`;
           titleBar.style.marginBottom = `${this.titleGapDistance}px`;
           titleBar.style.width = `${this.titleWidthSize}%`;
         }
@@ -8174,6 +8175,7 @@ class SchedullyApp {
         // Restore container border-radius (was cleared when we entered separated mode)
         const r = (this.tableCornerStyle === 'sharp') ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18);
         container.style.borderRadius = `${r}px`;
+        document.documentElement.style.setProperty('--timetable-corner-radius', `${r}px`);
       }
 
       try {
@@ -8182,8 +8184,7 @@ class SchedullyApp {
         localStorage.setItem('schedully_title_gap', String(this.titleGapDistance));
         localStorage.setItem('schedully_title_width', String(this.titleWidthSize));
       } catch (_) {}
-
-      syncFloatingEditorUI();
+      this.syncFloatingEditorUI?.();
     };
     this.applyTitleLayout = applyTitleLayout;
     applyTitleLayout();
@@ -11272,18 +11273,19 @@ class SchedullyApp {
     const container = document.getElementById('lock-timetable-container');
     if (!container) return;
     const isSeparated = this.titlePlacement === 'separated';
+    const rad = (this.tableCornerStyle === 'sharp') ? 0 : (px !== undefined ? Number(px) : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18));
+    
+    // Set root CSS variable so both CSS rules and inline styles are 100% synchronized
+    document.documentElement.style.setProperty('--timetable-corner-radius', `${rad}px`);
+    
     if (isSeparated) {
-      // Don't set borderRadius on the transparent container — it would clip the Title bar
-      container.style.borderRadius = '';
-      // Set the CSS variable that styles.css uses for .title-separated .m3-lock-grid-exact
-      document.documentElement.style.setProperty('--timetable-corner-radius', `${px}px`);
-      // Also apply directly to the grid element for immediate visual feedback
+      container.style.borderRadius = '0px';
       const gridExact = container.querySelector('.m3-lock-grid-exact');
-      if (gridExact) gridExact.style.borderRadius = `${px}px`;
+      if (gridExact) gridExact.style.borderRadius = `${rad}px`;
     } else {
-      // Normal mode: container is the visual entity
-      container.style.borderRadius = `${px}px`;
-      document.documentElement.style.setProperty('--timetable-corner-radius', `${px}px`);
+      container.style.borderRadius = `${rad}px`;
+      const gridExact = container.querySelector('.m3-lock-grid-exact');
+      if (gridExact) gridExact.style.borderRadius = '';
     }
   }
 
@@ -11958,14 +11960,18 @@ class SchedullyApp {
       timetableContainer.style.marginTop = `${this.gridYPosVal || 0}px`;
       timetableContainer.style.marginLeft = `${this.gridXPosVal || 0}px`;
       timetableContainer.style.transition = 'margin-top 0.15s ease, margin-left 0.15s ease, width 0.15s ease, background-color 0.3s ease, border-color 0.3s ease';
-      timetableContainer.style.borderRadius = this.tableCornerStyle === 'sharp' ? '0px' : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8) + 'px';
+      
+      const effectiveTableR = (this.tableCornerStyle === 'sharp') ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18);
+      
       // In separated mode, container is transparent — overflow:hidden would clip children incorrectly
       if (this.titlePlacement === 'separated') {
         timetableContainer.style.overflow = 'visible';
+        timetableContainer.style.borderRadius = '0px';
       } else {
         timetableContainer.style.overflow = 'hidden';
+        timetableContainer.style.borderRadius = `${effectiveTableR}px`;
       }
-      this._applyTableRadius(this.tableCornerStyle === 'sharp' ? 0 : (this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8));
+      this._applyTableRadius(effectiveTableR);
       timetableContainer.classList.toggle('has-font-shadow', !!this.fontShadowEnabled);
     }
     if (this.universalTimetableGrid) {
