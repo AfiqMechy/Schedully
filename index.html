@@ -1021,8 +1021,11 @@
       <div id="floating-palette-circle-island" class="floating-circle-island flex items-center p-1 rounded-full shadow-lg transition-all" title="Palette & Mode">
         <div class="flex items-center rounded-full shadow-xs p-0.5">
           <button id="btn-floating-palette-toggle" type="button" class="w-7 h-7 flex items-center justify-center text-gray-700 dark:text-gray-200 adaptive-icon-btn rounded-full transition-colors" title="Palette & Mode" aria-label="Palette & Mode">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.46.58.35 1.41-.21 1.88-.34.28-.51.72-.45 1.16.08.62.62 1.08 1.25 1.03 2.17-.18 3.86-.88 4.79-1.95.4-.46 1.03-.64 1.61-.47.66.19 1.34.29 2.04.29 4.97 0 9-4.03 9-9s-4.03-9-9-9zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              <circle cx="7.5" cy="10.5" r="1.25" fill="currentColor" stroke="none"/>
+              <circle cx="12" cy="7.5" r="1.25" fill="currentColor" stroke="none"/>
+              <circle cx="16.5" cy="10.5" r="1.25" fill="currentColor" stroke="none"/>
             </svg>
           </button>
         </div>
@@ -2874,7 +2877,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260921_v651"></script>
-  <script src="app_v3.js?v=20260922_v688"></script>
+  <script src="app_v3.js?v=20260922_v693"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
@@ -2904,7 +2907,7 @@
 
 <!-- ═══ Side Sliders Drag & Drop Customization Modal (Material 3 Adaptive Engine) ═══ -->
 <div id="modal-slider-customizer" class="fixed inset-0 z-[99999] flex items-center justify-center p-3 bg-black/60 backdrop-blur-md hidden transition-all" role="dialog" aria-modal="true" aria-labelledby="modal-slider-customizer-title">
-  <div class="slider-customizer-dialog relative w-full max-w-lg rounded-3xl shadow-2xl p-5 flex flex-col gap-4 overflow-hidden max-h-[90vh]">
+  <div class="slider-customizer-dialog relative w-full max-w-lg sm:max-w-xl md:max-w-2xl rounded-3xl shadow-2xl p-4 sm:p-5 flex flex-col gap-3.5 sm:gap-4 overflow-hidden max-h-[90vh]">
     <!-- Modal Header -->
     <div class="flex items-center justify-between pb-3 border-b border-gray-200/60 dark:border-white/10">
       <div class="flex items-center gap-2.5">
@@ -2912,8 +2915,8 @@
           <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
         </div>
         <div>
-          <h3 id="modal-slider-customizer-title" class="text-sm font-black tracking-wide" style="color: var(--m3-sys-text-primary, #0f172a);">Customize Side Sliders</h3>
-          <p class="text-[11px] font-medium" style="color: var(--m3-sys-text-secondary, #64748b);">Drag to reorder/move, tap eye icon to toggle visibility</p>
+          <h3 id="modal-slider-customizer-title" class="text-sm sm:text-base font-black tracking-wide" style="color: var(--m3-sys-text-primary, #0f172a);">Customize Side Sliders</h3>
+          <p class="text-[11px] sm:text-xs font-medium" style="color: var(--m3-sys-text-secondary, #64748b);">Drag to reorder/move, tap eye icon to toggle visibility</p>
         </div>
       </div>
       <button type="button" id="btn-close-slider-customizer" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all cursor-pointer" title="Close">
@@ -2921,10 +2924,10 @@
       </button>
     </div>
 
-    <!-- 2 Columns: Left vs Right Drop Zones -->
-    <div class="grid grid-cols-2 gap-3 overflow-y-auto max-h-[55vh] p-1">
+    <!-- Responsive Columns: Left vs Right Drop Zones (Stacked on mobile, 2-col on tablets/desktop) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto max-h-[60vh] p-1">
       <!-- Left Bar Column -->
-      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 rounded-2xl">
+      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 sm:p-3 rounded-2xl">
         <div class="flex items-center justify-between px-1">
           <span class="text-xs font-extrabold flex items-center gap-1.5" style="color: var(--m3-sys-text-primary, #1e293b);">
             <svg class="slider-customizer-side-arrow w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -2932,13 +2935,13 @@
           </span>
           <span id="slider-count-left" class="slider-customizer-badge text-[10px] font-bold px-2 py-0.5 rounded-full">3 visible</span>
         </div>
-        <div id="slider-zone-left" class="slider-drop-zone flex flex-col gap-2 min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="left">
+        <div id="slider-zone-left" class="slider-drop-zone flex flex-col gap-2 min-h-[140px] sm:min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="left">
           <!-- Populated dynamically via JS -->
         </div>
       </div>
 
       <!-- Right Bar Column -->
-      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 rounded-2xl">
+      <div class="slider-customizer-column flex flex-col gap-2 p-2.5 sm:p-3 rounded-2xl">
         <div class="flex items-center justify-between px-1">
           <span class="text-xs font-extrabold flex items-center gap-1.5" style="color: var(--m3-sys-text-primary, #1e293b);">
             Right Bar
@@ -2946,7 +2949,7 @@
           </span>
           <span id="slider-count-right" class="slider-customizer-badge text-[10px] font-bold px-2 py-0.5 rounded-full">3 visible</span>
         </div>
-        <div id="slider-zone-right" class="slider-drop-zone flex flex-col gap-2 min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="right">
+        <div id="slider-zone-right" class="slider-drop-zone flex flex-col gap-2 min-h-[140px] sm:min-h-[180px] p-1.5 rounded-xl border-2 border-dashed transition-all" data-side="right">
           <!-- Populated dynamically via JS -->
         </div>
       </div>

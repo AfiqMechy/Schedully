@@ -695,6 +695,9 @@ class SchedullyApp {
 
   setMode(mode, save = true) {
     if (!mode) return;
+    if (save && !this._isPerformingHistoryAction && this.currentMode !== mode) {
+      this.recordHistoryState();
+    }
     this.currentMode = mode;
     if (save) {
       try {
@@ -714,6 +717,9 @@ class SchedullyApp {
 
   setPalette(paletteKey, save = true) {
     if (!paletteKey) return;
+    if (save && !this._isPerformingHistoryAction && this.currentPalette !== paletteKey) {
+      this.recordHistoryState();
+    }
     this.currentPalette = paletteKey;
     if (save) {
       try {
@@ -2358,6 +2364,9 @@ class SchedullyApp {
   }
 
   applyWallpaper(dataUrl, shouldExtract = true, isSwitchingPreset = false) {
+    if (!isSwitchingPreset && !this._isPerformingHistoryAction && this.currentWallpaperData !== dataUrl) {
+      this.recordHistoryState();
+    }
     this.currentWallpaperData = dataUrl;
 
     const phoneCanvas = document.getElementById('phone-canvas');
@@ -2439,6 +2448,9 @@ class SchedullyApp {
   }
 
   removeWallpaper(isSwitchingPreset = false) {
+    if (!isSwitchingPreset && !this._isPerformingHistoryAction && this.currentWallpaperData) {
+      this.recordHistoryState();
+    }
     const phoneCanvas = document.getElementById('phone-canvas');
     const wallpaperLayer = document.getElementById('phone-wallpaper-layer');
     const controlsBar = document.getElementById('wallpaper-controls-bar');
@@ -4140,6 +4152,44 @@ class SchedullyApp {
         this.redoGlobalHistory();
       }
     });
+
+    // ════════════ UNIFIED HISTORY AUTO-CAPTURE HOOKS ════════════
+    // 1. Capture state before slider interaction (excluding canvas zoom)
+    document.addEventListener('pointerdown', (e) => {
+      const slider = e.target.closest('input[type="range"]');
+      if (slider) {
+        if (slider.id === 'canvas-zoom-slider' || slider.id === 'slider-canvas-zoom' || slider.id === 'floating-zoom-slider') return; // Excluded as requested
+        if (!this._isPerformingHistoryAction) {
+          this.recordHistoryState();
+        }
+        return;
+      }
+
+      // 2. Capture state before interactive theme/layout/pill/swatch clicks
+      const actionableBtn = e.target.closest(
+        '.palette-dot, .theme-mode-dot, .floating-color-swatch-btn, .color-swatch-btn, .swatch-dot, ' +
+        '#toggle-table-corners .pill-btn, #toggle-card-corners .pill-btn, #toggle-clock-type .pill-btn, ' +
+        '#toggle-floating-clock-type .pill-btn, #toggle-axis-mode .pill-btn, #toggle-grid-borders .pill-btn, #toggle-font-shadow .pill-btn, ' +
+        '#toggle-quick-time .pill-btn, #toggle-quick-type .pill-btn, #toggle-quick-room .pill-btn, ' +
+        '#toggle-quick-lecturer .pill-btn, #toggle-quick-group .pill-btn, #toggle-quick-adaptive .pill-btn, ' +
+        '#btn-randomize-theme, #btn-randomize-course-colors, #btn-randomize-schedule, ' +
+        '#btn-placement-merged, #btn-placement-separated, #btn-placement-title-merged, #btn-placement-title-separated, ' +
+        '#btn-placement-trademark-borderless, #btn-placement-trademark-border, ' +
+        '#toggle-trademark-visibility, #btn-toggle-title-visibility, #btn-quick-remove-wallpaper, #btn-remove-wallpaper, ' +
+        '.day-toggle, .floating-day-check, .time-mode-btn, #btn-clear-timetable, .custom-font-item'
+      );
+      if (actionableBtn && !this._isPerformingHistoryAction) {
+        this.recordHistoryState();
+      }
+    }, { passive: true, capture: true });
+
+    // Capture text input commits (Title, Trademark) before change
+    document.addEventListener('focusin', (e) => {
+      const input = e.target.closest('#timetable-title-input, #floating-input-title, #floating-input-trademark, #input-title-stage, #input-title-sidebar, #input-trademark');
+      if (input && !this._isPerformingHistoryAction) {
+        this.recordHistoryState();
+      }
+    }, { passive: true });
 
     // Dismiss course selection when clicking anywhere outside canvas grid
     document.addEventListener('click', (e) => {
@@ -6358,6 +6408,9 @@ class SchedullyApp {
     };
 
     const stepToolDelta = (toolId, delta) => {
+      if (toolId !== 'zoom' && !this._isPerformingHistoryAction) {
+        this.recordHistoryState();
+      }
       if (toolId === 'zoom') {
         targetZoom = Math.min(1.5, Math.max(0.4, Math.round((targetZoom + delta * 0.05) * 100) / 100));
         this.zoomScale = targetZoom;
@@ -6651,6 +6704,10 @@ class SchedullyApp {
 
       const onDragStart = (e) => {
         if (e.button != null && e.button !== 0) return;
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        if (activeTool !== 'zoom' && !this._isPerformingHistoryAction) {
+          this.recordHistoryState();
+        }
         isDragging = true;
         activePointerId = e.pointerId ?? null;
         if (e.pointerId != null && track.setPointerCapture) {
@@ -6699,6 +6756,9 @@ class SchedullyApp {
       track.addEventListener('dblclick', (e) => {
         e.stopPropagation();
         const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        if (activeTool !== 'zoom' && !this._isPerformingHistoryAction) {
+          this.recordHistoryState();
+        }
         resetToolToDefault(activeTool);
         window.soundFX?.play?.('tap');
         updateSideSliderUI(side, true);
@@ -6794,19 +6854,19 @@ class SchedullyApp {
           const eyeIconClosed = `<svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>`;
 
           el.innerHTML = `
-            <div class="flex items-center gap-2 overflow-hidden pointer-events-none flex-1 min-w-0">
-              <span class="text-slate-400 font-bold text-xs shrink-0">
-                <svg class="w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="currentColor"><circle cx="8.5" cy="6.5" r="1.5"/><circle cx="15.5" cy="6.5" r="1.5"/><circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/><circle cx="8.5" cy="17.5" r="1.5"/><circle cx="15.5" cy="17.5" r="1.5"/></svg>
+            <div class="flex items-center gap-2 pointer-events-none flex-1 min-w-0">
+              <span class="text-slate-400 font-bold text-xs shrink-0" title="Drag Handle">
+                <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="currentColor"><circle cx="8.5" cy="6.5" r="1.5"/><circle cx="15.5" cy="6.5" r="1.5"/><circle cx="8.5" cy="12" r="1.5"/><circle cx="15.5" cy="12" r="1.5"/><circle cx="8.5" cy="17.5" r="1.5"/><circle cx="15.5" cy="17.5" r="1.5"/></svg>
               </span>
-              <div class="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style="background: ${isHidden ? 'var(--m3-sys-color-surface-variant, #e2e8f0)' : 'var(--m3-sys-color-primary-container, #dbeafe)'}; color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background: ${isHidden ? 'var(--m3-sys-color-surface-variant, #e2e8f0)' : 'var(--m3-sys-color-primary-container, #dbeafe)'}; color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};">
                 ${tool.icon}
               </div>
-              <div class="flex flex-col text-left overflow-hidden min-w-0">
-                <span class="text-xs font-bold truncate ${isHidden ? 'line-through opacity-60' : ''}" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-text-primary, #0f172a)'};">${tool.name}</span>
-                <span class="text-[9px] font-medium truncate" style="color: var(--m3-sys-text-secondary, #64748b);">${isHidden ? 'Hidden from sidebar' : tool.desc}</span>
+              <div class="flex flex-col text-left min-w-0 flex-1 leading-tight py-0.5">
+                <span class="text-xs font-bold ${isHidden ? 'line-through opacity-60' : ''}" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-text-primary, #0f172a)'};">${tool.name}</span>
+                <span class="text-[10px] font-medium leading-normal mt-0.5" style="color: var(--m3-sys-text-secondary, #64748b);">${isHidden ? 'Hidden from sidebar' : tool.desc}</span>
               </div>
             </div>
-            <button type="button" class="btn-toggle-eye p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ml-1" draggable="false" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};" title="${isHidden ? 'Show tool in sidebar' : 'Hide tool from sidebar'}">
+            <button type="button" class="btn-toggle-eye p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ml-1.5" draggable="false" style="color: ${isHidden ? 'var(--m3-sys-text-secondary, #94a3b8)' : 'var(--m3-sys-color-primary, #2563eb)'};" title="${isHidden ? 'Show tool in sidebar' : 'Hide tool from sidebar'}">
               ${isHidden ? eyeIconClosed : eyeIconOpen}
             </button>
           `;
@@ -9844,17 +9904,43 @@ class SchedullyApp {
         this.gridWidthVal = Number(settings.gridWidthVal);
         const gwEl = document.getElementById('grid-width-val');
         if (gwEl) gwEl.value = this.gridWidthVal;
+        if (typeof this.setTimetableWidthScale === 'function') {
+          this.setTimetableWidthScale(this.gridWidthVal, false);
+        }
       }
       if (settings.gridHeightVal !== undefined) {
         this.gridHeightVal = Number(settings.gridHeightVal);
         const ghEl = document.getElementById('grid-height-val');
         if (ghEl) ghEl.value = this.gridHeightVal;
+        if (typeof this.setTimetableHeightScale === 'function') {
+          this.setTimetableHeightScale(this.gridHeightVal, false);
+        }
+      }
+      if (settings.gridXPosVal !== undefined) {
+        this.gridXPosVal = Number(settings.gridXPosVal);
+        const gxEl = document.getElementById('grid-xpos-val');
+        if (gxEl) gxEl.value = this.gridXPosVal;
+        if (typeof this.setTimetableOffsetX === 'function') {
+          this.setTimetableOffsetX(this.gridXPosVal, false);
+        }
       }
       if (settings.gridYPosVal !== undefined) {
         this.gridYPosVal = Number(settings.gridYPosVal);
         const gyEl = document.getElementById('grid-ypos-val');
         if (gyEl) gyEl.value = this.gridYPosVal;
+        if (typeof this.setTimetableOffsetY === 'function') {
+          this.setTimetableOffsetY(this.gridYPosVal, false);
+        }
       }
+      if (settings.fontScaleAll !== undefined) {
+        this.fontScaleAll = Number(settings.fontScaleAll);
+        this.gridFontScale = this.fontScaleAll;
+        this.gridFontSizeVal = Math.round(9 * this.fontScaleAll * 10) / 10;
+      }
+      if (settings.fontScaleCards !== undefined) this.fontScaleCards = Number(settings.fontScaleCards);
+      if (settings.fontScaleHeader !== undefined) this.fontScaleHeader = Number(settings.fontScaleHeader);
+      if (settings.fontScaleTitle !== undefined) this.fontScaleTitle = Number(settings.fontScaleTitle);
+      if (settings.fontScaleTrademark !== undefined) this.fontScaleTrademark = Number(settings.fontScaleTrademark);
       if (settings.fontSizeVal !== undefined) {
         this.fontSizeVal = Number(settings.fontSizeVal);
         this.gridFontSizeVal = Number(settings.fontSizeVal);
@@ -10193,6 +10279,12 @@ class SchedullyApp {
       }
 
       this.renderTimetableGrid();
+      if (typeof this.syncLeftFxSlider === 'function') {
+        this.syncLeftFxSlider(false);
+      }
+      if (typeof this.syncRightSlider === 'function') {
+        this.syncRightSlider(false);
+      }
       if (typeof window.syncGlassSliders === 'function') {
         setTimeout(window.syncGlassSliders, 30);
       }
@@ -11130,7 +11222,7 @@ class SchedullyApp {
   getPresetSettings() {
     return {
       tableCornerStyle: this.tableCornerStyle || 'rounded',
-      tableCornerRadiusVal: this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 8,
+      tableCornerRadiusVal: this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18,
       cardCornerStyle: this.cardCornerStyle || 'rounded',
       cardCornerRadiusVal: this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6,
       borderStyle: this.borderStyle || 'default',
@@ -11149,12 +11241,18 @@ class SchedullyApp {
       userHasPickedFontColor: !!this.userHasPickedFontColor,
       gridWidthVal: this.gridWidthVal !== undefined ? this.gridWidthVal : 100,
       gridHeightVal: this.gridHeightVal !== undefined ? this.gridHeightVal : 49,
+      gridXPosVal: this.gridXPosVal !== undefined ? this.gridXPosVal : 0,
       gridYPosVal: this.gridYPosVal !== undefined ? this.gridYPosVal : 0,
+      fontScaleAll: this.fontScaleAll !== undefined ? this.fontScaleAll : (this.gridFontScale || 1.0),
+      fontScaleCards: this.fontScaleCards !== undefined ? this.fontScaleCards : 1.0,
+      fontScaleHeader: this.fontScaleHeader !== undefined ? this.fontScaleHeader : 1.0,
+      fontScaleTitle: this.fontScaleTitle !== undefined ? this.fontScaleTitle : 1.0,
+      fontScaleTrademark: this.fontScaleTrademark !== undefined ? this.fontScaleTrademark : 1.0,
       fontSizeVal: this.gridFontSizeVal || this.fontSizeVal || 9,
       clockFormat: this.clockFormat || '12-hour',
-      bgBlurEnabled: this.bgBlurEnabled || false,
-      bgBlurIntensity: this.bgBlurIntensity || 10,
-      wallpaperDimIntensity: this.wallpaperDimIntensity || 0,
+      bgBlurEnabled: !!this.bgBlurEnabled,
+      bgBlurIntensity: this.bgBlurIntensity !== undefined ? this.bgBlurIntensity : 10,
+      wallpaperDimIntensity: this.wallpaperDimIntensity !== undefined ? this.wallpaperDimIntensity : 0,
       fontFamily: this.currentFontKey || 'default',
       timetableOpacity: this.timetableOpacity !== undefined ? this.timetableOpacity : 100,
       showTitle: this.showTitle !== undefined ? this.showTitle : true,
@@ -12797,19 +12895,47 @@ class SchedullyApp {
   }
 
   // =========================================================================
-  // GLOBAL UNDO & REDO HISTORY ENGINE
+  // GLOBAL UNDO & REDO HISTORY ENGINE (UNIFIED STATE SNAPSHOT)
   // =========================================================================
+
+  getUnifiedHistorySnapshot() {
+    const currentSettings = (typeof this.getPresetSettings === 'function') ? this.getPresetSettings() : {};
+    const settingsCopy = { ...currentSettings };
+    delete settingsCopy.zoomScale; // Excluded as requested (pure navigation tool)
+
+    return JSON.stringify({
+      classes: this.classes ? JSON.parse(JSON.stringify(this.classes)) : [],
+      settings: settingsCopy,
+      customSurfaceColor: this.customSurfaceColor || null,
+      userHasPickedSurfaceColor: !!this.userHasPickedSurfaceColor,
+      customBgColor: this.customBgColor || null,
+      userHasPickedBgColor: !!this.userHasPickedBgColor,
+      customHeaderColor: this.customHeaderColor || null,
+      userHasPickedHeaderColor: !!this.userHasPickedHeaderColor,
+      customTrademarkColor: this.customTrademarkColor || null,
+      userHasPickedTrademarkColor: !!this.userHasPickedTrademarkColor,
+      customFontColor: this.customFontColor || null,
+      userHasPickedFontColor: !!this.userHasPickedFontColor,
+      wallpaper: this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data') || null,
+      wallpaperSwatches: this.wallpaperSwatches || null,
+      wallpaperPrimary: this.wallpaperPrimary || null,
+      wallpaperSecondary: this.wallpaperSecondary || null,
+      wallpaperTertiary: this.wallpaperTertiary || null,
+      wallpaperHeader: this.wallpaperHeader || null
+    });
+  }
 
   recordHistoryState() {
     if (this._isPerformingHistoryAction) return;
-    const snapshot = JSON.stringify(this.classes);
+    const snapshot = this.getUnifiedHistorySnapshot();
     // Don't record if state is identical to top of stack
-    if (this.historyUndoStack.length > 0 && this.historyUndoStack[this.historyUndoStack.length - 1] === snapshot) {
+    if (this.historyUndoStack && this.historyUndoStack.length > 0 && this.historyUndoStack[this.historyUndoStack.length - 1] === snapshot) {
       return;
     }
+    if (!this.historyUndoStack) this.historyUndoStack = [];
     this.historyUndoStack.push(snapshot);
-    // Limit stack size to 30 to conserve memory
-    if (this.historyUndoStack.length > 30) {
+    // Limit stack size to 50 actions
+    if (this.historyUndoStack.length > 50) {
       this.historyUndoStack.shift();
     }
     // Any new action clears redo stack
@@ -12819,7 +12945,7 @@ class SchedullyApp {
 
   updateHistoryButtonUI() {
     if (this.btnHistoryUndo) {
-      if (this.historyUndoStack.length > 0) {
+      if (this.historyUndoStack && this.historyUndoStack.length > 0) {
         this.btnHistoryUndo.removeAttribute('disabled');
         this.btnHistoryUndo.classList.remove('opacity-40', 'cursor-not-allowed');
       } else {
@@ -12829,7 +12955,7 @@ class SchedullyApp {
     }
 
     if (this.btnHistoryRedo) {
-      if (this.historyRedoStack.length > 0) {
+      if (this.historyRedoStack && this.historyRedoStack.length > 0) {
         this.btnHistoryRedo.removeAttribute('disabled');
         this.btnHistoryRedo.classList.remove('opacity-40', 'cursor-not-allowed');
       } else {
@@ -12839,68 +12965,123 @@ class SchedullyApp {
     }
   }
 
-  undoGlobalHistory() {
-    if (this.historyUndoStack.length === 0) return;
-
-    this._isPerformingHistoryAction = true;
-    const currentSnapshot = JSON.stringify(this.classes);
-    this.historyRedoStack.push(currentSnapshot);
-
-    const previousSnapshot = this.historyUndoStack.pop();
+  restoreUnifiedHistorySnapshot(snapshotData) {
+    if (!snapshotData) return;
     try {
-      this.classes = JSON.parse(previousSnapshot);
+      const data = typeof snapshotData === 'string' ? JSON.parse(snapshotData) : snapshotData;
+
+      // 1. Classes array (Schedule data)
+      if (Array.isArray(data)) {
+        this.classes = data;
+      } else if (data.classes && Array.isArray(data.classes)) {
+        this.classes = data.classes;
+      }
+
+      // 2. Visual Settings (Palette, Mode, Layout, Sliders, Corners, Typography, Title, Trademark)
+      if (data.settings && typeof data.settings === 'object') {
+        this.applyPresetSettings(data.settings);
+      }
+
+      // 3. Custom Hex Color Pickers
+      if (data.customSurfaceColor !== undefined) {
+        this.customSurfaceColor = data.customSurfaceColor;
+        this.userHasPickedSurfaceColor = !!data.userHasPickedSurfaceColor;
+      }
+      if (data.customBgColor !== undefined) {
+        this.customBgColor = data.customBgColor;
+        this.userHasPickedBgColor = !!data.userHasPickedBgColor;
+      }
+      if (data.customHeaderColor !== undefined) {
+        this.customHeaderColor = data.customHeaderColor;
+        this.userHasPickedHeaderColor = !!data.userHasPickedHeaderColor;
+      }
+      if (data.customTrademarkColor !== undefined) {
+        this.customTrademarkColor = data.customTrademarkColor;
+        this.userHasPickedTrademarkColor = !!data.userHasPickedTrademarkColor;
+      }
+      if (data.customFontColor !== undefined) {
+        this.customFontColor = data.customFontColor;
+        this.userHasPickedFontColor = !!data.userHasPickedFontColor;
+      }
+
+      // 5. Wallpaper Image & Swatches
+      if (data.wallpaper !== undefined) {
+        const wp = data.wallpaper;
+        this.currentWallpaperData = wp;
+        this.wallpaperSwatches = data.wallpaperSwatches || null;
+        this.wallpaperPrimary = data.wallpaperPrimary || null;
+        this.wallpaperSecondary = data.wallpaperSecondary || null;
+        this.wallpaperTertiary = data.wallpaperTertiary || null;
+        this.wallpaperHeader = data.wallpaperHeader || null;
+
+        if (wp && typeof this.applyWallpaper === 'function') {
+          this.applyWallpaper(wp, false, true);
+        } else if (!wp && typeof this.removeWallpaper === 'function') {
+          this.removeWallpaper(true);
+        }
+      }
+
+      // 6. Sync UI Pickers & Sidebars
+      if (typeof this.syncCustomColorPickersUI === 'function') this.syncCustomColorPickersUI();
+      if (typeof this.syncFloatingEditorUI === 'function') this.syncFloatingEditorUI();
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+
+      // 7. Render Timetable
+      this.renderTimetableGrid();
+      this.renderClassList();
+      if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
+        this.checkClashes();
+      }
+      this._stagePending(false);
     } catch (e) {
-      console.error('Error parsing undo state:', e);
-    }
-
-    this._isPerformingHistoryAction = false;
-    this.updateHistoryButtonUI();
-    this.deselectSwapCourse();
-    this.showSwapToast('Action Undone');
-
-    // Haptic feedback
-    if (navigator.vibrate) {
-      try { navigator.vibrate(18); } catch (err) {}
-    }
-
-    this._stagePending();
-    this.renderTimetableGrid();
-    this.renderClassList();
-    if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
-      this.checkClashes();
+      console.error('Error restoring unified history snapshot:', e);
     }
   }
 
-  redoGlobalHistory() {
-    if (this.historyRedoStack.length === 0) return;
+  undoGlobalHistory() {
+    if (!this.historyUndoStack || this.historyUndoStack.length === 0) return;
 
     this._isPerformingHistoryAction = true;
-    const currentSnapshot = JSON.stringify(this.classes);
-    this.historyUndoStack.push(currentSnapshot);
+    const currentSnapshot = this.getUnifiedHistorySnapshot();
+    if (!this.historyRedoStack) this.historyRedoStack = [];
+    this.historyRedoStack.push(currentSnapshot);
 
-    const nextSnapshot = this.historyRedoStack.pop();
-    try {
-      this.classes = JSON.parse(nextSnapshot);
-    } catch (e) {
-      console.error('Error parsing redo state:', e);
-    }
+    const previousSnapshot = this.historyUndoStack.pop();
+    this.restoreUnifiedHistorySnapshot(previousSnapshot);
 
     this._isPerformingHistoryAction = false;
     this.updateHistoryButtonUI();
-    this.deselectSwapCourse();
-    this.showSwapToast('Action Redone');
+    this.deselectSwapCourse?.();
+    this.showSwapToast('Action Undone');
 
-    // Haptic feedback
+    // Haptic feedback & sound
     if (navigator.vibrate) {
       try { navigator.vibrate(18); } catch (err) {}
     }
+    if (window.soundFX) window.soundFX.play('tap');
+  }
 
-    this._stagePending();
-    this.renderTimetableGrid();
-    this.renderClassList();
-    if (this.timetableEngine && typeof this.timetableEngine.detectClashes === 'function') {
-      this.checkClashes();
+  redoGlobalHistory() {
+    if (!this.historyRedoStack || this.historyRedoStack.length === 0) return;
+
+    this._isPerformingHistoryAction = true;
+    const currentSnapshot = this.getUnifiedHistorySnapshot();
+    if (!this.historyUndoStack) this.historyUndoStack = [];
+    this.historyUndoStack.push(currentSnapshot);
+
+    const nextSnapshot = this.historyRedoStack.pop();
+    this.restoreUnifiedHistorySnapshot(nextSnapshot);
+
+    this._isPerformingHistoryAction = false;
+    this.updateHistoryButtonUI();
+    this.deselectSwapCourse?.();
+    this.showSwapToast('Action Redone');
+
+    // Haptic feedback & sound
+    if (navigator.vibrate) {
+      try { navigator.vibrate(18); } catch (err) {}
     }
+    if (window.soundFX) window.soundFX.play('tap');
   }
 
   onCourseScheduleChanged() {
