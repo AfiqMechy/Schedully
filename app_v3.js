@@ -1606,7 +1606,7 @@ class SchedullyApp {
     window.syncGlassSliders?.();
   }
 
-  updateTitleText(newText) {
+  updateTitleText(newText, save = true) {
     this.timetableTitleText = newText.trim() || 'Untitled';
     if (this.lockTitleText) this.lockTitleText.innerText = this.timetableTitleText;
     if (this.inputTitleStage && this.currentTitleBarMode !== 'trademark') {
@@ -1615,6 +1615,9 @@ class SchedullyApp {
     if (this.inputTitleSidebar) this.inputTitleSidebar.value = newText;
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
+    }
+    if (save) {
+      this._stagePending();
     }
   }
 
@@ -1637,7 +1640,7 @@ class SchedullyApp {
     window.syncGlassSliders?.();
   }
 
-  updateTrademarkText(newText) {
+  updateTrademarkText(newText, save = true) {
     this.trademarkText = (newText !== undefined && newText !== null) ? newText : 'Schedully • Student Edition';
     if (this.lockTrademarkText) {
       this.lockTrademarkText.innerText = this.trademarkText;
@@ -1650,6 +1653,9 @@ class SchedullyApp {
     }
     if (typeof this.updateMobilePip === 'function') {
       this.updateMobilePip();
+    }
+    if (save) {
+      this._stagePending();
     }
   }
 
@@ -4387,20 +4393,34 @@ class SchedullyApp {
 
     // INSTANT TITLE / TRADEMARK INPUT SYNC (SHARED STAGE BAR & SIDEBAR)
     if (this.inputTitleStage) {
-      this.inputTitleStage.addEventListener('input', (e) => {
+      const handleStageInput = (e) => {
         if (this.currentTitleBarMode === 'trademark') {
-          this.updateTrademarkText(e.target.value);
-          this._stagePending();
+          this.updateTrademarkText(e.target.value, true);
         } else {
-          this.updateTitleText(e.target.value);
+          this.updateTitleText(e.target.value, true);
         }
-      });
+      };
+      this.inputTitleStage.addEventListener('input', handleStageInput);
+      this.inputTitleStage.addEventListener('change', handleStageInput);
+      this.inputTitleStage.addEventListener('blur', handleStageInput);
     }
 
     if (this.inputTitleSidebar) {
-      this.inputTitleSidebar.addEventListener('input', (e) => {
-        this.updateTitleText(e.target.value);
-      });
+      const handleSidebarInput = (e) => {
+        this.updateTitleText(e.target.value, true);
+      };
+      this.inputTitleSidebar.addEventListener('input', handleSidebarInput);
+      this.inputTitleSidebar.addEventListener('change', handleSidebarInput);
+      this.inputTitleSidebar.addEventListener('blur', handleSidebarInput);
+    }
+
+    if (this.inputTrademark) {
+      const handleTrademarkInput = (e) => {
+        this.updateTrademarkText(e.target.value, true);
+      };
+      this.inputTrademark.addEventListener('input', handleTrademarkInput);
+      this.inputTrademark.addEventListener('change', handleTrademarkInput);
+      this.inputTrademark.addEventListener('blur', handleTrademarkInput);
     }
 
     // Shared Visibility Eye Button (Title vs Trademark)
@@ -9997,7 +10017,7 @@ class SchedullyApp {
         this.setTitleVisibility(settings.showTitle, false);
       }
       if (settings.titleText !== undefined) {
-        this.updateTitleText(settings.titleText);
+        this.updateTitleText(settings.titleText, false);
       }
 
       // 8b. Trademark
@@ -10005,7 +10025,7 @@ class SchedullyApp {
         this.setTrademarkVisibility(settings.showTrademark, false);
       }
       if (settings.trademarkText !== undefined) {
-        this.updateTrademarkText(settings.trademarkText);
+        this.updateTrademarkText(settings.trademarkText, false);
       }
       if (settings.trademarkStyle !== undefined) {
         this.applyTrademarkStyle(settings.trademarkStyle);
@@ -10719,6 +10739,24 @@ class SchedullyApp {
       if (savedAxis) {
         this.axisMode = savedAxis;
       }
+      const savedTitle = localStorage.getItem('schedully_title_text');
+      if (savedTitle !== null && savedTitle !== undefined && savedTitle !== '') {
+        this.timetableTitleText = savedTitle;
+        if (this.lockTitleText) this.lockTitleText.innerText = this.timetableTitleText;
+        if (this.inputTitleStage && this.currentTitleBarMode !== 'trademark') {
+          this.inputTitleStage.value = this.timetableTitleText;
+        }
+        if (this.inputTitleSidebar) this.inputTitleSidebar.value = this.timetableTitleText;
+      }
+      const savedTrademark = localStorage.getItem('schedully_trademark_text');
+      if (savedTrademark !== null && savedTrademark !== undefined && savedTrademark !== '') {
+        this.trademarkText = savedTrademark;
+        if (this.lockTrademarkText) this.lockTrademarkText.innerText = this.trademarkText;
+        if (this.inputTrademark) this.inputTrademark.value = this.trademarkText;
+        if (this.inputTitleStage && this.currentTitleBarMode === 'trademark') {
+          this.inputTitleStage.value = this.trademarkText;
+        }
+      }
     } catch (e) {
       console.warn("Could not load classes from local storage", e);
       this.classes = [];
@@ -11040,6 +11078,13 @@ class SchedullyApp {
             const activePresetData = (this.presets && this.presets[this.activePresetKey]) || {};
             const mergedSettings = Object.assign({}, data.settings || {}, activePresetData.settings || {});
 
+            if (!mergedSettings.titleText && (data.titleText || data.title)) {
+              mergedSettings.titleText = data.titleText || data.title;
+            }
+            if (!mergedSettings.trademarkText && data.trademarkText) {
+              mergedSettings.trademarkText = data.trademarkText;
+            }
+
             // 1. Apply UI / Layout / Palette / Typography settings
             this.applyPresetSettings(mergedSettings);
 
@@ -11179,6 +11224,8 @@ class SchedullyApp {
               localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
               localStorage.setItem('schedully_active_preset', this.activePresetKey);
               localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
+              localStorage.setItem('schedully_title_text', this.timetableTitleText || 'Untitled');
+              localStorage.setItem('schedully_trademark_text', this.trademarkText || 'Schedully • Student Edition');
               if (this.wallpaperSwatches) {
                 localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
               }
@@ -11326,6 +11373,8 @@ class SchedullyApp {
       localStorage.setItem('schedully_classes', JSON.stringify(this.classes));
       localStorage.setItem('schedully_presets', JSON.stringify(this.presets));
       localStorage.setItem('schedully_active_preset', this.activePresetKey);
+      localStorage.setItem('schedully_title_text', this.timetableTitleText || 'Untitled');
+      localStorage.setItem('schedully_trademark_text', this.trademarkText || 'Schedully • Student Edition');
       localStorage.setItem('schedully_axis_mode', this.axisMode || 'time');
       localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
       localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
@@ -11435,6 +11484,9 @@ class SchedullyApp {
       wallpaperTertiary: this.wallpaperTertiary || null,
       wallpaperHeader: this.wallpaperHeader || null,
       settings: currentSettings,
+      title: this.timetableTitleText || currentSettings.titleText || 'Untitled',
+      titleText: this.timetableTitleText || currentSettings.titleText || 'Untitled',
+      trademarkText: this.trademarkText || currentSettings.trademarkText || 'Schedully • Student Edition',
       language: currentSettings.language,
       activeDevice: currentSettings.activeDevice,
       zoomScale: currentSettings.zoomScale
