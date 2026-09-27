@@ -283,24 +283,85 @@ class SchedullyApp {
     const canvas = document.getElementById('phone-canvas');
     if (!canvas) return;
 
-    const onUserActivity = () => {
-      document.body.classList.remove('canvas-idle');
+    let isSideHovered = false;
+
+    const wakeUp = () => {
+      document.body.classList.remove('canvas-idle', 'side-bars-idle');
       document.body.classList.add('canvas-interacting');
+      
+      const leftSlider = document.getElementById('side-fx-slider-container');
+      const rightSlider = document.getElementById('side-right-slider-container');
+      if (leftSlider) leftSlider.classList.remove('side-slider-idle');
+      if (rightSlider) rightSlider.classList.remove('side-slider-idle');
+
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        document.body.classList.remove('canvas-interacting');
-        document.body.classList.add('canvas-idle');
+        // Only enter idle state if not hovering over sidebars, dragging, or in active input
+        const isDragging = document.querySelector('.active-drag, .is-interacting');
+        const activeModalOpen = document.querySelector('#modal-slider-customizer:not(.hidden), #universal-modal:not(.hidden), #coffee-support-modal:not(.hidden)');
+        
+        if (!isSideHovered && !isDragging && !activeModalOpen) {
+          document.body.classList.remove('canvas-interacting');
+          document.body.classList.add('canvas-idle', 'side-bars-idle');
+          if (leftSlider) leftSlider.classList.add('side-slider-idle');
+          if (rightSlider) rightSlider.classList.add('side-slider-idle');
+
+          // Auto-disexpand / collapse side flyout cards on idle
+          const fontCard = document.getElementById('floating-font-style-card');
+          if (fontCard && !fontCard.classList.contains('hidden')) {
+            fontCard.classList.add('hidden');
+            const btnFont = document.getElementById('btn-right-font-panel-toggle');
+            if (btnFont) btnFont.classList.remove('active');
+          }
+          const daysCard = document.getElementById('floating-days-time-card');
+          if (daysCard && !daysCard.classList.contains('hidden')) {
+            daysCard.classList.add('hidden');
+            const btnDays = document.getElementById('btn-left-days-panel-toggle');
+            if (btnDays) btnDays.classList.remove('active');
+          }
+        }
       }, 3500);
     };
 
-    ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'wheel'].forEach(evt => {
-      window.addEventListener(evt, onUserActivity, { passive: true });
+    this.wakeUpSideSliders = wakeUp;
+
+    // Listen to user interaction across the entire window
+    ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'wheel', 'scroll'].forEach(evt => {
+      window.addEventListener(evt, wakeUp, { passive: true });
+    });
+
+    // Listen directly on side controls to pause idle timer while hovering/touching
+    document.addEventListener('DOMContentLoaded', () => {
+      const leftSlider = document.getElementById('side-fx-slider-container');
+      const rightSlider = document.getElementById('side-right-slider-container');
+      const fontCard = document.getElementById('floating-font-style-card');
+      const daysCard = document.getElementById('floating-days-time-card');
+
+      [leftSlider, rightSlider, fontCard, daysCard].forEach(el => {
+        if (!el) return;
+        el.addEventListener('mouseenter', () => {
+          isSideHovered = true;
+          wakeUp();
+        });
+        el.addEventListener('mouseleave', () => {
+          isSideHovered = false;
+          wakeUp();
+        });
+        el.addEventListener('touchstart', () => {
+          isSideHovered = true;
+          wakeUp();
+        }, { passive: true });
+      });
     });
 
     // Start in idle mode after slight initial delay
     idleTimer = setTimeout(() => {
-      document.body.classList.add('canvas-idle');
-    }, 2000);
+      document.body.classList.add('canvas-idle', 'side-bars-idle');
+      const leftSlider = document.getElementById('side-fx-slider-container');
+      const rightSlider = document.getElementById('side-right-slider-container');
+      if (leftSlider) leftSlider.classList.add('side-slider-idle');
+      if (rightSlider) rightSlider.classList.add('side-slider-idle');
+    }, 2500);
   }
 
   initDOMElements() {
@@ -6672,11 +6733,12 @@ class SchedullyApp {
     const setActiveSideSlider = (side) => {
       if (side !== 'left' && side !== 'right') return;
       lastActiveSide = side;
+      if (typeof this.wakeUpSideSliders === 'function') this.wakeUpSideSliders();
       if (leftSliderContainer) {
-        leftSliderContainer.classList.toggle('side-slider-inactive', side === 'right');
+        leftSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
       }
       if (rightSliderContainer) {
-        rightSliderContainer.classList.toggle('side-slider-inactive', side === 'left');
+        rightSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
       }
     };
     this.setActiveSideSlider = setActiveSideSlider;
@@ -6692,8 +6754,10 @@ class SchedullyApp {
     let rightBadgeTimeout = null;
 
     const showSideBadgeTemporarily = (side, duration = 1400) => {
+      if (typeof this.wakeUpSideSliders === 'function') this.wakeUpSideSliders();
       const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
       if (!container) return;
+      container.classList.remove('side-slider-idle');
       container.classList.add('is-interacting');
       if (side === 'left') {
         if (leftBadgeTimeout) clearTimeout(leftBadgeTimeout);
@@ -6815,9 +6879,11 @@ class SchedullyApp {
         if (btn) btn.classList.toggle('active', toolId === activeTool);
       });
 
+      const isExpanded = side === 'left' ? leftScopesExpanded : rightScopesExpanded;
+
       // Update Sub-Scope Pills Visibility & Active states
       if (radiusScopeGroup) {
-        radiusScopeGroup.classList.toggle('hidden', activeTool !== 'radius');
+        radiusScopeGroup.classList.toggle('hidden', activeTool !== 'radius' || !isExpanded);
         [btnRadiusScopeBoth, btnRadiusScopeTable, btnRadiusScopeCards].forEach(b => b?.classList.remove('active'));
         if (activeRadiusScope === 'both') btnRadiusScopeBoth?.classList.add('active');
         else if (activeRadiusScope === 'table') btnRadiusScopeTable?.classList.add('active');
@@ -6825,9 +6891,9 @@ class SchedullyApp {
       }
 
       if (fontScopeGroup) {
-        fontScopeGroup.classList.toggle('hidden', activeTool !== 'font');
-        if (fontTopGroup) fontTopGroup.classList.toggle('hidden', activeTool !== 'font');
-        if (activeTool !== 'font') {
+        fontScopeGroup.classList.toggle('hidden', activeTool !== 'font' || !isExpanded);
+        if (fontTopGroup) fontTopGroup.classList.toggle('hidden', activeTool !== 'font' || !isExpanded);
+        if (activeTool !== 'font' || !isExpanded) {
           floatingFontStyleCard?.classList.add('hidden');
           btnFontPanelToggle?.classList.remove('active');
         }
@@ -6840,9 +6906,9 @@ class SchedullyApp {
       }
 
       if (layoutScopeGroup) {
-        layoutScopeGroup.classList.toggle('hidden', activeTool !== 'layout');
-        if (layoutTopGroup) layoutTopGroup.classList.toggle('hidden', activeTool !== 'layout');
-        if (activeTool !== 'layout') {
+        layoutScopeGroup.classList.toggle('hidden', activeTool !== 'layout' || !isExpanded);
+        if (layoutTopGroup) layoutTopGroup.classList.toggle('hidden', activeTool !== 'layout' || !isExpanded);
+        if (activeTool !== 'layout' || !isExpanded) {
           floatingDaysTimeCard?.classList.add('hidden');
           btnDaysPanelToggle?.classList.remove('active');
         }
@@ -6854,14 +6920,14 @@ class SchedullyApp {
       }
 
       if (blurScopeGroup) {
-        blurScopeGroup.classList.toggle('hidden', activeTool !== 'blur');
+        blurScopeGroup.classList.toggle('hidden', activeTool !== 'blur' || !isExpanded);
         [btnBlurScopeBlur, btnBlurScopeDim].forEach(b => b?.classList.remove('active'));
         if (activeBlurSubMode === 'blur') btnBlurScopeBlur?.classList.add('active');
         else if (activeBlurSubMode === 'dim') btnBlurScopeDim?.classList.add('active');
       }
 
       if (opacityScopeGroup) {
-        opacityScopeGroup.classList.toggle('hidden', activeTool !== 'opacity');
+        opacityScopeGroup.classList.toggle('hidden', activeTool !== 'opacity' || !isExpanded);
         [btnOpacityScopeAll, btnOpacityScopeGrid, btnOpacityScopeHeader, btnOpacityScopeCards, btnOpacityScopeTitle, btnOpacityScopeTrademark].forEach(b => b?.classList.remove('active'));
         if (activeOpacityScope === 'all') btnOpacityScopeAll?.classList.add('active');
         else if (activeOpacityScope === 'grid') btnOpacityScopeGrid?.classList.add('active');
@@ -7184,14 +7250,29 @@ class SchedullyApp {
       this._stagePending(true);
     };
 
+    let leftScopesExpanded = true;
+    let rightScopesExpanded = true;
+
     // Activate a tool (detecting whether it's on left or right)
     const selectSliderTool = (toolId) => {
       const side = getToolCurrentSide(toolId);
+      const isAlreadyActive = (side === 'left' && leftActiveTool === toolId) || (side === 'right' && rightActiveTool === toolId);
+      
       setActiveSideSlider(side);
       if (side === 'left') {
-        leftActiveTool = toolId;
+        if (isAlreadyActive) {
+          leftScopesExpanded = !leftScopesExpanded;
+        } else {
+          leftActiveTool = toolId;
+          leftScopesExpanded = true;
+        }
       } else {
-        rightActiveTool = toolId;
+        if (isAlreadyActive) {
+          rightScopesExpanded = !rightScopesExpanded;
+        } else {
+          rightActiveTool = toolId;
+          rightScopesExpanded = true;
+        }
       }
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
