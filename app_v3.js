@@ -1930,7 +1930,7 @@ class SchedullyApp {
     };
 
     this.setTimetableOffsetY = (val, syncSlider = true) => {
-      const yVal = Math.max(-120, Math.min(150, parseInt(val, 10) || 0));
+      const yVal = Math.max(-300, Math.min(500, parseInt(val, 10) || 0));
       this.gridYPosVal = yVal;
       const gridYPosValEl = document.getElementById('grid-ypos-val');
       if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
@@ -3416,103 +3416,608 @@ class SchedullyApp {
     img.src = dataUrl;
   }
 
-  setupCustomColorModalEngine() {
-    const modal = document.getElementById('custom-color-modal');
-    const preview = document.getElementById('modal-color-preview');
-    const hexInput = document.getElementById('modal-color-hex-input');
-    const btnClose = document.getElementById('btn-close-color-modal');
-    const btnCancel = document.getElementById('btn-cancel-custom-color');
-    const btnApply = document.getElementById('btn-apply-custom-color');
-    const titleEl = document.getElementById('custom-color-modal-title');
+  setupUniversalColorPicker() {
+    const modal = document.getElementById('universal-color-picker-modal');
+    if (!modal) return;
 
-    const vibrantGrid = document.getElementById('palette-grid-vibrant');
-    const pastelGrid = document.getElementById('palette-grid-pastel');
-    const earthyGrid = document.getElementById('palette-grid-earthy');
+    const satValBox = document.getElementById('ucp-sat-val-box');
+    const reticle = document.getElementById('ucp-reticle');
+    const hueTrack = document.getElementById('ucp-hue-track');
+    const hueThumb = document.getElementById('ucp-hue-thumb');
+    const previewSwatch = document.getElementById('ucp-preview-swatch');
+    const eyedropperBtn = document.getElementById('btn-ucp-eyedropper');
+    const formatToggleBtn = document.getElementById('btn-ucp-format-toggle');
+    const formatLabel = document.getElementById('ucp-format-label');
+    const titleEl = document.getElementById('ucp-target-title');
+    const btnClose = document.getElementById('btn-close-ucp');
+    const btnDone = document.getElementById('btn-ucp-done');
 
-    const VIBRANT_SHADES = [
-      '#2563EB', '#3B82F6', '#60A5FA', '#0284C7', '#0EA5E9', '#06B6D4', '#10B981', '#059669',
-      '#F59E0B', '#D97706', '#EA580C', '#E11D48', '#F43F5E', '#E11D48', '#9333EA', '#7C3AED'
-    ];
+    const rgbFields = document.getElementById('ucp-rgb-fields');
+    const hexFields = document.getElementById('ucp-hex-fields');
+    const hslFields = document.getElementById('ucp-hsl-fields');
 
-    const PASTEL_SHADES = [
-      '#BFDBFE', '#BAE6FD', '#A5F3FC', '#A7F3D0', '#BBF7D0', '#FDE68A', '#FED7AA', '#FECDD3',
-      '#FBCFE8', '#DDD6FE', '#E0E7FF', '#C7D2FE', '#E2E8F0', '#F1F5F9', '#CBD5E1', '#94A3B8'
-    ];
+    const inputR = document.getElementById('ucp-input-r');
+    const inputG = document.getElementById('ucp-input-g');
+    const inputB = document.getElementById('ucp-input-b');
+    const inputHex = document.getElementById('ucp-input-hex');
+    const inputH = document.getElementById('ucp-input-h');
+    const inputS = document.getElementById('ucp-input-s');
+    const inputL = document.getElementById('ucp-input-l');
+    const presetsRow = document.getElementById('ucp-presets-row');
 
-    const EARTHY_SHADES = [
-      '#1E293B', '#0F172A', '#334155', '#475569', '#3F3F46', '#27272A', '#18181B', '#3E2723',
-      '#4E342E', '#5D4037', '#6D4C41', '#795548', '#8D6E63', '#A1887F', '#BCAAA4', '#D7CCC8'
-    ];
+    let currentH = 0;
+    let currentS = 1;
+    let currentV = 1;
+    let currentFormat = 'rgb';
+    let activeCallback = null;
 
-    let activeColorCallback = null;
-    let currentColor = '#2563EB';
-
-    const updatePreview = (hex) => {
-      let cleanHex = hex.replace('#', '').trim();
-      if (cleanHex.length === 3) cleanHex = cleanHex.split('').map(x => x + x).join('');
-      if (cleanHex.length !== 6) return;
-      const formattedHex = '#' + cleanHex.toUpperCase();
-      currentColor = formattedHex;
-      if (preview) {
-        preview.style.backgroundColor = formattedHex;
-        preview.style.color = this.getContrastColor(formattedHex);
+    const parseToRgb = (colorStr) => {
+      if (!colorStr) return { r: 37, g: 99, b: 235 };
+      colorStr = String(colorStr).trim();
+      const rgbMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (rgbMatch) {
+        return {
+          r: Math.max(0, Math.min(255, parseInt(rgbMatch[1], 10))),
+          g: Math.max(0, Math.min(255, parseInt(rgbMatch[2], 10))),
+          b: Math.max(0, Math.min(255, parseInt(rgbMatch[3], 10)))
+        };
       }
-      if (hexInput && hexInput.value.toUpperCase() !== cleanHex.toUpperCase()) {
-        hexInput.value = cleanHex.toUpperCase();
+      let c = colorStr.replace(/^#/, '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (c.length >= 6) {
+        const num = parseInt(c.slice(0, 6), 16);
+        if (!isNaN(num)) {
+          return {
+            r: (num >> 16) & 255,
+            g: (num >> 8) & 255,
+            b: num & 255
+          };
+        }
       }
-
-      // Highlight active dot
-      modal?.querySelectorAll('.color-modal-dot').forEach(dot => {
-        dot.classList.toggle('ring-2', dot.getAttribute('data-hex').toUpperCase() === formattedHex);
-        dot.classList.toggle('ring-blue-500', dot.getAttribute('data-hex').toUpperCase() === formattedHex);
-      });
+      return { r: 37, g: 99, b: 235 };
     };
 
-    const renderDots = (grid, colors) => {
-      if (!grid) return;
-      grid.innerHTML = '';
-      colors.forEach(hex => {
+    const rgbToHex = (r, g, b) => {
+      const toHex = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+    };
+
+    const rgbToHsv = (r, g, b) => {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, v = max;
+      const d = max - min;
+      s = max === 0 ? 0 : d / max;
+      if (max === min) {
+        h = 0;
+      } else {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h *= 60;
+      }
+      return { h: (h + 360) % 360, s, v };
+    };
+
+    const hsvToRgb = (h, s, v) => {
+      h = (h % 360 + 360) % 360;
+      const i = Math.floor(h / 60) % 6;
+      const f = (h / 60) - Math.floor(h / 60);
+      const p = v * (1 - s);
+      const q = v * (1 - f * s);
+      const t = v * (1 - (1 - f) * s);
+      let r = 0, g = 0, b = 0;
+      switch (i) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+      }
+      return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+      };
+    };
+
+    const rgbToHsl = (r, g, b) => {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h = (h * 60 + 360) % 360;
+      }
+      return { h, s, l };
+    };
+
+    const hslToRgb = (h, s, l) => {
+      h = (h % 360 + 360) % 360;
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, (h / 360) + 1/3);
+        g = hue2rgb(p, q, (h / 360));
+        b = hue2rgb(p, q, (h / 360) - 1/3);
+      }
+      return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+      };
+    };
+
+    const syncDisplay = (skipInputs = false, skipCallback = false) => {
+      if (satValBox) satValBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+      const satPercent = currentS * 100;
+      const valPercent = (1 - currentV) * 100;
+      if (reticle) {
+        reticle.style.left = `${Math.min(100, Math.max(0, satPercent))}%`;
+        reticle.style.top = `${Math.min(100, Math.max(0, valPercent))}%`;
+      }
+      if (hueThumb) {
+        const huePercent = (currentH / 360) * 100;
+        hueThumb.style.left = `${Math.min(100, Math.max(0, huePercent))}%`;
+      }
+      const rgb = hsvToRgb(currentH, currentS, currentV);
+      const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+      if (previewSwatch) previewSwatch.style.backgroundColor = hex;
+
+      if (!skipInputs) {
+        if (inputR) inputR.value = rgb.r;
+        if (inputG) inputG.value = rgb.g;
+        if (inputB) inputB.value = rgb.b;
+        if (inputHex) inputHex.value = hex;
+        if (inputH) inputH.value = Math.round(hsl.h);
+        if (inputS) inputS.value = Math.round(hsl.s * 100);
+        if (inputL) inputL.value = Math.round(hsl.l * 100);
+      }
+
+      if (!skipCallback && typeof activeCallback === 'function') {
+        activeCallback(hex, rgb, hsl);
+      }
+    };
+
+    const setColor = (colorInput, skipInputs = false, skipCallback = false) => {
+      const rgb = parseToRgb(colorInput);
+      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      currentH = hsv.h;
+      currentS = hsv.s;
+      currentV = hsv.v;
+      syncDisplay(skipInputs, skipCallback);
+    };
+
+    // 1. Sat / Val 2D Drag
+    let isDraggingSatVal = false;
+    const handleSatValPointer = (e) => {
+      if (!satValBox) return;
+      const rect = satValBox.getBoundingClientRect();
+      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+      const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+      currentS = rect.width > 0 ? (x / rect.width) : 0;
+      currentV = rect.height > 0 ? (1 - (y / rect.height)) : 1;
+      syncDisplay(false, false);
+    };
+
+    if (satValBox) {
+      satValBox.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        isDraggingSatVal = true;
+        try { satValBox.setPointerCapture(e.pointerId); } catch (_) {}
+        handleSatValPointer(e);
+      });
+      satValBox.addEventListener('pointermove', (e) => {
+        if (!isDraggingSatVal) return;
+        e.preventDefault();
+        handleSatValPointer(e);
+      });
+      const endSatVal = (e) => {
+        if (!isDraggingSatVal) return;
+        isDraggingSatVal = false;
+        try { if (e?.pointerId) satValBox.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      satValBox.addEventListener('pointerup', endSatVal);
+      satValBox.addEventListener('pointercancel', endSatVal);
+    }
+
+    // 2. Hue 1D Drag
+    let isDraggingHue = false;
+    const handleHuePointer = (e) => {
+      if (!hueTrack) return;
+      const rect = hueTrack.getBoundingClientRect();
+      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+      currentH = rect.width > 0 ? (x / rect.width) * 360 : 0;
+      currentH = Math.max(0, Math.min(360, currentH));
+      syncDisplay(false, false);
+    };
+
+    if (hueTrack) {
+      hueTrack.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        isDraggingHue = true;
+        try { hueTrack.setPointerCapture(e.pointerId); } catch (_) {}
+        handleHuePointer(e);
+      });
+      hueTrack.addEventListener('pointermove', (e) => {
+        if (!isDraggingHue) return;
+        e.preventDefault();
+        handleHuePointer(e);
+      });
+      const endHue = (e) => {
+        if (!isDraggingHue) return;
+        isDraggingHue = false;
+        try { if (e?.pointerId) hueTrack.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      hueTrack.addEventListener('pointerup', endHue);
+      hueTrack.addEventListener('pointercancel', endHue);
+    }
+
+    // 3. Eyedropper API
+    eyedropperBtn?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.EyeDropper) {
+        try {
+          const eyeDropper = new window.EyeDropper();
+          const result = await eyeDropper.open();
+          if (result && result.sRGBHex) {
+            setColor(result.sRGBHex, false, false);
+          }
+        } catch (err) {}
+      } else if (typeof showToast === 'function') {
+        showToast('EyeDropper not supported in this browser', 'info');
+      }
+    });
+
+    // 4. Format Switcher
+    const updateFormatView = () => {
+      if (formatLabel) formatLabel.textContent = currentFormat.toUpperCase();
+      if (rgbFields) rgbFields.classList.toggle('hidden', currentFormat !== 'rgb');
+      if (hexFields) hexFields.classList.toggle('hidden', currentFormat !== 'hex');
+      if (hslFields) hslFields.classList.toggle('hidden', currentFormat !== 'hsl');
+    };
+
+    formatToggleBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      currentFormat = (currentFormat === 'rgb') ? 'hex' : ((currentFormat === 'hex') ? 'hsl' : 'rgb');
+      updateFormatView();
+      syncDisplay(false, false);
+    });
+
+    // 5. Input Listeners
+    const onRgbInput = () => {
+      const r = Math.max(0, Math.min(255, parseInt(inputR?.value, 10) || 0));
+      const g = Math.max(0, Math.min(255, parseInt(inputG?.value, 10) || 0));
+      const b = Math.max(0, Math.min(255, parseInt(inputB?.value, 10) || 0));
+      const hsv = rgbToHsv(r, g, b);
+      currentH = hsv.h;
+      currentS = hsv.s;
+      currentV = hsv.v;
+      syncDisplay(true, false);
+      if (inputHex) inputHex.value = rgbToHex(r, g, b);
+      const hsl = rgbToHsl(r, g, b);
+      if (inputH) inputH.value = Math.round(hsl.h);
+      if (inputS) inputS.value = Math.round(hsl.s * 100);
+      if (inputL) inputL.value = Math.round(hsl.l * 100);
+    };
+
+    [inputR, inputG, inputB].forEach(inp => inp?.addEventListener('input', onRgbInput));
+
+    inputHex?.addEventListener('input', (e) => {
+      let val = e.target.value.trim();
+      if (!val.startsWith('#')) val = '#' + val;
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        setColor(val, true, false);
+        const rgb = parseToRgb(val);
+        if (inputR) inputR.value = rgb.r;
+        if (inputG) inputG.value = rgb.g;
+        if (inputB) inputB.value = rgb.b;
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        if (inputH) inputH.value = Math.round(hsl.h);
+        if (inputS) inputS.value = Math.round(hsl.s * 100);
+        if (inputL) inputL.value = Math.round(hsl.l * 100);
+      }
+    });
+
+    const onHslInput = () => {
+      const h = Math.max(0, Math.min(360, parseInt(inputH?.value, 10) || 0));
+      const s = Math.max(0, Math.min(100, parseInt(inputS?.value, 10) || 0)) / 100;
+      const l = Math.max(0, Math.min(100, parseInt(inputL?.value, 10) || 0)) / 100;
+      const rgb = hslToRgb(h, s, l);
+      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      currentH = hsv.h;
+      currentS = hsv.s;
+      currentV = hsv.v;
+      syncDisplay(true, false);
+      if (inputR) inputR.value = rgb.r;
+      if (inputG) inputG.value = rgb.g;
+      if (inputB) inputB.value = rgb.b;
+      if (inputHex) inputHex.value = rgbToHex(rgb.r, rgb.g, rgb.b);
+    };
+
+    [inputH, inputS, inputL].forEach(inp => inp?.addEventListener('input', onHslInput));
+
+    // 6. Presets Row
+    if (presetsRow) {
+      presetsRow.innerHTML = '';
+      const presets = ['#2563EB', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#18202C', '#64748B', '#FFFFFF'];
+      presets.forEach(color => {
         const dot = document.createElement('button');
         dot.type = 'button';
-        dot.className = 'color-modal-dot w-7 h-7 rounded-lg border border-black/10 transition-all hover:scale-110 active:scale-95 shadow-xs';
-        dot.style.backgroundColor = hex;
-        dot.setAttribute('data-hex', hex);
-        dot.addEventListener('click', () => updatePreview(hex));
-        grid.appendChild(dot);
+        dot.className = 'ucp-preset-dot';
+        dot.style.backgroundColor = color;
+        dot.title = color;
+        dot.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+          setColor(color, false, false);
+        });
+        presetsRow.appendChild(dot);
+      });
+    }
+
+    // 7. Core Open & Close Function
+    this.openUniversalColorPicker = ({ title = 'Custom Colour', initialColor = '#2563EB', onColorChange = null } = {}) => {
+      const modalEl = document.getElementById('universal-color-picker-modal');
+      if (!modalEl) return;
+      if (titleEl) titleEl.textContent = title;
+      activeCallback = onColorChange;
+      setColor(initialColor, false, true);
+      updateFormatView();
+      modalEl.classList.remove('hidden');
+      modalEl.style.display = 'flex';
+      modalEl.style.zIndex = '99999999';
+      if (window.soundFX) window.soundFX.play('popover');
+      if (window.haptics) window.haptics.trigger('selection');
+    };
+    this.openCustomColorPicker = (initialHex, title, onApply) => {
+      this.openUniversalColorPicker({
+        title: title || 'Customize Color',
+        initialColor: initialHex || '#2563EB',
+        onColorChange: onApply
       });
     };
+    window.openUniversalColorPicker = this.openUniversalColorPicker.bind(this);
+    window.openCustomColorPicker = this.openCustomColorPicker.bind(this);
 
-    renderDots(vibrantGrid, VIBRANT_SHADES);
-    renderDots(pastelGrid, PASTEL_SHADES);
-    renderDots(earthyGrid, EARTHY_SHADES);
-
-    hexInput?.addEventListener('input', (e) => {
-      updatePreview(e.target.value);
-    });
-
-    const closeModal = () => {
-      modal?.classList.add('hidden');
-      activeColorCallback = null;
-    };
-
-    btnClose?.addEventListener('click', closeModal);
-    btnCancel?.addEventListener('click', closeModal);
-
-    btnApply?.addEventListener('click', () => {
-      if (typeof activeColorCallback === 'function') {
-        activeColorCallback(currentColor);
+    const closePicker = () => {
+      const modalEl = document.getElementById('universal-color-picker-modal');
+      if (modalEl) {
+        modalEl.classList.add('hidden');
+        modalEl.style.display = 'none';
       }
-      closeModal();
+      activeCallback = null;
+    };
+
+    btnClose?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closePicker();
     });
 
-    // Public method to open color modal anywhere in the app
-    this.openCustomColorPicker = (initialHex, title, onApply) => {
-      currentColor = initialHex || '#2563EB';
-      activeColorCallback = onApply;
-      if (titleEl && title) titleEl.innerText = title;
-      updatePreview(currentColor);
-      modal?.classList.remove('hidden');
-    };
+    btnDone?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.soundFX) window.soundFX.play('tap');
+      if (window.haptics) window.haptics.trigger('success');
+      closePicker();
+    });
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closePicker();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closePicker();
+      }
+    });
+
+    // 8. Global Universal Event Delegation (Capture Phase for Instant Interception)
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.floating-color-custom-btn, .floating-course-swatch-custom, .mini-grid-custom, .mini-font-custom, .swatch-custom, .font-swatch-custom, .color-custom-btn, #btn-course-grid-custom, #btn-course-font-custom');
+      if (!trigger) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Case A: Sidebar Course Card (.mini-grid-custom or .mini-font-custom)
+      const card = trigger.closest('.class-item-card');
+      if (card) {
+        const courseId = card.getAttribute('data-id');
+        const c = this.classes?.find(x => String(x.id) === String(courseId));
+        if (c) {
+          if (trigger.classList.contains('mini-font-custom') || trigger.classList.contains('font-swatch-custom')) {
+            this.openUniversalColorPicker({
+              title: `Card Font Color: ${c.code}`,
+              initialColor: c.fontColor || '#FFFFFF',
+              onColorChange: (pickedFont) => {
+                card.querySelectorAll('.mini-font-swatch').forEach(b => b.classList.remove('active'));
+                c.fontColor = pickedFont;
+                trigger.style.background = pickedFont;
+                this.requestGridRender();
+                this._stagePending();
+              }
+            });
+            return;
+          } else {
+            this.openUniversalColorPicker({
+              title: `Customize Color: ${c.code}`,
+              initialColor: c.customColor || '#2563EB',
+              onColorChange: (pickedColor) => {
+                card.querySelectorAll('.mini-swatch').forEach(b => b.classList.remove('active'));
+                c.customColor = pickedColor;
+                c.color = pickedColor;
+                c.isManualCustomColor = true;
+                this.globalAdaptiveColor = false;
+                document.querySelectorAll('#toggle-quick-adaptive .pill-btn').forEach(b => {
+                  b.classList.toggle('active', b.getAttribute('data-val') === 'no');
+                });
+                trigger.style.background = pickedColor;
+                this.requestGridRender();
+                this._stagePending();
+              }
+            });
+            return;
+          }
+        }
+      }
+
+      // Case B: Floating Palette Grid Surface
+      if (trigger.closest('#floating-grid-surface-picker') || trigger.closest('#grid-surface-picker')) {
+        this.openUniversalColorPicker({
+          title: 'Grid Surface Colour',
+          initialColor: this.customSurfaceColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn, #grid-surface-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedSurfaceColor = true;
+            this.customSurfaceColor = colorVal;
+            document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+        return;
+      }
+
+      // Case C: Floating Palette Background
+      if (trigger.closest('#floating-bg-color-picker') || trigger.closest('#bg-color-picker')) {
+        this.openUniversalColorPicker({
+          title: 'Background Colour',
+          initialColor: this.customBgColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn, #bg-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedBgColor = true;
+            this.customBgColor = colorVal;
+            this.phoneCanvas.style.backgroundColor = colorVal;
+            this.updateClockContrast(colorVal);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+        return;
+      }
+
+      // Case D: Floating Palette Header
+      if (trigger.closest('#floating-header-color-picker') || trigger.closest('#header-color-picker')) {
+        this.openUniversalColorPicker({
+          title: 'Header Colour',
+          initialColor: this.customHeaderColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn, #header-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedHeaderColor = true;
+            this.customHeaderColor = colorVal;
+            this.applyHeaderColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+        return;
+      }
+
+      // Case E: Floating Palette Trademark
+      if (trigger.closest('#floating-trademark-color-picker')) {
+        this.openUniversalColorPicker({
+          title: 'Trademark Colour',
+          initialColor: this.customTrademarkColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedTrademarkColor = true;
+            this.customTrademarkColor = colorVal;
+            this.applyTrademarkColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+        return;
+      }
+
+      // Case F: Floating Palette Font
+      if (trigger.closest('#floating-font-color-picker') || trigger.closest('#font-color-picker')) {
+        this.openUniversalColorPicker({
+          title: 'Font Colour',
+          initialColor: this.customFontColor || '#18202C',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn, #font-color-picker .color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedFontColor = true;
+            this.customFontColor = colorVal;
+            this.applyFontColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+        return;
+      }
+
+      // Case G: Course Creation Wizard / Form Slot Color
+      if (trigger.closest('#floating-course-color-picker') || trigger.id === 'btn-course-grid-custom') {
+        const initCol = (typeof floatingCourseSelectedColor !== 'undefined' ? floatingCourseSelectedColor : this.selectedColor) || '#D5C5B5';
+        this.openUniversalColorPicker({
+          title: 'Course Colour',
+          initialColor: initCol,
+          onColorChange: (colorVal) => {
+            if (typeof floatingCourseSelectedColor !== 'undefined') floatingCourseSelectedColor = colorVal;
+            this.selectedColor = colorVal;
+            document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot, #course-grid-color-picker .swatch-dot').forEach(b => b.classList.remove('active'));
+            const customInp = document.getElementById('floating-course-custom-color');
+            if (customInp) customInp.value = colorVal;
+            trigger.style.background = colorVal;
+          }
+        });
+        return;
+      }
+
+      // Case H: Course Creation Wizard / Form Font Color
+      if (trigger.closest('#floating-course-font-picker') || trigger.id === 'btn-course-font-custom') {
+        const initFont = (typeof floatingCourseSelectedFont !== 'undefined' ? floatingCourseSelectedFont : this.newCourseFontColor) || '#FFFFFF';
+        this.openUniversalColorPicker({
+          title: 'Course Font Colour',
+          initialColor: initFont,
+          onColorChange: (colorVal) => {
+            if (typeof floatingCourseSelectedFont !== 'undefined') floatingCourseSelectedFont = colorVal;
+            this.newCourseFontColor = colorVal;
+            document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot, #course-font-color-picker .font-swatch-sq').forEach(b => b.classList.remove('active'));
+            const customInp = document.getElementById('floating-course-custom-font');
+            if (customInp) customInp.value = colorVal;
+            trigger.style.background = colorVal;
+          }
+        });
+        return;
+      }
+    }, true);
   }
 
   setupLanguageModal() {
@@ -4056,7 +4561,7 @@ class SchedullyApp {
     this.setupWallpaperEngine();
     this.setupFontFamilyEngine();
     this.setupDaysAndTimeEngine();
-    this.setupCustomColorModalEngine();
+    this.setupUniversalColorPicker();
     this.setupCourseListDelegation();
     this.setupWatchGlanceEvents();
     this.updateCourseFormMode();
@@ -4680,7 +5185,9 @@ class SchedullyApp {
         e.preventDefault();
         e.stopPropagation();
         const willOpen = quickSettingsPanel.classList.contains('hidden');
-        quickSettingsPanel.classList.toggle('hidden');
+        quickSettingsPanel.classList.toggle('hidden', !willOpen);
+        document.body.classList.toggle('quick-settings-open', willOpen);
+        document.getElementById('floating-controls-container')?.classList.toggle('quick-settings-open', willOpen);
         if (willOpen) {
           // Close conflicting popovers to avoid overlapping on iPad Mini / small tablet
           document.getElementById('canvas-controls-popover')?.classList.add('hidden');
@@ -4699,6 +5206,8 @@ class SchedullyApp {
         e.preventDefault();
         e.stopPropagation();
         quickSettingsPanel.classList.add('hidden');
+        document.body.classList.remove('quick-settings-open');
+        document.getElementById('floating-controls-container')?.classList.remove('quick-settings-open');
       });
 
       document.addEventListener('click', (e) => {
@@ -4709,6 +5218,8 @@ class SchedullyApp {
         const isClickOnProtected = e.target.closest('#left-sidebar, #right-sidebar, #bottom-floating-pill-bar, #floating-undo-redo-row, #interactive-tour-overlay, #tour-popover-card, .palette-dot, .theme-mode-dot, .color-swatch-btn, .swatch-dot');
         if (!isClickInside && !isClickOnToggle && !isClickOnProtected) {
           quickSettingsPanel.classList.add('hidden');
+          document.body.classList.remove('quick-settings-open');
+          document.getElementById('floating-controls-container')?.classList.remove('quick-settings-open');
         }
       });
     }
@@ -5219,32 +5730,23 @@ class SchedullyApp {
     gridYPosValEl?.addEventListener('input', (e) => {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
-        this.gridYPosVal = Math.min(150, Math.max(-120, val));
+        this.gridYPosVal = Math.min(500, Math.max(-300, val));
         this.requestGridRender();
         this._stagePending();
       }
     });
     gridYPosValEl?.addEventListener('blur', (e) => {
       let val = parseInt(e.target.value, 10);
-      if (isNaN(val) || val < -120) e.target.value = -120;
-      else if (val > 150) e.target.value = 150;
+      if (isNaN(val) || val < -300) e.target.value = -300;
+      else if (val > 500) e.target.value = 500;
       this.gridYPosVal = parseInt(e.target.value, 10);
       this.requestGridRender();
       this._stagePending();
     });
 
     btnYPosDec?.addEventListener('click', () => {
-      // Calculate min Y bound so top edge doesn't cross screen top
-      const canvasEl = document.getElementById('phone-canvas');
-      const containerEl = document.getElementById('lock-timetable-container');
-      let minY = -120;
-      if (canvasEl && containerEl) {
-        const cRect = canvasEl.getBoundingClientRect();
-        const tRect = containerEl.getBoundingClientRect();
-        const topGap = tRect.top - (cRect.top + 20); // 20px padding from top border
-        minY = this.gridYPosVal - Math.max(0, topGap);
-      }
-
+      // Calculate min Y bound
+      let minY = -300;
       if (this.gridYPosVal > minY) {
         this.gridYPosVal = Math.max(Math.round(minY), this.gridYPosVal - 5);
         if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
@@ -5254,17 +5756,8 @@ class SchedullyApp {
     });
 
     btnYPosInc?.addEventListener('click', () => {
-      // Calculate max Y bound so bottom edge doesn't cross phone bottom bar (24px from bottom)
-      const canvasEl = document.getElementById('phone-canvas');
-      const containerEl = document.getElementById('lock-timetable-container');
-      let maxY = 140;
-      if (canvasEl && containerEl) {
-        const cRect = canvasEl.getBoundingClientRect();
-        const tRect = containerEl.getBoundingClientRect();
-        const bottomGap = (cRect.bottom - 24) - tRect.bottom;
-        maxY = this.gridYPosVal + Math.max(0, bottomGap);
-      }
-
+      // Calculate max Y bound
+      let maxY = 500;
       if (this.gridYPosVal < maxY) {
         this.gridYPosVal = Math.min(Math.round(maxY), this.gridYPosVal + 5);
         if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
@@ -6267,7 +6760,7 @@ class SchedullyApp {
         } else if (activeLayoutSubMode === 'posy') {
           const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
           const sign = val > 0 ? '+' : '';
-          return { min: -120, max: 150, val: val, label: `Y: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable Y-Position' };
+          return { min: -300, max: 500, val: val, label: `Y: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable Y-Position' };
         }
       } else if (toolId === 'opacity') {
         if (activeOpacityScope === 'all') {
@@ -6479,7 +6972,7 @@ class SchedullyApp {
           const val = Math.round(-150 + r * 300);
           this.setTimetableOffsetX(val, false);
         } else if (activeLayoutSubMode === 'posy') {
-          const val = Math.round(-120 + r * 270);
+          const val = Math.round(-300 + r * 800);
           this.setTimetableOffsetY(val, false);
         }
         this._stagePending(true);
@@ -6643,7 +7136,7 @@ class SchedullyApp {
           const next = Math.max(-150, Math.min(150, (this.gridXPosVal != null ? this.gridXPosVal : 0) + delta * 4));
           this.setTimetableOffsetX(next, false);
         } else if (activeLayoutSubMode === 'posy') {
-          const next = Math.max(-120, Math.min(150, (this.gridYPosVal != null ? this.gridYPosVal : 0) + delta * 4));
+          const next = Math.max(-300, Math.min(500, (this.gridYPosVal != null ? this.gridYPosVal : 0) + delta * 4));
           this.setTimetableOffsetY(next, false);
         }
       } else if (toolId === 'opacity') {
@@ -7103,7 +7596,7 @@ class SchedullyApp {
       const countLeft = document.getElementById('slider-count-left');
       const countRight = document.getElementById('slider-count-right');
 
-      if (!modal || !btnOpen) return;
+      if (!modal) return;
 
       const SLIDER_TOOLS_DEF = {
         zoom: { id: 'zoom', name: 'Canvas Zoom', icon: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`, desc: 'Scale & fit (40% - 150%)' },
@@ -7421,8 +7914,9 @@ class SchedullyApp {
         });
       });
 
-      btnOpen.addEventListener('click', (e) => {
-        e.stopPropagation();
+      let modalOpenedTime = 0;
+      const openModal = () => {
+        modalOpenedTime = Date.now();
         tempLayout = {
           left: [...(this.sliderLayout?.left || ['layout', 'opacity', 'blur'])],
           right: [...(this.sliderLayout?.right || ['zoom', 'radius', 'font'])],
@@ -7430,17 +7924,46 @@ class SchedullyApp {
         };
         renderZones();
         modal.classList.remove('hidden');
+        modal.style.display = 'flex';
         document.body.classList.add('slider-customizer-open');
+        document.getElementById('schedule-quick-settings')?.classList.add('hidden');
         window.soundFX?.play?.('open');
-      });
+      };
 
       const closeModal = () => {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
         document.body.classList.remove('slider-customizer-open');
       };
 
-      btnClose?.addEventListener('click', closeModal);
+      this.openSliderCustomizerModal = openModal;
+      this.closeSliderCustomizerModal = closeModal;
+      window.openSliderCustomizerModal = openModal;
+      window.closeSliderCustomizerModal = closeModal;
+
+      btnOpen?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal();
+      });
+
+      // Global capture click listener to ensure clicking 'Customize' button anywhere triggers openModal
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#btn-open-slider-customizer, .m3-customize-launcher-btn');
+        if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal();
+        }
+      }, true);
+
+      btnClose?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeModal();
+      });
       modal.addEventListener('click', (e) => {
+        if (Date.now() - modalOpenedTime < 300) return;
         if (e.target === modal) closeModal();
       });
 
@@ -7646,6 +8169,8 @@ class SchedullyApp {
     if (typeof this.renderCustomizedSideSliders === 'function') {
       this.renderCustomizedSideSliders();
     }
+
+
 
     // ═══════════════════════════════════════════════════════════════
     // FLOATING PALETTE & MODE CARD ENGINE (Bottom-Left Circle Island Trigger)
@@ -7870,6 +8395,25 @@ class SchedullyApp {
         });
       });
 
+      // Universal Color Picker triggers for Floating Palette
+      const customSurfaceLabel = document.querySelector('#floating-grid-surface-picker .floating-color-custom-btn');
+      customSurfaceLabel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Grid Surface Colour',
+          initialColor: this.customSurfaceColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedSurfaceColor = true;
+            this.customSurfaceColor = colorVal;
+            document.documentElement.style.setProperty('--m3-grid-surface-bg', colorVal);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+      });
+
       document.getElementById('floating-custom-surface-color')?.addEventListener('input', (e) => {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-grid-surface-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
@@ -7895,6 +8439,25 @@ class SchedullyApp {
           if (window.haptics) window.haptics.trigger('selection');
           this.syncCustomColorPickersUI();
           this._stagePending(true);
+        });
+      });
+
+      const customBgLabel = document.querySelector('#floating-bg-color-picker .floating-color-custom-btn');
+      customBgLabel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Background Colour',
+          initialColor: this.customBgColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-bg-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedBgColor = true;
+            this.customBgColor = colorVal;
+            this.phoneCanvas.style.backgroundColor = colorVal;
+            this.updateClockContrast(colorVal);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
         });
       });
 
@@ -7926,6 +8489,24 @@ class SchedullyApp {
         });
       });
 
+      const customHeaderLabel = document.querySelector('#floating-header-color-picker .floating-color-custom-btn');
+      customHeaderLabel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Header Colour',
+          initialColor: this.customHeaderColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedHeaderColor = true;
+            this.customHeaderColor = colorVal;
+            this.applyHeaderColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+      });
+
       document.getElementById('floating-custom-header-color')?.addEventListener('input', (e) => {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-header-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
@@ -7953,6 +8534,24 @@ class SchedullyApp {
         });
       });
 
+      const customTrademarkLabel = document.querySelector('#floating-trademark-color-picker .floating-color-custom-btn');
+      customTrademarkLabel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Trademark Colour',
+          initialColor: this.customTrademarkColor || '#454846',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedTrademarkColor = true;
+            this.customTrademarkColor = colorVal;
+            this.applyTrademarkColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
+        });
+      });
+
       document.getElementById('floating-custom-trademark-color')?.addEventListener('input', (e) => {
         const colorVal = e.target.value;
         document.querySelectorAll('#floating-trademark-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
@@ -7977,6 +8576,24 @@ class SchedullyApp {
           if (window.haptics) window.haptics.trigger('selection');
           this.syncCustomColorPickersUI();
           this._stagePending(true);
+        });
+      });
+
+      const customFontLabel = document.querySelector('#floating-font-color-picker .floating-color-custom-btn');
+      customFontLabel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Font Colour',
+          initialColor: this.customFontColor || '#18202C',
+          onColorChange: (colorVal) => {
+            document.querySelectorAll('#floating-font-color-picker .floating-color-swatch-btn').forEach(b => b.classList.remove('active'));
+            this.userHasPickedFontColor = true;
+            this.customFontColor = colorVal;
+            this.applyFontColor(colorVal, true);
+            this.syncCustomColorPickersUI();
+            this._stagePending(true);
+          }
         });
       });
 
@@ -8258,6 +8875,22 @@ class SchedullyApp {
         });
       });
 
+      const customCourseColorBtn = document.querySelector('#floating-course-color-picker .floating-course-swatch-custom');
+      customCourseColorBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Course Colour',
+          initialColor: floatingCourseSelectedColor || '#D5C5B5',
+          onColorChange: (colorVal) => {
+            floatingCourseSelectedColor = colorVal;
+            document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(b => b.classList.remove('active'));
+            const customInp = document.getElementById('floating-course-custom-color');
+            if (customInp) customInp.value = colorVal;
+          }
+        });
+      });
+
       document.getElementById('floating-course-custom-color')?.addEventListener('input', (e) => {
         floatingCourseSelectedColor = e.target.value;
         document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach(b => b.classList.remove('active'));
@@ -8272,6 +8905,22 @@ class SchedullyApp {
           floatingCourseSelectedFont = btn.getAttribute('data-coursefont') || '#FFFFFF';
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
+        });
+      });
+
+      const customCourseFontBtn = document.querySelector('#floating-course-font-picker .floating-course-swatch-custom');
+      customCourseFontBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openUniversalColorPicker({
+          title: 'Course Font Colour',
+          initialColor: floatingCourseSelectedFont || '#FFFFFF',
+          onColorChange: (colorVal) => {
+            floatingCourseSelectedFont = colorVal;
+            document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot').forEach(b => b.classList.remove('active'));
+            const customInp = document.getElementById('floating-course-custom-font');
+            if (customInp) customInp.value = colorVal;
+          }
         });
       });
 
