@@ -497,22 +497,23 @@ body.dark-mode .m3-right-sidebar,
   /* Compact smartphone viewports (e.g. iPhone, Samsung Galaxy) */
   @media (max-width: 640px) {
     #left-action-container {
-      top: max(10px, env(safe-area-inset-top, 10px)) !important;
-      left: max(10px, env(safe-area-inset-left, 10px)) !important;
+      top: max(8px, env(safe-area-inset-top, 8px)) !important;
+      left: max(8px, env(safe-area-inset-left, 8px)) !important;
+      gap: 4px !important;
     }
 
     #center-action-container {
-      top: max(10px, env(safe-area-inset-top, 10px)) !important;
+      top: max(8px, env(safe-area-inset-top, 8px)) !important;
     }
 
     .unified-io-pill {
-      height: 42px !important;
-      min-height: 42px !important;
-      padding: 3px 4px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 2px 3px !important;
     }
 
     .io-segmented-btn {
-      padding: 0 10px !important;
+      padding: 0 8px !important;
       gap: 0 !important;
     }
 
@@ -522,8 +523,8 @@ body.dark-mode .m3-right-sidebar,
     }
 
     .io-segmented-btn svg {
-      width: 18px !important;
-      height: 18px !important;
+      width: 16px !important;
+      height: 16px !important;
     }
 
     .top-action-bar-right {
@@ -532,8 +533,8 @@ body.dark-mode .m3-right-sidebar,
       gap: 4px !important;
     }
 
-    /* Keep language & coffee visible on all mobile platforms */
-    .top-action-bar-right .top-action-auxiliary {
+    /* Keep auxiliary pills (Language & Coffee) visible on all mobile platforms */
+    .top-action-auxiliary {
       display: flex !important;
     }
 
