@@ -294,6 +294,9 @@
   body:not(.app-ready) #canvas-scaler-container,
   body:not(.app-ready) #header-desktop-bar,
   body:not(.app-ready) #floating-controls-container,
+  body:not(.app-ready) #left-action-container,
+  body:not(.app-ready) #center-action-container,
+  body:not(.app-ready) #right-action-container,
   body:not(.app-ready) #mobile-export-bar,
   body:not(.app-ready) #side-zoom-slider-container {
     opacity: 0 !important;
@@ -302,6 +305,9 @@
   #canvas-scaler-container,
   #header-desktop-bar,
   #floating-controls-container,
+  #left-action-container,
+  #center-action-container,
+  #right-action-container,
   #mobile-export-bar,
   #side-zoom-slider-container {
     transition: opacity 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
@@ -369,8 +375,8 @@
   </defs>
 </svg>
 
-<!-- BEGIN: Left Floating Action Container (Menu + Import) -->
-<div id="left-action-container" class="fixed top-4 left-4 z-40 flex flex-col gap-3 pointer-events-auto">
+<!-- BEGIN: Left Floating Action Container (Menu Only) -->
+<div id="left-action-container" class="fixed top-3.5 left-4 z-40 flex items-center gap-3 pointer-events-auto">
   <!-- Menu Button Wrapper -->
   <div class="top-action-wrapper relative">
     <button id="btn-expand-left-floating" class="top-action-pill" title="Menu" aria-label="Menu">
@@ -378,18 +384,34 @@
     </button>
     <span data-i18n="menu" class="top-action-outside-label">Menu</span>
   </div>
+</div>
 
-  <!-- Import Button Wrapper + Expanded Menu Card -->
-  <div id="floating-import-wrapper" class="top-action-wrapper relative">
-    <button id="btn-floating-import" class="top-action-pill" title="Import" aria-label="Import">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-      </svg>
-    </button>
-    <span data-i18n="import" class="top-action-outside-label">Import</span>
+<!-- BEGIN: Top Center Unified Import & Export Pill Bar -->
+<div id="center-action-container" class="fixed top-3.5 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center pointer-events-auto">
+  <div id="unified-io-wrapper" class="relative flex flex-col items-center">
+    <div id="unified-io-pill-bar" class="unified-io-pill flex items-center rounded-full shadow-lg transition-all p-1">
+      <!-- Import Button -->
+      <button id="btn-floating-import" type="button" class="io-segmented-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer" title="Import" aria-label="Import">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        <span data-i18n="import" class="io-btn-label text-xs font-bold">Import</span>
+      </button>
 
-    <!-- Expandable Mini Menu Card (Same style, size, and minimalism as Export Dropdown) -->
-    <div id="import-menu-popover" class="mobile-export-dropdown hidden absolute top-full left-0 mt-2.5 w-[270px] max-w-[calc(100vw-24px)] rounded-3xl shadow-2xl z-50 overflow-y-auto overflow-x-hidden">
+      <!-- Sleek Vertical Divider -->
+      <div class="io-divider h-4 w-[1px] my-auto mx-0.5 opacity-30"></div>
+
+      <!-- Export Button -->
+      <button id="btn-mobile-export-toggle" type="button" class="io-segmented-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer" title="Export" aria-label="Export">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path>
+        </svg>
+        <span data-i18n="export" class="io-btn-label text-xs font-bold">Export</span>
+      </button>
+    </div>
+
+    <!-- Import Menu Popover Card (Centered beneath unified pill) -->
+    <div id="import-menu-popover" class="mobile-export-dropdown hidden absolute top-full left-1/2 -translate-x-1/2 mt-2.5 w-[270px] max-w-[calc(100vw-24px)] rounded-3xl shadow-2xl z-50 overflow-y-auto overflow-x-hidden">
       <div class="p-2 flex flex-col gap-1.5">
         <!-- 1. Schedule Option -->
         <button id="btn-quick-import-timetable" type="button" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left cursor-pointer" title="Import Schedule">
@@ -431,11 +453,63 @@
         </button>
       </div>
     </div>
+
+    <!-- Export Menu Dropdown Card (Centered beneath unified pill) -->
+    <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full left-1/2 -translate-x-1/2 mt-2.5 w-[270px] max-w-[calc(100vw-24px)] rounded-3xl shadow-2xl z-50 overflow-y-auto overflow-x-hidden">
+      <div class="p-2 flex flex-col gap-1.5">
+        <!-- Download Image (Primary) -->
+        <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-3.5 py-3 rounded-2xl text-left">
+          <span class="mobile-export-icon-primary w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="mobile-export-primary-title font-extrabold text-[13px] leading-snug break-words">Download Image</p>
+            <p class="mobile-export-primary-sub text-[11px] font-medium leading-tight">Save as wallpaper PNG</p>
+          </div>
+        </button>
+
+        <!-- Divider -->
+        <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
+
+        <!-- Calendar ICS -->
+        <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-cal w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Calendar (.ics)</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Sync to Google / Apple</p>
+          </div>
+        </button>
+
+        <!-- CSV Export -->
+        <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-csv w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Export CSV</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Spreadsheet format</p>
+          </div>
+        </button>
+
+        <!-- Save PDF -->
+        <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
+          <span class="mobile-export-icon-pdf w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Save as PDF</p>
+            <p class="mobile-export-desc text-[11px] font-medium leading-tight">Print-ready document</p>
+          </div>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- UNIFIED TOP RIGHT ACTION BAR (Auth, Language, Coffee, Export, Schedule) -->
-<div id="right-action-container" class="top-action-bar-right fixed top-3.5 right-4 z-50 flex items-start gap-2.5">
+<!-- UNIFIED TOP RIGHT ACTION BAR (Auth, Language, Coffee, Schedule) -->
+<div id="right-action-container" class="top-action-bar-right fixed top-3.5 right-4 z-50 flex items-center gap-2.5">
   <!-- UNIFIED SINGLE AUTH CIRCLE (Merged Logged Out + Logged In) -->
   <div id="user-auth-action-wrapper" class="top-action-wrapper relative">
     <button id="btn-toggle-auth-menu" type="button" class="top-action-pill p-0 overflow-hidden" title="Account" aria-label="Account">
@@ -451,7 +525,7 @@
     <span id="user-auth-outside-label" data-i18n="login" class="top-action-outside-label">Login</span>
 
     <!-- 1. Expandable Login Providers Options Menu (When Logged Out) -->
-    <div id="login-providers-menu" class="hidden absolute top-full left-0 mt-2 w-max min-w-[175px] max-w-[210px] p-1.5 rounded-2xl border shadow-xl flex flex-col gap-1 z-50">
+    <div id="login-providers-menu" class="hidden absolute top-full right-0 mt-2 w-max min-w-[175px] max-w-[210px] p-1.5 rounded-2xl border shadow-xl flex flex-col gap-1 z-50">
       <div class="popover-header px-1.5 py-0.5 flex items-center justify-between">
         <span data-i18n="signInProvider" class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Sign In Provider</span>
       </div>
@@ -472,7 +546,7 @@
     </div>
 
     <!-- 2. Expandable Account Settings Menu (When Logged In) -->
-    <div id="profile-settings-menu" class="hidden absolute top-full left-0 mt-2 w-max min-w-[175px] max-w-[210px] p-1.5 rounded-2xl border shadow-xl flex flex-col gap-1 z-50">
+    <div id="profile-settings-menu" class="hidden absolute top-full right-0 mt-2 w-max min-w-[175px] max-w-[210px] p-1.5 rounded-2xl border shadow-xl flex flex-col gap-1 z-50">
       <div class="popover-header px-1.5 py-0.5 flex items-center justify-between">
         <span data-i18n="accountSettings" class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Account Settings</span>
       </div>
@@ -510,7 +584,7 @@
   </div>
 
   <!-- Globe Language Selector Circle Pill -->
-  <div class="top-action-wrapper">
+  <div class="top-action-wrapper top-action-auxiliary">
     <button id="btn-open-language-modal" type="button" title="Language" aria-label="Language" class="top-action-pill">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 00-3.5 9 14.5 14.5 0 003.5 9 14.5 14.5 0 003.5-9 14.5 14.5 0 00-3.5-9z"></path>
@@ -520,7 +594,7 @@
   </div>
 
   <!-- Buy Me a Coffee Support Circle Pill -->
-  <div class="top-action-wrapper">
+  <div class="top-action-wrapper top-action-auxiliary">
     <button id="btn-open-coffee-modal" type="button" title="Coffee" aria-label="Coffee" class="top-action-pill">
       <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
@@ -533,79 +607,17 @@
     <span data-i18n="support" class="top-action-outside-label">Support</span>
   </div>
 
-  <!-- Right Vertical Column: Schedule Trigger (Top) & Export Trigger (Below) -->
-  <div class="flex flex-col items-center gap-2">
-    <!-- Schedule Trigger -->
-    <div class="top-action-wrapper relative">
-      <button id="btn-expand-right-floating" class="top-action-pill" title="Schedule" aria-label="Schedule">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
-      </button>
-      <div id="floating-courses-count-circle" class="floating-circle-island flex items-center justify-center p-0.5 rounded-full shadow-md transition-all cursor-pointer" title="Total Added Courses">
-        <div class="flex items-center justify-center rounded-full shadow-xs">
-          <span id="settings-courses-badge" class="courses-count-circle-text">0</span>
-        </div>
+  <!-- Schedule Trigger (Single Circle Pill in Row) -->
+  <div class="top-action-wrapper relative">
+    <button id="btn-expand-right-floating" class="top-action-pill" title="Schedule" aria-label="Schedule">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+    </button>
+    <div id="floating-courses-count-circle" class="floating-circle-island flex items-center justify-center p-0.5 rounded-full shadow-md transition-all cursor-pointer" title="Total Added Courses">
+      <div class="flex items-center justify-center rounded-full shadow-xs">
+        <span id="settings-courses-badge" class="courses-count-circle-text">0</span>
       </div>
     </div>
-
-    <!-- Export Trigger with Dropdown (Below Schedule) -->
-    <div class="top-action-wrapper relative">
-      <button id="btn-mobile-export-toggle" class="top-action-pill" title="Export" aria-label="Export">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
-      </button>
-      <span data-i18n="export" class="top-action-outside-label">Export</span>
-
-      <!-- Dropdown card: expands downward from the Export button -->
-      <div id="mobile-export-dropdown" class="mobile-export-dropdown hidden absolute top-full right-0 mt-2.5 w-[270px] max-w-[calc(100vw-24px)] rounded-3xl shadow-2xl z-50 overflow-y-auto overflow-x-hidden">
-        <div class="p-2 flex flex-col gap-1.5">
-          <!-- Download Image (Primary) -->
-          <button id="btn-download-hd-mobile" class="mobile-export-option mobile-export-primary flex items-center gap-3 w-full px-3.5 py-3 rounded-2xl text-left">
-            <span class="mobile-export-icon-primary w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="mobile-export-primary-title font-extrabold text-[13px] leading-snug break-words">Download Image</p>
-              <p class="mobile-export-primary-sub text-[11px] font-medium leading-tight">Save as wallpaper PNG</p>
-            </div>
-          </button>
-
-          <!-- Divider -->
-          <div class="mobile-export-divider h-[1px] my-0.5 mx-2"></div>
-
-          <!-- Calendar ICS -->
-          <button id="btn-export-ical-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
-            <span class="mobile-export-icon-cal w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Calendar (.ics)</p>
-              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Sync to Google / Apple</p>
-            </div>
-          </button>
-
-          <!-- CSV Export -->
-          <button id="btn-export-csv-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
-            <span class="mobile-export-icon-csv w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Export CSV</p>
-              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Spreadsheet format</p>
-            </div>
-          </button>
-
-          <!-- Save PDF -->
-          <button id="btn-save-pdf-mobile" class="mobile-export-option flex items-center gap-3 w-full px-3.5 py-2.5 rounded-2xl text-left">
-            <span class="mobile-export-icon-pdf w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="mobile-export-title font-extrabold text-[13px] leading-snug break-words">Save as PDF</p>
-              <p class="mobile-export-desc text-[11px] font-medium leading-tight">Print-ready document</p>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
+    <span data-i18n="schedule" class="top-action-outside-label">Schedule</span>
   </div>
 </div>
 
@@ -694,8 +706,47 @@
     </div>
   </div>
 
-  <!-- Bottom Section: App Creator Disclaimer / Footer -->
-  <div class="sidebar-bottom-container mt-4 pt-3 border-t border-gray-200/50 dark:border-white/10">
+  <!-- Bottom Section: App Creator Disclaimer & Social Links -->
+  <div class="sidebar-bottom-container mt-4 pt-3 border-t border-gray-200/50 dark:border-white/10 flex flex-col items-center gap-2.5">
+    <!-- Social Media Icons Row -->
+    <div class="flex items-center justify-center gap-2">
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/affiiq_/" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100/80 hover:bg-pink-50 text-gray-500 hover:text-pink-500 dark:bg-white/5 dark:hover:bg-pink-500/15 dark:text-gray-400 dark:hover:text-pink-400 transition-all duration-200 hover:scale-110 active:scale-95 shadow-2xs cursor-pointer" title="Instagram" aria-label="Instagram">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      </a>
+
+      <!-- Facebook -->
+      <a href="https://www.facebook.com/profile.php?id=100095039852105" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100/80 hover:bg-blue-50 text-gray-500 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-600/15 dark:text-gray-400 dark:hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-95 shadow-2xs cursor-pointer" title="Facebook" aria-label="Facebook">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      </a>
+
+      <!-- GitHub -->
+      <a href="https://github.com/AfiqMechy" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100/80 hover:bg-gray-200/80 text-gray-500 hover:text-gray-900 dark:bg-white/5 dark:hover:bg-white/15 dark:text-gray-400 dark:hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 shadow-2xs cursor-pointer" title="GitHub" aria-label="GitHub">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+      </a>
+
+      <!-- LinkedIn -->
+      <a href="https://www.linkedin.com/in/afiq-undefined-33a902391/" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100/80 hover:bg-blue-50 text-gray-500 hover:text-blue-500 dark:bg-white/5 dark:hover:bg-blue-500/15 dark:text-gray-400 dark:hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-95 shadow-2xs cursor-pointer" title="LinkedIn" aria-label="LinkedIn">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+        </svg>
+      </a>
+
+      <!-- Threads -->
+      <a href="https://www.threads.net/@affiiq_" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-100/80 hover:bg-gray-200/80 text-gray-500 hover:text-gray-900 dark:bg-white/5 dark:hover:bg-white/15 dark:text-gray-400 dark:hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 shadow-2xs cursor-pointer" title="Threads" aria-label="Threads">
+        <svg class="w-4 h-4" viewBox="0 0 192 192" fill="currentColor">
+          <path d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 149.184 38.788C154.894 45.8136 159.199 54.6488 162.037 64.9503L178.184 60.6422C174.744 47.9622 169.331 37.0357 161.965 27.974C147.036 9.60668 125.202 0.195148 97.0695 0H96.9569C68.8816 0.19447 47.2921 9.6418 32.7883 28.0793C19.8819 44.4864 13.2244 67.3157 13.0007 95.9325L13 96L13.0007 96.0675C13.2244 124.684 19.8819 147.514 32.7883 163.921C47.2921 182.358 68.8816 191.806 96.9569 192H97.0695C122.03 191.827 139.624 185.292 154.118 170.811C173.081 151.866 172.51 128.119 166.26 113.541C161.776 103.087 153.227 94.5962 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.6368C101.047 98.5234 102.976 98.468 104.871 98.468C111.106 98.468 116.939 99.0737 122.242 100.233C120.264 124.935 108.662 128.946 98.4405 129.507Z"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Creator Footer Disclaimer -->
     <div class="creator-footer text-center">
       <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">Schedully © 2026 • Developed by Afiq</p>
     </div>

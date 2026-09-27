@@ -9769,13 +9769,15 @@ class SchedullyApp {
     if (btnFloatingImport && importMenuPopover) {
       btnFloatingImport.addEventListener('click', (e) => {
         e.stopPropagation();
+        const exportDropdown = document.getElementById('mobile-export-dropdown');
+        exportDropdown?.classList.add('hidden');
         importMenuPopover.classList.toggle('hidden');
         if (window.soundFX) window.soundFX.play('tap');
       });
 
       // Close popover when tapping outside
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('#floating-import-wrapper') && !importMenuPopover.classList.contains('hidden')) {
+        if (!e.target.closest('#unified-io-wrapper, #import-menu-popover, #btn-floating-import') && !importMenuPopover.classList.contains('hidden')) {
           importMenuPopover.classList.add('hidden');
         }
       });
@@ -9826,6 +9828,14 @@ class SchedullyApp {
         }
       });
     }
+
+    // Sidebar Language & Coffee button triggers
+    document.getElementById('btn-sidebar-language')?.addEventListener('click', () => {
+      document.getElementById('btn-open-language-modal')?.click();
+    });
+    document.getElementById('btn-sidebar-coffee')?.addEventListener('click', () => {
+      document.getElementById('btn-open-coffee-modal')?.click();
+    });
 
     // Support / Coffee Modal Handlers
     const btnAboutCoffee = document.getElementById('btn-about-coffee');
@@ -10699,6 +10709,8 @@ class SchedullyApp {
 
     mobileExportToggle?.addEventListener('click', (e) => {
       e.stopPropagation();
+      const importPopover = document.getElementById('import-menu-popover');
+      importPopover?.classList.add('hidden');
       const isOpen = !mobileExportDropdown.classList.contains('hidden');
       if (isOpen) {
         closeMobileDropdown();
@@ -10711,7 +10723,7 @@ class SchedullyApp {
     // Close dropdown when tapping elsewhere (do not close on tour overlay clicks)
     document.addEventListener('click', (e) => {
       if (window.isTourActive) return;
-      if (!e.target.closest('#mobile-export-bar, #right-action-container, #mobile-export-dropdown, #btn-mobile-export-toggle, #interactive-tour-overlay, #tour-popover-card')) {
+      if (!e.target.closest('#unified-io-wrapper, #center-action-container, #mobile-export-dropdown, #btn-mobile-export-toggle, #interactive-tour-overlay, #tour-popover-card')) {
         closeMobileDropdown();
       }
     });
