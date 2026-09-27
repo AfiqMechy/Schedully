@@ -306,6 +306,10 @@ class SchedullyApp {
           if (leftSlider) leftSlider.classList.add('side-slider-idle');
           if (rightSlider) rightSlider.classList.add('side-slider-idle');
 
+          if (typeof this.collapseSideSliders === 'function') {
+            this.collapseSideSliders();
+          }
+
           // Auto-disexpand / collapse side flyout cards on idle
           const fontCard = document.getElementById('floating-font-style-card');
           if (fontCard && !fontCard.classList.contains('hidden')) {
@@ -361,6 +365,9 @@ class SchedullyApp {
       const rightSlider = document.getElementById('side-right-slider-container');
       if (leftSlider) leftSlider.classList.add('side-slider-idle');
       if (rightSlider) rightSlider.classList.add('side-slider-idle');
+      if (typeof this.collapseSideSliders === 'function') {
+        this.collapseSideSliders();
+      }
     }, 2500);
   }
 
@@ -7250,8 +7257,15 @@ class SchedullyApp {
       this._stagePending(true);
     };
 
-    let leftScopesExpanded = true;
-    let rightScopesExpanded = true;
+    let leftScopesExpanded = false;
+    let rightScopesExpanded = false;
+
+    this.collapseSideSliders = () => {
+      leftScopesExpanded = false;
+      rightScopesExpanded = false;
+      updateSideSliderUI('left', true);
+      updateSideSliderUI('right', true);
+    };
 
     // Activate a tool (detecting whether it's on left or right)
     const selectSliderTool = (toolId) => {

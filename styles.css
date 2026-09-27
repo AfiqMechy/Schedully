@@ -7522,43 +7522,105 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
   flex-shrink: 0 !important;
 }
 
-#floating-controls-container .pointer-events-auto {
-  pointer-events: auto !important;
-}
-
-#floating-popover-twin-row {
-  width: min(360px, calc(100vw - 28px)) !important;
-  max-width: calc(100vw - 28px) !important;
+#floating-popovers-horizontal-row {
   display: flex !important;
   align-items: flex-end !important;
-  justify-content: space-between !important;
   gap: 8px !important;
   pointer-events: none !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 4px !important;
 }
 
-#canvas-controls-popover {
-  width: min(360px, calc(100vw - 28px)) !important;
-  max-width: calc(100vw - 28px) !important;
-  max-height: calc(100dvh - 110px) !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  align-self: flex-start !important;
+/* Desktop & Tablet: Horizontal placement - Title & Ratio pop up on the RIGHT side of Controls */
+@media (min-width: 640px) {
+  #floating-popovers-horizontal-row {
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+  }
+
+  #canvas-controls-popover {
+    width: 285px !important;
+    min-width: 270px !important;
+    max-width: 300px !important;
+    max-height: min(80vh, calc(100dvh - 100px)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  #floating-popover-twin-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+    width: auto !important;
+    max-width: none !important;
+    pointer-events: none !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  #floating-title-card,
+  #canvas-ratio-popover {
+    width: 175px !important;
+    min-width: 160px !important;
+    max-width: 185px !important;
+    flex: 0 0 175px !important;
+    max-height: min(80vh, calc(100dvh - 100px)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+    align-self: flex-end !important;
+  }
 }
 
-#floating-title-card,
-#canvas-ratio-popover {
-  width: calc(50% - 4px) !important;
-  max-width: calc(50% - 4px) !important;
-  min-width: 0 !important;
-  flex: 0 0 calc(50% - 4px) !important;
-  max-height: calc(100dvh - 290px) !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior: contain !important;
-  box-sizing: border-box !important;
-  pointer-events: auto !important;
-  align-self: flex-end !important;
+/* Compact Mobile (Vertical Stack Fallback) */
+@media (max-width: 639px) {
+  #floating-popovers-horizontal-row {
+    flex-direction: column-reverse !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  #canvas-controls-popover {
+    width: min(290px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: min(48vh, calc(100dvh - 120px)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
+  }
+
+  #floating-popover-twin-row {
+    width: min(290px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    pointer-events: none !important;
+    margin-bottom: 0 !important;
+  }
+
+  #floating-title-card,
+  #canvas-ratio-popover {
+    width: calc(50% - 3px) !important;
+    max-width: calc(50% - 3px) !important;
+    min-width: 0 !important;
+    flex: 0 0 calc(50% - 3px) !important;
+    max-height: min(40vh, calc(100dvh - 200px)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+    align-self: flex-end !important;
+  }
 }
 
 #canvas-ratio-popover {
@@ -7572,7 +7634,7 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
 #canvas-controls-popover:not(.hidden),
 #canvas-ratio-popover:not(.hidden),
 #floating-title-card:not(.hidden) {
-  animation: popoverSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: popoverSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Inputs & Form Elements Smooth Glow */
@@ -15875,10 +15937,13 @@ body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-zoom-
   background: rgba(255, 255, 255, 0.18) !important;
 }
 
-/* Auto-collapse / disexpand sub-scope pills in Idle mode */
+/* Auto-collapse / disexpand sub-scope pills (top & bottom) in Idle mode */
 .side-slider-idle .m3-scope-pill:not(.hidden),
+.side-slider-idle .m3-top-scope-pill:not(.hidden),
 body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-scope-pill:not(.hidden),
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-pill:not(.hidden) {
+body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-top-scope-pill:not(.hidden),
+body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-pill:not(.hidden),
+body.side-bars-idle #side-right-slider-container:not(:hover) .m3-top-scope-pill:not(.hidden) {
   opacity: 0 !important;
   max-height: 0 !important;
   padding-top: 0 !important;
@@ -15894,9 +15959,13 @@ body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-pill:not(
 
 /* Hover or focus immediately expands sub-scope pills smoothly */
 #side-fx-slider-container:hover .m3-scope-pill:not(.hidden),
+#side-fx-slider-container:hover .m3-top-scope-pill:not(.hidden),
 #side-right-slider-container:hover .m3-scope-pill:not(.hidden),
+#side-right-slider-container:hover .m3-top-scope-pill:not(.hidden),
 #side-fx-slider-container:focus-within .m3-scope-pill:not(.hidden),
-#side-right-slider-container:focus-within .m3-scope-pill:not(.hidden) {
+#side-fx-slider-container:focus-within .m3-top-scope-pill:not(.hidden),
+#side-right-slider-container:focus-within .m3-scope-pill:not(.hidden),
+#side-right-slider-container:focus-within .m3-top-scope-pill:not(.hidden) {
   opacity: 1 !important;
   max-height: 250px !important;
   padding: 6px 3.5px !important;

@@ -234,7 +234,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260927_v723">
+<link rel="stylesheet" href="styles.css?v=20260927_v725">
 <script>
   (function() {
     try {
@@ -360,7 +360,6 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260923_v700">
 </head>
 <body class="theme-style-default text-gray-800 h-screen overflow-hidden flex">
 
@@ -897,252 +896,255 @@
   
   <!-- Left Side Floating Island: Canvas Popovers & Theme / Controls Pill Bar -->
   <div id="floating-left-cluster" class="flex flex-col items-start gap-2 pointer-events-none min-w-0 max-w-[calc(100%-110px)]">
-    <!-- Twin Row for Half-Layout Popovers: Title Layout (Left Half) & Aspect Ratio (Right Half) matching Controls Popover width -->
-    <div id="floating-popover-twin-row" class="w-full max-w-[340px] flex items-end justify-between gap-2 pointer-events-none mb-1">
+    <!-- Main Popovers Horizontal Container: Canvas Controls (Left) + Sub-Popovers (Right on Desktop & Tablet) -->
+    <div id="floating-popovers-horizontal-row" class="flex flex-col sm:flex-row items-start sm:items-end gap-2 pointer-events-none mb-1">
       
-      <!-- Window 3: Floating Title & Trademark Style / Placement Card (Left Half Layout) -->
-      <div id="floating-title-card" class="pointer-events-auto hidden rounded-2xl p-2 flex flex-col items-center gap-1.5 shadow-xl transition-all" aria-label="Title and Trademark Layout and Style Settings">
-        <!-- Header: Title / Trademark & Close -->
-        <div class="flex items-center justify-between w-full border-b border-white/20 pb-1 px-0.5">
-          <div class="flex items-center gap-1 min-w-0">
-            <svg id="floating-header-icon" class="w-3 h-3 theme-primary-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            <span id="floating-header-title" class="text-[9px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase truncate">TITLE</span>
-          </div>
-          <button type="button" id="btn-close-floating-title" class="p-0.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Options">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-
-        <!-- 1. Placement Toggle: Merged vs Separated (Title) OR Borderless vs Border (Trademark) -->
-        <div class="theme-picker-section w-full">
-          <div class="grid grid-cols-2 gap-1 w-full" id="title-placement-toggle-group">
-            <!-- Option 1: Merged (Title) / Borderless (Trademark) -->
-            <button type="button" id="btn-title-placement-merged" class="theme-style-btn active flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="merged">
-              <svg id="btn-placement-merged-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect>
-                <path stroke-linecap="round" stroke-width="2" d="M3 9h18"></path>
-              </svg>
-              <span id="btn-placement-merged-label">Merged</span>
-            </button>
-
-            <!-- Option 2: Separated (Title) / Border (Trademark) -->
-            <button type="button" id="btn-title-placement-separated" class="theme-style-btn flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="separated">
-              <svg id="btn-placement-separated-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="2" width="18" height="5" rx="2" stroke-width="2"></rect>
-                <rect x="3" y="10" width="18" height="12" rx="4" stroke-width="2"></rect>
-              </svg>
-              <span id="btn-placement-separated-label">Separated</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Separated Options: 3 Circular Controls Sharing 1 Horizontal Capsule Slider -->
-        <div id="title-separated-options-card" class="theme-picker-section w-full hidden pt-1 border-t border-gray-200/40 dark:border-white/10 flex flex-col gap-1.5">
+      <!-- Window 1: Main Canvas Controls Popover Window -->
+      <div id="canvas-controls-popover" class="pointer-events-auto hidden rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 flex flex-col items-center gap-2 sm:gap-2.5 min-w-[280px] max-w-[92vw] transition-all shrink-0">
+        <!-- Popover Header with Aspect Ratio Toggle Button -->
+        <div class="flex items-center justify-between w-full border-b border-white/20 pb-1.5 px-0.5">
+          <span id="stage-device-label" class="text-[9px] font-extrabold tracking-wider text-slate-600 uppercase">LIVE PHONE LOCKSCREEN PREVIEW</span>
           
-          <!-- Controls Row: 3 Circle Option Buttons + Dynamic Badge -->
-          <div class="flex items-center justify-between px-0.5 w-full">
-            <!-- 4 Circle Option Buttons -->
-            <div class="flex items-center gap-1" id="title-circle-options-group">
-              <!-- Circle 1: Corner Radius -->
-              <button type="button" id="btn-title-circle-radius" class="title-circle-btn active" data-param="radius" title="Corner Radius">
-                <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="6"/>
-                </svg>
-              </button>
-
-              <!-- Circle 2: Gap Distance -->
-              <button type="button" id="btn-title-circle-gap" class="title-circle-btn" data-param="gap" title="Gap Distance">
-                <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8 7l4-4 4 4M8 17l4 4 4-4M12 3v18"/>
-                </svg>
-              </button>
-
-              <!-- Circle 3: Width Size -->
-              <button type="button" id="btn-title-circle-width" class="title-circle-btn" data-param="width" title="Width Size">
-                <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 8L3 12l4 4M17 8l4 4-4 4M3 12h18"/>
-                </svg>
-              </button>
-
-              <!-- Circle 4: Opacity / Transparency -->
-              <button type="button" id="btn-title-circle-opacity" class="title-circle-btn" data-param="opacity" title="Opacity / Transparency">
-                <svg class="w-3 h-3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9"/>
-                  <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
-
-            <!-- Dynamic Active Badge -->
-            <span id="title-unified-badge" class="title-adaptive-badge">14px</span>
-          </div>
-
-          <!-- Shared Horizontal Capsule Slider (Apple / M3 Expressive with Center Dot) -->
-          <div class="relative w-full flex items-center">
-            <input type="range" id="slider-title-unified" min="0" max="28" value="14" step="1" class="w-full title-range-slider m3-capsule-slider" title="Adjust Parameter">
-          </div>
-
-        </div>
-
-        <!-- 3. Reset Button -->
-        <button type="button" id="btn-floating-reset-title" class="floating-reset-palette-btn w-full text-[8px] py-1 font-bold" data-i18n="resetToDefault">
-          RESET
-        </button>
-      </div>
-
-      <!-- Window 2: Floating Aspect Ratio Popover Window (Right Half Layout) -->
-      <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-2xl p-2 flex flex-col items-center gap-1.5 shadow-2xl transition-all">
-        <!-- Popover Header -->
-        <div class="flex items-center justify-between w-full border-b border-white/20 pb-1 px-0.5">
-          <div class="flex items-center gap-1 min-w-0">
-            <svg class="w-3 h-3 theme-primary-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- Aspect Ratio Button in Header (Replaces Display Options) -->
+          <button type="button" id="btn-controls-ratio-toggle" class="btn-ratio-pill-toggle" title="Open Aspect Ratio Window">
+            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
             </svg>
-            <span class="text-[9px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase truncate" data-i18n="screenAspectRatio">RATIO</span>
-          </div>
-          <button type="button" id="btn-close-ratio-popover" class="p-0.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Ratio Menu">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span id="current-ratio-badge">Auto (Match)</span>
           </button>
         </div>
 
-        <!-- 2x2 Ratio Cards -->
-        <div class="grid grid-cols-2 gap-1 w-full" id="screen-ratio-toggles">
-          <!-- Auto (Match) -->
-          <button type="button" class="ratio-card-btn pill-btn active p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="auto" title="Auto-match original image aspect ratio">
-            <div class="ratio-card-icon-box bg-amber-500/10 text-amber-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
-            </div>
-            <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
-              <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Auto</span>
-              <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">Match</span>
-            </div>
-          </button>
+        <!-- Title & Trademark Shared Input Row with Mode Switcher & Visibility Toggle -->
+        <div class="relative w-full flex flex-col gap-1" id="controls-title-wrapper">
+          <!-- Mode Switcher Tabs: Title vs Trademark -->
+          <div class="grid grid-cols-2 p-0.5 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="title-trademark-mode-toggles">
+            <button type="button" data-mode="title" class="capsule-btn active flex items-center justify-center py-0.5 sm:py-1 rounded-full text-[10.5px] font-bold transition-all" title="Edit Timetable Title">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span data-i18n="title">Title</span>
+            </button>
+            <button type="button" data-mode="trademark" class="capsule-btn flex items-center justify-center py-0.5 sm:py-1 rounded-full text-[10.5px] font-bold transition-all" title="Edit Trademark / Signature">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+              <span data-i18n="trademark">Trademark</span>
+            </button>
+          </div>
 
-          <!-- Android (20:9) -->
-          <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="android" title="Android Devices (20:9)">
-            <div class="ratio-card-icon-box bg-emerald-500/10 text-emerald-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          <!-- Shared Input & Visibility Bar -->
+          <div class="relative w-full flex items-center gap-1" id="controls-title-row">
+            <button type="button" id="btn-toggle-title-visibility" class="title-visibility-toggle-btn active shrink-0 flex items-center justify-center w-7 h-7 rounded-full transition-all" title="Toggle Title (Show / Hide)">
+              <!-- Eye Open Icon (Visible) -->
+              <svg class="w-3.5 h-3.5 icon-title-visible" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
-            </div>
-            <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
-              <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Android</span>
-              <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">20:9</span>
-            </div>
-          </button>
-
-          <!-- iOS (19.5:9) -->
-          <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="ios" title="iOS Devices (19.5:9)">
-            <div class="ratio-card-icon-box bg-blue-500/10 text-blue-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v1h6V3m-7 4h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z"/>
+              <!-- Eye Closed / Slash Icon (Hidden) -->
+              <svg class="w-3.5 h-3.5 icon-title-hidden hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
               </svg>
+            </button>
+            <div class="relative flex-1 min-w-0 flex items-center">
+              <input class="w-full text-center py-1.5 px-3 rounded-full text-[11px] font-bold text-gray-800 focus:outline-none transition-all h-7" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
+              <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 pointer-events-none">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              </div>
             </div>
-            <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
-              <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">iOS</span>
-              <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">19.5:9</span>
-            </div>
-          </button>
+          </div>
+        </div>
 
-          <!-- 18:9 (Classic) -->
-          <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="standard" title="Standard 18:9">
-            <div class="ratio-card-icon-box bg-indigo-500/10 text-indigo-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Device Type Toggles (Clean 4-Segment Text-Only Layout) -->
+        <div class="grid grid-cols-4 p-0.5 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
+          <button data-device="phone" class="capsule-btn active flex items-center justify-center py-1 rounded-full text-[10.5px] font-bold transition-colors">
+            <span data-i18n="phone">Phone</span>
+          </button>
+          <button data-device="tablet" class="capsule-btn flex items-center justify-center py-1 rounded-full text-[10.5px] font-bold transition-colors">
+            <span data-i18n="tablet">Tablet</span>
+          </button>
+          <button data-device="watch" class="capsule-btn flex items-center justify-center py-1 rounded-full text-[10.5px] font-bold transition-colors">
+            <span data-i18n="watch">Watch</span>
+          </button>
+          <button data-device="paper" class="capsule-btn flex items-center justify-center py-1 rounded-full text-[10.5px] font-bold transition-colors">
+            <span data-i18n="paper">Paper</span>
+          </button>
+        </div>
+
+        <!-- Toggles Row -->
+        <div class="flex items-center justify-center gap-2 w-full">
+          <!-- Lock UI Toggle -->
+          <div class="pill-toggle-group" id="toggle-lock-ui">
+            <button type="button" class="pill-btn active text-[9.5px] py-0.5 px-2" data-val="yes"><span data-i18n="uiOn">UI ON</span></button>
+            <button type="button" class="pill-btn text-[9.5px] py-0.5 px-2" data-val="no"><span data-i18n="uiOff">UI OFF</span></button>
+          </div>
+          <!-- Show/Hide Timetable Grid Toggle -->
+          <div class="pill-toggle-group" id="toggle-show-table">
+            <button type="button" class="pill-btn active text-[9.5px] py-0.5 px-2" data-val="yes"><span data-i18n="table">TABLE</span></button>
+            <button type="button" class="pill-btn text-[9.5px] py-0.5 px-2" data-val="no"><span data-i18n="bgOnly">BG ONLY</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Popovers Twin Group: Title/Trademark (Left) & Aspect Ratio (Right) on Side of Controls Popover -->
+      <div id="floating-popover-twin-row" class="flex items-end gap-1.5 pointer-events-none">
+        
+        <!-- Window 3: Floating Title & Trademark Style / Placement Card -->
+        <div id="floating-title-card" class="pointer-events-auto hidden rounded-2xl p-2 flex flex-col items-center gap-1.5 shadow-xl transition-all" aria-label="Title and Trademark Layout and Style Settings">
+          <!-- Header: Title / Trademark & Close -->
+          <div class="flex items-center justify-between w-full border-b border-white/20 pb-1 px-0.5">
+            <div class="flex items-center gap-1 min-w-0">
+              <svg id="floating-header-icon" class="w-3 h-3 theme-primary-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              <span id="floating-header-title" class="text-[9px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase truncate">TITLE</span>
+            </div>
+            <button type="button" id="btn-close-floating-title" class="p-0.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Options">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- 1. Placement Toggle: Merged vs Separated (Title) OR Borderless vs Border (Trademark) -->
+          <div class="theme-picker-section w-full">
+            <div class="grid grid-cols-2 gap-1 w-full" id="title-placement-toggle-group">
+              <!-- Option 1: Merged (Title) / Borderless (Trademark) -->
+              <button type="button" id="btn-title-placement-merged" class="theme-style-btn active flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="merged">
+                <svg id="btn-placement-merged-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect>
+                  <path stroke-linecap="round" stroke-width="2" d="M3 9h18"></path>
+                </svg>
+                <span id="btn-placement-merged-label">Merged</span>
+              </button>
+
+              <!-- Option 2: Separated (Title) / Border (Trademark) -->
+              <button type="button" id="btn-title-placement-separated" class="theme-style-btn flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="separated">
+                <svg id="btn-placement-separated-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="2" width="18" height="5" rx="2" stroke-width="2"></rect>
+                  <rect x="3" y="10" width="18" height="12" rx="4" stroke-width="2"></rect>
+                </svg>
+                <span id="btn-placement-separated-label">Separated</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Separated Options: 3 Circular Controls Sharing 1 Horizontal Capsule Slider -->
+          <div id="title-separated-options-card" class="theme-picker-section w-full hidden pt-1 border-t border-gray-200/40 dark:border-white/10 flex flex-col gap-1.5">
+            
+            <!-- Controls Row: 3 Circle Option Buttons + Dynamic Badge -->
+            <div class="flex items-center justify-between px-0.5 w-full">
+              <!-- 4 Circle Option Buttons -->
+              <div class="flex items-center gap-1" id="title-circle-options-group">
+                <!-- Circle 1: Corner Radius -->
+                <button type="button" id="btn-title-circle-radius" class="title-circle-btn active" data-param="radius" title="Corner Radius">
+                  <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="6"/>
+                  </svg>
+                </button>
+
+                <!-- Circle 2: Gap Distance -->
+                <button type="button" id="btn-title-circle-gap" class="title-circle-btn" data-param="gap" title="Gap Distance">
+                  <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 7l4-4 4 4M8 17l4 4 4-4M12 3v18"/>
+                  </svg>
+                </button>
+
+                <!-- Circle 3: Width Size -->
+                <button type="button" id="btn-title-circle-width" class="title-circle-btn" data-param="width" title="Width Size">
+                  <svg class="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 8L3 12l4 4M17 8l4 4-4 4M3 12h18"/>
+                  </svg>
+                </button>
+
+                <!-- Circle 4: Opacity / Transparency -->
+                <button type="button" id="btn-title-circle-opacity" class="title-circle-btn" data-param="opacity" title="Opacity / Transparency">
+                  <svg class="w-3 h-3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Dynamic Active Badge -->
+              <span id="title-unified-badge" class="title-adaptive-badge">14px</span>
+            </div>
+
+            <!-- Shared Horizontal Capsule Slider (Apple / M3 Expressive with Center Dot) -->
+            <div class="relative w-full flex items-center">
+              <input type="range" id="slider-title-unified" min="0" max="28" value="14" step="1" class="w-full title-range-slider m3-capsule-slider" title="Adjust Parameter">
+            </div>
+
+          </div>
+
+          <!-- 3. Reset Button -->
+          <button type="button" id="btn-floating-reset-title" class="floating-reset-palette-btn w-full text-[8px] py-1 font-bold" data-i18n="resetToDefault">
+            RESET
+          </button>
+        </div>
+
+        <!-- Window 2: Floating Aspect Ratio Popover Window -->
+        <div id="canvas-ratio-popover" class="pointer-events-auto hidden rounded-2xl p-2 flex flex-col items-center gap-1.5 shadow-2xl transition-all">
+          <!-- Popover Header -->
+          <div class="flex items-center justify-between w-full border-b border-white/20 pb-1 px-0.5">
+            <div class="flex items-center gap-1 min-w-0">
+              <svg class="w-3 h-3 theme-primary-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
               </svg>
+              <span class="text-[9px] font-extrabold tracking-wider text-slate-700 dark:text-slate-200 uppercase truncate" data-i18n="screenAspectRatio">RATIO</span>
             </div>
-            <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
-              <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Classic</span>
-              <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">18:9</span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Window 1: Main Canvas Controls Popover Window -->
-    <div id="canvas-controls-popover" class="pointer-events-auto hidden rounded-3xl p-4 flex flex-col items-center gap-3.5 min-w-[320px] max-w-[92vw] transition-all mb-1">
-      <!-- Popover Header with Aspect Ratio Toggle Button -->
-      <div class="flex items-center justify-between w-full border-b border-white/20 pb-2.5 px-1">
-        <span id="stage-device-label" class="text-[10px] font-extrabold tracking-wider text-slate-600 uppercase">LIVE PHONE LOCKSCREEN PREVIEW</span>
-        
-        <!-- Aspect Ratio Button in Header (Replaces Display Options) -->
-        <button type="button" id="btn-controls-ratio-toggle" class="btn-ratio-pill-toggle" title="Open Aspect Ratio Window">
-          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-          </svg>
-          <span id="current-ratio-badge">Auto (Match)</span>
-        </button>
-      </div>
-
-      <!-- Title & Trademark Shared Input Row with Mode Switcher & Visibility Toggle -->
-      <div class="relative w-full flex flex-col gap-1.5" id="controls-title-wrapper">
-        <!-- Mode Switcher Tabs: Title vs Trademark -->
-        <div class="grid grid-cols-2 p-0.5 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="title-trademark-mode-toggles">
-          <button type="button" data-mode="title" class="capsule-btn active flex items-center justify-center py-1 rounded-full text-[11px] font-bold transition-all" title="Edit Timetable Title">
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            <span data-i18n="title">Title</span>
-          </button>
-          <button type="button" data-mode="trademark" class="capsule-btn flex items-center justify-center py-1 rounded-full text-[11px] font-bold transition-all" title="Edit Trademark / Signature">
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-            <span data-i18n="trademark">Trademark</span>
-          </button>
-        </div>
-
-        <!-- Shared Input & Visibility Bar -->
-        <div class="relative w-full flex items-center gap-1.5" id="controls-title-row">
-          <button type="button" id="btn-toggle-title-visibility" class="title-visibility-toggle-btn active shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-all" title="Toggle Title (Show / Hide)">
-            <!-- Eye Open Icon (Visible) -->
-            <svg class="w-4 h-4 icon-title-visible" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-            <!-- Eye Closed / Slash Icon (Hidden) -->
-            <svg class="w-4 h-4 icon-title-hidden hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
-            </svg>
-          </button>
-          <div class="relative flex-1 min-w-0 flex items-center">
-            <input class="w-full text-center py-2 px-4 rounded-full text-xs font-bold text-gray-800 focus:outline-none transition-all" type="text" id="input-title-text-stage" value="Untitled" placeholder="Timetable Title">
-            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 pointer-events-none">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            </div>
+            <button type="button" id="btn-close-ratio-popover" class="p-0.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Close Ratio Menu">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
-        </div>
-      </div>
 
-      <!-- Device Type Toggles (Clean 4-Segment Text-Only Layout) -->
-      <div class="grid grid-cols-4 p-1 border border-gray-200/80 dark:border-slate-700/80 rounded-full shadow-xs w-full capsule-group" id="device-type-toggles">
-        <button data-device="phone" class="capsule-btn active flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-          <span data-i18n="phone">Phone</span>
-        </button>
-        <button data-device="tablet" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-          <span data-i18n="tablet">Tablet</span>
-        </button>
-        <button data-device="watch" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-          <span data-i18n="watch">Watch</span>
-        </button>
-        <button data-device="paper" class="capsule-btn flex items-center justify-center py-1.5 rounded-full text-xs font-bold transition-colors">
-          <span data-i18n="paper">Paper</span>
-        </button>
-      </div>
+          <!-- 2x2 Ratio Cards -->
+          <div class="grid grid-cols-2 gap-1 w-full" id="screen-ratio-toggles">
+            <!-- Auto (Match) -->
+            <button type="button" class="ratio-card-btn pill-btn active p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="auto" title="Auto-match original image aspect ratio">
+              <div class="ratio-card-icon-box bg-amber-500/10 text-amber-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
+                <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Auto</span>
+                <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">Match</span>
+              </div>
+            </button>
 
-      <!-- Toggles Row -->
-      <div class="flex items-center justify-center gap-3 w-full">
-        <!-- Lock UI Toggle -->
-        <div class="pill-toggle-group" id="toggle-lock-ui">
-          <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="uiOn">UI ON</span></button>
-          <button type="button" class="pill-btn" data-val="no"><span data-i18n="uiOff">UI OFF</span></button>
-        </div>
-        <!-- Show/Hide Timetable Grid Toggle -->
-        <div class="pill-toggle-group" id="toggle-show-table">
-          <button type="button" class="pill-btn active" data-val="yes"><span data-i18n="table">TABLE</span></button>
-          <button type="button" class="pill-btn" data-val="no"><span data-i18n="bgOnly">BG ONLY</span></button>
+            <!-- Android (20:9) -->
+            <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="android" title="Android Devices (20:9)">
+              <div class="ratio-card-icon-box bg-emerald-500/10 text-emerald-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
+                <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Android</span>
+                <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">20:9</span>
+              </div>
+            </button>
+
+            <!-- iOS (19.5:9) -->
+            <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="ios" title="iOS Devices (19.5:9)">
+              <div class="ratio-card-icon-box bg-blue-500/10 text-blue-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v1h6V3m-7 4h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z"/>
+                </svg>
+              </div>
+              <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
+                <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">iOS</span>
+                <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">19.5:9</span>
+              </div>
+            </button>
+
+            <!-- 18:9 (Classic) -->
+            <button type="button" class="ratio-card-btn pill-btn p-1 px-1 rounded-lg flex items-center gap-1 min-w-0" data-ratio="standard" title="Standard 18:9">
+              <div class="ratio-card-icon-box bg-indigo-500/10 text-indigo-500 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded flex items-center justify-center shrink-0">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+              </div>
+              <div class="ratio-card-text min-w-0 overflow-hidden flex flex-col text-left">
+                <span class="ratio-card-title text-[8px] font-bold truncate leading-tight">Classic</span>
+                <span class="ratio-card-sub text-[7px] opacity-75 truncate leading-tight">18:9</span>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -3170,7 +3172,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260923_v721"></script>
-<script src="app_v3.js?v=20260927_v723"></script>
+<script src="app_v3.js?v=20260927_v725"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
