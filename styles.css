@@ -823,6 +823,8 @@ body.dark-mode .mobile-export-divider,
   flex-shrink: 0 !important;
   box-sizing: border-box !important;
   overflow: visible !important;
+  width: 323px; /* 380px * 0.85 */
+  height: 654.5px; /* 770px * 0.85 */
 }
 
 /* Wrapper contains canvas & physical side buttons scaled seamlessly as one hardware unit */
@@ -830,13 +832,16 @@ body.dark-mode .mobile-export-divider,
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
+  width: 380px !important;
+  height: 770px !important;
+  transform: scale(0.85) translateZ(0);
+  transform-origin: 0 0 !important;
   max-width: none !important;
   flex-shrink: 0 !important;
   display: block !important;
   touch-action: pan-x pan-y !important;
   box-sizing: border-box !important;
   overflow: visible !important;
-  transform-origin: 0 0 !important;
 }
 
 .m3-phone-canvas.canvas-phone {
@@ -6819,24 +6824,6 @@ body.dark-mode .exact-grid-cell-slot,
   height: 0px !important;
 }
 
-@keyframes iosNotificationStackIn {
-  0% {
-    opacity: 0;
-    transform: translateY(28px) scale(0.92) translateZ(0);
-    filter: blur(4px);
-  }
-  65% {
-    opacity: 0.95;
-    transform: translateY(-2px) scale(1.015) translateZ(0);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1) translateZ(0);
-    filter: blur(0);
-  }
-}
-
 .expandable-class-card,
 .class-item-card,
 .class-card-item {
@@ -6855,40 +6842,10 @@ body.dark-mode .exact-grid-cell-slot,
     inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04),
     0 6px 16px -2px rgba(15, 23, 42, 0.08),
     0 2px 6px 0 rgba(15, 23, 42, 0.04) !important;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
   width: 100%;
-  animation: iosNotificationStackIn 0.46s cubic-bezier(0.16, 1.3, 0.3, 1) both;
-  animation-delay: calc(var(--list-index, 0) * 55ms);
-  will-change: transform, opacity;
-}
-
-@supports (animation-timeline: view()) {
-  @keyframes iosCardScrollFlow {
-    entry 0% {
-      opacity: 0.3;
-      transform: translateY(20px) scale(0.95);
-    }
-    entry 100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    exit 0% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    exit 100% {
-      opacity: 0.2;
-      transform: translateY(-16px) scale(0.94);
-    }
-  }
-
-  #added-classes-list .class-item-card {
-    view-timeline-name: --cardTimeline;
-    view-timeline-axis: block;
-    animation-timeline: --cardTimeline;
-    animation-name: iosCardScrollFlow;
-    animation-fill-mode: both;
-  }
+  animation: none !important;
+  will-change: auto !important;
 }
 
 .expandable-class-card:hover,
@@ -9626,8 +9583,7 @@ body.dark-mode .expandable-content::before {
   }
 }
 
-.exact-grid-cell-course,
-.class-card-item {
+.exact-grid-cell-course {
   animation: cellSpringPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   transform-origin: center center;
 }
@@ -21272,9 +21228,8 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
   .class-item-card,
   .expandable-class-card,
   .class-card-item {
-    animation: iosNotificationStackIn 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
-    animation-delay: calc(var(--list-index, 0) * 75ms) !important;
-    will-change: transform, opacity, filter !important;
+    animation: none !important;
+    will-change: auto !important;
   }
 
   /* ── 3. BUTTONS: Unified Tactile Squish + Spring-Back ───────────── */

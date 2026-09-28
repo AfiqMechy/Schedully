@@ -253,7 +253,18 @@ class SchedullyApp {
     if (typeof this.applyCanvasZoom === 'function') {
       this.applyCanvasZoom(false);
     }
-    document.body.classList.add('app-ready');
+    
+    // Double RAF ensures all timetable cards and layout are painted before veil fades away
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.body.classList.add('app-ready');
+        setTimeout(() => {
+          const veil = document.getElementById('app-loading-veil');
+          if (veil) veil.style.display = 'none';
+        }, 650);
+      });
+    });
+
     this.updateHistoryButtonUI();
     this.setupAutoImmersiveFullscreen();
     this.setupCanvasIdleFloat();
