@@ -1,36 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- SW CACHE BUSTER: unregister all old service workers and reload once if stale cache detected -->
-<script>
-(function() {
-  var CURRENT_VERSION = 'schedully-cache-v680';
-  var CACHE_KEY = 'sw_version_confirmed';
-  if ('serviceWorker' in navigator && window.caches) {
-    // Check if we're running with an old cache version
-    caches.keys().then(function(keys) {
-      var hasOldCache = keys.some(function(k) { return k !== CURRENT_VERSION && k.startsWith('schedully-cache'); });
-      if (hasOldCache) {
-        // Unregister all service workers, delete all caches, then reload
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          var tasks = regs.map(function(r) { return r.unregister(); });
-          return Promise.all(tasks);
-        }).then(function() {
-          return caches.keys();
-        }).then(function(cacheKeys) {
-          return Promise.all(cacheKeys.map(function(k) { return caches.delete(k); }));
-        }).then(function() {
-          // Only reload once to prevent infinite loop
-          if (!sessionStorage.getItem('sw_reload_done')) {
-            sessionStorage.setItem('sw_reload_done', '1');
-            window.location.reload(true);
-          }
-        });
-      }
-    }).catch(function(){});
-  }
-})();
-</script>
 <script>
   (function() {
     const saved = localStorage.getItem('schedully_theme_mode') || 'auto';
@@ -128,11 +98,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Schedully">
-<meta name="application-name" content="Schedully">
-<!-- Performance Optimized Google Fonts & UI Icons (preconnect + font-display=swap) -->
+<!-- Performance Optimized Google Fonts & UI Icons (preconnect + preload + font-display=swap) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<link rel="preload" href="styles.css?v=20260928_v737" as="style">
+<link rel="preload" href="app_v3.js?v=20260928_v737" as="script">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+</noscript>
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
@@ -234,7 +208,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260927_v725">
+<link rel="stylesheet" href="styles.css?v=20260928_v737">
 <script>
   (function() {
     try {
@@ -3172,13 +3146,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260923_v721"></script>
-<script src="app_v3.js?v=20260927_v725"></script>
+<script src="app_v3.js?v=20260928_v737"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=721').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=737').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
 

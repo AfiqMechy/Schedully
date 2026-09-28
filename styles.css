@@ -7576,6 +7576,43 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
     pointer-events: auto !important;
     align-self: flex-end !important;
   }
+
+  /* Desktop, Tablet & Landscape: Bottom buttons inline placement */
+  #bottom-left-floating-column {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  #floating-right-actions-column {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .floating-palette-card,
+  #floating-palette-mode-card {
+    bottom: max(60px, calc(env(safe-area-inset-bottom, 0px) + 60px)) !important;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 639px) {
+  #bottom-left-floating-column {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  #floating-right-actions-column {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  .floating-palette-card,
+  #floating-palette-mode-card {
+    bottom: max(50px, calc(env(safe-area-inset-bottom, 0px) + 50px)) !important;
+  }
 }
 
 /* Compact Mobile (Vertical Stack Fallback) */
@@ -15937,43 +15974,6 @@ body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-zoom-
   background: rgba(255, 255, 255, 0.18) !important;
 }
 
-/* Auto-collapse / disexpand sub-scope pills (top & bottom) in Idle mode */
-.side-slider-idle .m3-scope-pill:not(.hidden),
-.side-slider-idle .m3-top-scope-pill:not(.hidden),
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-scope-pill:not(.hidden),
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-top-scope-pill:not(.hidden),
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-pill:not(.hidden),
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-top-scope-pill:not(.hidden) {
-  opacity: 0 !important;
-  max-height: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  border-width: 0 !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
-  transform: scale(0.82) !important;
-  transition: all 0.35s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
-}
-
-/* Hover or focus immediately expands sub-scope pills smoothly */
-#side-fx-slider-container:hover .m3-scope-pill:not(.hidden),
-#side-fx-slider-container:hover .m3-top-scope-pill:not(.hidden),
-#side-right-slider-container:hover .m3-scope-pill:not(.hidden),
-#side-right-slider-container:hover .m3-top-scope-pill:not(.hidden),
-#side-fx-slider-container:focus-within .m3-scope-pill:not(.hidden),
-#side-fx-slider-container:focus-within .m3-top-scope-pill:not(.hidden),
-#side-right-slider-container:focus-within .m3-scope-pill:not(.hidden),
-#side-right-slider-container:focus-within .m3-top-scope-pill:not(.hidden) {
-  opacity: 1 !important;
-  max-height: 250px !important;
-  padding: 6px 3.5px !important;
-  border-width: 1px !important;
-  pointer-events: auto !important;
-  transform: scale(1) !important;
-}
-
 /* Hide outside value indicator badges completely in Idle mode */
 .side-slider-idle .m3-zoom-outside-badge,
 .side-slider-idle .m3-fx-outside-badge,
@@ -17960,6 +17960,11 @@ body.dark-mode .card-expand-header h3,
    Keeps only #floating-hide-ui-island, which auto-hides after 3s.
    ═══════════════════════════════════════════════════════════════ */
 body.ui-hidden-mode #left-action-container,
+body.ui-hidden-mode #center-action-container,
+body.ui-hidden-mode #unified-io-wrapper,
+body.ui-hidden-mode #unified-io-pill-bar,
+body.ui-hidden-mode #btn-floating-import,
+body.ui-hidden-mode #btn-mobile-export-toggle,
 body.ui-hidden-mode #floating-import-wrapper,
 body.ui-hidden-mode #import-menu-popover,
 body.ui-hidden-mode #right-action-container,
@@ -17994,6 +17999,9 @@ body.ui-hidden-mode .mobile-pip-widget,
 body.ui-hidden-mode .mobile-pip-bubble,
 body.ui-hidden-mode #canvas-controls-popover,
 body.ui-hidden-mode #canvas-ratio-popover,
+body.ui-hidden-mode #floating-title-card,
+body.ui-hidden-mode #floating-popovers-horizontal-row,
+body.ui-hidden-mode #floating-popover-twin-row,
 body.ui-hidden-mode #login-providers-menu,
 body.ui-hidden-mode #profile-settings-menu,
 body.ui-hidden-mode #grid-swap-toast,

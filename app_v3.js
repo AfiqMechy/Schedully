@@ -583,21 +583,25 @@ class SchedullyApp {
         // Close sidebars & popovers if open
         const popover = document.getElementById('canvas-controls-popover');
         const ratioPopover = document.getElementById('canvas-ratio-popover');
+        const titleCard = document.getElementById('floating-title-card');
         const addCourseCard = document.getElementById('floating-add-course-wizard-card');
         const settingsCard = document.getElementById('floating-schedule-settings-card');
         const paletteCard = document.getElementById('floating-palette-mode-card');
         const fontCard = document.getElementById('floating-font-style-card');
         const daysCard = document.getElementById('floating-days-time-card');
         const importPopover = document.getElementById('import-menu-popover');
+        const exportDropdown = document.getElementById('mobile-export-dropdown');
 
         if (popover) popover.classList.add('hidden');
         if (ratioPopover) ratioPopover.classList.add('hidden');
+        if (titleCard) titleCard.classList.add('hidden');
         if (addCourseCard) addCourseCard.classList.add('hidden');
         if (settingsCard) settingsCard.classList.add('hidden');
         if (paletteCard) paletteCard.classList.add('hidden');
         if (fontCard) fontCard.classList.add('hidden');
         if (daysCard) daysCard.classList.add('hidden');
         if (importPopover) importPopover.classList.add('hidden');
+        if (exportDropdown) exportDropdown.classList.add('hidden');
         if (typeof window.toggleLeftSidebar === 'function') window.toggleLeftSidebar(true);
         if (typeof window.toggleRightSidebar === 'function') window.toggleRightSidebar(true);
         const leftSidebar = document.getElementById('left-sidebar');
@@ -6732,14 +6736,17 @@ class SchedullyApp {
     const btnOpacityScopeTitle = document.getElementById('btn-opacity-scope-title');
     const btnOpacityScopeTrademark = document.getElementById('btn-opacity-scope-trademark');
 
-    // Active tool state per side (declared earlier to fix TDZ in renderZoomFrame)
-    leftActiveTool = 'layout';
-    rightActiveTool = 'zoom';
-    let lastActiveSide = 'right';
+    // Active tool state per side (restored from localStorage)
+    leftActiveTool = localStorage.getItem('schedully_left_active_tool') || 'layout';
+    rightActiveTool = localStorage.getItem('schedully_right_active_tool') || 'zoom';
+    this.leftActiveTool = leftActiveTool;
+    this.rightActiveTool = rightActiveTool;
+    let lastActiveSide = localStorage.getItem('schedully_last_active_side') || 'left';
 
     const setActiveSideSlider = (side) => {
       if (side !== 'left' && side !== 'right') return;
       lastActiveSide = side;
+      try { localStorage.setItem('schedully_last_active_side', side); } catch(e) {}
       if (typeof this.wakeUpSideSliders === 'function') this.wakeUpSideSliders();
       if (leftSliderContainer) {
         leftSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
@@ -6750,12 +6757,30 @@ class SchedullyApp {
     };
     this.setActiveSideSlider = setActiveSideSlider;
 
-    // Sub-mode states
-    let activeRadiusScope = 'both'; // 'both' | 'table' | 'cards'
-    let activeFontScope = 'all'; // 'all' | 'cards' | 'header' | 'title' | 'trademark'
-    let activeLayoutSubMode = 'width'; // 'width' | 'height' | 'posx' | 'posy'
-    let activeBlurSubMode = 'blur'; // 'blur' | 'dim'
-    let activeOpacityScope = 'all'; // 'all' | 'grid' | 'header' | 'cards' | 'title' | 'trademark'
+    // Sub-mode states (restored from localStorage)
+    let activeRadiusScope = localStorage.getItem('schedully_active_radius_scope') || 'both';
+    let activeFontScope = localStorage.getItem('schedully_active_font_scope') || 'all';
+    let activeLayoutSubMode = localStorage.getItem('schedully_active_layout_submode') || 'width';
+    let activeBlurSubMode = localStorage.getItem('schedully_active_blur_submode') || 'blur';
+    let activeOpacityScope = localStorage.getItem('schedully_active_opacity_scope') || 'all';
+    this.activeRadiusScope = activeRadiusScope;
+    this.activeFontScope = activeFontScope;
+    this.activeLayoutSubMode = activeLayoutSubMode;
+    this.activeBlurSubMode = activeBlurSubMode;
+    this.activeOpacityScope = activeOpacityScope;
+
+    this.setLeftActiveTool = (tool) => {
+      leftActiveTool = tool;
+      this.leftActiveTool = tool;
+      try { localStorage.setItem('schedully_left_active_tool', tool); } catch(e) {}
+      updateSideSliderUI('left', false);
+    };
+    this.setRightActiveTool = (tool) => {
+      rightActiveTool = tool;
+      this.rightActiveTool = tool;
+      try { localStorage.setItem('schedully_right_active_tool', tool); } catch(e) {}
+      updateSideSliderUI('right', false);
+    };
 
     let leftBadgeTimeout = null;
     let rightBadgeTimeout = null;
@@ -6886,11 +6911,16 @@ class SchedullyApp {
         if (btn) btn.classList.toggle('active', toolId === activeTool);
       });
 
-      const isExpanded = side === 'left' ? leftScopesExpanded : rightScopesExpanded;
+      // Helper to check if a tool is active on whichever side it is currently placed
+      const isToolActive = (toolId) => {
+        const toolSide = getToolCurrentSide(toolId);
+        if (!toolSide) return false;
+        return (toolSide === 'left' ? leftActiveTool : rightActiveTool) === toolId;
+      };
 
-      // Update Sub-Scope Pills Visibility & Active states
+      // Update Sub-Scope Pills Visibility & Active states (Option A: Always visible for active tool on its side)
       if (radiusScopeGroup) {
-        radiusScopeGroup.classList.toggle('hidden', activeTool !== 'radius' || !isExpanded);
+        radiusScopeGroup.classList.toggle('hidden', !isToolActive('radius'));
         [btnRadiusScopeBoth, btnRadiusScopeTable, btnRadiusScopeCards].forEach(b => b?.classList.remove('active'));
         if (activeRadiusScope === 'both') btnRadiusScopeBoth?.classList.add('active');
         else if (activeRadiusScope === 'table') btnRadiusScopeTable?.classList.add('active');
@@ -6898,9 +6928,9 @@ class SchedullyApp {
       }
 
       if (fontScopeGroup) {
-        fontScopeGroup.classList.toggle('hidden', activeTool !== 'font' || !isExpanded);
-        if (fontTopGroup) fontTopGroup.classList.toggle('hidden', activeTool !== 'font' || !isExpanded);
-        if (activeTool !== 'font' || !isExpanded) {
+        fontScopeGroup.classList.toggle('hidden', !isToolActive('font'));
+        if (fontTopGroup) fontTopGroup.classList.toggle('hidden', !isToolActive('font'));
+        if (!isToolActive('font')) {
           floatingFontStyleCard?.classList.add('hidden');
           btnFontPanelToggle?.classList.remove('active');
         }
@@ -6913,9 +6943,9 @@ class SchedullyApp {
       }
 
       if (layoutScopeGroup) {
-        layoutScopeGroup.classList.toggle('hidden', activeTool !== 'layout' || !isExpanded);
-        if (layoutTopGroup) layoutTopGroup.classList.toggle('hidden', activeTool !== 'layout' || !isExpanded);
-        if (activeTool !== 'layout' || !isExpanded) {
+        layoutScopeGroup.classList.toggle('hidden', !isToolActive('layout'));
+        if (layoutTopGroup) layoutTopGroup.classList.toggle('hidden', !isToolActive('layout'));
+        if (!isToolActive('layout')) {
           floatingDaysTimeCard?.classList.add('hidden');
           btnDaysPanelToggle?.classList.remove('active');
         }
@@ -6927,14 +6957,14 @@ class SchedullyApp {
       }
 
       if (blurScopeGroup) {
-        blurScopeGroup.classList.toggle('hidden', activeTool !== 'blur' || !isExpanded);
+        blurScopeGroup.classList.toggle('hidden', !isToolActive('blur'));
         [btnBlurScopeBlur, btnBlurScopeDim].forEach(b => b?.classList.remove('active'));
         if (activeBlurSubMode === 'blur') btnBlurScopeBlur?.classList.add('active');
         else if (activeBlurSubMode === 'dim') btnBlurScopeDim?.classList.add('active');
       }
 
       if (opacityScopeGroup) {
-        opacityScopeGroup.classList.toggle('hidden', activeTool !== 'opacity' || !isExpanded);
+        opacityScopeGroup.classList.toggle('hidden', !isToolActive('opacity'));
         [btnOpacityScopeAll, btnOpacityScopeGrid, btnOpacityScopeHeader, btnOpacityScopeCards, btnOpacityScopeTitle, btnOpacityScopeTrademark].forEach(b => b?.classList.remove('active'));
         if (activeOpacityScope === 'all') btnOpacityScopeAll?.classList.add('active');
         else if (activeOpacityScope === 'grid') btnOpacityScopeGrid?.classList.add('active');
@@ -7257,41 +7287,37 @@ class SchedullyApp {
       this._stagePending(true);
     };
 
-    let leftScopesExpanded = false;
-    let rightScopesExpanded = false;
+    let leftScopesExpanded = true;
+    let rightScopesExpanded = true;
 
     this.collapseSideSliders = () => {
-      leftScopesExpanded = false;
-      rightScopesExpanded = false;
-      updateSideSliderUI('left', true);
-      updateSideSliderUI('right', true);
+      // Option A: Sub-options stay always visible for the active tool
+      // Inactivity triggers smooth ambient dimming via side-slider-idle without hiding suboptions
+      if (leftSliderContainer) leftSliderContainer.classList.add('side-slider-idle');
+      if (rightSliderContainer) rightSliderContainer.classList.add('side-slider-idle');
     };
 
     // Activate a tool (detecting whether it's on left or right)
     const selectSliderTool = (toolId) => {
       const side = getToolCurrentSide(toolId);
-      const isAlreadyActive = (side === 'left' && leftActiveTool === toolId) || (side === 'right' && rightActiveTool === toolId);
       
       setActiveSideSlider(side);
       if (side === 'left') {
-        if (isAlreadyActive) {
-          leftScopesExpanded = !leftScopesExpanded;
-        } else {
-          leftActiveTool = toolId;
-          leftScopesExpanded = true;
-        }
+        leftActiveTool = toolId;
+        this.leftActiveTool = toolId;
+        try { localStorage.setItem('schedully_left_active_tool', toolId); } catch(e) {}
+        leftScopesExpanded = true;
       } else {
-        if (isAlreadyActive) {
-          rightScopesExpanded = !rightScopesExpanded;
-        } else {
-          rightActiveTool = toolId;
-          rightScopesExpanded = true;
-        }
+        rightActiveTool = toolId;
+        this.rightActiveTool = toolId;
+        try { localStorage.setItem('schedully_right_active_tool', toolId); } catch(e) {}
+        rightScopesExpanded = true;
       }
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
       window.haptics?.trigger?.('selection');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     };
 
     // Attach click listeners to tool buttons
@@ -7308,154 +7334,204 @@ class SchedullyApp {
     btnRadiusScopeBoth?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeRadiusScope = 'both';
+      this.activeRadiusScope = 'both';
+      try { localStorage.setItem('schedully_active_radius_scope', 'both'); } catch(e) {}
       const side = getToolCurrentSide('radius');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnRadiusScopeTable?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeRadiusScope = 'table';
+      this.activeRadiusScope = 'table';
+      try { localStorage.setItem('schedully_active_radius_scope', 'table'); } catch(e) {}
       const side = getToolCurrentSide('radius');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnRadiusScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeRadiusScope = 'cards';
+      this.activeRadiusScope = 'cards';
+      try { localStorage.setItem('schedully_active_radius_scope', 'cards'); } catch(e) {}
       const side = getToolCurrentSide('radius');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
 
     btnFontScopeAll?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'all';
+      this.activeFontScope = 'all';
+      try { localStorage.setItem('schedully_active_font_scope', 'all'); } catch(e) {}
       const side = getToolCurrentSide('font');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnFontScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'cards';
+      this.activeFontScope = 'cards';
+      try { localStorage.setItem('schedully_active_font_scope', 'cards'); } catch(e) {}
       const side = getToolCurrentSide('font');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnFontScopeHeader?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'header';
+      this.activeFontScope = 'header';
+      try { localStorage.setItem('schedully_active_font_scope', 'header'); } catch(e) {}
       const side = getToolCurrentSide('font');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnFontScopeTitle?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'title';
+      this.activeFontScope = 'title';
+      try { localStorage.setItem('schedully_active_font_scope', 'title'); } catch(e) {}
       const side = getToolCurrentSide('font');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnFontScopeTrademark?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'trademark';
+      this.activeFontScope = 'trademark';
+      try { localStorage.setItem('schedully_active_font_scope', 'trademark'); } catch(e) {}
       const side = getToolCurrentSide('font');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
 
     btnOpacityScopeAll?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'all';
+      this.activeOpacityScope = 'all';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'all'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnOpacityScopeGrid?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'grid';
+      this.activeOpacityScope = 'grid';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'grid'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnOpacityScopeHeader?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'header';
+      this.activeOpacityScope = 'header';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'header'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnOpacityScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'cards';
+      this.activeOpacityScope = 'cards';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'cards'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnOpacityScopeTitle?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'title';
+      this.activeOpacityScope = 'title';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'title'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
     btnOpacityScopeTrademark?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'trademark';
+      this.activeOpacityScope = 'trademark';
+      try { localStorage.setItem('schedully_active_opacity_scope', 'trademark'); } catch(e) {}
       const side = getToolCurrentSide('opacity');
       setActiveSideSlider(side);
       updateSideSliderUI(side, true);
       showSideBadgeTemporarily(side);
       window.soundFX?.play?.('tap');
+      if (typeof this._stagePending === 'function') this._stagePending(false);
     });
 
     btnFxWidth?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       activeLayoutSubMode = 'width';
+      this.activeLayoutSubMode = 'width';
+      try { localStorage.setItem('schedully_active_layout_submode', 'width'); } catch(e) {}
       selectSliderTool('layout');
     });
     btnFxHeight?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       activeLayoutSubMode = 'height';
+      this.activeLayoutSubMode = 'height';
+      try { localStorage.setItem('schedully_active_layout_submode', 'height'); } catch(e) {}
       selectSliderTool('layout');
     });
     btnFxPosx?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       activeLayoutSubMode = 'posx';
+      this.activeLayoutSubMode = 'posx';
+      try { localStorage.setItem('schedully_active_layout_submode', 'posx'); } catch(e) {}
       selectSliderTool('layout');
     });
     btnFxPosy?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       activeLayoutSubMode = 'posy';
+      this.activeLayoutSubMode = 'posy';
+      try { localStorage.setItem('schedully_active_layout_submode', 'posy'); } catch(e) {}
       selectSliderTool('layout');
     });
 
@@ -7463,12 +7539,16 @@ class SchedullyApp {
       e.preventDefault();
       e.stopPropagation();
       activeBlurSubMode = 'blur';
+      this.activeBlurSubMode = 'blur';
+      try { localStorage.setItem('schedully_active_blur_submode', 'blur'); } catch(e) {}
       selectSliderTool('blur');
     });
     btnBlurScopeDim?.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       activeBlurSubMode = 'dim';
+      this.activeBlurSubMode = 'dim';
+      try { localStorage.setItem('schedully_active_blur_submode', 'dim'); } catch(e) {}
       selectSliderTool('blur');
     });
 
@@ -8229,11 +8309,21 @@ class SchedullyApp {
       }
 
       // Ensure active tool on each side is valid
-      if (leftTools.length > 0 && !leftTools.includes(leftActiveTool)) {
+      const curSavedLeft = this.leftActiveTool || localStorage.getItem('schedully_left_active_tool') || leftActiveTool;
+      const curSavedRight = this.rightActiveTool || localStorage.getItem('schedully_right_active_tool') || rightActiveTool;
+      if (leftTools.includes(curSavedLeft)) {
+        leftActiveTool = curSavedLeft;
+        this.leftActiveTool = curSavedLeft;
+      } else if (leftTools.length > 0 && !leftTools.includes(leftActiveTool)) {
         leftActiveTool = leftTools[0];
+        this.leftActiveTool = leftTools[0];
       }
-      if (rightTools.length > 0 && !rightTools.includes(rightActiveTool)) {
+      if (rightTools.includes(curSavedRight)) {
+        rightActiveTool = curSavedRight;
+        this.rightActiveTool = curSavedRight;
+      } else if (rightTools.length > 0 && !rightTools.includes(rightActiveTool)) {
         rightActiveTool = rightTools[0];
+        this.rightActiveTool = rightTools[0];
       }
 
       const showSliders = (localStorage.getItem('schedully_show_side_sliders') !== 'no');
@@ -11367,6 +11457,33 @@ class SchedullyApp {
         this.applyTrademarkLayout();
       }
 
+      // 16. Active Slider Tools & Submodes (Sticky state)
+      if (settings.leftActiveTool) {
+        try { localStorage.setItem('schedully_left_active_tool', settings.leftActiveTool); } catch (e) {}
+        if (typeof this.setLeftActiveTool === 'function') this.setLeftActiveTool(settings.leftActiveTool);
+      }
+      if (settings.rightActiveTool) {
+        try { localStorage.setItem('schedully_right_active_tool', settings.rightActiveTool); } catch (e) {}
+        if (typeof this.setRightActiveTool === 'function') this.setRightActiveTool(settings.rightActiveTool);
+      }
+      if (settings.activeLayoutSubMode) {
+        try { localStorage.setItem('schedully_active_layout_submode', settings.activeLayoutSubMode); } catch (e) {}
+      }
+      if (settings.activeRadiusScope) {
+        try { localStorage.setItem('schedully_active_radius_scope', settings.activeRadiusScope); } catch (e) {}
+      }
+      if (settings.activeFontScope) {
+        try { localStorage.setItem('schedully_active_font_scope', settings.activeFontScope); } catch (e) {}
+      }
+      if (settings.activeOpacityScope) {
+        try { localStorage.setItem('schedully_active_opacity_scope', settings.activeOpacityScope); } catch (e) {}
+      }
+      if (settings.activeBlurSubMode) {
+        try { localStorage.setItem('schedully_active_blur_submode', settings.activeBlurSubMode); } catch (e) {}
+      }
+      if (typeof this.syncLeftFxSlider === 'function') this.syncLeftFxSlider(false);
+      if (typeof this.syncRightSlider === 'function') this.syncRightSlider(false);
+
       if (typeof this.syncDaysAndTimeControlsUI === 'function') {
         this.syncDaysAndTimeControlsUI();
       }
@@ -11830,6 +11947,16 @@ class SchedullyApp {
           this.inputTitleStage.value = this.trademarkText;
         }
       }
+      const savedLeftTool = localStorage.getItem('schedully_left_active_tool');
+      if (savedLeftTool && typeof this.setLeftActiveTool === 'function') {
+        this.setLeftActiveTool(savedLeftTool);
+      }
+      const savedRightTool = localStorage.getItem('schedully_right_active_tool');
+      if (savedRightTool && typeof this.setRightActiveTool === 'function') {
+        this.setRightActiveTool(savedRightTool);
+      }
+      if (typeof this.syncLeftFxSlider === 'function') this.syncLeftFxSlider(false);
+      if (typeof this.syncRightSlider === 'function') this.syncRightSlider(false);
     } catch (e) {
       console.warn("Could not load classes from local storage", e);
       this.classes = [];
@@ -12396,6 +12523,13 @@ class SchedullyApp {
       zoomScale: this.zoomScale || 0.85,
       showLockUI: this.showLockUI !== undefined ? this.showLockUI : true,
       language: (window.SchedullyI18n ? window.SchedullyI18n.currentLang : (localStorage.getItem('schedully_language') || 'en')),
+      leftActiveTool: localStorage.getItem('schedully_left_active_tool') || 'layout',
+      rightActiveTool: localStorage.getItem('schedully_right_active_tool') || 'zoom',
+      activeLayoutSubMode: localStorage.getItem('schedully_active_layout_submode') || 'width',
+      activeRadiusScope: localStorage.getItem('schedully_active_radius_scope') || 'both',
+      activeFontScope: localStorage.getItem('schedully_active_font_scope') || 'all',
+      activeOpacityScope: localStorage.getItem('schedully_active_opacity_scope') || 'all',
+      activeBlurSubMode: localStorage.getItem('schedully_active_blur_submode') || 'blur',
 
       // Card Formats & Sub-options
       globalCardTimes: this.globalCardTimes !== undefined ? this.globalCardTimes : true,
@@ -12462,6 +12596,10 @@ class SchedullyApp {
       if (this.wallpaperSecondary) localStorage.setItem('schedully_wallpaper_secondary', this.wallpaperSecondary);
       if (this.wallpaperTertiary) localStorage.setItem('schedully_wallpaper_tertiary', this.wallpaperTertiary);
       if (this.wallpaperHeader) localStorage.setItem('schedully_wallpaper_header', this.wallpaperHeader);
+      const curLeftTool = localStorage.getItem('schedully_left_active_tool') || 'layout';
+      const curRightTool = localStorage.getItem('schedully_right_active_tool') || 'zoom';
+      localStorage.setItem('schedully_left_active_tool', curLeftTool);
+      localStorage.setItem('schedully_right_active_tool', curRightTool);
     } catch (e) {
       console.warn("Could not save to local storage", e);
     }
