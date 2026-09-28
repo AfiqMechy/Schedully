@@ -337,20 +337,20 @@ body.dark-mode .m3-right-sidebar,
 
   /* ── 3 ADAPTIVE FLOATING PILL BUTTONS AT TOP OF SCREEN (Menu on Left, Unified IO in Center, Actions on Right) ── */
   #left-action-container {
-    top: max(12px, calc(env(safe-area-inset-top, 0px) + 10px)) !important;
-    left: max(12px, calc(env(safe-area-inset-left, 0px) + 12px)) !important;
+    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    left: max(12px, env(safe-area-inset-left, 12px)) !important;
   }
 
   #center-action-container {
-    top: max(12px, calc(env(safe-area-inset-top, 0px) + 10px)) !important;
+    top: max(12px, env(safe-area-inset-top, 12px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 50 !important;
   }
 
   .top-action-bar-right {
-    top: max(12px, calc(env(safe-area-inset-top, 0px) + 10px)) !important;
-    right: max(12px, calc(env(safe-area-inset-right, 0px) + 12px)) !important;
+    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    right: max(12px, env(safe-area-inset-right, 12px)) !important;
     gap: 8px !important;
   }
 
@@ -503,13 +503,13 @@ body.dark-mode .m3-right-sidebar,
   /* Compact smartphone viewports (e.g. iPhone, Samsung Galaxy) */
   @media (max-width: 640px) {
     #left-action-container {
-      top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
-      left: max(8px, calc(env(safe-area-inset-left, 0px) + 8px)) !important;
+      top: max(10px, env(safe-area-inset-top, 10px)) !important;
+      left: max(8px, env(safe-area-inset-left, 8px)) !important;
       gap: 4px !important;
     }
 
     #center-action-container {
-      top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      top: max(10px, env(safe-area-inset-top, 10px)) !important;
     }
 
     .unified-io-pill {
@@ -534,8 +534,8 @@ body.dark-mode .m3-right-sidebar,
     }
 
     .top-action-bar-right {
-      top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
-      right: max(8px, calc(env(safe-area-inset-right, 0px) + 8px)) !important;
+      top: max(10px, env(safe-area-inset-top, 10px)) !important;
+      right: max(8px, env(safe-area-inset-right, 8px)) !important;
       gap: 4px !important;
     }
 
@@ -570,12 +570,12 @@ body.dark-mode .m3-right-sidebar,
   /* Ultra-compact small phones (width <= 380px) */
   @media (max-width: 380px) {
     #left-action-container {
-      top: max(8px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
-      left: max(6px, calc(env(safe-area-inset-left, 0px) + 6px)) !important;
+      top: max(8px, env(safe-area-inset-top, 8px)) !important;
+      left: max(6px, env(safe-area-inset-left, 6px)) !important;
     }
 
     #center-action-container {
-      top: max(8px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+      top: max(8px, env(safe-area-inset-top, 8px)) !important;
     }
 
     .unified-io-pill {
@@ -599,8 +599,8 @@ body.dark-mode .m3-right-sidebar,
     }
 
     .top-action-bar-right {
-      top: max(8px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
-      right: max(6px, calc(env(safe-area-inset-right, 0px) + 6px)) !important;
+      top: max(8px, env(safe-area-inset-top, 8px)) !important;
+      right: max(6px, env(safe-area-inset-right, 6px)) !important;
       gap: 3px !important;
     }
 
@@ -9941,14 +9941,14 @@ body.dark-mode .mobile-export-divider,
 
 #left-action-container {
   position: fixed !important;
-  top: max(14px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
-  left: max(14px, calc(env(safe-area-inset-left, 0px) + 14px)) !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
+  left: max(14px, env(safe-area-inset-left, 14px)) !important;
   z-index: 50 !important;
 }
 
 #center-action-container {
   position: fixed !important;
-  top: max(14px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: 50 !important;
@@ -9956,8 +9956,8 @@ body.dark-mode .mobile-export-divider,
 
 .top-action-bar-right {
   position: fixed !important;
-  top: max(14px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
-  right: max(18px, calc(env(safe-area-inset-right, 0px) + 18px)) !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
+  right: max(18px, env(safe-area-inset-right, 18px)) !important;
   z-index: 50 !important;
   display: flex !important;
   align-items: center !important;
