@@ -15885,8 +15885,8 @@ body.theme-style-glass.theme-dark .m3-zoom-track {
 #side-right-slider-container.side-slider-idle,
 .m3-expressive-fx-container.side-slider-idle,
 .m3-expressive-zoom-container.side-slider-idle,
-body.side-bars-idle #side-fx-slider-container:not(:hover),
-body.side-bars-idle #side-right-slider-container:not(:hover) {
+body.side-bars-idle #side-fx-slider-container,
+body.side-bars-idle #side-right-slider-container {
   opacity: 0.32 !important;
   filter: grayscale(90%) contrast(0.95) !important;
   transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.35s ease !important;
@@ -15896,8 +15896,8 @@ body.dark-mode #side-fx-slider-container.side-slider-idle,
 body.dark-mode #side-right-slider-container.side-slider-idle,
 .theme-dark #side-fx-slider-container.side-slider-idle,
 .theme-dark #side-right-slider-container.side-slider-idle,
-body.side-bars-idle.dark-mode #side-fx-slider-container:not(:hover),
-body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) {
+body.side-bars-idle.dark-mode #side-fx-slider-container,
+body.side-bars-idle.dark-mode #side-right-slider-container {
   opacity: 0.25 !important;
   filter: grayscale(95%) brightness(0.85) !important;
 }
@@ -15907,6 +15907,8 @@ body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) {
 #side-right-slider-container.side-slider-idle:hover,
 #side-fx-slider-container.side-slider-idle:focus-within,
 #side-right-slider-container.side-slider-idle:focus-within,
+#side-fx-slider-container:hover,
+#side-right-slider-container:hover,
 #side-fx-slider-container.active-drag,
 #side-right-slider-container.active-drag,
 #side-fx-slider-container.is-interacting,
@@ -15918,10 +15920,10 @@ body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) {
 /* Greying out active button highlights in idle mode */
 .side-slider-idle .m3-fx-mode-btn.active,
 .side-slider-idle .m3-scope-btn.active,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-fx-mode-btn.active,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-fx-mode-btn.active,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-scope-btn.active,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-btn.active {
+body.side-bars-idle #side-fx-slider-container .m3-fx-mode-btn.active,
+body.side-bars-idle #side-right-slider-container .m3-fx-mode-btn.active,
+body.side-bars-idle #side-fx-slider-container .m3-scope-btn.active,
+body.side-bars-idle #side-right-slider-container .m3-scope-btn.active {
   background: rgba(148, 163, 184, 0.24) !important;
   color: #64748B !important;
   stroke: #64748B !important;
@@ -15930,12 +15932,19 @@ body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-btn.activ
   transform: scale(0.96) !important;
 }
 
+#side-fx-slider-container:hover .m3-fx-mode-btn.active,
+#side-right-slider-container:hover .m3-fx-mode-btn.active,
+#side-fx-slider-container:hover .m3-scope-btn.active,
+#side-right-slider-container:hover .m3-scope-btn.active {
+  transform: scale(1) !important;
+}
+
 body.dark-mode .side-slider-idle .m3-fx-mode-btn.active,
 body.dark-mode .side-slider-idle .m3-scope-btn.active,
-body.side-bars-idle.dark-mode #side-fx-slider-container:not(:hover) .m3-fx-mode-btn.active,
-body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-fx-mode-btn.active,
-body.side-bars-idle.dark-mode #side-fx-slider-container:not(:hover) .m3-scope-btn.active,
-body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-scope-btn.active {
+body.side-bars-idle.dark-mode #side-fx-slider-container .m3-fx-mode-btn.active,
+body.side-bars-idle.dark-mode #side-right-slider-container .m3-fx-mode-btn.active,
+body.side-bars-idle.dark-mode #side-fx-slider-container .m3-scope-btn.active,
+body.side-bars-idle.dark-mode #side-right-slider-container .m3-scope-btn.active {
   background: rgba(255, 255, 255, 0.10) !important;
   color: #94A3B8 !important;
   stroke: #94A3B8 !important;
@@ -15946,39 +15955,39 @@ body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-scope
 
 .side-slider-idle .m3-fx-mode-btn.active svg,
 .side-slider-idle .m3-scope-btn.active svg,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-fx-mode-btn.active svg,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-fx-mode-btn.active svg {
+body.side-bars-idle #side-fx-slider-container .m3-fx-mode-btn.active svg,
+body.side-bars-idle #side-right-slider-container .m3-fx-mode-btn.active svg {
   stroke: currentColor !important;
   color: currentColor !important;
 }
 
 .side-slider-idle .m3-fx-mode-btn.active span,
 .side-slider-idle .m3-scope-btn.active span,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-fx-mode-btn.active span,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-scope-btn.active span {
+body.side-bars-idle #side-fx-slider-container .m3-fx-mode-btn.active span,
+body.side-bars-idle #side-right-slider-container .m3-scope-btn.active span {
   color: currentColor !important;
 }
 
 /* Greyed out / muted fill track in Idle mode */
 .side-slider-idle .m3-fx-fill,
 .side-slider-idle .m3-zoom-fill,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-fx-fill,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-zoom-fill {
+body.side-bars-idle #side-fx-slider-container .m3-fx-fill,
+body.side-bars-idle #side-right-slider-container .m3-zoom-fill {
   background: rgba(148, 163, 184, 0.40) !important;
 }
 
 body.dark-mode .side-slider-idle .m3-fx-fill,
 body.dark-mode .side-slider-idle .m3-zoom-fill,
-body.side-bars-idle.dark-mode #side-fx-slider-container:not(:hover) .m3-fx-fill,
-body.side-bars-idle.dark-mode #side-right-slider-container:not(:hover) .m3-zoom-fill {
+body.side-bars-idle.dark-mode #side-fx-slider-container .m3-fx-fill,
+body.side-bars-idle.dark-mode #side-right-slider-container .m3-zoom-fill {
   background: rgba(255, 255, 255, 0.18) !important;
 }
 
 /* Hide outside value indicator badges completely in Idle mode */
 .side-slider-idle .m3-zoom-outside-badge,
 .side-slider-idle .m3-fx-outside-badge,
-body.side-bars-idle #side-fx-slider-container:not(:hover) .m3-zoom-outside-badge,
-body.side-bars-idle #side-right-slider-container:not(:hover) .m3-fx-outside-badge {
+body.side-bars-idle #side-fx-slider-container .m3-zoom-outside-badge,
+body.side-bars-idle #side-right-slider-container .m3-fx-outside-badge {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translateY(-50%) scale(0.85) !important;

@@ -296,7 +296,7 @@ class SchedullyApp {
 
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        // Only enter idle state if not hovering over sidebars, dragging, or in active input
+        // Only enter idle state if not hovering over sidebars, dragging, or in active modal
         const isDragging = document.querySelector('.active-drag, .is-interacting');
         const activeModalOpen = document.querySelector('#modal-slider-customizer:not(.hidden), #universal-modal:not(.hidden), #coffee-support-modal:not(.hidden)');
         
@@ -335,7 +335,7 @@ class SchedullyApp {
     });
 
     // Listen directly on side controls to pause idle timer while hovering/touching
-    document.addEventListener('DOMContentLoaded', () => {
+    const bindHoverListeners = () => {
       const leftSlider = document.getElementById('side-fx-slider-container');
       const rightSlider = document.getElementById('side-right-slider-container');
       const fontCard = document.getElementById('floating-font-style-card');
@@ -356,7 +356,13 @@ class SchedullyApp {
           wakeUp();
         }, { passive: true });
       });
-    });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindHoverListeners);
+    } else {
+      bindHoverListeners();
+    }
 
     // Start in idle mode after slight initial delay
     idleTimer = setTimeout(() => {
@@ -6747,12 +6753,11 @@ class SchedullyApp {
       if (side !== 'left' && side !== 'right') return;
       lastActiveSide = side;
       try { localStorage.setItem('schedully_last_active_side', side); } catch(e) {}
-      if (typeof this.wakeUpSideSliders === 'function') this.wakeUpSideSliders();
-      if (leftSliderContainer) {
-        leftSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
-      }
-      if (rightSliderContainer) {
-        rightSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
+      if (typeof this.wakeUpSideSliders === 'function') {
+        this.wakeUpSideSliders();
+      } else {
+        if (leftSliderContainer) leftSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
+        if (rightSliderContainer) rightSliderContainer.classList.remove('side-slider-idle', 'side-slider-inactive');
       }
     };
     this.setActiveSideSlider = setActiveSideSlider;
