@@ -85,13 +85,13 @@ html, body {
   -webkit-overflow-scrolling: touch;
   background-color: #F1F5F9;
   background-image: none !important;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
   min-height: 100lvh;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  position: fixed;
-  inset: 0;
 }
 
 body.dark-mode, .theme-dark {
@@ -15880,7 +15880,7 @@ body.theme-style-glass.theme-dark .m3-zoom-track {
 .m3-expressive-zoom-container:not(.side-slider-idle) {
   opacity: 1 !important;
   filter: none !important;
-  transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.3s ease !important;
+  transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.35s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -15895,7 +15895,7 @@ body.side-bars-idle #side-fx-slider-container,
 body.side-bars-idle #side-right-slider-container {
   opacity: 0.32 !important;
   filter: grayscale(90%) contrast(0.95) !important;
-  transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.35s ease !important;
+  transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
 }
 
 body.dark-mode #side-fx-slider-container.side-slider-idle,

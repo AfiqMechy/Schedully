@@ -6667,9 +6667,29 @@ class SchedullyApp {
       window.addEventListener('touchend', handlePinchEnd);
       window.addEventListener('touchcancel', handlePinchEnd);
 
+      let resizeCenterTimer = null;
+      let lastWindowWidth = window.innerWidth;
+      let lastWindowHeight = window.innerHeight;
+
       window.addEventListener('resize', () => {
-        centerCanvasModel(false);
-      });
+        const newW = window.innerWidth;
+        const newH = window.innerHeight;
+        // If only vertical height changed slightly (e.g. notification panel / system bar slide), ignore abrupt jumps
+        const heightDiff = Math.abs(newH - lastWindowHeight);
+        const widthDiff = Math.abs(newW - lastWindowWidth);
+        lastWindowWidth = newW;
+        lastWindowHeight = newH;
+
+        if (widthDiff === 0 && heightDiff < 140) {
+          // Subtle height change due to system shade - do not jerk the canvas
+          return;
+        }
+
+        if (resizeCenterTimer) clearTimeout(resizeCenterTimer);
+        resizeCenterTimer = setTimeout(() => {
+          centerCanvasModel(false);
+        }, 120);
+      }, { passive: true });
     }
 
     // ═══════════════════════════════════════════════════════════════
