@@ -1,9 +1,9 @@
-const CACHE_NAME = 'schedully-cache-v748';
+const CACHE_NAME = 'schedully-cache-v774';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=20260928_v748',
-  '/app_v3.js?v=20260928_v748',
+  '/styles.css?v=20261005_v774',
+  '/app_v3.js?v=20261005_v774',
   '/firebase-config.js?v=20260923_v721',
   '/ocr_parser.js?v=20260919_v602',
   '/ics_csv_parser_v3.js',

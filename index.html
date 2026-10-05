@@ -100,9 +100,9 @@
 <meta name="apple-mobile-web-app-title" content="Schedully">
 <!-- Performance Optimized Google Fonts & UI Icons (preconnect + preload + font-display=swap) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="styles.css?v=20260928_v744" as="style">
-<link rel="preload" href="app_v3.js?v=20260928_v744" as="script">
+<link rel="preload" href="styles.css?v=20261005_v774" as="style">
+<link rel="preload" href="app_v3.js?v=20261005_v774" as="script">
+<link rel="stylesheet" href="styles.css?v=20261005_v774">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -157,8 +157,8 @@
         dynamic: { p: '#2563EB', pc: '#DBEAFE', s: '#7C3AED', sc: '#EDE9FE', t: '#059669', tc: '#D1FAE5' }
       };
       
-      var paletteKey = activePreset.paletteKey || localStorage.getItem('schedully_palette_key') || 'blue';
-      var pal = palettes[paletteKey] || palettes.blue;
+      var paletteKey = (activePreset && activePreset.settings && activePreset.settings.currentPalette) || (activePreset && activePreset.currentPalette) || localStorage.getItem('schedully_theme_palette') || localStorage.getItem('schedully_palette_key') || 'indigo';
+      var pal = palettes[paletteKey] || palettes.indigo || palettes.blue;
       var root = document.documentElement;
       
       root.style.setProperty('--m3-sys-color-primary', pal.p);
@@ -227,7 +227,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20260928_v748">
+<link rel="stylesheet" href="styles.css?v=20261005_v751">
 <script>
   (function() {
     try {
@@ -1031,21 +1031,21 @@
           <div class="theme-picker-section w-full">
             <div class="grid grid-cols-2 gap-1 w-full" id="title-placement-toggle-group">
               <!-- Option 1: Merged (Title) / Borderless (Trademark) -->
-              <button type="button" id="btn-title-placement-merged" class="theme-style-btn active flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="merged">
+              <button type="button" id="btn-title-placement-merged" class="theme-style-btn active flex items-center justify-center gap-1 py-1 px-1.5 rounded-full text-[9.5px] font-bold tracking-tight min-w-0 transition-all" data-placement="merged">
                 <svg id="btn-placement-merged-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"></rect>
                   <path stroke-linecap="round" stroke-width="2" d="M3 9h18"></path>
                 </svg>
-                <span id="btn-placement-merged-label">Merged</span>
+                <span id="btn-placement-merged-label" class="truncate">Merged</span>
               </button>
 
               <!-- Option 2: Separated (Title) / Border (Trademark) -->
-              <button type="button" id="btn-title-placement-separated" class="theme-style-btn flex items-center justify-center gap-1 py-1 px-1 rounded-lg text-[9px] font-extrabold transition-all" data-placement="separated">
+              <button type="button" id="btn-title-placement-separated" class="theme-style-btn flex items-center justify-center gap-1 py-1 px-1.5 rounded-full text-[9.5px] font-bold tracking-tight min-w-0 transition-all" data-placement="separated">
                 <svg id="btn-placement-separated-icon" class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <rect x="3" y="2" width="18" height="5" rx="2" stroke-width="2"></rect>
                   <rect x="3" y="10" width="18" height="12" rx="4" stroke-width="2"></rect>
                 </svg>
-                <span id="btn-placement-separated-label">Separated</span>
+                <span id="btn-placement-separated-label" class="truncate">Separated</span>
               </button>
             </div>
           </div>
@@ -1352,6 +1352,18 @@
           </div>
         </div>
 
+        <!-- Adjustment Mode (Sliders vs Precision Stepper) Toggle -->
+        <div class="opt-row pt-2 border-t border-gray-200/50 dark:border-white/10" id="row-adjustment-mode">
+          <div>
+            <span class="opt-label text-xs font-bold text-gray-800 dark:text-gray-100" data-i18n="adjustmentMode">Adjustment Mode</span>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5" data-i18n="adjustmentModeDesc">Choose Sliders or +/- Precision mode</p>
+          </div>
+          <div class="pill-toggle-group" id="toggle-adjustment-mode">
+            <button type="button" class="pill-btn active" data-val="sliders" data-i18n="sliders">Sliders</button>
+            <button type="button" class="pill-btn" data-val="precision" data-i18n="precision">Precision</button>
+          </div>
+        </div>
+
         <!-- Customize Side Sliders Placement (Left vs Right) -->
         <div class="pt-2 border-t border-gray-200/50 dark:border-white/10 flex items-center justify-between">
           <div>
@@ -1445,7 +1457,8 @@
 
     <!-- Outside Percentage / Value Indicator Badge -->
     <div id="side-right-badge" class="m3-zoom-outside-badge" title="Current Value">
-      <span id="right-slider-label-text">85%</span>
+      <span id="right-slider-mode-text" class="m3-slider-badge-mode">ZOOM</span>
+      <span id="right-slider-label-text" class="m3-slider-badge-val">85%</span>
     </div>
 
     <!-- Main Multi-Mode Right Slider Pill -->
@@ -1467,7 +1480,7 @@
         </svg>
       </button>
 
-      <!-- Continuous Fill Slider Track -->
+      <!-- Continuous Fill Slider Track (Slider Mode) -->
       <div id="side-right-track" class="m3-fx-track" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="85" title="Slide or tap to adjust (Double tap to reset)">
         <div id="side-right-fill" class="m3-fx-fill"></div>
       </div>
@@ -1475,6 +1488,19 @@
       <!-- Mode 3 Toggle: Card Font Size -->
       <button id="btn-right-mode-font" type="button" class="m3-fx-mode-btn" title="Card Font Size Mode" aria-label="Card Font Size">
         <span class="text-[11px] font-black leading-none tracking-tighter">A<span class="text-[8px] font-bold">a</span></span>
+      </button>
+    </div>
+
+    <!-- Standalone Separated Precision Stepper Pill (Precision Adjustment Mode) -->
+    <div id="side-right-precision" class="m3-precision-pill m3-precision-stepper hidden" aria-label="Precision Stepper">
+      <button id="btn-right-step-plus" type="button" class="m3-step-btn m3-step-btn-plus" title="Increase value (+)" aria-label="Increase">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="m3-precision-input-wrap">
+        <input type="text" id="side-right-precision-input" class="m3-precision-input" value="85" title="Click to type custom value" aria-label="Current value">
+      </div>
+      <button id="btn-right-step-minus" type="button" class="m3-step-btn m3-step-btn-minus" title="Decrease value (-)" aria-label="Decrease">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
       </button>
     </div>
 
@@ -1638,7 +1664,8 @@
 
     <!-- Outside Floating Value Badge (Floats to the right of the left pill) -->
     <div id="side-fx-badge" class="m3-fx-outside-badge" title="Current Value">
-      <span id="fx-label-text">100%</span>
+      <span id="left-slider-mode-text" class="m3-slider-badge-mode">WIDTH</span>
+      <span id="fx-label-text" class="m3-slider-badge-val">100%</span>
     </div>
 
     <!-- Main Multi-Mode FX Slider Pill -->
@@ -1652,19 +1679,11 @@
         </svg>
       </button>
 
-      <!-- M3 Expressive Slim Continuous Fill Slider Track -->
+      <!-- M3 Expressive Slim Continuous Fill Slider Track (Slider Mode) -->
       <div id="side-fx-track" class="m3-fx-track" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" title="Slide or tap to adjust (Double tap to reset)">
         <!-- Active Primary Fill Level -->
         <div id="side-fx-fill" class="m3-fx-fill"></div>
       </div>
-
-      <!-- Mode 2 Toggle: Timetable Card Opacity -->
-      <button id="btn-fx-mode-opacity" type="button" class="m3-fx-mode-btn" title="Timetable Opacity Mode" aria-label="Timetable Opacity">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/>
-          <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>
-        </svg>
-      </button>
 
       <!-- Mode 3 Toggle: Wallpaper Effects (Blur & Dimming) -->
       <button id="btn-fx-mode-blur" type="button" class="m3-fx-mode-btn" title="Wallpaper Effects Mode" aria-label="Wallpaper Effects">
@@ -1672,6 +1691,19 @@
           <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
           <circle cx="12" cy="14" r="3" fill="currentColor" fill-opacity="0.35"/>
         </svg>
+      </button>
+    </div>
+
+    <!-- Standalone Separated Precision Stepper Pill (Precision Adjustment Mode) -->
+    <div id="side-left-precision" class="m3-precision-pill m3-precision-stepper hidden" aria-label="Precision Stepper">
+      <button id="btn-left-step-plus" type="button" class="m3-step-btn m3-step-btn-plus" title="Increase value (+)" aria-label="Increase">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="m3-precision-input-wrap">
+        <input type="text" id="side-left-precision-input" class="m3-precision-input" value="100" title="Click to type custom value" aria-label="Current value">
+      </div>
+      <button id="btn-left-step-minus" type="button" class="m3-step-btn m3-step-btn-minus" title="Decrease value (-)" aria-label="Decrease">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
       </button>
     </div>
 
@@ -3200,13 +3232,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260923_v721"></script>
-<script src="app_v3.js?v=20260928_v748"></script>
+<script src="app_v3.js?v=20261005_v756"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=748').then(reg => {
+      navigator.serviceWorker.register('/sw.js?v=756').then(reg => {
         if (reg) reg.update();
       }).catch((err) => console.log('SW reg error:', err));
 
@@ -3220,6 +3252,15 @@
     });
   }
 </script>
+
+<!-- ═══ Instant Slider Mode HUD Toast (Mobile & Desktop) ═══ -->
+<div id="slider-mode-toast" class="slider-mode-toast-pill hidden">
+  <div id="slider-mode-toast-icon" class="slider-mode-toast-icon"></div>
+  <div class="flex flex-col text-left">
+    <span id="slider-mode-toast-title" class="slider-mode-toast-title">Mode: Timetable Width</span>
+    <span id="slider-mode-toast-desc" class="slider-mode-toast-desc">Slide to adjust width</span>
+  </div>
+</div>
 
 </body></html>
 

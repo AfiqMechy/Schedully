@@ -656,13 +656,18 @@ class SchedullyApp {
     });
 
     // Touch/click screen anywhere wakes up the Hide UI circle in hidden mode
-    const wakeEvents = ['pointerdown', 'touchstart', 'mousedown'];
+    const wakeEvents = ['pointerdown', 'touchstart', 'touchend', 'mousedown', 'click'];
     wakeEvents.forEach(evt => {
       window.addEventListener(evt, () => {
         if (document.body.classList.contains('ui-hidden-mode')) {
           wakeHideUiCircle();
         }
-      }, { passive: true });
+      }, { passive: true, capture: true });
+      document.addEventListener(evt, () => {
+        if (document.body.classList.contains('ui-hidden-mode')) {
+          wakeHideUiCircle();
+        }
+      }, { passive: true, capture: true });
     });
   }
 
@@ -5556,6 +5561,36 @@ class SchedullyApp {
       });
     });
 
+    // ─── Adjustment Mode: 'sliders' (Default) vs 'precision' (+/- & Direct Input) ───
+    this.adjustmentMode = localStorage.getItem('schedully_adjustment_mode') || 'sliders';
+    this.setAdjustmentMode = (mode, skipSave = false) => {
+      this.adjustmentMode = (mode === 'precision') ? 'precision' : 'sliders';
+      if (!skipSave) {
+        try { localStorage.setItem('schedully_adjustment_mode', this.adjustmentMode); } catch(e) {}
+      }
+      document.body.classList.toggle('adjustment-mode-precision', this.adjustmentMode === 'precision');
+      document.body.classList.toggle('adjustment-mode-sliders', this.adjustmentMode === 'sliders');
+
+      document.querySelectorAll('#toggle-adjustment-mode .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === this.adjustmentMode);
+      });
+
+      if (typeof this.syncAdjustmentModeUI === 'function') {
+        this.syncAdjustmentModeUI();
+      }
+    };
+    this.setAdjustmentMode(this.adjustmentMode, true);
+
+    document.querySelectorAll('#toggle-adjustment-mode .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-val') || 'sliders';
+        this.setAdjustmentMode(mode);
+        window.soundFX?.play?.('tap');
+        window.haptics?.selection?.();
+        this._stagePending();
+      });
+    });
+
     // Randomize Subject Card Colors (Dice Button)
     document.getElementById('btn-randomize-colors')?.addEventListener('click', () => {
       const hasPhotoWallpaper = this.phoneCanvas?.classList.contains('has-photo-wallpaper') || !!this.currentWallpaperData || !!localStorage.getItem('schedully_wallpaper_data');
@@ -6121,24 +6156,21 @@ class SchedullyApp {
       dot.addEventListener('click', () => {
         if (this.phoneCanvas?.classList.contains('has-photo-wallpaper')) return;
         if (window.soundFX) window.soundFX.play('click');
-        document.querySelectorAll('.palette-dot').forEach(d => d.classList.remove('active'));
-        dot.classList.add('active');
-        this.currentPalette = dot.getAttribute('data-palette');
-        this.applyThemeEngine();
-        this._stagePending();
+        const palette = dot.getAttribute('data-palette');
+        if (palette) {
+          this.setPalette(palette, true);
+        }
       });
     });
 
     // Theme Mode Dots
     document.querySelectorAll('.theme-mode-dot').forEach(dot => {
       dot.addEventListener('click', () => {
-        document.querySelectorAll('.theme-mode-dot').forEach(d => d.classList.remove('active'));
-        dot.classList.add('active');
-        this.currentMode = dot.getAttribute('data-mode');
-        try { localStorage.setItem('schedully_theme_mode', this.currentMode); } catch (e) {}
-        this.applyThemeEngine();
-        this.renderAll();
-        this._stagePending();
+        const mode = dot.getAttribute('data-mode');
+        if (mode) {
+          if (window.soundFX) window.soundFX.play('toggle');
+          this.setMode(mode, true);
+        }
       });
     });
 
@@ -6712,15 +6744,25 @@ class SchedullyApp {
     const leftSliderTrack      = document.getElementById('side-fx-track');
     const leftSliderFill       = document.getElementById('side-fx-fill');
     const leftSliderBadge      = document.getElementById('side-fx-badge');
+    const leftSliderModeText   = document.getElementById('left-slider-mode-text');
     const leftSliderLabelText  = document.getElementById('fx-label-text');
     const leftPill             = document.getElementById('m3-expressive-fx-pill');
+    const leftPrecisionGroup   = document.getElementById('side-left-precision');
+    const leftPrecisionInput   = document.getElementById('side-left-precision-input');
+    const btnLeftStepPlus      = document.getElementById('btn-left-step-plus');
+    const btnLeftStepMinus     = document.getElementById('btn-left-step-minus');
 
     const rightSliderContainer = document.getElementById('side-right-slider-container');
     const rightSliderTrack     = document.getElementById('side-right-track');
     const rightSliderFill      = document.getElementById('side-right-fill');
     const rightSliderBadge     = document.getElementById('side-right-badge');
+    const rightSliderModeText  = document.getElementById('right-slider-mode-text');
     const rightSliderLabelText = document.getElementById('right-slider-label-text');
     const rightPill            = document.getElementById('m3-expressive-right-pill');
+    const rightPrecisionGroup  = document.getElementById('side-right-precision');
+    const rightPrecisionInput  = document.getElementById('side-right-precision-input');
+    const btnRightStepPlus     = document.getElementById('btn-right-step-plus');
+    const btnRightStepMinus    = document.getElementById('btn-right-step-minus');
 
     // Tool Switcher Buttons
     const sliderToolBtns = {
@@ -6820,8 +6862,28 @@ class SchedullyApp {
 
     let leftBadgeTimeout = null;
     let rightBadgeTimeout = null;
+    let modeToastTimeout = null;
 
-    const showSideBadgeTemporarily = (side, duration = 1400) => {
+    const showSliderModeToast = (title, desc, iconSvg) => {
+      const toastEl = document.getElementById('slider-mode-toast');
+      const iconEl = document.getElementById('slider-mode-toast-icon');
+      const titleEl = document.getElementById('slider-mode-toast-title');
+      const descEl = document.getElementById('slider-mode-toast-desc');
+      if (!toastEl) return;
+
+      if (iconEl && iconSvg) iconEl.innerHTML = iconSvg;
+      if (titleEl) titleEl.innerText = title;
+      if (descEl) descEl.innerText = desc;
+
+      toastEl.classList.remove('hidden');
+      if (modeToastTimeout) clearTimeout(modeToastTimeout);
+      modeToastTimeout = setTimeout(() => {
+        toastEl.classList.add('hidden');
+      }, 1800);
+    };
+    window.showSliderModeToast = showSliderModeToast;
+
+    const showSideBadgeTemporarily = (side, duration = 1800) => {
       if (typeof this.wakeUpSideSliders === 'function') this.wakeUpSideSliders();
       const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
       if (!container) return;
@@ -6849,81 +6911,231 @@ class SchedullyApp {
     const getToolConfig = (toolId) => {
       if (toolId === 'zoom') {
         const val = targetZoom || 0.85;
-        return { min: 0.4, max: 1.5, val: val, label: `${Math.round(val * 100)}%`, step: 0.05, ariaLabel: 'Canvas Zoom' };
+        return {
+          min: 0.4,
+          max: 1.5,
+          val: val,
+          label: `${Math.round(val * 100)}%`,
+          step: 0.05,
+          modeTag: 'ZOOM',
+          fullTitle: 'Canvas Zoom',
+          desc: 'Slide to zoom canvas in/out',
+          iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+          ariaLabel: 'Canvas Zoom'
+        };
       } else if (toolId === 'radius') {
         let val = 18;
+        let modeTag = 'RADIUS';
+        let fullTitle = 'Corner Radius';
+        let desc = 'Slide to adjust corner roundness';
         if (activeRadiusScope === 'cards') {
           val = this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6;
+          modeTag = 'CARD R';
+          fullTitle = 'Corner Radius: Cards';
+          desc = 'Slide to adjust course card roundness';
+        } else if (activeRadiusScope === 'table') {
+          val = this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18;
+          modeTag = 'TABLE R';
+          fullTitle = 'Corner Radius: Timetable';
+          desc = 'Slide to adjust timetable frame roundness';
         } else {
           val = this.tableCornerRadiusVal !== undefined ? this.tableCornerRadiusVal : 18;
+          modeTag = 'RADIUS';
+          fullTitle = 'Corner Radius: Both';
+          desc = 'Slide to adjust timetable & card roundness';
         }
-        return { min: 0, max: 28, val: val, label: val === 0 ? 'Sharp' : `${val}px`, step: 1, ariaLabel: 'Corner Radius' };
+        return {
+          min: 0,
+          max: 28,
+          val: val,
+          label: val === 0 ? 'Sharp' : `${val}px`,
+          step: 1,
+          modeTag,
+          fullTitle,
+          desc,
+          iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6"/></svg>',
+          ariaLabel: 'Corner Radius'
+        };
       } else if (toolId === 'font') {
         let val = 1.0;
         let min = 0.4, max = 1.6;
+        let modeTag = 'FONT ALL';
+        let fullTitle = 'Font Scale: All Elements';
+        let desc = 'Slide to adjust all font sizes';
         if (activeFontScope === 'all') {
           val = this.fontScaleAll !== undefined ? this.fontScaleAll : (this.gridFontScale || 1.0);
           min = 0.4; max = 1.6;
+          modeTag = 'FONT ALL';
+          fullTitle = 'Font Scale: All Elements';
+          desc = 'Slide to adjust all timetable font sizes';
         } else if (activeFontScope === 'cards') {
           val = this.fontScaleCards !== undefined ? this.fontScaleCards : 1.0;
           min = 0.4; max = 1.6;
+          modeTag = 'CARD FONT';
+          fullTitle = 'Font Scale: Course Cards';
+          desc = 'Slide to adjust course card font sizes';
         } else if (activeFontScope === 'header') {
           val = this.fontScaleHeader !== undefined ? this.fontScaleHeader : 1.0;
           min = 0.5; max = 1.8;
+          modeTag = 'HDR FONT';
+          fullTitle = 'Font Scale: Headers & Time';
+          desc = 'Slide to adjust day & time header font sizes';
         } else if (activeFontScope === 'title') {
           val = this.fontScaleTitle !== undefined ? this.fontScaleTitle : 1.0;
           min = 0.5; max = 2.0;
+          modeTag = 'TTL FONT';
+          fullTitle = 'Font Scale: Title Bar';
+          desc = 'Slide to adjust timetable title font size';
         } else if (activeFontScope === 'trademark') {
           val = this.fontScaleTrademark !== undefined ? this.fontScaleTrademark : 1.0;
           min = 0.5; max = 2.0;
+          modeTag = 'TM FONT';
+          fullTitle = 'Font Scale: Trademark';
+          desc = 'Slide to adjust signature & trademark font size';
         }
-        return { min, max, val, label: `${Math.round(val * 100)}%`, step: 0.05, ariaLabel: 'Font Scale' };
+        return {
+          min,
+          max,
+          val,
+          label: `${Math.round(val * 100)}%`,
+          step: 0.05,
+          modeTag,
+          fullTitle,
+          desc,
+          iconSvg: '<span class="text-[12px] font-black leading-none tracking-tight">Aa</span>',
+          ariaLabel: 'Font Scale'
+        };
       } else if (toolId === 'layout') {
         if (activeLayoutSubMode === 'width') {
           const val = this.gridWidthVal != null ? this.gridWidthVal : 100;
-          return { min: 50, max: 130, val: val, label: `W: ${val}%`, step: 2, ariaLabel: 'Timetable Width' };
+          return {
+            min: 50, max: 130, val: val, label: `${val}%`, step: 2,
+            modeTag: 'WIDTH',
+            fullTitle: 'Timetable Width',
+            desc: 'Slide to adjust timetable width (↔)',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12H3M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>',
+            ariaLabel: 'Timetable Width'
+          };
         } else if (activeLayoutSubMode === 'height') {
           const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
-          return { min: 25, max: 90, val: val, label: `H: ${val}px`, step: 2, ariaLabel: 'Timetable Height' };
+          return {
+            min: 25, max: 90, val: val, label: `${val}px`, step: 2,
+            modeTag: 'HEIGHT',
+            fullTitle: 'Timetable Height',
+            desc: 'Slide to adjust row height (↕)',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>',
+            ariaLabel: 'Timetable Height'
+          };
         } else if (activeLayoutSubMode === 'posx') {
           const val = this.gridXPosVal != null ? this.gridXPosVal : 0;
           const sign = val > 0 ? '+' : '';
-          return { min: -150, max: 150, val: val, label: `X: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable X-Position' };
+          return {
+            min: -150, max: 150, val: val, label: `${sign}${val}px`, step: 4,
+            modeTag: 'POS X',
+            fullTitle: 'Timetable X-Position',
+            desc: 'Slide to offset timetable left/right (⬌)',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M5 8l-3 4 3 4M19 8l3 4-3 4"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+            ariaLabel: 'Timetable X-Position'
+          };
         } else if (activeLayoutSubMode === 'posy') {
           const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
           const sign = val > 0 ? '+' : '';
-          return { min: -300, max: 500, val: val, label: `Y: ${sign}${val}px`, step: 4, ariaLabel: 'Timetable Y-Position' };
+          return {
+            min: -300, max: 500, val: val, label: `${sign}${val}px`, step: 4,
+            modeTag: 'POS Y',
+            fullTitle: 'Timetable Y-Position',
+            desc: 'Slide to offset timetable up/down (⬍)',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M8 5l4-3 4 3M8 19l4 3 4-3"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+            ariaLabel: 'Timetable Y-Position'
+          };
         }
       } else if (toolId === 'opacity') {
+        let modeTag = 'OPAC ALL';
+        let fullTitle = 'Opacity: All Elements';
+        let desc = 'Slide to adjust overall timetable opacity';
+        let val = 100;
+        let min = 10;
         if (activeOpacityScope === 'all') {
-          const val = this.timetableOpacityAll != null ? this.timetableOpacityAll : (this.timetableOpacity != null ? this.timetableOpacity : 100);
-          return { min: 10, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'All Elements Opacity' };
+          val = this.timetableOpacityAll != null ? this.timetableOpacityAll : (this.timetableOpacity != null ? this.timetableOpacity : 100);
+          min = 10;
+          modeTag = 'OPAC ALL';
+          fullTitle = 'Opacity: All Elements';
+          desc = 'Slide to adjust overall timetable opacity';
         } else if (activeOpacityScope === 'grid') {
-          const val = this.timetableOpacityGrid != null ? this.timetableOpacityGrid : 100;
-          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Grid Slots Opacity' };
+          val = this.timetableOpacityGrid != null ? this.timetableOpacityGrid : 100;
+          min = 0;
+          modeTag = 'OPAC GRID';
+          fullTitle = 'Opacity: Grid Slots';
+          desc = 'Slide to adjust background grid slot opacity';
         } else if (activeOpacityScope === 'header') {
-          const val = this.timetableOpacityHeader != null ? this.timetableOpacityHeader : 100;
-          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Headers Opacity' };
+          val = this.timetableOpacityHeader != null ? this.timetableOpacityHeader : 100;
+          min = 0;
+          modeTag = 'OPAC HDR';
+          fullTitle = 'Opacity: Headers & Time';
+          desc = 'Slide to adjust header & time opacity';
         } else if (activeOpacityScope === 'cards') {
-          const val = this.timetableOpacityCards != null ? this.timetableOpacityCards : 100;
-          return { min: 10, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Cards Opacity' };
+          val = this.timetableOpacityCards != null ? this.timetableOpacityCards : 100;
+          min = 10;
+          modeTag = 'OPAC CARD';
+          fullTitle = 'Opacity: Course Cards';
+          desc = 'Slide to adjust course card opacity';
         } else if (activeOpacityScope === 'title') {
-          const val = this.timetableOpacityTitle != null ? this.timetableOpacityTitle : 100;
-          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Title Opacity' };
+          val = this.timetableOpacityTitle != null ? this.timetableOpacityTitle : 100;
+          min = 0;
+          modeTag = 'OPAC TTL';
+          fullTitle = 'Opacity: Title Bar';
+          desc = 'Slide to adjust title bar opacity';
         } else if (activeOpacityScope === 'trademark') {
-          const val = this.timetableOpacityTrademark != null ? this.timetableOpacityTrademark : 100;
-          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Trademark Opacity' };
+          val = this.timetableOpacityTrademark != null ? this.timetableOpacityTrademark : 100;
+          min = 0;
+          modeTag = 'OPAC TM';
+          fullTitle = 'Opacity: Trademark';
+          desc = 'Slide to adjust signature & trademark opacity';
         }
+        return {
+          min,
+          max: 100,
+          val: val,
+          label: `${val}%`,
+          step: 5,
+          modeTag,
+          fullTitle,
+          desc,
+          iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" stroke="currentColor"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>',
+          ariaLabel: fullTitle
+        };
       } else if (toolId === 'blur') {
         if (activeBlurSubMode === 'dim') {
           const val = this.wallpaperDimIntensity != null ? this.wallpaperDimIntensity : 0;
-          return { min: 0, max: 100, val: val, label: `${val}%`, step: 5, ariaLabel: 'Wallpaper Dimming' };
+          return {
+            min: 0,
+            max: 100,
+            val: val,
+            label: `${val}%`,
+            step: 5,
+            modeTag: 'DIM',
+            fullTitle: 'Wallpaper Dimming',
+            desc: 'Slide to adjust wallpaper darkness/dimming',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+            ariaLabel: 'Wallpaper Dimming'
+          };
         } else {
           const val = this.bgBlurEnabled ? (this.bgBlurIntensity != null ? this.bgBlurIntensity : 10) : 0;
-          return { min: 0, max: 40, val: val, label: `${val}px`, step: 2, ariaLabel: 'Wallpaper Blur' };
+          return {
+            min: 0,
+            max: 40,
+            val: val,
+            label: `${val}px`,
+            step: 2,
+            modeTag: 'BLUR',
+            fullTitle: 'Wallpaper Blur',
+            desc: 'Slide to adjust wallpaper blur intensity',
+            iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+            ariaLabel: 'Wallpaper Blur'
+          };
         }
       }
-      return { min: 0, max: 100, val: 100, label: '100%', step: 1, ariaLabel: 'Slider' };
+      return { min: 0, max: 100, val: 100, label: '100%', modeTag: 'TOOL', fullTitle: 'Slider Tool', desc: 'Slide to adjust value', step: 1, ariaLabel: 'Slider' };
     };
 
     const updateSideSliderUI = (side, animate = true) => {
@@ -6932,6 +7144,7 @@ class SchedullyApp {
       const fill  = side === 'left' ? leftSliderFill : rightSliderFill;
       const label = side === 'left' ? leftSliderLabelText : rightSliderLabelText;
       const badge = side === 'left' ? leftSliderBadge : rightSliderBadge;
+      const modeText = side === 'left' ? leftSliderModeText : rightSliderModeText;
       const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
 
       if (!track || !fill) return;
@@ -7018,10 +7231,30 @@ class SchedullyApp {
       fill.style.transition = animate ? 'height 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)' : 'none';
       fill.style.setProperty('height', `${pct}%`, 'important');
 
+      if (modeText && config.modeTag) modeText.innerText = config.modeTag;
       if (label) label.innerText = config.label;
-      if (badge) badge.setAttribute('title', `${config.ariaLabel}: ${config.label}`);
+      if (badge) badge.setAttribute('title', `${config.fullTitle}: ${config.label}`);
       track.setAttribute('aria-valuenow', Math.round(config.val));
       track.setAttribute('aria-label', config.ariaLabel);
+
+      // Synchronize Precision Stepper Input Field (Number Only)
+      const precisionInput = side === 'left' ? leftPrecisionInput : rightPrecisionInput;
+      if (precisionInput && document.activeElement !== precisionInput) {
+        let numVal = '';
+        if (activeTool === 'zoom' || activeTool === 'font') {
+          numVal = Math.round(config.val * 100);
+        } else {
+          numVal = Math.round(config.val);
+        }
+        precisionInput.value = numVal;
+        precisionInput.setAttribute('aria-label', `${config.fullTitle}: ${numVal}`);
+      }
+
+      // Toggle Sliders vs Precision visibility based on adjustmentMode
+      const isPrecision = (this.adjustmentMode === 'precision');
+      const precisionGroup = side === 'left' ? leftPrecisionGroup : rightPrecisionGroup;
+      if (track) track.classList.toggle('hidden', isPrecision);
+      if (precisionGroup) precisionGroup.classList.toggle('hidden', !isPrecision);
     };
 
     const applyToolValueByRatio = (toolId, ratio, smooth = true) => {
@@ -7350,7 +7583,11 @@ class SchedullyApp {
         rightScopesExpanded = true;
       }
       updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
+      showSideBadgeTemporarily(side, 2000);
+      const config = getToolConfig(toolId);
+      if (config && window.showSliderModeToast) {
+        window.showSliderModeToast(config.fullTitle, config.desc, config.iconSvg);
+      }
       window.soundFX?.play?.('tap');
       window.haptics?.trigger?.('selection');
       if (typeof this._stagePending === 'function') this._stagePending(false);
@@ -7372,36 +7609,21 @@ class SchedullyApp {
       activeRadiusScope = 'both';
       this.activeRadiusScope = 'both';
       try { localStorage.setItem('schedully_active_radius_scope', 'both'); } catch(e) {}
-      const side = getToolCurrentSide('radius');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('radius');
     });
     btnRadiusScopeTable?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeRadiusScope = 'table';
       this.activeRadiusScope = 'table';
       try { localStorage.setItem('schedully_active_radius_scope', 'table'); } catch(e) {}
-      const side = getToolCurrentSide('radius');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('radius');
     });
     btnRadiusScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeRadiusScope = 'cards';
       this.activeRadiusScope = 'cards';
       try { localStorage.setItem('schedully_active_radius_scope', 'cards'); } catch(e) {}
-      const side = getToolCurrentSide('radius');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('radius');
     });
 
     btnFontScopeAll?.addEventListener('click', (e) => {
@@ -7409,60 +7631,35 @@ class SchedullyApp {
       activeFontScope = 'all';
       this.activeFontScope = 'all';
       try { localStorage.setItem('schedully_active_font_scope', 'all'); } catch(e) {}
-      const side = getToolCurrentSide('font');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('font');
     });
     btnFontScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'cards';
       this.activeFontScope = 'cards';
       try { localStorage.setItem('schedully_active_font_scope', 'cards'); } catch(e) {}
-      const side = getToolCurrentSide('font');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('font');
     });
     btnFontScopeHeader?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'header';
       this.activeFontScope = 'header';
       try { localStorage.setItem('schedully_active_font_scope', 'header'); } catch(e) {}
-      const side = getToolCurrentSide('font');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('font');
     });
     btnFontScopeTitle?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'title';
       this.activeFontScope = 'title';
       try { localStorage.setItem('schedully_active_font_scope', 'title'); } catch(e) {}
-      const side = getToolCurrentSide('font');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('font');
     });
     btnFontScopeTrademark?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeFontScope = 'trademark';
       this.activeFontScope = 'trademark';
       try { localStorage.setItem('schedully_active_font_scope', 'trademark'); } catch(e) {}
-      const side = getToolCurrentSide('font');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('font');
     });
 
     btnOpacityScopeAll?.addEventListener('click', (e) => {
@@ -7470,72 +7667,42 @@ class SchedullyApp {
       activeOpacityScope = 'all';
       this.activeOpacityScope = 'all';
       try { localStorage.setItem('schedully_active_opacity_scope', 'all'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
     btnOpacityScopeGrid?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'grid';
       this.activeOpacityScope = 'grid';
       try { localStorage.setItem('schedully_active_opacity_scope', 'grid'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
     btnOpacityScopeHeader?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'header';
       this.activeOpacityScope = 'header';
       try { localStorage.setItem('schedully_active_opacity_scope', 'header'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
     btnOpacityScopeCards?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'cards';
       this.activeOpacityScope = 'cards';
       try { localStorage.setItem('schedully_active_opacity_scope', 'cards'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
     btnOpacityScopeTitle?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'title';
       this.activeOpacityScope = 'title';
       try { localStorage.setItem('schedully_active_opacity_scope', 'title'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
     btnOpacityScopeTrademark?.addEventListener('click', (e) => {
       e.stopPropagation();
       activeOpacityScope = 'trademark';
       this.activeOpacityScope = 'trademark';
       try { localStorage.setItem('schedully_active_opacity_scope', 'trademark'); } catch(e) {}
-      const side = getToolCurrentSide('opacity');
-      setActiveSideSlider(side);
-      updateSideSliderUI(side, true);
-      showSideBadgeTemporarily(side);
-      window.soundFX?.play?.('tap');
-      if (typeof this._stagePending === 'function') this._stagePending(false);
+      selectSliderTool('opacity');
     });
 
     btnFxWidth?.addEventListener('click', (e) => {
@@ -7775,6 +7942,107 @@ class SchedullyApp {
 
     setupTrackInteractions('left');
     setupTrackInteractions('right');
+
+    // ─── Precision Stepper (+ / - Buttons & Direct Input Value Box) ───
+    const setupPrecisionInteractions = (side) => {
+      const container = side === 'left' ? leftSliderContainer : rightSliderContainer;
+      const btnPlus = side === 'left' ? btnLeftStepPlus : btnRightStepPlus;
+      const btnMinus = side === 'left' ? btnLeftStepMinus : btnRightStepMinus;
+      const input = side === 'left' ? leftPrecisionInput : rightPrecisionInput;
+
+      btnPlus?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveSideSlider(side);
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        stepToolDelta(activeTool, 1);
+        window.soundFX?.play?.('tap');
+        window.haptics?.selection?.();
+        updateSideSliderUI(side, true);
+        showSideBadgeTemporarily(side, 1500);
+      });
+
+      btnMinus?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveSideSlider(side);
+        const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+        stepToolDelta(activeTool, -1);
+        window.soundFX?.play?.('tap');
+        window.haptics?.selection?.();
+        updateSideSliderUI(side, true);
+        showSideBadgeTemporarily(side, 1500);
+      });
+
+      if (input) {
+        input.addEventListener('focus', () => {
+          setActiveSideSlider(side);
+          input.select();
+        });
+
+        const commitInputValue = () => {
+          const raw = input.value.trim().replace(/[^0-9.-]/g, '');
+          const parsed = parseFloat(raw);
+          const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+          const config = getToolConfig(activeTool);
+
+          if (!isNaN(parsed)) {
+            let targetVal = parsed;
+            // If tool uses percentage or scale ratio internally
+            if (activeTool === 'zoom') {
+              targetVal = parsed > 2 ? parsed / 100 : parsed;
+            } else if (activeTool === 'font') {
+              targetVal = parsed > 3 ? parsed / 100 : parsed;
+            }
+
+            // Clamping within limits
+            targetVal = Math.max(config.min, Math.min(config.max, targetVal));
+            const ratio = (targetVal - config.min) / (config.max - config.min);
+            if (activeTool !== 'zoom' && !this._isPerformingHistoryAction) {
+              this.recordHistoryState();
+            }
+            applyToolValueByRatio(activeTool, ratio, true);
+            window.soundFX?.play?.('tap');
+            window.haptics?.selection?.();
+          }
+          updateSideSliderUI(side, true);
+          showSideBadgeTemporarily(side, 1500);
+        };
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commitInputValue();
+            input.blur();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            updateSideSliderUI(side, false);
+            input.blur();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+            stepToolDelta(activeTool, 1);
+            updateSideSliderUI(side, false);
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const activeTool = side === 'left' ? leftActiveTool : rightActiveTool;
+            stepToolDelta(activeTool, -1);
+            updateSideSliderUI(side, false);
+          }
+        });
+
+        input.addEventListener('blur', () => {
+          commitInputValue();
+        });
+      }
+    };
+
+    setupPrecisionInteractions('left');
+    setupPrecisionInteractions('right');
+
+    this.syncAdjustmentModeUI = () => {
+      updateSideSliderUI('left', false);
+      updateSideSliderUI('right', false);
+    };
+
     setActiveSideSlider('right');
 
     this.syncLeftFxSlider = (animate = true) => updateSideSliderUI('left', animate);
@@ -10834,6 +11102,12 @@ class SchedullyApp {
         el.style.setProperty('display', 'none', 'important');
       });
 
+      // Completely remove any box-shadow or filters from cards and cells to prevent rasterizer ghost block artifacts
+      clone.querySelectorAll('.exact-course-card, .exact-grid-cell-slot, .exact-grid-cell-header, .exact-grid-cell-time, #lock-timetable-container, #universal-timetable-grid').forEach(el => {
+        el.style.setProperty('box-shadow', 'none', 'important');
+        el.style.setProperty('filter', 'none', 'important');
+      });
+
       stagingContainer.appendChild(clone);
 
       // Render via domtoimage at 3x resolution with native bounds
@@ -12624,6 +12898,7 @@ class SchedullyApp {
       localStorage.setItem('schedully_trademark_text', this.trademarkText || 'Schedully • Student Edition');
       localStorage.setItem('schedully_axis_mode', this.axisMode || 'time');
       localStorage.setItem('schedully_theme_mode', this.currentMode || 'light');
+      localStorage.setItem('schedully_theme_palette', this.currentPalette || 'indigo');
       localStorage.setItem('schedully_zoom_scale', String(this.zoomScale || 0.85));
       if (this.wallpaperSwatches) {
         localStorage.setItem('schedully_wallpaper_swatches', JSON.stringify(this.wallpaperSwatches));
@@ -12728,6 +13003,8 @@ class SchedullyApp {
       classes: this.classes,
       presets: this.presets,
       activePreset: this.activePresetKey,
+      currentPalette: this.currentPalette || currentSettings.currentPalette || 'indigo',
+      currentMode: this.currentMode || currentSettings.currentMode || 'light',
       wallpaper: currentWallpaper,
       wallpaperSwatches: this.wallpaperSwatches || null,
       wallpaperPrimary: this.wallpaperPrimary || null,
@@ -13670,6 +13947,7 @@ class SchedullyApp {
           cardElement.style.setProperty('--card-index', cardRenderIdx++);
           cardElement.style.cssText = `
             ${cardStyle}
+            box-shadow: none !important;
             position: absolute;
             top: ${topPercent}%;
             left: ${leftPercent}%;
