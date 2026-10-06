@@ -11076,16 +11076,16 @@ class SchedullyApp {
         }
       }
 
-      // Create an off-screen fixed staging area so browser WebKit engine performs full valid layout pass without culling
+      // Create an off-screen fixed staging area with opacity 1 so browser WebKit engine performs full valid layout pass and font rasterization without culling
       const stagingContainer = document.createElement('div');
       stagingContainer.className = 'export-staging-container';
       stagingContainer.style.cssText = `
         position: fixed;
-        top: 0; left: 0;
+        top: 0; left: -9999px;
         width: ${nativeW}px; height: ${nativeH}px;
         min-width: ${nativeW}px; max-width: ${nativeW}px;
         z-index: -99999;
-        opacity: 0;
+        opacity: 1;
         pointer-events: none;
         transform: none;
         overflow: hidden;
@@ -11187,6 +11187,11 @@ class SchedullyApp {
                 c.style.transform = 'none';
                 c.style.borderRadius = '0px';
               }
+              // Prevent text clipping on exported canvas
+              clonedDoc.querySelectorAll('.exact-course-card, .exact-card-code, .exact-card-type, .exact-card-room, .exact-card-lecturer, .exact-card-group, .exact-card-time, .exact-grid-cell-header, .exact-grid-cell-time, #lock-title-text, #lock-trademark-text').forEach(el => {
+                el.style.webkitFontSmoothing = 'antialiased';
+                el.style.textRendering = 'geometricPrecision';
+              });
             }
           });
         } else if (window.domtoimage && typeof window.domtoimage.toCanvas === 'function') {
@@ -11252,8 +11257,12 @@ class SchedullyApp {
               const link = document.createElement('a');
               link.download = 'schedully_wallpaper.png';
               link.href = canvas.toDataURL('image/png');
-              link.target = '_blank';
+              link.style.display = 'none';
+              document.body.appendChild(link);
               link.click();
+              setTimeout(() => {
+                if (document.body.contains(link)) document.body.removeChild(link);
+              }, 1500);
             }
           }, 'image/png');
         }, 'image');
@@ -14021,10 +14030,12 @@ class SchedullyApp {
           let detailFontSize = baseDetailFont;
 
           if (!isShortCard && lineCount > 1) {
-            const availableHeight = cardHeightPx - 4;
-            const estimatedTotalHeight = (codeFontSize * 1.15) + ((lineCount - 1) * detailFontSize * 1.15);
+            const verticalPadding = (cardHeightPx < 28) ? 1 : 3;
+            const availableHeight = Math.max(8, cardHeightPx - verticalPadding);
+            const lineFactor = 1.22;
+            const estimatedTotalHeight = (codeFontSize * lineFactor) + ((lineCount - 1) * detailFontSize * lineFactor);
             if (estimatedTotalHeight > availableHeight) {
-              const reductionRatio = Math.max(0.45, availableHeight / estimatedTotalHeight);
+              const reductionRatio = Math.max(0.35, availableHeight / estimatedTotalHeight);
               codeFontSize = Math.max(3.5, Math.round(codeFontSize * reductionRatio * 10) / 10);
               detailFontSize = Math.max(3.0, Math.round(detailFontSize * reductionRatio * 10) / 10);
             }
@@ -14038,14 +14049,14 @@ class SchedullyApp {
           }
 
           const cardContentHTML = isShortCard ? `
-            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.1; color: inherit;">${matched.code}</div>
-          ` : `
             <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.15; color: inherit;">${matched.code}</div>
-            ${this.globalCourseType && matched.type ? `<div class="exact-card-type" style="font-size: ${detailFontSize}px; font-style: italic; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.type}</div>` : ''}
-            ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
-            ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
-            ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
-            ${shouldShowTime ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.15; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
+          ` : `
+            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.18; color: inherit;">${matched.code}</div>
+            ${this.globalCourseType && matched.type ? `<div class="exact-card-type" style="font-size: ${detailFontSize}px; font-style: italic; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.type}</div>` : ''}
+            ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
+            ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
+            ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
+            ${shouldShowTime ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
           `;
 
           const cardElement = document.createElement('div');
@@ -14067,7 +14078,7 @@ class SchedullyApp {
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 2px 3px;
+            padding: ${cardHeightPx < 28 ? '0px 1.5px' : '1px 2px'};
             overflow: hidden;
             border-radius: ${this.cardCornerStyle === 'sharp' ? '0px' : (this.cardCornerRadiusVal !== undefined ? this.cardCornerRadiusVal : 6) + 'px'};
             --card-index: ${cardRenderIdx};

@@ -104,61 +104,40 @@ class TimetableEngine {
   }
 
   /**
-   * Helper: Mobile-friendly download or native share sheet trigger (iOS / Android / Desktop)
+   * Helper: Direct native file download (Canva-style across Mobile, Tablet, iOS, Android & Desktop)
    */
   async downloadOrShareFile(blob, filename, mimeType = 'image/png') {
-    // 1. On iOS & mobile browsers supporting Web Share files, open native Share Sheet for instant "Save Image" to Camera Roll
-    if (navigator.canShare && typeof File !== 'undefined') {
-      try {
-        const file = new File([blob], filename, { type: mimeType });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Schedully Timetable',
-            text: 'Here is your class schedule timetable wallpaper from Schedully!'
-          });
-          return;
-        }
-      } catch (err) {
-        if (err && err.name === 'AbortError') {
-          return;
-        }
-        console.warn("Native Web Share skipped/failed, proceeding with standard download:", err);
-      }
-    }
-
-    // 2. Standard Blob Object URL Download
+    // 1. Direct Blob URL Download (Standard Canva / Web App flow across iOS, Android & Desktop)
     try {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
-      link.target = '_blank';
-      link.rel = 'noopener';
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       setTimeout(() => {
         if (document.body.contains(link)) document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-      }, 1000);
+      }, 1500);
       return;
     } catch (e) {
       console.warn("Direct blob download failed, trying data URL:", e);
     }
 
-    // 3. Base64 Data URL Fallback
+    // 2. Base64 Data URL Fallback
     const reader = new FileReader();
     reader.onloadend = function () {
       const dataUrl = reader.result;
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = filename;
-      a.target = '_blank';
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       setTimeout(() => {
         if (document.body.contains(a)) document.body.removeChild(a);
-      }, 1000);
+      }, 1500);
     };
     reader.readAsDataURL(blob);
   }
