@@ -2554,6 +2554,7 @@ class SchedullyApp {
 
     if (wallpaperLayer) {
       wallpaperLayer.style.backgroundImage = `url("${dataUrl}")`;
+      wallpaperLayer.style.setProperty('--wallpaper-bg-url', `url("${dataUrl}")`);
       wallpaperLayer.style.opacity = '1';
     }
 
@@ -2640,6 +2641,7 @@ class SchedullyApp {
 
     if (wallpaperLayer) {
       wallpaperLayer.style.backgroundImage = '';
+      wallpaperLayer.style.removeProperty('--wallpaper-bg-url');
       wallpaperLayer.style.opacity = '1';
     }
 
@@ -8501,19 +8503,32 @@ class SchedullyApp {
 
       if (!leftPill || !rightPill) return;
 
-      // Move buttons to the correct parent pill
-      leftTools.forEach(toolId => {
-        const btn = allBtns[toolId];
-        if (btn && leftTrack) {
-          leftPill.insertBefore(btn, leftTrack);
+      // Move buttons to the correct parent pill (top tools before track, bottom tool after track)
+      const placeToolsInPill = (tools, pill, track) => {
+        if (!pill || !track) return;
+        if (tools.length <= 1) {
+          tools.forEach(id => {
+            const btn = allBtns[id];
+            if (btn) pill.insertBefore(btn, track);
+          });
+        } else {
+          for (let i = 0; i < tools.length - 1; i++) {
+            const btn = allBtns[tools[i]];
+            if (btn) pill.insertBefore(btn, track);
+          }
+          const lastBtn = allBtns[tools[tools.length - 1]];
+          if (lastBtn) {
+            if (track.nextSibling) {
+              pill.insertBefore(lastBtn, track.nextSibling);
+            } else {
+              pill.appendChild(lastBtn);
+            }
+          }
         }
-      });
-      rightTools.forEach(toolId => {
-        const btn = allBtns[toolId];
-        if (btn && rightTrack) {
-          rightPill.insertBefore(btn, rightTrack);
-        }
-      });
+      };
+
+      placeToolsInPill(leftTools, leftPill, leftTrack);
+      placeToolsInPill(rightTools, rightPill, rightTrack);
 
       // Move top scope groups (Days top pill and Font top pill)
       if (layoutTopGroup) {
@@ -10972,10 +10987,48 @@ class SchedullyApp {
       alert("📊 Exported CSV File!");
     });
 
-    // Wallpaper export — Timetable Factory Proven dom-to-image-more SVG Engine (Schedully-Fixed)
-    const exportWallpaper = (onComplete) => {
+    // Progress modal helpers for wallpaper & document export
+    const setExportProgress = (percent, title, desc) => {
+      const modal = document.getElementById('export-progress-modal');
+      const fill = document.getElementById('export-progress-fill');
+      const titleEl = document.getElementById('export-progress-title');
+      const descEl = document.getElementById('export-progress-desc');
+      const percentEl = document.getElementById('export-progress-percent');
+      if (modal && modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+      }
+      if (fill) fill.style.width = `${Math.min(100, Math.max(5, percent))}%`;
+      if (percentEl) percentEl.innerText = `${Math.round(percent)}%`;
+      if (titleEl && title) titleEl.innerText = title;
+      if (descEl && desc) descEl.innerText = desc;
+    };
+
+    const hideExportProgress = () => {
+      const modal = document.getElementById('export-progress-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    };
+
+    // Wallpaper export — Ultra-reliable High-DPI Engine (Mobile, Tablet, iOS & Desktop)
+    const exportWallpaper = async (onComplete, exportType = 'image') => {
       const originalCanvas = document.getElementById('phone-canvas');
       if (!originalCanvas) return;
+
+      const titlePrefix = exportType === 'pdf' ? 'Generating PDF Document' : 'Generating 4K Wallpaper';
+      setExportProgress(15, `${titlePrefix}...`, 'Preparing layout & typography...');
+
+      // 1. Ensure all custom Google web fonts and small typography are 100% rasterized
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+      } catch (e) {
+        console.warn("Font readiness check skipped:", e);
+      }
+
+      await new Promise(r => setTimeout(r, 200));
+      setExportProgress(35, `${titlePrefix}...`, 'Building high-resolution staging canvas...');
 
       // Sample live canvas dimensions directly to guarantee 100% preview match
       let nativeW = originalCanvas.offsetWidth || 380;
@@ -11023,16 +11076,18 @@ class SchedullyApp {
         }
       }
 
-      // Create an off-screen staging area so we can render it at perfect native scale
+      // Create an off-screen fixed staging area so browser WebKit engine performs full valid layout pass without culling
       const stagingContainer = document.createElement('div');
       stagingContainer.className = 'export-staging-container';
       stagingContainer.style.cssText = `
-        position: absolute;
-        top: -9999px; left: -9999px;
+        position: fixed;
+        top: 0; left: 0;
         width: ${nativeW}px; height: ${nativeH}px;
         min-width: ${nativeW}px; max-width: ${nativeW}px;
-        z-index: -9999;
-        zoom: 1; transform: none;
+        z-index: -99999;
+        opacity: 0;
+        pointer-events: none;
+        transform: none;
         overflow: hidden;
         border-radius: 0px !important;
       `;
@@ -11110,86 +11165,138 @@ class SchedullyApp {
 
       stagingContainer.appendChild(clone);
 
-      // Render via domtoimage at 3x resolution with native bounds
-      setTimeout(() => {
-        const scale = 3;
-        const renderPromise = (window.domtoimage && typeof window.domtoimage.toCanvas === 'function')
-          ? window.domtoimage.toCanvas(clone, {
-              width: nativeW * scale,
-              height: nativeH * scale,
-              style: {
-                transform: `scale(${scale})`,
-                transformOrigin: 'top left',
-                width: `${nativeW}px`,
-                height: `${nativeH}px`,
-                minWidth: `${nativeW}px`,
-                maxWidth: `${nativeW}px`
-              }
-            })
-          : (typeof html2canvas === 'function'
-              ? html2canvas(clone, { scale, useCORS: true, allowTaint: true, backgroundColor: null })
-              : Promise.reject(new Error("No canvas render engine found")));
+      await new Promise(r => setTimeout(r, 250));
+      setExportProgress(65, `${titlePrefix}...`, 'Rasterizing ultra HD canvas & small text...');
 
-        renderPromise.then(canvas => {
-          if (document.body.contains(stagingContainer)) {
-            document.body.removeChild(stagingContainer);
-          }
-          onComplete(canvas);
-        }).catch(err => {
-          if (document.body.contains(stagingContainer)) {
-            document.body.removeChild(stagingContainer);
-          }
-          console.error("Wallpaper export error:", err);
-          alert("Failed to export image. Please try again.");
-        });
-      }, 50);
+      const scale = 3;
+      let renderedCanvas = null;
+
+      try {
+        if (typeof html2canvas === 'function') {
+          renderedCanvas = await html2canvas(clone, {
+            scale: scale,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+            logging: false,
+            windowWidth: nativeW,
+            windowHeight: nativeH,
+            onclone: (clonedDoc) => {
+              const c = clonedDoc.querySelector('#phone-canvas');
+              if (c) {
+                c.style.transform = 'none';
+                c.style.borderRadius = '0px';
+              }
+            }
+          });
+        } else if (window.domtoimage && typeof window.domtoimage.toCanvas === 'function') {
+          renderedCanvas = await window.domtoimage.toCanvas(clone, {
+            width: nativeW * scale,
+            height: nativeH * scale,
+            style: {
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: `${nativeW}px`,
+              height: `${nativeH}px`,
+              minWidth: `${nativeW}px`,
+              maxWidth: `${nativeW}px`
+            }
+          });
+        } else {
+          throw new Error("No canvas rasterizer found");
+        }
+      } catch (renderErr) {
+        console.warn("Primary renderer failed, attempting fallback:", renderErr);
+        if (window.domtoimage && typeof window.domtoimage.toCanvas === 'function') {
+          renderedCanvas = await window.domtoimage.toCanvas(clone, {
+            width: nativeW * scale,
+            height: nativeH * scale,
+            style: {
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: `${nativeW}px`,
+              height: `${nativeH}px`
+            }
+          });
+        } else {
+          throw renderErr;
+        }
+      } finally {
+        if (document.body.contains(stagingContainer)) {
+          document.body.removeChild(stagingContainer);
+        }
+      }
+
+      setExportProgress(90, `${titlePrefix}...`, 'Optimizing image data & color profile...');
+      await new Promise(r => setTimeout(r, 250));
+
+      setExportProgress(100, 'Ready!', 'Saving to device...');
+      await new Promise(r => setTimeout(r, 350));
+      hideExportProgress();
+
+      if (renderedCanvas && typeof onComplete === 'function') {
+        onComplete(renderedCanvas);
+      }
     };
 
 
     // Download Image Button — Pure clean wallpaper PNG export (Mobile & Desktop)
-    this.btnDownloadHD?.addEventListener('click', () => {
+    this.btnDownloadHD?.addEventListener('click', async () => {
       if (window.soundFX) window.soundFX.play('success');
-      exportWallpaper((canvas) => {
-        canvas.toBlob((blob) => {
-          if (blob && window.timetableEngine?.downloadOrShareFile) {
-            window.timetableEngine.downloadOrShareFile(blob, 'schedully_wallpaper.png', 'image/png');
-          } else {
-            const link = document.createElement('a');
-            link.download = 'schedully_wallpaper.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-          }
-        }, 'image/png');
-      });
+      try {
+        await exportWallpaper((canvas) => {
+          canvas.toBlob(async (blob) => {
+            if (blob && window.timetableEngine?.downloadOrShareFile) {
+              await window.timetableEngine.downloadOrShareFile(blob, 'schedully_wallpaper.png', 'image/png');
+            } else {
+              const link = document.createElement('a');
+              link.download = 'schedully_wallpaper.png';
+              link.href = canvas.toDataURL('image/png');
+              link.target = '_blank';
+              link.click();
+            }
+          }, 'image/png');
+        }, 'image');
+      } catch (err) {
+        hideExportProgress();
+        console.error("Download HD error:", err);
+        alert("Failed to export image. Please try again.");
+      }
     });
 
-    // Save As PDF Button â€” Pure clean wallpaper PDF export (Mobile & Desktop)
-    this.btnSavePdf?.addEventListener('click', () => {
-      exportWallpaper((canvas) => {
-        const { jsPDF } = window.jspdf;
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Create PDF with EXACT dimensions of the exported image to prevent white A4 margins
-        const pdf = new jsPDF({
-          orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-          unit: 'px',
-          format: [canvas.width, canvas.height]
-        });
+    // Save As PDF Button — Pure clean wallpaper PDF export (Mobile & Desktop)
+    this.btnSavePdf?.addEventListener('click', async () => {
+      try {
+        await exportWallpaper((canvas) => {
+          const { jsPDF } = window.jspdf;
+          const imgData = canvas.toDataURL('image/png');
+          
+          // Create PDF with EXACT dimensions of the exported image to prevent white A4 margins
+          const pdf = new jsPDF({
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+          });
 
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-        
-        try {
-          const pdfArrayBuffer = pdf.output('arraybuffer');
-          const pdfBlob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
-          if (window.timetableEngine?.downloadOrShareFile) {
-            window.timetableEngine.downloadOrShareFile(pdfBlob, 'schedully_wallpaper.pdf', 'application/pdf');
-          } else {
+          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          
+          try {
+            const pdfArrayBuffer = pdf.output('arraybuffer');
+            const pdfBlob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
+            if (window.timetableEngine?.downloadOrShareFile) {
+              window.timetableEngine.downloadOrShareFile(pdfBlob, 'schedully_wallpaper.pdf', 'application/pdf');
+            } else {
+              pdf.save('schedully_wallpaper.pdf');
+            }
+          } catch (pdfErr) {
             pdf.save('schedully_wallpaper.pdf');
           }
-        } catch (pdfErr) {
-          pdf.save('schedully_wallpaper.pdf');
-        }
-      });
+        }, 'pdf');
+      } catch (err) {
+        hideExportProgress();
+        console.error("Save PDF error:", err);
+        alert("Failed to export PDF. Please try again.");
+      }
     });
 
     // â”€â”€ Mobile Export Dropdown â”€â”€

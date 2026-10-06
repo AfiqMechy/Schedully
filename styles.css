@@ -8121,6 +8121,15 @@ body.dark-mode #user-status-text {
   pointer-events: none;
   border-radius: 46px;
   opacity: 1 !important;
+  background-image: var(--wallpaper-bg-url, inherit);
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
   transition: opacity 0.3s ease, border-radius 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
@@ -8133,12 +8142,16 @@ body.dark-mode #user-status-text {
   bottom: -30px;
   width: calc(100% + 60px);
   height: calc(100% + 60px);
-  background-image: inherit;
+  background-image: var(--wallpaper-bg-url, inherit);
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
   filter: blur(var(--wallpaper-blur-val, 0px));
-  transform: scale(1.06);
+  -webkit-filter: blur(var(--wallpaper-blur-val, 0px));
+  -webkit-transform: translateZ(0) scale(1.06);
+  transform: translateZ(0) scale(1.06);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   transform-origin: center center;
   transition: filter 0.12s ease;
   pointer-events: none;
