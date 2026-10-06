@@ -14030,14 +14030,14 @@ class SchedullyApp {
           let detailFontSize = baseDetailFont;
 
           if (!isShortCard && lineCount > 1) {
-            const verticalPadding = (cardHeightPx < 28) ? 1 : 3;
-            const availableHeight = Math.max(8, cardHeightPx - verticalPadding);
-            const lineFactor = 1.22;
+            const verticalPadding = (cardHeightPx < 28) ? 1 : 2;
+            const availableHeight = Math.max(6, cardHeightPx - verticalPadding);
+            const lineFactor = 1.18;
             const estimatedTotalHeight = (codeFontSize * lineFactor) + ((lineCount - 1) * detailFontSize * lineFactor);
             if (estimatedTotalHeight > availableHeight) {
-              const reductionRatio = Math.max(0.35, availableHeight / estimatedTotalHeight);
-              codeFontSize = Math.max(3.5, Math.round(codeFontSize * reductionRatio * 10) / 10);
-              detailFontSize = Math.max(3.0, Math.round(detailFontSize * reductionRatio * 10) / 10);
+              const reductionRatio = Math.max(0.25, availableHeight / estimatedTotalHeight);
+              codeFontSize = Math.max(2.5, Math.round(codeFontSize * reductionRatio * 10) / 10);
+              detailFontSize = Math.max(2.2, Math.round(detailFontSize * reductionRatio * 10) / 10);
             }
           }
 
