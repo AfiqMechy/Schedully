@@ -1,13 +1,13 @@
-const CACHE_NAME = 'schedully-cache-v783';
+const CACHE_NAME = 'schedully-cache-v788';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=20261006_v783',
-  '/app_v3.js?v=20261006_v783',
+  '/styles.css?v=20261006_v788',
+  '/app_v3.js?v=20261006_v788',
   '/firebase-config.js?v=20260923_v721',
   '/ocr_parser.js?v=20260919_v602',
   '/ics_csv_parser_v3.js',
-  '/timetable_engine.js?v=20261006_v783',
+  '/timetable_engine.js?v=20261006_v788',
   '/i18n.js?v=20260923_v721',
   '/manifest.json?v=20260906_v444',
   '/logo-transparent.png',
@@ -29,7 +29,20 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((keys) => Promise.all(keys.map((key) => key !== CACHE_NAME ? caches.delete(key) : null)))
       .then(() => self.clients.claim())
+      .then(() => {
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SW_UPDATED' });
+          });
+        });
+      })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {

@@ -11076,16 +11076,48 @@ class SchedullyApp {
         }
       }
 
-      // Create an off-screen fixed staging area with opacity 1 so browser WebKit engine performs full valid layout pass and font rasterization without culling
+      // ── Snapshot ALL live CSS variables BEFORE cloning ───────────────────────
+      // Baking these directly into the clone prevents them from being lost when
+      // html2canvas operates in a detached document — the #1 cause of colour/font
+      // mismatches between preview and export on mobile browsers (iOS Safari, Android Chrome).
+      const liveGrid = originalCanvas.querySelector('#universal-timetable-grid');
+      const liveContainer = originalCanvas.querySelector('#lock-timetable-container');
+      const liveRoot = liveContainer || originalCanvas;
+      const liveRootCS = window.getComputedStyle(liveRoot);
+      const snapshotVarNames = [
+        '--timetable-font-family', '--font-sans',
+        '--m3-header-custom-bg', '--m3-header-text-color', '--m3-header-outline-color',
+        '--m3-grid-surface-bg', '--m3-grid-border-color',
+        '--m3-sys-color-primary-container', '--m3-sys-color-surface',
+        '--m3-sys-text-primary', '--m3-sys-text-secondary',
+        '--m3-font-custom-color',
+        '--timetable-corner-radius',
+        '--timetable-opacity-all', '--timetable-opacity-title',
+        '--timetable-opacity-header', '--timetable-opacity-grid', '--timetable-opacity-cards',
+      ];
+      const cssVarSnapshot = {};
+      snapshotVarNames.forEach(v => {
+        const val = liveRootCS.getPropertyValue(v).trim();
+        if (val) cssVarSnapshot[v] = val;
+      });
+      // Resolve exact timetable font string (strip quotes from CSS value)
+      const resolvedFont = (cssVarSnapshot['--timetable-font-family'] || cssVarSnapshot['--font-sans'] || '')
+        .replace(/["']/g, '').trim()
+        || window.getComputedStyle(originalCanvas).fontFamily
+        || 'sans-serif';
+      // Capture live grid column template to reproduce it 1:1 in the export
+      const liveGridCols = liveGrid ? window.getComputedStyle(liveGrid).gridTemplateColumns : null;
+
+      // Create an in-viewport hidden staging container so mobile browser engines perform 100% accurate font layout & glyph rasterization without offscreen culling
       const stagingContainer = document.createElement('div');
       stagingContainer.className = 'export-staging-container';
       stagingContainer.style.cssText = `
         position: fixed;
-        top: 0; left: -9999px;
+        top: 0; left: 0;
         width: ${nativeW}px; height: ${nativeH}px;
         min-width: ${nativeW}px; max-width: ${nativeW}px;
-        z-index: -99999;
-        opacity: 1;
+        z-index: -9999;
+        opacity: 0.001;
         pointer-events: none;
         transform: none;
         overflow: hidden;
@@ -11094,6 +11126,7 @@ class SchedullyApp {
       document.body.appendChild(stagingContainer);
 
       const clone = originalCanvas.cloneNode(true);
+
 
       const cs = window.getComputedStyle(originalCanvas);
       const padTop = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.borderTopWidth) || 0);
@@ -11117,6 +11150,10 @@ class SchedullyApp {
       clone.style.setProperty('max-width', `${nativeW}px`, 'important');
       clone.style.setProperty('height', `${nativeH}px`, 'important');
       clone.style.setProperty('min-height', `${nativeH}px`, 'important');
+
+      // Bake all snapshotted CSS variables directly onto the clone root element
+      // so html2canvas never needs to cascade through a detached document shadow
+      Object.entries(cssVarSnapshot).forEach(([k, v]) => clone.style.setProperty(k, v, 'important'));
 
       // Set exact blur CSS variable on clone so ::before edge-bleed blur renders identically
       const blurVal = this.bgBlurEnabled ? `${this.bgBlurIntensity || 12}px` : '0px';
@@ -11143,13 +11180,32 @@ class SchedullyApp {
         timetableContainer.style.setProperty('margin-left', `${this.gridXPosVal || 0}px`, 'important');
         timetableContainer.style.setProperty('margin-top', `${this.gridYPosVal || 0}px`, 'important');
         timetableContainer.style.setProperty('transform', 'none', 'important');
+        // Bake CSS vars into timetable container so they don't depend on cascade
+        Object.entries(cssVarSnapshot).forEach(([k, v]) => timetableContainer.style.setProperty(k, v, 'important'));
       }
+
+      // Re-apply the exact live grid column template so columns match 1:1 with the preview
+      const cloneGrid = clone.querySelector('#universal-timetable-grid');
+      if (cloneGrid && liveGridCols && liveGridCols !== 'none') {
+        cloneGrid.style.setProperty('grid-template-columns', liveGridCols, 'important');
+      }
+
+      // Apply resolved font-family directly onto every text element to prevent
+      // fallback to system fonts inside the rasterizer's detached document context
+      clone.querySelectorAll(
+        '.exact-card-code, .exact-card-type, .exact-card-room, .exact-card-lecturer,' +
+        '.exact-card-group, .exact-card-time, .exact-grid-cell-header, .exact-grid-cell-time,' +
+        '.exact-grid-cell-time span, .lock-grid-title-bar, #lock-title-text, #lock-trademark-text'
+      ).forEach(el => {
+        el.style.setProperty('font-family', resolvedFont, 'important');
+      });
 
       // Hide clock/date lockscreen widget while preserving exact layout height & Y-positioning
       const lockHeader = clone.querySelector('#phone-lock-header');
       if (lockHeader) {
         lockHeader.style.setProperty('visibility', 'hidden', 'important');
         lockHeader.style.setProperty('opacity', '0', 'important');
+
       }
 
       // Completely remove hardware buttons, camera notch, straps, and nav bar from exported wallpaper
@@ -11165,11 +11221,16 @@ class SchedullyApp {
 
       stagingContainer.appendChild(clone);
 
-      await new Promise(r => setTimeout(r, 250));
+      // Extra delay on mobile: WebKit needs more time to complete font layout passes
+      const isLikelyMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+      await new Promise(r => setTimeout(r, isLikelyMobile ? 500 : 250));
       setExportProgress(65, `${titlePrefix}...`, 'Rasterizing ultra HD canvas & small text...');
 
       const scale = 3;
       let renderedCanvas = null;
+
+      // Build a :root CSS var block to inject into the html2canvas internal document
+      const cssVarRootBlock = ':root {\n' + Object.entries(cssVarSnapshot).map(([k, v]) => `  ${k}: ${v};`).join('\n') + '\n}';
 
       try {
         if (typeof html2canvas === 'function') {
@@ -11181,17 +11242,66 @@ class SchedullyApp {
             logging: false,
             windowWidth: nativeW,
             windowHeight: nativeH,
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0,
             onclone: (clonedDoc) => {
+              // 1. Inject CSS vars as :root style so every property resolves correctly
+              //    inside the detached html2canvas document on ALL platforms
+              try {
+                const styleEl = clonedDoc.createElement('style');
+                styleEl.textContent = cssVarRootBlock;
+                clonedDoc.head.appendChild(styleEl);
+              } catch (_) {}
+
+              // 2. Bake CSS vars onto body and canvas element for maximum specificity
+              if (clonedDoc.body) {
+                Object.entries(cssVarSnapshot).forEach(([k, v]) => clonedDoc.body.style.setProperty(k, v, 'important'));
+              }
               const c = clonedDoc.querySelector('#phone-canvas');
               if (c) {
-                c.style.transform = 'none';
-                c.style.borderRadius = '0px';
+                c.style.setProperty('transform', 'none', 'important');
+                c.style.setProperty('border-radius', '0px', 'important');
+                Object.entries(cssVarSnapshot).forEach(([k, v]) => c.style.setProperty(k, v, 'important'));
               }
-              // Prevent text clipping on exported canvas
-              clonedDoc.querySelectorAll('.exact-course-card, .exact-card-code, .exact-card-type, .exact-card-room, .exact-card-lecturer, .exact-card-group, .exact-card-time, .exact-grid-cell-header, .exact-grid-cell-time, #lock-title-text, #lock-trademark-text').forEach(el => {
-                el.style.webkitFontSmoothing = 'antialiased';
-                el.style.textRendering = 'geometricPrecision';
+
+              // 3. Bake resolved font-family and glyph rendering onto all text elements
+              clonedDoc.querySelectorAll(
+                '.exact-card-code, .exact-card-type, .exact-card-room, .exact-card-lecturer,' +
+                '.exact-card-group, .exact-card-time, .exact-grid-cell-header, .exact-grid-cell-time,' +
+                '.exact-grid-cell-time span, .lock-grid-title-bar, #lock-title-text, #lock-trademark-text'
+              ).forEach(el => {
+                el.style.setProperty('font-family', resolvedFont, 'important');
+                el.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
+                el.style.setProperty('text-rendering', 'geometricPrecision', 'important');
+                el.style.setProperty('line-height', '1.35', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+                el.style.setProperty('letter-spacing', 'normal', 'important');
               });
+
+              // 4. Restore exact flex layout on cards to match live preview
+              clonedDoc.querySelectorAll('.exact-course-card').forEach(card => {
+                card.style.setProperty('overflow', 'hidden', 'important');
+                card.style.setProperty('display', 'flex', 'important');
+                card.style.setProperty('flex-direction', 'column', 'important');
+                card.style.setProperty('justify-content', 'center', 'important');
+                card.style.setProperty('align-items', 'center', 'important');
+                card.style.setProperty('text-align', 'center', 'important');
+                card.style.setProperty('gap', '1px', 'important');
+              });
+
+              // 5. Re-apply exact grid column template in html2canvas document
+              const h2cGrid = clonedDoc.querySelector('#universal-timetable-grid');
+              if (h2cGrid && liveGridCols && liveGridCols !== 'none') {
+                h2cGrid.style.setProperty('grid-template-columns', liveGridCols, 'important');
+              }
+
+              // 6. Bake CSS vars into the timetable container inside h2c doc
+              const h2cContainer = clonedDoc.querySelector('#lock-timetable-container');
+              if (h2cContainer) {
+                Object.entries(cssVarSnapshot).forEach(([k, v]) => h2cContainer.style.setProperty(k, v, 'important'));
+              }
             }
           });
         } else if (window.domtoimage && typeof window.domtoimage.toCanvas === 'function') {
@@ -14032,7 +14142,7 @@ class SchedullyApp {
           if (!isShortCard && lineCount > 1) {
             const verticalPadding = (cardHeightPx < 28) ? 1 : 2;
             const availableHeight = Math.max(6, cardHeightPx - verticalPadding);
-            const lineFactor = 1.18;
+            const lineFactor = 1.35;
             const estimatedTotalHeight = (codeFontSize * lineFactor) + ((lineCount - 1) * detailFontSize * lineFactor);
             if (estimatedTotalHeight > availableHeight) {
               const reductionRatio = Math.max(0.25, availableHeight / estimatedTotalHeight);
@@ -14049,14 +14159,14 @@ class SchedullyApp {
           }
 
           const cardContentHTML = isShortCard ? `
-            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.15; color: inherit;">${matched.code}</div>
+            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.35; color: inherit;">${matched.code}</div>
           ` : `
-            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.18; color: inherit;">${matched.code}</div>
-            ${this.globalCourseType && matched.type ? `<div class="exact-card-type" style="font-size: ${detailFontSize}px; font-style: italic; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.type}</div>` : ''}
-            ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
-            ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
-            ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
-            ${shouldShowTime ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.18; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
+            <div class="exact-card-code" style="font-size: ${codeFontSize}px; font-weight: 800; line-height: 1.35; color: inherit;">${matched.code}</div>
+            ${this.globalCourseType && matched.type ? `<div class="exact-card-type" style="font-size: ${detailFontSize}px; font-style: italic; font-weight: 600; line-height: 1.35; opacity: 1; color: inherit;">${matched.type}</div>` : ''}
+            ${this.globalCourseRoom && matched.room ? `<div class="exact-card-room" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.35; opacity: 1; color: inherit;">${matched.room}</div>` : ''}
+            ${this.globalCourseLecturer && matched.lecturer ? `<div class="exact-card-lecturer" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.35; opacity: 1; color: inherit;">${matched.lecturer}</div>` : ''}
+            ${this.globalCourseGroup && matched.group ? `<div class="exact-card-group" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.35; opacity: 1; color: inherit;">${matched.group}</div>` : ''}
+            ${shouldShowTime ? `<div class="exact-card-time" style="font-size: ${detailFontSize}px; font-weight: 600; line-height: 1.35; opacity: 1; color: inherit;">${timeDisplayText}</div>` : ''}
           `;
 
           const cardElement = document.createElement('div');

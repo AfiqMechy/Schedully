@@ -6619,7 +6619,7 @@ body.dark-mode .m3-lock-timetable-container,
 .lock-grid-title-bar {
   text-align: center;
   padding: 6px 12px;
-  font-family: var(--font-sans);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
   color: var(--m3-header-text-color, var(--m3-font-custom-color, var(--m3-sys-text-primary))) !important;
@@ -6638,16 +6638,16 @@ body.dark-mode .m3-lock-timetable-container,
   text-align: center;
   font-weight: 700;
   font-size: 11px;
-  font-family: var(--font-sans);
+  font-family: inherit;
   color: var(--m3-header-text-color, var(--m3-font-custom-color, var(--m3-sys-text-primary))) !important;
-  padding: 4px 1px;
+  padding: 2px 0px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
   white-space: nowrap;
   box-sizing: border-box;
+  line-height: 1.35 !important;
   border-right: 1.5px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
   border-bottom: 2px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
   background: var(--m3-header-custom-bg, var(--m3-sys-color-primary-container, #DBEAFE)) !important;
@@ -6667,7 +6667,7 @@ body.dark-mode .m3-lock-timetable-container,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2px 1px;
+  padding: 1px;
   overflow: hidden;
   box-sizing: border-box;
   border-right: 2px solid var(--m3-header-outline-color, var(--m3-sys-color-outline));
@@ -6675,7 +6675,7 @@ body.dark-mode .m3-lock-timetable-container,
   background: var(--m3-header-custom-bg, var(--m3-sys-color-primary-container, #DBEAFE)) !important;
   transition: background-color 0.2s ease, color 0.2s ease, opacity 0.18s ease;
   opacity: var(--timetable-opacity-header, 1) !important;
-  line-height: 1.15;
+  line-height: 1.35 !important;
 }
 
 .exact-grid-cell-time span {
@@ -6684,7 +6684,7 @@ body.dark-mode .m3-lock-timetable-container,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.15;
+  line-height: 1.35 !important;
 }
 
 /* TABLE GRID MATRIX */
@@ -6747,7 +6747,7 @@ body.dark-mode .exact-grid-cell-slot,
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  padding: 2px 1px;
+  padding: 1px 2px;
   color: var(--m3-sys-text-primary);
   background: var(--m3-sys-color-surface);
   border: 1px solid rgba(255, 255, 255, 0.45);
@@ -6760,7 +6760,8 @@ body.dark-mode .exact-grid-cell-slot,
   text-align: center;
   font-size: 8px;
   box-shadow: none !important;
-  line-height: 1.05;
+  line-height: 1.35 !important;
+  gap: 1.5px;
   overflow: hidden;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -6769,9 +6770,9 @@ body.dark-mode .exact-grid-cell-slot,
 
 .exact-card-code {
   font-weight: 800;
-  font-family: var(--font-sans);
+  font-family: inherit;
   font-size: 10px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;
@@ -6784,10 +6785,11 @@ body.dark-mode .exact-grid-cell-slot,
 }
 .exact-card-type {
   font-size: 7.5px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   opacity: 0.85;
   font-weight: 600;
   font-style: italic;
+  font-family: inherit;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;
@@ -6800,9 +6802,10 @@ body.dark-mode .exact-grid-cell-slot,
 }
 .exact-card-room {
   font-size: 7.5px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   opacity: 0.85;
   font-weight: 500;
+  font-family: inherit;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;
@@ -6815,9 +6818,10 @@ body.dark-mode .exact-grid-cell-slot,
 }
 .exact-card-lecturer {
   font-size: 7.5px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   opacity: 0.85;
   font-weight: 600;
+  font-family: inherit;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;
@@ -6830,9 +6834,10 @@ body.dark-mode .exact-grid-cell-slot,
 }
 .exact-card-group {
   font-size: 7.5px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   opacity: 0.85;
   font-weight: 600;
+  font-family: inherit;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;
@@ -6845,9 +6850,10 @@ body.dark-mode .exact-grid-cell-slot,
 }
 .exact-card-time {
   font-size: 8px;
-  line-height: 1.15 !important;
+  line-height: 1.35 !important;
   opacity: 0.9;
   font-weight: 600;
+  font-family: inherit;
   margin: 0 !important;
   padding: 0 1px !important;
   display: block !important;

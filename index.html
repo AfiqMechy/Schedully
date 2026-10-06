@@ -100,9 +100,9 @@
 <meta name="apple-mobile-web-app-title" content="Schedully">
 <!-- Performance Optimized Google Fonts & UI Icons (preconnect + preload + font-display=swap) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preload" href="styles.css?v=20261006_v783" as="style">
-<link rel="preload" href="app_v3.js?v=20261006_v783" as="script">
-<link rel="stylesheet" href="styles.css?v=20261006_v783">
+<link rel="preload" href="styles.css?v=20261006_v788" as="style">
+<link rel="preload" href="app_v3.js?v=20261006_v788" as="script">
+<link rel="stylesheet" href="styles.css?v=20261006_v788">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Inter:wght@300..900&family=JetBrains+Mono:wght@400..800&family=Lexend:wght@300..800&family=Outfit:wght@300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Roboto:ital,wght@0,400..700;1,400..700&family=Sacramento&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -227,7 +227,7 @@
       background-color: #2563EB;
     }
   </style>
-<link rel="stylesheet" href="styles.css?v=20261006_v783">
+<link rel="stylesheet" href="styles.css?v=20261006_v785">
 <script>
   (function() {
     try {
@@ -3266,18 +3266,35 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=20260923_v721"></script>
-<script src="app_v3.js?v=20261006_v783"></script>
+<script src="app_v3.js?v=20261006_v788"></script>
 
 <!-- Register PWA Service Worker + auto-reload on update (works on mobile too) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js?v=783').then(reg => {
-        if (reg) reg.update();
+      navigator.serviceWorker.register('/sw.js?v=788').then(reg => {
+        if (reg) {
+          reg.update();
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  window.location.reload();
+                }
+              });
+            }
+          });
+        }
       }).catch((err) => console.log('SW reg error:', err));
 
-      // When the new service worker activates and broadcasts SW_UPDATED,
-      // auto-reload the page so users always get the fresh version — works on mobile too
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'SW_UPDATED') {
           window.location.reload();
