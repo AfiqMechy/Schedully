@@ -3078,45 +3078,105 @@ class SchedullyApp {
     const floatingDayChecks = document.querySelectorAll('.floating-day-check');
     const sidebarDayChecks = document.querySelectorAll('.day-toggle');
 
-    // Helper: sync active days UI across floating card and sidebar
+    // Helper: sync active days UI across floating card, wizard step 1, and sidebar
     const syncDaysUI = () => {
+      const days = this.activeDays || this.visibleDays || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
       floatingDayChecks.forEach(chk => {
-        chk.checked = this.activeDays.includes(chk.value);
+        chk.checked = days.includes(chk.value);
+      });
+      document.querySelectorAll('.floating-wizard-day-check').forEach(chk => {
+        chk.checked = days.includes(chk.value);
       });
       sidebarDayChecks.forEach(chk => {
-        chk.checked = this.activeDays.includes(chk.value);
+        chk.checked = days.includes(chk.value);
       });
     };
 
-    // Helper: sync start/end time select dropdowns
+    // Helper: sync start/end time select dropdowns across all cards
     const syncTimeSelects = () => {
-      const startStr = `${String(this.gridStartHour).padStart(2, '0')}:00`;
-      const endStr = `${String(this.gridEndHour).padStart(2, '0')}:00`;
+      const startHour = this.gridStartHour !== undefined ? this.gridStartHour : (parseInt(this.startTime?.split(':')[0], 10) || 8);
+      const endHour = this.gridEndHour !== undefined ? this.gridEndHour : (parseInt(this.endTime?.split(':')[0], 10) || 17);
+      const startStr = `${String(startHour).padStart(2, '0')}:00`;
+      const endStr = `${String(endHour).padStart(2, '0')}:00`;
+      
       if (this.gridStartTimeSelect) this.gridStartTimeSelect.value = startStr;
       if (floatingStartSelect) floatingStartSelect.value = startStr;
       if (this.gridEndTimeSelect) this.gridEndTimeSelect.value = endStr;
       if (floatingEndSelect) floatingEndSelect.value = endStr;
+
+      const wizardStartSel = document.getElementById('floating-wizard-grid-start-time');
+      if (wizardStartSel) wizardStartSel.value = startStr;
+      const wizardEndSel = document.getElementById('floating-wizard-grid-end-time');
+      if (wizardEndSel) wizardEndSel.value = endStr;
     };
 
     // Helper: sync axis mode toggles (TIME vs PERIOD)
     const syncAxisUI = () => {
       const mode = this.axisMode || 'time';
-      document.querySelectorAll('#toggle-axis-mode .pill-btn, #toggle-floating-axis-mode .pill-btn').forEach(btn => {
+      document.querySelectorAll('#toggle-axis-mode .pill-btn, #toggle-floating-axis-mode .pill-btn, #toggle-floating-wizard-axis-mode .pill-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-val') === mode);
       });
+      const isPeriod = (mode === 'period');
+
+      // Standalone Days & Time card rows
       const rowFloatingStart = document.getElementById('row-floating-start-time');
       const rowFloatingEnd = document.getElementById('row-floating-end-time');
       const rowFloatingClock = document.getElementById('row-floating-clock-type');
-      const isPeriod = (mode === 'period');
+      const rowFloatingPeriods = document.getElementById('row-floating-total-periods');
+      const rowFloatingPreset = document.getElementById('row-floating-period-preset');
       if (rowFloatingStart) rowFloatingStart.style.display = isPeriod ? 'none' : 'flex';
       if (rowFloatingEnd) rowFloatingEnd.style.display = isPeriod ? 'none' : 'flex';
       if (rowFloatingClock) rowFloatingClock.style.display = isPeriod ? 'none' : 'flex';
+      if (rowFloatingPeriods) rowFloatingPeriods.style.display = isPeriod ? 'flex' : 'none';
+      if (rowFloatingPreset) rowFloatingPreset.style.display = isPeriod ? 'flex' : 'none';
+
+      // Wizard Step 1 rows
+      const rowWizardStart = document.getElementById('row-floating-wizard-start-time');
+      const rowWizardEnd = document.getElementById('row-floating-wizard-end-time');
+      const rowWizardClock = document.getElementById('row-floating-wizard-clock-type');
+      const rowWizardPeriods = document.getElementById('row-floating-wizard-total-periods');
+      const rowWizardPreset = document.getElementById('row-floating-wizard-period-preset');
+      if (rowWizardStart) rowWizardStart.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardEnd) rowWizardEnd.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardClock) rowWizardClock.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardPeriods) rowWizardPeriods.style.display = isPeriod ? 'flex' : 'none';
+      if (rowWizardPreset) rowWizardPreset.style.display = isPeriod ? 'flex' : 'none';
+
+      // Sync period select values
+      const periodsSel = document.getElementById('floating-grid-total-periods');
+      if (periodsSel) periodsSel.value = String(this.gridPeriodCount || 6);
+      const presetSel = document.getElementById('floating-grid-period-preset');
+      if (presetSel) presetSel.value = this.selectedOcrPeriodPreset || '90m-900';
+
+      const wizardPeriodsSel = document.getElementById('floating-wizard-grid-total-periods');
+      if (wizardPeriodsSel) wizardPeriodsSel.value = String(this.gridPeriodCount || 6);
+      const wizardPresetSel = document.getElementById('floating-wizard-grid-period-preset');
+      if (wizardPresetSel) wizardPresetSel.value = this.selectedOcrPeriodPreset || '90m-900';
     };
+
+    // Period controls listeners
+    document.getElementById('floating-grid-total-periods')?.addEventListener('change', (e) => {
+      this.gridPeriodCount = parseInt(e.target.value, 10) || 6;
+      this.syncDaysAndTimeControlsUI();
+      if (typeof this.updatePeriodScheduleUI === 'function') this.updatePeriodScheduleUI();
+      this.renderAll();
+      this._stagePending(true);
+      window.soundFX?.play?.('tap');
+    });
+
+    document.getElementById('floating-grid-period-preset')?.addEventListener('change', (e) => {
+      this.selectedOcrPeriodPreset = e.target.value;
+      this.syncDaysAndTimeControlsUI();
+      if (typeof this.updatePeriodScheduleUI === 'function') this.updatePeriodScheduleUI();
+      this.renderAll();
+      this._stagePending(true);
+      window.soundFX?.play?.('tap');
+    });
 
     // Helper: sync clock format toggles (12-HOUR vs 24-HOUR)
     const syncClockUI = () => {
-      const format = this.clockFormat || '12';
-      document.querySelectorAll('#toggle-clock-type .pill-btn, #toggle-floating-clock-type .pill-btn').forEach(btn => {
+      const format = String(this.clockFormat || this.clockType || '12');
+      document.querySelectorAll('#toggle-clock-type .pill-btn, #toggle-floating-clock-type .pill-btn, #toggle-floating-wizard-clock-type .pill-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-val') === format);
       });
     };
@@ -3129,13 +3189,14 @@ class SchedullyApp {
       syncClockUI();
     };
 
-    // 1. Floating Day Checkbox change handler
+    // 1. Floating Day Checkbox change handler (Standalone card)
     floatingDayChecks.forEach(chk => {
       chk.addEventListener('change', () => {
         const checked = Array.from(document.querySelectorAll('.floating-day-check:checked')).map(c => c.value);
         this.activeDays = checked.length > 0 ? checked : ['Mon'];
-        syncDaysUI();
-        this.renderTimetableGrid();
+        this.visibleDays = this.activeDays;
+        this.syncDaysAndTimeControlsUI();
+        this.renderAll();
         this._stagePending();
         window.soundFX?.play?.('tap');
         window.haptics?.trigger?.('selection');
@@ -3147,9 +3208,9 @@ class SchedullyApp {
       btn.addEventListener('click', () => {
         const val = btn.getAttribute('data-val') || 'time';
         this.axisMode = val;
-        syncAxisUI();
+        this.syncDaysAndTimeControlsUI();
         this.updateCourseFormMode();
-        this.renderTimetableGrid();
+        this.renderAll();
         if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
           this.renderWatchGlance();
         }
@@ -3162,8 +3223,9 @@ class SchedullyApp {
     // 3. Floating Start Time Select
     floatingStartSelect?.addEventListener('change', (e) => {
       this.gridStartHour = parseInt(e.target.value.split(':')[0], 10);
-      syncTimeSelects();
-      this.renderTimetableGrid();
+      this.startTime = e.target.value;
+      this.syncDaysAndTimeControlsUI();
+      this.renderAll();
       this._stagePending(true);
       window.soundFX?.play?.('tap');
     });
@@ -3171,8 +3233,9 @@ class SchedullyApp {
     // 4. Floating End Time Select
     floatingEndSelect?.addEventListener('change', (e) => {
       this.gridEndHour = parseInt(e.target.value.split(':')[0], 10);
-      syncTimeSelects();
-      this.renderTimetableGrid();
+      this.endTime = e.target.value;
+      this.syncDaysAndTimeControlsUI();
+      this.renderAll();
       this._stagePending(true);
       window.soundFX?.play?.('tap');
     });
@@ -3182,8 +3245,9 @@ class SchedullyApp {
       btn.addEventListener('click', () => {
         const val = btn.getAttribute('data-val') || '12';
         this.clockFormat = val;
-        syncClockUI();
-        this.renderTimetableGrid();
+        this.clockType = val;
+        this.syncDaysAndTimeControlsUI();
+        this.renderAll();
         this._stagePending();
         window.soundFX?.play?.('tap');
         window.haptics?.trigger?.('selection');
@@ -3192,20 +3256,26 @@ class SchedullyApp {
 
     // 6. Reset to Default Button in Floating Card
     btnFloatingResetDays?.addEventListener('click', () => {
-      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      this.visibleDays = this.activeDays;
       this.gridStartHour = 8;
-      this.gridEndHour = 20;
+      this.gridEndHour = 17;
+      this.startTime = '08:00';
+      this.endTime = '17:00';
       this.axisMode = 'time';
       this.clockFormat = '12';
+      this.clockType = '12';
+      this.gridPeriodCount = 6;
+      this.selectedOcrPeriodPreset = '90m-900';
       this.syncDaysAndTimeControlsUI();
       this.updateCourseFormMode();
-      this.renderTimetableGrid();
+      this.renderAll();
       if (this.activeDevice === 'watch' || typeof this.renderWatchGlance === 'function') {
         this.renderWatchGlance();
       }
-      this._stagePending();
-      window.soundFX?.play?.('zoom');
-      window.haptics?.trigger?.('selection');
+      this._stagePending(true);
+      window.soundFX?.play?.('pop');
+      window.haptics?.trigger?.('light');
     });
 
     // Run initial synchronization
@@ -4798,6 +4868,21 @@ class SchedullyApp {
       });
     }
 
+    // Realtime Action Pill Viewport Tracking on Canvas Scroll & Resize
+    const canvasScrollArea = document.getElementById('canvas-scroll-area');
+    if (canvasScrollArea) {
+      canvasScrollArea.addEventListener('scroll', () => {
+        if (this.activeSwapCourseId) {
+          this.positionNudgeActionPill(this.activeSwapCourseId, false);
+        }
+      }, { passive: true });
+    }
+    window.addEventListener('resize', () => {
+      if (this.activeSwapCourseId) {
+        this.positionNudgeActionPill(this.activeSwapCourseId, false);
+      }
+    }, { passive: true });
+
     // History Floating Undo & Redo Capsule Controls
     if (this.btnHistoryUndo) {
       this.btnHistoryUndo.addEventListener('click', (e) => {
@@ -5291,6 +5376,7 @@ class SchedullyApp {
           document.getElementById('floating-title-card')?.classList.add('hidden');
           document.getElementById('floating-palette-mode-card')?.classList.add('hidden');
           document.getElementById('floating-add-course-card')?.classList.add('hidden');
+          document.getElementById('floating-add-course-setup-island')?.classList.add('hidden');
           document.getElementById('floating-font-style-card')?.classList.add('hidden');
           document.getElementById('floating-days-time-card')?.classList.add('hidden');
           setTimeout(window.syncGlassSliders, 20);
@@ -6697,6 +6783,13 @@ class SchedullyApp {
         }, { passive: false });
       }
 
+      // Prevent Safari/Chrome native page gesture zoom from scaling and shifting UI elements
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(eventName => {
+        document.addEventListener(eventName, (e) => {
+          e.preventDefault();
+        }, { passive: false });
+      });
+
       window.addEventListener('touchstart', (e) => {
         if (e.touches && e.touches.length === 2 && e.target && e.target.closest('#canvas-scroll-area, #main-phone-wrapper, #phone-canvas, .canvas-scaler-container')) {
           handlePinchStart(e);
@@ -6706,6 +6799,8 @@ class SchedullyApp {
       window.addEventListener('touchmove', (e) => {
         if (isPinching) {
           handlePinchMove(e);
+        } else if (e.touches && e.touches.length > 1) {
+          if (e.cancelable) e.preventDefault();
         }
       }, { passive: false });
 
@@ -7825,8 +7920,10 @@ class SchedullyApp {
       btnDaysPanelToggle?.classList.remove('active');
       if (wasFromFab) {
         // Return smoothly to Add A Course card
+        const floatingAddCourseContainer = document.getElementById('floating-add-course-container');
         const floatingAddCourseCard = document.getElementById('floating-add-course-card');
         const btnFloatingAddCourseToggle = document.getElementById('btn-floating-add-course-toggle');
+        floatingAddCourseContainer?.classList.remove('hidden');
         floatingAddCourseCard?.classList.remove('hidden');
         btnFloatingAddCourseToggle?.classList.add('active');
       }
@@ -9222,13 +9319,18 @@ class SchedullyApp {
     const btnFloatingAddCourseToggle = document.getElementById('btn-floating-add-course-toggle');
     const floatingAddCourseCircleIsland = document.getElementById('floating-add-course-circle-island');
     const floatingAddCourseCard = document.getElementById('floating-add-course-card');
+    const floatingAddCourseSetupIsland = document.getElementById('floating-add-course-setup-island');
     const btnCloseFloatingAddCourse = document.getElementById('btn-close-floating-add-course');
     const btnFloatingCourseStep1Tab = document.getElementById('btn-floating-course-step1-tab');
     const btnFloatingCourseStep2Tab = document.getElementById('btn-floating-course-step2-tab');
+    const btnFloatingCourseStep3Tab = document.getElementById('btn-floating-course-step3-tab');
     const floatingCourseStep1 = document.getElementById('floating-course-step-1');
     const floatingCourseStep2 = document.getElementById('floating-course-step-2');
+    const floatingCourseStep3 = document.getElementById('floating-course-step-3');
     const btnFloatingCourseToStep2 = document.getElementById('btn-floating-course-to-step2');
-    const btnFloatingCourseToStep1 = document.getElementById('btn-floating-course-to-step1');
+    const btnFloatingCourseToStep3 = document.getElementById('btn-floating-course-to-step3');
+    const btnFloatingCourseStep2ToStep1 = document.getElementById('btn-floating-course-step2-to-step1');
+    const btnFloatingCourseStep3ToStep2 = document.getElementById('btn-floating-course-step3-to-step2');
     const btnFloatingSaveCourse = document.getElementById('btn-floating-save-course');
 
     let currentAddCourseStep = 1;
@@ -9236,24 +9338,193 @@ class SchedullyApp {
     let floatingCourseSelectedFont = '#FFFFFF';
     let floatingCourseDisplayTime = 'yes';
 
+    const syncWizardStep1WithTimetable = () => {
+      // Sync active days
+      const currentDays = this.visibleDays || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      document.querySelectorAll('.floating-wizard-day-check').forEach(cb => {
+        cb.checked = currentDays.includes(cb.value);
+      });
+
+      // Sync system type toggle (TIME vs PERIOD)
+      const isPeriod = (this.axisMode === 'period');
+      document.querySelectorAll('#toggle-floating-wizard-axis-mode .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === (isPeriod ? 'period' : 'time'));
+      });
+
+      // Wizard Step 1 Row visibilities (Time vs Period)
+      const rowWizardStart = document.getElementById('row-floating-wizard-start-time');
+      const rowWizardEnd = document.getElementById('row-floating-wizard-end-time');
+      const rowWizardClock = document.getElementById('row-floating-wizard-clock-type');
+      const rowWizardPeriods = document.getElementById('row-floating-wizard-total-periods');
+      const rowWizardPreset = document.getElementById('row-floating-wizard-period-preset');
+      if (rowWizardStart) rowWizardStart.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardEnd) rowWizardEnd.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardClock) rowWizardClock.style.display = isPeriod ? 'none' : 'flex';
+      if (rowWizardPeriods) rowWizardPeriods.style.display = isPeriod ? 'flex' : 'none';
+      if (rowWizardPreset) rowWizardPreset.style.display = isPeriod ? 'flex' : 'none';
+
+      // Sync grid start and end hours
+      const gridStartSel = document.getElementById('floating-wizard-grid-start-time');
+      if (gridStartSel) {
+        gridStartSel.value = this.startTime || '08:00';
+      }
+      const gridEndSel = document.getElementById('floating-wizard-grid-end-time');
+      if (gridEndSel) {
+        gridEndSel.value = this.endTime || '17:00';
+      }
+
+      // Sync 12h/24h toggle
+      const clockType = (this.clockType || '12').toString();
+      document.querySelectorAll('#toggle-floating-wizard-clock-type .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === clockType);
+      });
+
+      // Sync Period mode selects
+      const wizardPeriodsSel = document.getElementById('floating-wizard-grid-total-periods');
+      if (wizardPeriodsSel) wizardPeriodsSel.value = String(this.gridPeriodCount || 6);
+
+      const wizardPresetSel = document.getElementById('floating-wizard-grid-period-preset');
+      if (wizardPresetSel) wizardPresetSel.value = this.selectedOcrPeriodPreset || '90m-900';
+    };
+
+    const syncWizardStep3WithTimetable = () => {
+      const rowPeriod = document.getElementById('floating-row-period-select');
+      const rowTime = document.getElementById('floating-row-time-select');
+      const isPeriod = (this.axisMode === 'period');
+
+      // Sync the toggle pill buttons
+      document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === (isPeriod ? 'period' : 'clock'));
+      });
+
+      // Update visibility of period vs time selector rows
+      if (rowPeriod && rowTime) {
+        rowPeriod.style.display = isPeriod ? 'flex' : 'none';
+        rowTime.style.display = isPeriod ? 'none' : 'grid';
+      }
+
+      // Populate period options dynamically based on gridPeriodCount and selectedOcrPeriodPreset
+      const periodSel = document.getElementById('floating-input-period-select');
+      if (periodSel) {
+        const totalPeriods = parseInt(this.gridPeriodCount, 10) || 6;
+        const currentVal = periodSel.value || '1';
+        let optionsHtml = '';
+        for (let p = 1; p <= totalPeriods; p++) {
+          const slot = this.getPeriodTimeSlot(p);
+          optionsHtml += `<option value="${p}" data-start="${slot.start}" data-end="${slot.end}">Period ${p} (${slot.start} - ${slot.end})</option>`;
+        }
+        periodSel.innerHTML = optionsHtml;
+        if (periodSel.querySelector(`option[value="${currentVal}"]`)) {
+          periodSel.value = currentVal;
+        } else {
+          periodSel.selectedIndex = 0;
+        }
+      }
+    };
+
     const setAddCourseStep = (step) => {
       currentAddCourseStep = step;
       if (floatingCourseStep1) floatingCourseStep1.classList.toggle('hidden', step !== 1);
       if (floatingCourseStep2) floatingCourseStep2.classList.toggle('hidden', step !== 2);
+      if (floatingCourseStep3) floatingCourseStep3.classList.toggle('hidden', step !== 3);
 
-      if (btnFloatingCourseStep1Tab) {
-        btnFloatingCourseStep1Tab.classList.toggle('active', step === 1);
-        btnFloatingCourseStep1Tab.classList.toggle('text-gray-500', step !== 1);
-        btnFloatingCourseStep1Tab.classList.toggle('dark:text-gray-400', step !== 1);
+      if (btnFloatingCourseStep1Tab) btnFloatingCourseStep1Tab.classList.toggle('active', step === 1);
+      if (btnFloatingCourseStep2Tab) btnFloatingCourseStep2Tab.classList.toggle('active', step === 2);
+      if (btnFloatingCourseStep3Tab) btnFloatingCourseStep3Tab.classList.toggle('active', step === 3);
+
+      if (step === 1) {
+        syncWizardStep1WithTimetable();
+      } else if (step === 3) {
+        syncWizardStep3WithTimetable();
       }
-      if (btnFloatingCourseStep2Tab) {
-        btnFloatingCourseStep2Tab.classList.toggle('active', step === 2);
-        btnFloatingCourseStep2Tab.classList.toggle('text-gray-500', step !== 2);
-        btnFloatingCourseStep2Tab.classList.toggle('dark:text-gray-400', step !== 2);
-      }
+
       if (window.soundFX) window.soundFX.play('tap');
       if (window.haptics) window.haptics.trigger('selection');
     };
+
+    // Step 1 Timetable Setup Handlers (Fully 2-Way Synced)
+    document.querySelectorAll('.floating-wizard-day-check').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const checkedDays = Array.from(document.querySelectorAll('.floating-wizard-day-check:checked')).map(c => c.value);
+        if (checkedDays.length === 0) {
+          cb.checked = true;
+          return;
+        }
+        this.activeDays = checkedDays;
+        this.visibleDays = checkedDays;
+        if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+        this.renderAll();
+        this._stagePending(true);
+      });
+    });
+
+    document.querySelectorAll('#toggle-floating-wizard-axis-mode .pill-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('#toggle-floating-wizard-axis-mode .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.getAttribute('data-val') || 'time';
+        this.axisMode = mode;
+        if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+        this.updateCourseFormMode();
+        this.renderAll();
+        this._stagePending(true);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+    });
+
+    document.getElementById('floating-wizard-grid-start-time')?.addEventListener('change', (e) => {
+      e.stopPropagation();
+      this.gridStartHour = parseInt(e.target.value.split(':')[0], 10);
+      this.startTime = e.target.value;
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+      this.renderAll();
+      this._stagePending(true);
+    });
+
+    document.getElementById('floating-wizard-grid-end-time')?.addEventListener('change', (e) => {
+      e.stopPropagation();
+      this.gridEndHour = parseInt(e.target.value.split(':')[0], 10);
+      this.endTime = e.target.value;
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+      this.renderAll();
+      this._stagePending(true);
+    });
+
+    document.getElementById('floating-wizard-grid-total-periods')?.addEventListener('change', (e) => {
+      e.stopPropagation();
+      this.gridPeriodCount = parseInt(e.target.value, 10) || 6;
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+      if (typeof this.updatePeriodScheduleUI === 'function') this.updatePeriodScheduleUI();
+      this.renderAll();
+      this._stagePending(true);
+    });
+
+    document.getElementById('floating-wizard-grid-period-preset')?.addEventListener('change', (e) => {
+      e.stopPropagation();
+      this.selectedOcrPeriodPreset = e.target.value;
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+      if (typeof this.updatePeriodScheduleUI === 'function') this.updatePeriodScheduleUI();
+      this.renderAll();
+      this._stagePending(true);
+    });
+
+    document.querySelectorAll('#toggle-floating-wizard-clock-type .pill-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('#toggle-floating-wizard-clock-type .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.clockType = btn.getAttribute('data-val') || '12';
+        this.clockFormat = this.clockType;
+        if (typeof this.syncDaysAndTimeControlsUI === 'function') this.syncDaysAndTimeControlsUI();
+        this.renderAll();
+        this._stagePending(true);
+        if (window.soundFX) window.soundFX.play('tap');
+        if (window.haptics) window.haptics.trigger('selection');
+      });
+    });
 
     if (btnFloatingAddCourseToggle && floatingAddCourseCard) {
       btnFloatingAddCourseToggle.addEventListener('click', (e) => {
@@ -9274,19 +9545,8 @@ class SchedullyApp {
           document.getElementById('canvas-controls-popover')?.classList.add('hidden');
           document.getElementById('canvas-ratio-popover')?.classList.add('hidden');
 
-          // Sync period mode visibility & toggle state
-          const rowPeriod = document.getElementById('floating-row-period-select');
-          const rowStartTime = document.getElementById('floating-row-start-time');
-          const rowEndTime = document.getElementById('floating-row-end-time');
-          const isPeriod = (this.axisMode === 'period');
-          document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-val') === (isPeriod ? 'period' : 'clock'));
-          });
-          if (rowPeriod && rowStartTime && rowEndTime) {
-            rowPeriod.style.display = isPeriod ? 'flex' : 'none';
-            rowStartTime.style.display = isPeriod ? 'none' : 'flex';
-            rowEndTime.style.display = isPeriod ? 'none' : 'flex';
-          }
+          // Sync period mode visibility, dropdown options & toggle state
+          syncWizardStep3WithTimetable();
         }
         if (window.soundFX) window.soundFX.play('tap');
         if (window.haptics) window.haptics.trigger('selection');
@@ -9299,25 +9559,6 @@ class SchedullyApp {
         if (window.soundFX) window.soundFX.play('tap');
         if (window.haptics) window.haptics.trigger('selection');
       });
-
-      // "Set Up" Pill: Directly open the Timetable Days & Time Setup card
-      const btnFloatingCourseSetupPill = document.getElementById('btn-floating-course-setup-pill');
-      const floatingDaysTimeCardEl = document.getElementById('floating-days-time-card');
-      if (btnFloatingCourseSetupPill && floatingDaysTimeCardEl) {
-        btnFloatingCourseSetupPill.addEventListener('click', (e) => {
-          e.stopPropagation();
-          // Hide Add Course card
-          floatingAddCourseCard.classList.add('hidden');
-          btnFloatingAddCourseToggle?.classList.remove('active');
-
-          // Position Days & Time card centrally from FAB bottom sheet
-          floatingDaysTimeCardEl.classList.add('from-fab-center');
-          floatingDaysTimeCardEl.classList.remove('hidden');
-
-          if (window.soundFX) window.soundFX.play('tap');
-          if (window.haptics) window.haptics.trigger('selection');
-        });
-      }
 
       // Quick Import from within Add Course Modal (Dual Import Flow)
       const handleAddCourseImportClick = (e) => {
@@ -9344,24 +9585,58 @@ class SchedullyApp {
         setAddCourseStep(2);
       });
 
+      btnFloatingCourseStep3Tab?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(3);
+      });
+
       btnFloatingCourseToStep2?.addEventListener('click', (e) => {
         e.stopPropagation();
-        const codeInput = document.getElementById('floating-input-course-code');
-        if (codeInput && !codeInput.value.trim()) {
-          codeInput.focus();
-          if (typeof showToast === 'function') {
-            showToast('Please enter a course name first!', 'warning');
-          }
-          if (window.soundFX) window.soundFX.play('error');
-          if (window.haptics) window.haptics.trigger('error');
-          return;
-        }
         setAddCourseStep(2);
       });
 
-      btnFloatingCourseToStep1?.addEventListener('click', (e) => {
+      btnFloatingCourseToStep3?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(3);
+      });
+
+      btnFloatingCourseStep2ToStep1?.addEventListener('click', (e) => {
         e.stopPropagation();
         setAddCourseStep(1);
+      });
+
+      btnFloatingCourseStep3ToStep2?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setAddCourseStep(2);
+      });
+
+      // Quick Reset Form Button
+      document.getElementById('btn-floating-course-quick-reset')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nameInp = document.getElementById('floating-input-course-code');
+        if (nameInp) nameInp.value = '';
+        const roomInp = document.getElementById('floating-input-course-room');
+        if (roomInp) roomInp.value = '';
+        const teacherInp = document.getElementById('floating-input-course-teacher');
+        if (teacherInp) teacherInp.value = '';
+        const groupInp = document.getElementById('floating-input-course-group');
+        if (groupInp) groupInp.value = '';
+        
+        // Reset colors
+        floatingCourseSelectedColor = '#D5C5B5';
+        floatingCourseSelectedFont = '#FFFFFF';
+        document.querySelectorAll('#floating-course-color-picker .floating-course-swatch-dot').forEach((d, idx) => {
+          d.classList.toggle('active', idx === 0);
+        });
+        document.querySelectorAll('#floating-course-font-picker .floating-course-font-dot').forEach((d, idx) => {
+          d.classList.toggle('active', idx === 0);
+        });
+
+        // Jump to Step 1
+        setAddCourseStep(1);
+
+        if (window.soundFX) window.soundFX.play('pop');
+        if (window.haptics) window.haptics.trigger('light');
       });
 
       // Step 1: Display Time Toggle
@@ -9376,7 +9651,7 @@ class SchedullyApp {
         });
       });
 
-      // Step 2: Display Type Toggle (Clock | Period)
+      // Step 3: Display Type Toggle (Clock | Period)
       document.querySelectorAll('#floating-toggle-course-axis-mode .pill-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -9385,12 +9660,10 @@ class SchedullyApp {
           const modeVal = btn.getAttribute('data-val') || 'clock';
           const isPeriod = (modeVal === 'period');
           const rowPeriod = document.getElementById('floating-row-period-select');
-          const rowStartTime = document.getElementById('floating-row-start-time');
-          const rowEndTime = document.getElementById('floating-row-end-time');
-          if (rowPeriod && rowStartTime && rowEndTime) {
+          const rowTime = document.getElementById('floating-row-time-select');
+          if (rowPeriod && rowTime) {
             rowPeriod.style.display = isPeriod ? 'flex' : 'none';
-            rowStartTime.style.display = isPeriod ? 'none' : 'flex';
-            rowEndTime.style.display = isPeriod ? 'none' : 'flex';
+            rowTime.style.display = isPeriod ? 'none' : 'grid';
           }
           if (window.soundFX) window.soundFX.play('tap');
           if (window.haptics) window.haptics.trigger('selection');
@@ -9536,6 +9809,7 @@ class SchedullyApp {
 
         // Close wizard card
         floatingAddCourseCard.classList.add('hidden');
+        floatingAddCourseSetupIsland?.classList.add('hidden');
         btnFloatingAddCourseToggle.classList.remove('active');
 
         this.updateHistoryButtonUI();
@@ -9551,11 +9825,14 @@ class SchedullyApp {
 
       // Outside dismiss
       document.addEventListener('click', (e) => {
-        if (!floatingAddCourseCard.classList.contains('hidden')) {
-          const isInsideCard = floatingAddCourseCard.contains(e.target);
+        const targetEl = floatingAddCourseContainer || floatingAddCourseCard;
+        if (targetEl && !targetEl.classList.contains('hidden')) {
+          const isInsideCard = floatingAddCourseCard?.contains(e.target);
+          const isInsideContainer = floatingAddCourseContainer?.contains(e.target);
           const isInsideToggle = floatingAddCourseCircleIsland?.contains(e.target);
-          if (!isInsideCard && !isInsideToggle) {
-            floatingAddCourseCard.classList.add('hidden');
+          if (!isInsideCard && !isInsideContainer && !isInsideToggle) {
+            floatingAddCourseContainer?.classList.add('hidden');
+            floatingAddCourseCard?.classList.add('hidden');
             btnFloatingAddCourseToggle.classList.remove('active');
           }
         }
@@ -10139,6 +10416,7 @@ class SchedullyApp {
           // Close right side popovers to prevent overlapping on iPad Mini / small tablet
           document.getElementById('schedule-quick-settings')?.classList.add('hidden');
           document.getElementById('floating-add-course-card')?.classList.add('hidden');
+          document.getElementById('floating-add-course-setup-island')?.classList.add('hidden');
           document.getElementById('floating-font-style-card')?.classList.add('hidden');
           document.getElementById('floating-days-time-card')?.classList.add('hidden');
 
@@ -13840,7 +14118,13 @@ class SchedullyApp {
       lockTimeEl.style.removeProperty('text-shadow');
     }
 
-    const timeColWidth = isWatch ? '28px' : (isPhone ? (days.length >= 6 ? '34px' : '40px') : '48px');
+    const masterFontScale = (this.fontScaleAll !== undefined && this.fontScaleAll !== null) ? this.fontScaleAll : (this.gridFontScale || 1.0);
+    const headerFontScale = (this.fontScaleHeader !== undefined && this.fontScaleHeader !== null) ? this.fontScaleHeader : masterFontScale;
+    const effectiveHeaderScale = headerFontScale;
+
+    const baseColW = isWatch ? 28 : (isPhone ? (days.length >= 6 ? 34 : 40) : 48);
+    const timeColWidthPx = Math.round(baseColW * Math.max(1.0, Math.min(1.3, effectiveHeaderScale * 0.95)));
+    const timeColWidth = `${timeColWidthPx}px`;
     // Use calc() instead of 1fr or minmax(0, 1fr) because html2canvas has bugs with minmax, 
     // and pure 1fr allows grid tracks to grow beyond container bounds if inner text is too long.
     this.universalTimetableGrid.style.gridTemplateColumns = `${timeColWidth} repeat(${days.length}, calc((100% - ${timeColWidth}) / ${days.length}))`;
@@ -13993,35 +14277,70 @@ class SchedullyApp {
       }
     }
 
-    const baseRowH = this.gridHeightVal || 49;
-    const numSlots = timeSlots.length;
-    let rowH = baseRowH;
-
-    if (this.activeDevice === 'tablet') {
-      const maxAvailableH = 430;
-      if (numSlots * baseRowH > maxAvailableH) {
-        rowH = Math.max(22, Math.floor(maxAvailableH / numSlots));
-      }
-    } else if (this.activeDevice === 'watch') {
-      const maxAvailableH = 205;
-      rowH = Math.max(16, Math.floor(maxAvailableH / numSlots));
-    } else if (this.activeDevice === 'phone') {
-      const maxAvailableH = 510;
-      if (numSlots * baseRowH > maxAvailableH) {
-        rowH = Math.max(24, Math.floor(maxAvailableH / numSlots));
-      }
-    }
-
-    const masterFontScale = (this.fontScaleAll !== undefined && this.fontScaleAll !== null) ? this.fontScaleAll : (this.gridFontScale || 1.0);
     const cardFontScale = (this.fontScaleCards !== undefined && this.fontScaleCards !== null) ? this.fontScaleCards : masterFontScale;
-    const headerFontScale = (this.fontScaleHeader !== undefined && this.fontScaleHeader !== null) ? this.fontScaleHeader : masterFontScale;
     const titleFontScale = (this.fontScaleTitle !== undefined && this.fontScaleTitle !== null) ? this.fontScaleTitle : masterFontScale;
     const tmFontScale = (this.fontScaleTrademark !== undefined && this.fontScaleTrademark !== null) ? this.fontScaleTrademark : masterFontScale;
 
     const effectiveCardScale = cardFontScale;
-    const effectiveHeaderScale = headerFontScale;
     const effectiveTitleScale = titleFontScale;
     const effectiveTmScale = tmFontScale;
+
+    const baseDetailFont = Math.max(3.5, 9.5 * effectiveCardScale);
+    const baseCodeFont = Math.max(4.0, 11 * effectiveCardScale);
+    const lineFactor = 1.35;
+
+    // Smart Row Height Elongation: Calculate maximum required row height so 1-hour courses
+    // and multi-line course details expand dynamically with font scaling without text clipping.
+    let maxContentRowH = 0;
+    if (Array.isArray(this.classes) && this.classes.length > 0) {
+      this.classes.forEach(c => {
+        if (!c) return;
+        let lCount = 1;
+        if (this.globalCourseType && c.type) lCount++;
+        if (this.globalCourseRoom && c.room) lCount++;
+        if (this.globalCourseLecturer && c.lecturer) lCount++;
+        if (this.globalCourseGroup && c.group) lCount++;
+        const shouldShowT = (c.displayTime !== undefined) ? c.displayTime : this.globalCardTimes;
+        const cTimeMode = c.timeFormat || this.cardTimeDisplayType || 'start';
+        if (shouldShowT) lCount += (cTimeMode === 'both' ? 2 : 1);
+
+        let durHours = 1;
+        if (!this.axisMode || this.axisMode !== 'period') {
+          const sTime = String(c.startTime || c.start || '08:00');
+          const eTime = String(c.endTime || c.end || '10:00');
+          const [sh, sm] = sTime.split(':').map(Number);
+          let [eh, em] = eTime.split(':').map(Number);
+          if ((eh === 0 || eh === 24) && sh >= 12) eh = 24;
+          const sM = (sh * 60) + (sm || 0);
+          const eM = (eh * 60) + (em || 0);
+          const durM = Math.max(15, eM - sM);
+          durHours = durM / 60;
+        }
+
+        const verticalPad = 6;
+        const neededCardHeight = (baseCodeFont * lineFactor) + (Math.max(0, lCount - 1) * baseDetailFont * lineFactor) + verticalPad;
+        const reqRowH = Math.ceil(neededCardHeight / Math.max(0.5, durHours));
+        if (reqRowH > maxContentRowH) {
+          maxContentRowH = reqRowH;
+        }
+      });
+    }
+
+    const userGridH = this.gridHeightVal || 49;
+    const fontScaledBaseRowH = Math.round(userGridH * Math.max(1.0, effectiveCardScale));
+    const smartElongatedRowH = Math.max(userGridH, fontScaledBaseRowH, maxContentRowH);
+
+    const numSlots = timeSlots.length;
+    let rowH = smartElongatedRowH;
+
+    if (this.activeDevice === 'watch') {
+      const maxAvailableH = 205;
+      rowH = Math.max(16, Math.min(Math.round(smartElongatedRowH * 0.6), Math.floor(maxAvailableH / numSlots)));
+    } else if (this.activeDevice === 'tablet') {
+      rowH = Math.max(26, smartElongatedRowH);
+    } else {
+      rowH = Math.max(26, smartElongatedRowH);
+    }
 
     const headerFontSize = Math.max(5, Math.round(11 * effectiveHeaderScale * 10) / 10);
     const timeFontSize = Math.max(4.5, Math.round(9.5 * effectiveHeaderScale * 10) / 10);
@@ -14175,9 +14494,9 @@ class SchedullyApp {
             const lineFactor = 1.35;
             const estimatedTotalHeight = (codeFontSize * lineFactor) + ((lineCount - 1) * detailFontSize * lineFactor);
             if (estimatedTotalHeight > availableHeight) {
-              const reductionRatio = Math.max(0.25, availableHeight / estimatedTotalHeight);
-              codeFontSize = Math.max(2.5, Math.round(codeFontSize * reductionRatio * 10) / 10);
-              detailFontSize = Math.max(2.2, Math.round(detailFontSize * reductionRatio * 10) / 10);
+              const reductionRatio = Math.max(0.65, availableHeight / estimatedTotalHeight);
+              codeFontSize = Math.max(3.2, Math.round(codeFontSize * reductionRatio * 10) / 10);
+              detailFontSize = Math.max(2.8, Math.round(detailFontSize * reductionRatio * 10) / 10);
             }
           }
 
@@ -14444,10 +14763,14 @@ class SchedullyApp {
     return defaultSchedule[periodNumber] || { start: `${periodNumber + 8}:00`, end: `${periodNumber + 9}:30` };
   }
 
-  positionNudgeActionPill(courseId) {
-    if (!this.gridCourseActionPill || !this.phoneCanvas) return;
+  positionNudgeActionPill(courseId, shouldAnimate = true) {
+    if (!this.gridCourseActionPill) return;
     const cardEl = this.universalTimetableGrid?.querySelector(`.exact-course-card[data-id="${courseId}"]`);
     if (!cardEl) return;
+
+    if (this.gridCourseActionPill.parentElement !== document.body) {
+      document.body.appendChild(this.gridCourseActionPill);
+    }
 
     // Update labels depending on whether timetable is in period mode or standard time mode
     const isPeriodMode = (this.axisMode === 'period');
@@ -14458,43 +14781,42 @@ class SchedullyApp {
 
     this.gridCourseActionPill.classList.remove('hidden');
 
-    // Use viewport (fixed) coordinates — pill is now outside phone DOM so no clipping by bezel
     const cardRect = cardEl.getBoundingClientRect();
-    const canvasRect = this.phoneCanvas.getBoundingClientRect();
 
     // Measure pill actual dimensions
-    const pillWidth = this.gridCourseActionPill.offsetWidth || 250;
+    const pillWidth = this.gridCourseActionPill.offsetWidth || 236;
     const pillHeight = this.gridCourseActionPill.offsetHeight || 38;
     const halfPill = pillWidth / 2;
-    const margin = 8;
+    const margin = 6;
 
-    // Horizontal: center over card, clamp inside viewport
-    let leftPos = cardRect.left + cardRect.width / 2 - halfPill;
+    // Horizontal: center smartly directly over card, clamped inside viewport
+    let leftPos = cardRect.left + (cardRect.width / 2) - halfPill;
     leftPos = Math.max(margin, Math.min(window.innerWidth - pillWidth - margin, leftPos));
 
-    // Vertical: prefer above card, flip below if it would overlap the canvas top edge
+    // Vertical: place neatly right above the card (smart top placement like Image 2)
     const topAboveCard = cardRect.top - pillHeight - margin;
     const topBelowCard = cardRect.bottom + margin;
 
     let topPos;
-    if (topAboveCard >= canvasRect.top + 4) {
-      // Enough space above — place above the card
+    // Prefer above card; only flip below if top is blocked by top screen edge (e.g. < 54px)
+    if (topAboveCard >= 54) {
       topPos = topAboveCard;
-    } else {
-      // Too close to top — flip below the card
+    } else if (topBelowCard + pillHeight <= window.innerHeight - 10) {
       topPos = topBelowCard;
+    } else {
+      topPos = Math.max(margin, topAboveCard);
     }
 
-    // Clamp vertically inside viewport
-    topPos = Math.max(margin, Math.min(window.innerHeight - pillHeight - margin, topPos));
-
     // Apply as fixed viewport coords
-    this.gridCourseActionPill.style.left = `${leftPos}px`;
-    this.gridCourseActionPill.style.top = `${topPos}px`;
-    // Force CSS animation restart so pop-up bouncy spring triggers on each course selection
-    this.gridCourseActionPill.style.animation = 'none';
-    void this.gridCourseActionPill.offsetWidth;
-    this.gridCourseActionPill.style.animation = '';
+    this.gridCourseActionPill.style.left = `${Math.round(leftPos)}px`;
+    this.gridCourseActionPill.style.top = `${Math.round(topPos)}px`;
+
+    if (shouldAnimate) {
+      // Force CSS animation restart so pop-up bouncy spring triggers on each course selection
+      this.gridCourseActionPill.style.animation = 'none';
+      void this.gridCourseActionPill.offsetWidth;
+      this.gridCourseActionPill.style.animation = '';
+    }
   }
 
   moveCourseToSlot(courseId, targetDay, slotTarget) {
@@ -15597,7 +15919,8 @@ class SchedullyApp {
       const updateSubtext = () => {
         if (subtextEl) {
           const localizedDay = window.SchedullyI18n ? window.SchedullyI18n.getDayName(c.day) : c.day;
-          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})`;
+          const periodTag = (this.axisMode === 'period' && c.periodNumber) ? `Period ${c.periodNumber} • ` : '';
+          subtextEl.innerText = `${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${periodTag}${c.startTime} - ${c.endTime})`;
         }
       };
 
@@ -15609,6 +15932,21 @@ class SchedullyApp {
         this.requestGridRender();
       } else if (e.target.classList.contains('edit-day')) {
         c.day = val;
+        updateSubtext();
+        this.requestGridRender();
+        this._stagePending();
+      } else if (e.target.classList.contains('edit-period')) {
+        const selOpt = e.target.selectedOptions ? e.target.selectedOptions[0] : null;
+        const periodNum = parseInt(val, 10) || 1;
+        c.periodNumber = periodNum;
+        if (selOpt && selOpt.getAttribute('data-start') && selOpt.getAttribute('data-end')) {
+          c.startTime = selOpt.getAttribute('data-start');
+          c.endTime = selOpt.getAttribute('data-end');
+        } else {
+          const slot = this.getPeriodTimeSlot(periodNum);
+          c.startTime = slot.start;
+          c.endTime = slot.end;
+        }
         updateSubtext();
         this.requestGridRender();
         this._stagePending();
@@ -15831,11 +16169,29 @@ class SchedullyApp {
       const lblLecturer = i18n ? i18n.get('lecturer') : 'Lecturer';
       const lblGroup = i18n ? i18n.get('group') : 'Group';
 
+      const isPeriodMode = (this.axisMode === 'period');
+      const totalPeriods = parseInt(this.gridPeriodCount, 10) || 6;
+      let periodOptionsHTML = '';
+      if (isPeriodMode) {
+        for (let p = 1; p <= totalPeriods; p++) {
+          const slot = this.getPeriodTimeSlot(p);
+          const isSelected = (c.periodNumber === p) || (!c.periodNumber && c.startTime === slot.start);
+          periodOptionsHTML += `<option value="${p}" data-start="${slot.start}" data-end="${slot.end}" ${isSelected ? 'selected' : ''}>Period ${p} (${slot.start} - ${slot.end})</option>`;
+        }
+      }
+
+      const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const dayOptionsHTML = allDays.map(d => `
+        <option value="${d}" ${c.day && c.day.startsWith(d) ? 'selected' : ''}>${i18n ? i18n.getDayName(d) : d}</option>
+      `).join('');
+
+      const periodSubtext = (isPeriodMode && c.periodNumber) ? `Period ${c.periodNumber} • ` : '';
+
       card.innerHTML = `
         <div class="class-card-header">
           <div class="item-info">
             <h4>${c.code}</h4>
-            <p class="item-subtext">${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${c.startTime} - ${c.endTime})</p>
+            <p class="item-subtext">${c.type ? `${c.type} • ` : ''}${c.room ? `${c.room} • ` : ''}${c.lecturer ? `${c.lecturer} • ` : ''}${c.group ? `${c.group} • ` : ''}${localizedDay} (${periodSubtext}${c.startTime} - ${c.endTime})</p>
           </div>
           <div class="class-card-actions">
             <span class="material-symbols-outlined class-expand-arrow">expand_more</span>
@@ -15878,15 +16234,20 @@ class SchedullyApp {
             <div class="editor-field-cell" style="grid-column: span 1;">
               <label>${lblDay}</label>
               <select class="m3-input-time edit-day">
-                <option value="Mon" ${c.day && c.day.startsWith('Mon') ? 'selected' : ''}>${i18n ? i18n.getDayName('Mon') : 'Mon'}</option>
-                <option value="Tue" ${c.day && c.day.startsWith('Tue') ? 'selected' : ''}>${i18n ? i18n.getDayName('Tue') : 'Tue'}</option>
-                <option value="Wed" ${c.day && c.day.startsWith('Wed') ? 'selected' : ''}>${i18n ? i18n.getDayName('Wed') : 'Wed'}</option>
-                <option value="Thu" ${c.day && c.day.startsWith('Thu') ? 'selected' : ''}>${i18n ? i18n.getDayName('Thu') : 'Thu'}</option>
-                <option value="Fri" ${c.day && c.day.startsWith('Fri') ? 'selected' : ''}>${i18n ? i18n.getDayName('Fri') : 'Fri'}</option>
+                ${dayOptionsHTML}
               </select>
             </div>
           </div>
 
+          ${isPeriodMode ? `
+          <!-- Period Selector (Auto-detected Period Mode) -->
+          <div class="editor-field-cell" style="grid-column: span 2;">
+            <label>${i18n ? i18n.get('period') : 'Period'}</label>
+            <select class="m3-input-time edit-period w-full">
+              ${periodOptionsHTML}
+            </select>
+          </div>
+          ` : `
           <!-- Dual Column Grid: Start Time & End Time -->
           <div class="editor-grid-2col">
             <div class="editor-field-cell">
@@ -15948,6 +16309,7 @@ class SchedullyApp {
               </select>
             </div>
           </div>
+          `}
 
           <!-- Dual Column Grid: Type & Room -->
           <div class="editor-grid-2col">

@@ -7593,7 +7593,7 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
    which blocks backdrop-filter on children (#canvas-controls-popover).
    left:0 + right:0 + margin:auto centers a fixed element without any transform. */
 #floating-controls-container {
-  position: absolute !important;
+  position: fixed !important;
   left: max(18px, env(safe-area-inset-left, 18px)) !important;
   right: max(18px, env(safe-area-inset-right, 18px)) !important;
   bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
@@ -7606,6 +7606,7 @@ button:active, .pill-btn:active, .adaptive-icon-btn:active {
   justify-content: space-between !important;
   z-index: 200 !important;
   pointer-events: none !important;
+  touch-action: none !important;
   box-sizing: border-box !important;
 }
 
@@ -17123,16 +17124,12 @@ body.dark-mode #btn-toggle-auth-menu #user-avatar-badge,
   max-width: calc(100vw - 20px) !important;
 }
 
-#import-menu-popover {
-  left: 0 !important;
-  right: auto !important;
-  max-width: min(270px, calc(100vw - 20px)) !important;
-}
-
+#import-menu-popover,
 #mobile-export-dropdown {
-  right: 0 !important;
-  left: auto !important;
-  max-width: min(270px, calc(100vw - 20px)) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  max-width: min(280px, calc(100vw - 20px)) !important;
 }
 
 /* Default Style (Solid Theme) Explicit Styling */
@@ -18818,7 +18815,9 @@ body.dark-mode .floating-card-title-pill,
   font-size: 11px !important;
 }
 
-.floating-reset-font-btn {
+.floating-reset-font-btn,
+.floating-reset-days-btn,
+.floating-reset-palette-btn {
   background: var(--m3-sys-color-primary-container, rgba(59, 130, 246, 0.12)) !important;
   color: var(--m3-sys-color-primary, #2563EB) !important;
   font-weight: 800;
@@ -18830,16 +18829,26 @@ body.dark-mode .floating-card-title-pill,
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
+  display: block;
 }
 
 body.dark-mode .floating-reset-font-btn,
-.theme-dark .floating-reset-font-btn {
+body.dark-mode .floating-reset-days-btn,
+body.dark-mode .floating-reset-palette-btn,
+.theme-dark .floating-reset-font-btn,
+.theme-dark .floating-reset-days-btn,
+.theme-dark .floating-reset-palette-btn,
+.dark .floating-reset-font-btn,
+.dark .floating-reset-days-btn,
+.dark .floating-reset-palette-btn {
   background: var(--m3-sys-color-primary-container, rgba(59, 130, 246, 0.22)) !important;
   color: var(--m3-sys-color-primary, #93C5FD) !important;
   border-color: var(--m3-sys-color-outline, rgba(255, 255, 255, 0.15)) !important;
 }
 
-.floating-reset-font-btn:hover {
+.floating-reset-font-btn:hover,
+.floating-reset-days-btn:hover,
+.floating-reset-palette-btn:hover {
   filter: brightness(0.96);
   transform: scale(1.02);
 }
@@ -18864,38 +18873,8 @@ body.dark-mode .floating-reset-font-btn,
   max-width: calc(100vw - 32px) !important;
 }
 
-/* Set Up Pill inside Add A Course header */
-.floating-setup-header-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--m3-sys-color-primary-container, rgba(99, 102, 241, 0.12));
-  color: var(--m3-sys-color-primary, #6366F1);
-  border: 1px solid var(--m3-sys-color-primary, rgba(99, 102, 241, 0.28));
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  white-space: nowrap !important;
-}
+/* ═══════════════════════════════════════════════════════════════
 
-.floating-setup-header-pill:hover {
-  background: var(--m3-sys-color-primary-container, rgba(99, 102, 241, 0.22));
-  transform: scale(1.05);
-}
-
-.floating-setup-header-pill:active {
-  transform: scale(0.95);
-}
-
-body.dark-mode .floating-setup-header-pill,
-.theme-dark .floating-setup-header-pill {
-  background: var(--m3-sys-color-primary-container, rgba(129, 140, 248, 0.20));
-  color: var(--m3-sys-color-primary, #A5B4FC);
-  border-color: rgba(129, 140, 248, 0.35);
-}
 
 @keyframes floatingDaysCardEnter {
   from {
@@ -19985,19 +19964,21 @@ body.dark-mode #floating-add-course-circle-island,
   top: auto !important;
   right: auto !important;
   transform: translateX(-50%);
-  width: 275px !important;
-  max-width: calc(100vw - 32px) !important;
-  max-height: min(75vh, 490px) !important;
+  width: 292px !important;
+  max-width: calc(100vw - 16px) !important;
+  max-height: min(82vh, 500px) !important;
   overflow-y: auto !important;
+  overscroll-behavior: contain !important;
   background: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: blur(28px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
   border: 1px solid rgba(226, 232, 240, 0.9) !important;
-  border-radius: 24px !important;
-  padding: 12px !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 20px !important;
+  padding: 10px 10px 10px 7px !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
   z-index: 99999 !important;
   transform-origin: bottom center !important;
+  scrollbar-width: thin;
 }
 
 body.dark-mode #floating-add-course-card,
@@ -20005,13 +19986,119 @@ body.dark-mode #floating-add-course-card,
 .dark #floating-add-course-card {
   background: rgba(30, 41, 59, 0.98) !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.2) !important;
 }
 
 #floating-add-course-card:not(.hidden) {
   display: block !important;
   animation: addCourseCardCenterSpringUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
   transform-origin: bottom center !important;
+}
+
+/* ── VERTICAL LEFT STEP RAIL (1, 2, 3) ── */
+.floating-wizard-left-rail {
+  width: 28px;
+  min-width: 28px;
+  padding: 6px 3px !important;
+  border-radius: 16px !important;
+}
+
+.floating-course-rail-step-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  color: #64748B;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 0;
+}
+
+.floating-course-rail-step-btn .rail-step-num {
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+body.dark-mode .floating-course-rail-step-btn,
+.theme-dark .floating-course-rail-step-btn,
+.dark .floating-course-rail-step-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+}
+
+.floating-course-rail-step-btn:hover {
+  transform: scale(1.08);
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--m3-sys-color-primary, #2563EB);
+}
+
+body.dark-mode .floating-course-rail-step-btn:hover,
+.theme-dark .floating-course-rail-step-btn:hover,
+.dark .floating-course-rail-step-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #60A5FA;
+}
+
+.floating-course-rail-step-btn.active {
+  background: var(--m3-sys-color-primary, #2563EB) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--m3-sys-color-primary, #2563EB) 45%, transparent) !important;
+  transform: scale(1.05);
+}
+
+body.dark-mode .floating-course-rail-step-btn.active,
+.theme-dark .floating-course-rail-step-btn.active,
+.dark .floating-course-rail-step-btn.active {
+  background: var(--m3-sys-color-primary, #3B82F6) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 3px 12px rgba(59, 130, 246, 0.5) !important;
+}
+
+.rail-step-connector {
+  width: 1.5px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+  margin: -1px 0;
+}
+
+body.dark-mode .rail-step-connector,
+.theme-dark .rail-step-connector,
+.dark .rail-step-connector {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.floating-course-rail-step-btn.rail-action-btn {
+  opacity: 0.75;
+}
+
+.floating-course-rail-step-btn.rail-action-btn:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  transform: rotate(-45deg) scale(1.08);
+}
+
+.floating-course-rail-step-btn.rail-action-btn:hover svg {
+  color: #EF4444;
+}
+
+body.dark-mode .floating-course-rail-step-btn.rail-action-btn:hover,
+.theme-dark .floating-course-rail-step-btn.rail-action-btn:hover,
+.dark .floating-course-rail-step-btn.rail-action-btn:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #F87171;
+}
+
+body.dark-mode .floating-course-rail-step-btn.rail-action-btn:hover svg,
+.theme-dark .floating-course-rail-step-btn.rail-action-btn:hover svg,
+.dark .floating-course-rail-step-btn.rail-action-btn:hover svg {
+  color: #F87171;
 }
 
 @keyframes addCourseCardCenterSpringUp {
@@ -20273,14 +20360,14 @@ body.theme-style-glass .dark .add-course-import-banner {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 6px !important;
+  gap: 4px !important;
   width: 100% !important;
 }
 
 .floating-course-swatch-dot,
 .floating-course-font-dot {
-  width: 26px !important;
-  height: 26px !important;
+  width: 22px !important;
+  height: 22px !important;
   border-radius: 50% !important;
   cursor: pointer;
   position: relative;
@@ -20299,14 +20386,14 @@ body.dark-mode .floating-course-font-dot,
 
 .floating-course-swatch-dot:hover,
 .floating-course-font-dot:hover {
-  transform: scale(1.15);
+  transform: scale(1.12);
   z-index: 2;
 }
 
 .floating-course-swatch-dot.active,
 .floating-course-font-dot.active {
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--m3-sys-color-primary, #6366F1), 0 4px 10px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 35%, transparent) !important;
-  transform: scale(1.06);
+  box-shadow: 0 0 0 1.5px #FFFFFF, 0 0 0 3px var(--m3-sys-color-primary, #6366F1), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #6366F1) 35%, transparent) !important;
+  transform: scale(1.05);
   z-index: 3;
 }
 
@@ -20314,12 +20401,12 @@ body.dark-mode .floating-course-swatch-dot.active,
 body.dark-mode .floating-course-font-dot.active,
 .theme-dark .floating-course-swatch-dot.active,
 .theme-dark .floating-course-font-dot.active {
-  box-shadow: 0 0 0 2px #1E293B, 0 0 0 4px var(--m3-sys-color-primary, #818CF8), 0 4px 10px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 50%, transparent) !important;
+  box-shadow: 0 0 0 1.5px #1E293B, 0 0 0 3px var(--m3-sys-color-primary, #818CF8), 0 3px 8px color-mix(in srgb, var(--m3-sys-color-primary, #818CF8) 50%, transparent) !important;
 }
 
 .floating-course-swatch-custom {
-  width: 26px !important;
-  height: 26px !important;
+  width: 22px !important;
+  height: 22px !important;
   border-radius: 50% !important;
   background: #FFFFFF;
   border: 1.5px solid rgba(0, 0, 0, 0.12);
@@ -20552,6 +20639,7 @@ body.theme-style-glass .floating-reset-palette-btn,
 body.theme-style-glass .floating-reset-font-btn,
 body.theme-style-glass .floating-reset-days-btn {
   background: rgba(255, 255, 255, 0.6) !important;
+  color: var(--m3-sys-color-primary, #2563EB) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.7) !important;
@@ -20568,6 +20656,7 @@ body.theme-style-glass.dark-mode .floating-reset-days-btn,
 body.theme-style-glass.theme-dark .floating-reset-days-btn,
 body.theme-style-glass .dark .floating-reset-days-btn {
   background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--m3-sys-color-primary, #93C5FD) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -21938,6 +22027,14 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* Centered Popover bouncy spring down */
+  @keyframes menuCenterSpringDown {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(-14px) scale(0.90); }
+    60%  { opacity: 1; transform: translateX(-50%) translateY(4px) scale(1.025); }
+    80%  { transform: translateX(-50%) translateY(-1px) scale(0.995); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+
   @keyframes menuSpringRight {
     0%   { opacity: 0; transform: translateX(-16px) scale(0.88); }
     60%  { opacity: 1; transform: translateX(3px) scale(1.02); }
@@ -21945,22 +22042,16 @@ body.dark-mode #title-trademark-mode-toggles .capsule-btn:not(.active):hover svg
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Export Dropdown Pop-Up Animation */
+  /* Export & Import Dropdowns Pop-Up Centered Animation */
   #mobile-export-dropdown:not(.hidden),
-  .mobile-export-dropdown:not(.hidden) {
-    animation: menuSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
-    transform-origin: top right !important;
+  #import-menu-popover:not(.hidden) {
+    animation: menuCenterSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+    transform-origin: top center !important;
   }
 
   /* Auth Menus Pop-Up Animation */
   #login-providers-menu:not(.hidden),
   #profile-settings-menu:not(.hidden) {
-    animation: menuSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
-    transform-origin: top left !important;
-  }
-
-  /* Import Menu Popover Pop-Up Animation */
-  #import-menu-popover:not(.hidden) {
     animation: menuSpringDown 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
     transform-origin: top left !important;
   }
@@ -22715,5 +22806,37 @@ body.theme-style-glass.theme-dark .slider-mode-toast-pill {
     top: max(72px, calc(env(safe-area-inset-top, 0px) + 64px)) !important;
     padding: 6px 14px !important;
     max-width: 90vw !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #floating-add-course-card {
+    width: min(294px, calc(100vw - 14px)) !important;
+    max-width: calc(100vw - 14px) !important;
+    bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 70px)) !important;
+    padding: 8px 8px 8px 6px !important;
+    border-radius: 18px !important;
+  }
+  .floating-wizard-left-rail {
+    width: 26px !important;
+    min-width: 26px !important;
+    padding: 5px 2px !important;
+    border-radius: 14px !important;
+  }
+  .floating-course-rail-step-btn {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .floating-course-rail-step-btn .rail-step-num {
+    font-size: 9px !important;
+  }
+  .floating-course-swatches-row {
+    gap: 3px !important;
+  }
+  .floating-course-swatch-dot,
+  .floating-course-font-dot,
+  .floating-course-swatch-custom {
+    width: 20px !important;
+    height: 20px !important;
   }
 }
