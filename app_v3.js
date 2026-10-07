@@ -7819,8 +7819,17 @@ class SchedullyApp {
 
     btnCloseFloatingDays?.addEventListener('click', (e) => {
       e.stopPropagation();
+      const wasFromFab = floatingDaysTimeCard?.classList.contains('from-fab-center');
       floatingDaysTimeCard?.classList.add('hidden');
+      floatingDaysTimeCard?.classList.remove('from-fab-center');
       btnDaysPanelToggle?.classList.remove('active');
+      if (wasFromFab) {
+        // Return smoothly to Add A Course card
+        const floatingAddCourseCard = document.getElementById('floating-add-course-card');
+        const btnFloatingAddCourseToggle = document.getElementById('btn-floating-add-course-toggle');
+        floatingAddCourseCard?.classList.remove('hidden');
+        btnFloatingAddCourseToggle?.classList.add('active');
+      }
       window.soundFX?.play?.('tap');
     });
 
@@ -7828,8 +7837,10 @@ class SchedullyApp {
       if (floatingDaysTimeCard && !floatingDaysTimeCard.classList.contains('hidden')) {
         const insideCard = floatingDaysTimeCard.contains(e.target);
         const insideToggle = layoutTopGroup?.contains(e.target);
-        if (!insideCard && !insideToggle) {
+        const insideSetupPill = document.getElementById('btn-floating-course-setup-pill')?.contains(e.target);
+        if (!insideCard && !insideToggle && !insideSetupPill) {
           floatingDaysTimeCard.classList.add('hidden');
+          floatingDaysTimeCard.classList.remove('from-fab-center');
           btnDaysPanelToggle?.classList.remove('active');
         }
       }
@@ -9288,6 +9299,25 @@ class SchedullyApp {
         if (window.soundFX) window.soundFX.play('tap');
         if (window.haptics) window.haptics.trigger('selection');
       });
+
+      // "Set Up" Pill: Directly open the Timetable Days & Time Setup card
+      const btnFloatingCourseSetupPill = document.getElementById('btn-floating-course-setup-pill');
+      const floatingDaysTimeCardEl = document.getElementById('floating-days-time-card');
+      if (btnFloatingCourseSetupPill && floatingDaysTimeCardEl) {
+        btnFloatingCourseSetupPill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Hide Add Course card
+          floatingAddCourseCard.classList.add('hidden');
+          btnFloatingAddCourseToggle?.classList.remove('active');
+
+          // Position Days & Time card centrally from FAB bottom sheet
+          floatingDaysTimeCardEl.classList.add('from-fab-center');
+          floatingDaysTimeCardEl.classList.remove('hidden');
+
+          if (window.soundFX) window.soundFX.play('tap');
+          if (window.haptics) window.haptics.trigger('selection');
+        });
+      }
 
       // Quick Import from within Add Course Modal (Dual Import Flow)
       const handleAddCourseImportClick = (e) => {
