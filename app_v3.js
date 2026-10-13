@@ -183,7 +183,7 @@ class SchedullyApp {
     this.gridStartHour = 8;
     this.gridEndHour = 18;
     this.classes = [];
-    this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     this.gridWidthVal = 100;
     this.gridHeightVal = 49;
     this.gridFontSizeVal = 9;
@@ -6132,15 +6132,19 @@ class SchedullyApp {
       this.clockFormat = '12';
       this.gridStartHour = 9;
       this.gridEndHour = 17;
-      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      this.activeDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
       this.gridWidthVal = 100;
       this.gridHeightVal = 49;
       this.gridFontSizeVal = 9;
       this.gridYPosVal = 0;
 
-      document.querySelectorAll('.day-toggle').forEach(chk => {
-        chk.checked = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(chk.value);
-      });
+      if (typeof this.syncDaysAndTimeControlsUI === 'function') {
+        this.syncDaysAndTimeControlsUI();
+      } else {
+        document.querySelectorAll('.day-toggle, .floating-day-check, .floating-wizard-day-check, .floating-course-day-check').forEach(chk => {
+          chk.checked = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(chk.value);
+        });
+      }
       const gwEl = document.getElementById('grid-width-val');
       const ghEl = document.getElementById('grid-height-val');
       const fsEl = document.getElementById('grid-fontsize-val');
@@ -12582,7 +12586,7 @@ class SchedullyApp {
             showTitle: true,
             titleText: 'Untitled',
             showSideSliders: true,
-            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
             gridStartHour: 8,
             gridEndHour: 20
           };
@@ -12656,7 +12660,7 @@ class SchedullyApp {
             showTitle: true,
             titleText: 'Untitled',
             showSideSliders: true,
-            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
             gridStartHour: 8,
             gridEndHour: 20
           };
@@ -12893,7 +12897,7 @@ class SchedullyApp {
           showTitle: true,
           titleText: 'Untitled',
           showSideSliders: true,
-          activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+          activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
           gridStartHour: 8,
           gridEndHour: 20
         };
@@ -13066,48 +13070,42 @@ class SchedullyApp {
           }
         };
 
-        // Fires on login (initial load) and whenever cloud data updates
+        // Fires on login (initial load) and whenever cloud data updates across devices
         window.schedullyFirebase.onDataSyncedCallback = (data) => {
           try {
             if (!data) return;
 
-            const hasLocalClasses = this.classes && this.classes.length > 0;
-            const hasLocalCustomPresets = this.presets && Object.keys(this.presets).length > 1;
-            const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
-            const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
+            // If we have active in-memory unsaved edits that the user just typed locally,
+            // don't overwrite if local timestamp is newer.
+            const localTimestamp = localStorage.getItem('schedully_updated_at');
+            const cloudTimestamp = data.updatedAt;
 
-            // "Cloud is empty" means the cloud has NEVER been written to (no updatedAt).
-            // An intentionally cleared schedule (classes:[]) is NOT empty — it's a valid saved state.
-            // We must not publish local default courses up to a cloud that the user intentionally cleared.
+            // Check if cloud has valid data
             const isCloudEmpty = !data.updatedAt && (!data.presets && !data.classes && !data.settings);
 
-            // Case 1: Cloud has never been written — upload local work if any
             if (isCloudEmpty) {
+              const hasLocalClasses = this.classes && this.classes.length > 0;
+              const hasLocalCustomPresets = this.presets && Object.keys(this.presets).length > 1;
+              const hasLocalWallpaper = !!(this.currentWallpaperData || localStorage.getItem('schedully_wallpaper_data'));
+              const hasLocalWork = hasLocalClasses || hasLocalCustomPresets || hasLocalWallpaper;
               if (hasLocalWork) {
                 console.log("Schedully Sync: Cloud has no data yet — publishing local work to cloud...");
-                if (typeof this.saveToCloud === 'function') {
-                  this.saveToCloud();
-                } else {
-                  this._stagePending(true);
-                }
+                this.saveToCloud();
               }
               return;
             }
 
-            // Case 2: Timestamp guard — if local data is NEWER than cloud, push local → cloud.
-            // This handles: user clears courses on Device A, then refreshes — cloud still has old
-            // courses. Without this, cloud would overwrite the cleared state on refresh.
-            const localTimestamp = localStorage.getItem('schedully_updated_at');
-            const cloudTimestamp = data.updatedAt;
-            if (localTimestamp && cloudTimestamp && localTimestamp > cloudTimestamp) {
-              console.log("Schedully Sync: Local data is newer than cloud — pushing local to cloud instead of restoring old cloud data.");
-              if (typeof this.saveToCloud === 'function') {
-                this.saveToCloud();
-              }
-              return; // do NOT apply stale cloud data to local state
+            // Master Device Rule:
+            // If local state has pending, unsaved modifications made right here that are newer than cloud,
+            // this device is the master: push local changes to cloud.
+            if (this._hasUnsavedCloudChanges && localTimestamp && cloudTimestamp && localTimestamp > cloudTimestamp) {
+              console.log("Schedully Sync: Current device has newer pending edits — pushing to cloud as master.");
+              this.saveToCloud();
+              return;
             }
 
-            // Case 3: Cloud is Authoritative (Google Apps sync model) -> Restore latest cloud state across all devices
+            // Otherwise, incoming cloud data (from the most recent master device) is authoritative!
+            // Apply it seamlessly across this device.
             if (data.presets && typeof data.presets === 'object') {
               this.presets = data.presets;
             }
@@ -13304,6 +13302,9 @@ class SchedullyApp {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden' && this._hasUnsavedCloudChanges && window.schedullyFirebase?.currentUser) {
         this.saveToCloud();
+      } else if (document.visibilityState === 'visible' && window.schedullyFirebase?.currentUser) {
+        // Tab brought to foreground: immediately poll for latest updates if any other master device saved
+        window.schedullyFirebase.fetchUserData();
       }
     });
 
@@ -13355,7 +13356,7 @@ class SchedullyApp {
       showTrademark: this.showTrademark || false,
       trademarkText: this.trademarkText || 'Schedully • Student Edition',
       trademarkStyle: this.trademarkStyle || 'default',
-      activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+      activeDays: this.activeDays ? [...this.activeDays] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
       gridStartHour: (this.gridStartHour !== undefined && this.gridStartHour !== null) ? Number(this.gridStartHour) : 8,
       gridEndHour: (this.gridEndHour !== undefined && this.gridEndHour !== null) ? Number(this.gridEndHour) : 20,
       axisMode: this.axisMode || 'time',
@@ -13712,8 +13713,8 @@ class SchedullyApp {
 
     // Set canonical active days without duplicates
     const hasWeekend = importedDays.some(d => d === 'Sat' || d === 'Sun');
-    const defaultDays = hasWeekend ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    this.activeDays = defaultDays.filter(d => importedDays.includes(d) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].includes(d));
+    const defaultDays = hasWeekend ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    this.activeDays = defaultDays.filter(d => importedDays.includes(d) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(d));
 
     if (this.gridStartTimeSelect) {
       this.gridStartTimeSelect.value = `${String(this.gridStartHour).padStart(2, '0')}:00`;

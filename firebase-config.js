@@ -30,9 +30,23 @@ class SchedullyFirebaseService {
     this._onUserChangedCallback = null;
     this._onDataSyncedCallback = null;
     this.lastSyncedData = null;
+    this.lastSyncedTimestamp = null;
     this._isSaving = false;
     this._activeListener = null;
     this._firestoreUnsub = null;
+
+    // Unique persistent device client ID so any device saving immediately masters the cloud
+    // and ignores its own echo without blocking other devices
+    try {
+      let id = localStorage.getItem('schedully_client_device_id');
+      if (!id) {
+        id = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now();
+        localStorage.setItem('schedully_client_device_id', id);
+      }
+      this.clientId = id;
+    } catch (e) {
+      this.clientId = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now();
+    }
 
     this.init();
   }
@@ -181,13 +195,26 @@ class SchedullyFirebaseService {
       try {
         const userRef = this.db.ref('users/' + this.currentUser.uid);
         this._activeListener = userRef.on('value', (snapshot) => {
-          if (this._isSaving) return;
           const data = snapshot.val();
-          if (data) {
+          if (!data) return;
+
+          // If this update was published by THIS exact device tab, skip re-applying own echo
+          if (data.lastUpdatedBy === this.clientId) {
             this.lastSyncedData = data;
-            if (this.onDataSyncedCallback) {
-              this.onDataSyncedCallback(data);
-            }
+            if (data.updatedAt) this.lastSyncedTimestamp = data.updatedAt;
+            return;
+          }
+
+          // If we received an older or equal snapshot than what we already synced, skip
+          if (this.lastSyncedTimestamp && data.updatedAt && data.updatedAt <= this.lastSyncedTimestamp) {
+            return;
+          }
+
+          this.lastSyncedData = data;
+          if (data.updatedAt) this.lastSyncedTimestamp = data.updatedAt;
+
+          if (this.onDataSyncedCallback) {
+            this.onDataSyncedCallback(data);
           }
         }, (err) => {
           console.warn("RTDB listener notice:", err);
@@ -225,6 +252,7 @@ class SchedullyFirebaseService {
 
     if (data) {
       this.lastSyncedData = data;
+      if (data.updatedAt) this.lastSyncedTimestamp = data.updatedAt;
       if (this.onDataSyncedCallback) {
         this.onDataSyncedCallback(data);
       }
@@ -303,6 +331,7 @@ class SchedullyFirebaseService {
         activeDevice: userData.activeDevice || userData.settings?.activeDevice || 'phone',
         zoomScale: userData.zoomScale || userData.settings?.zoomScale || 0.85,
         updatedAt: newTimestamp,
+        lastUpdatedBy: this.clientId,
         userEmail: this.currentUser.email || '',
         displayName: this.currentUser.displayName || ''
       });
@@ -314,6 +343,7 @@ class SchedullyFirebaseService {
         try {
           await this.db.ref('users/' + this.currentUser.uid).set(cleanPayload);
           saved = true;
+          this.lastSyncedTimestamp = newTimestamp;
         } catch (dbErr) {
           console.warn("Schedully Firebase: RTDB save warning:", dbErr);
           if (dbErr && (dbErr.message || '').includes('permission_denied')) {
