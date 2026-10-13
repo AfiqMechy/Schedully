@@ -2012,7 +2012,7 @@ class SchedullyApp {
     };
 
     this.setTimetableHeightScale = (val, syncSlider = true) => {
-      const heightVal = Math.max(25, Math.min(90, parseInt(val, 10) || 49));
+      const heightVal = Math.max(20, Math.min(140, parseInt(val, 10) || 49));
       this.gridHeightVal = heightVal;
       const gridHeightValEl = document.getElementById('grid-height-val');
       if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
@@ -2024,7 +2024,7 @@ class SchedullyApp {
     };
 
     this.setTimetableOffsetY = (val, syncSlider = true) => {
-      const yVal = Math.max(-300, Math.min(500, parseInt(val, 10) || 0));
+      const yVal = Math.max(-300, Math.min(950, parseInt(val, 10) || 0));
       this.gridYPosVal = yVal;
       const gridYPosValEl = document.getElementById('grid-ypos-val');
       if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
@@ -5862,22 +5862,22 @@ class SchedullyApp {
     gridHeightValEl?.addEventListener('input', (e) => {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
-        this.gridHeightVal = Math.min(90, Math.max(30, val));
+        this.gridHeightVal = Math.min(140, Math.max(20, val));
         this.requestGridRender();
         this._stagePending();
       }
     });
     gridHeightValEl?.addEventListener('blur', (e) => {
       let val = parseInt(e.target.value, 10);
-      if (isNaN(val) || val < 30) e.target.value = 30;
-      else if (val > 90) e.target.value = 90;
+      if (isNaN(val) || val < 20) e.target.value = 20;
+      else if (val > 140) e.target.value = 140;
       this.gridHeightVal = parseInt(e.target.value, 10);
       this.requestGridRender();
       this._stagePending();
     });
 
     btnHeightDec?.addEventListener('click', () => {
-      if (this.gridHeightVal > 30) {
+      if (this.gridHeightVal > 20) {
         this.gridHeightVal -= 3;
         if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
         this.requestGridRender();
@@ -5886,7 +5886,7 @@ class SchedullyApp {
     });
 
     btnHeightInc?.addEventListener('click', () => {
-      if (this.gridHeightVal < 90) {
+      if (this.gridHeightVal < 140) {
         this.gridHeightVal += 3;
         if (gridHeightValEl) gridHeightValEl.value = this.gridHeightVal;
         this.requestGridRender();
@@ -5942,7 +5942,7 @@ class SchedullyApp {
     gridYPosValEl?.addEventListener('input', (e) => {
       let val = parseInt(e.target.value, 10);
       if (!isNaN(val)) {
-        this.gridYPosVal = Math.min(500, Math.max(-300, val));
+        this.gridYPosVal = Math.min(950, Math.max(-300, val));
         this.requestGridRender();
         this._stagePending();
       }
@@ -5950,7 +5950,7 @@ class SchedullyApp {
     gridYPosValEl?.addEventListener('blur', (e) => {
       let val = parseInt(e.target.value, 10);
       if (isNaN(val) || val < -300) e.target.value = -300;
-      else if (val > 500) e.target.value = 500;
+      else if (val > 950) e.target.value = 950;
       this.gridYPosVal = parseInt(e.target.value, 10);
       this.requestGridRender();
       this._stagePending();
@@ -5969,7 +5969,7 @@ class SchedullyApp {
 
     btnYPosInc?.addEventListener('click', () => {
       // Calculate max Y bound
-      let maxY = 500;
+      let maxY = 950;
       if (this.gridYPosVal < maxY) {
         this.gridYPosVal = Math.min(Math.round(maxY), this.gridYPosVal + 5);
         if (gridYPosValEl) gridYPosValEl.value = this.gridYPosVal;
@@ -7116,7 +7116,7 @@ class SchedullyApp {
         } else if (activeLayoutSubMode === 'height') {
           const val = this.gridHeightVal != null ? this.gridHeightVal : 49;
           return {
-            min: 25, max: 90, val: val, label: `${val}px`, step: 2,
+            min: 20, max: 140, val: val, label: `${val}px`, step: 2,
             modeTag: 'HEIGHT',
             fullTitle: 'Timetable Height',
             desc: 'Slide to adjust row height (↕)',
@@ -7138,7 +7138,7 @@ class SchedullyApp {
           const val = this.gridYPosVal != null ? this.gridYPosVal : 0;
           const sign = val > 0 ? '+' : '';
           return {
-            min: -300, max: 500, val: val, label: `${sign}${val}px`, step: 4,
+            min: -300, max: 950, val: val, label: `${sign}${val}px`, step: 4,
             modeTag: 'POS Y',
             fullTitle: 'Timetable Y-Position',
             desc: 'Slide to offset timetable up/down (⬍)',
@@ -7435,13 +7435,13 @@ class SchedullyApp {
           const val = Math.round(50 + r * 80);
           this.setTimetableWidthScale(val, false);
         } else if (activeLayoutSubMode === 'height') {
-          const val = Math.round(25 + r * 65);
+          const val = Math.round(20 + r * 120);
           this.setTimetableHeightScale(val, false);
         } else if (activeLayoutSubMode === 'posx') {
           const val = Math.round(-150 + r * 300);
           this.setTimetableOffsetX(val, false);
         } else if (activeLayoutSubMode === 'posy') {
-          const val = Math.round(-300 + r * 800);
+          const val = Math.round(-300 + r * 1250);
           this.setTimetableOffsetY(val, false);
         }
         this._stagePending(true);
@@ -7599,13 +7599,13 @@ class SchedullyApp {
           const next = Math.max(50, Math.min(130, (this.gridWidthVal != null ? this.gridWidthVal : 100) + delta * 2));
           this.setTimetableWidthScale(next, false);
         } else if (activeLayoutSubMode === 'height') {
-          const next = Math.max(25, Math.min(90, (this.gridHeightVal != null ? this.gridHeightVal : 49) + delta * 2));
+          const next = Math.max(20, Math.min(140, (this.gridHeightVal != null ? this.gridHeightVal : 49) + delta * 2));
           this.setTimetableHeightScale(next, false);
         } else if (activeLayoutSubMode === 'posx') {
           const next = Math.max(-150, Math.min(150, (this.gridXPosVal != null ? this.gridXPosVal : 0) + delta * 4));
           this.setTimetableOffsetX(next, false);
         } else if (activeLayoutSubMode === 'posy') {
-          const next = Math.max(-300, Math.min(500, (this.gridYPosVal != null ? this.gridYPosVal : 0) + delta * 4));
+          const next = Math.max(-300, Math.min(950, (this.gridYPosVal != null ? this.gridYPosVal : 0) + delta * 4));
           this.setTimetableOffsetY(next, false);
         }
       } else if (toolId === 'opacity') {

@@ -6596,7 +6596,7 @@ body.dark-mode .m3-phone-canvas.canvas-paper:not(.has-photo-wallpaper) {
   box-shadow: 0 12px 36px rgba(0, 0, 0, calc(0.08 * var(--timetable-opacity-all, 1)));
   overflow: hidden !important;
   height: fit-content;
-  max-height: 100%;
+  max-height: none !important;
   max-width: none;
   align-self: center;
   width: 100%;
